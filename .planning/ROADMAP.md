@@ -98,12 +98,12 @@
 20. Loading states show during navigation
 21. Dashboard requirement references updated (removed DASH-07 reference to DAKSH quick action)
 
-**Plans:**
-- [ ] 02-01-PLAN.md — Dependencies: Recharts, TanStack Table, react-big-calendar, shadcn/ui components
-- [ ] 02-02-PLAN.md — Dashboard widgets: health score, donut chart, count cards, risk indicator, calendar, quick actions
-- [ ] 02-03-PLAN.md — Compliance components: table, filters, trend chart, detail dialog
-- [ ] 02-04-PLAN.md — Audit plan components: calendar, engagement cards, filter bar
-- [ ] 02-05-PLAN.md — Layout enhancements: top bar user controls, responsive sidebar with mobile drawer
+**Plans:** 6 plans
+- [ ] 02-01-PLAN.md — Install Recharts, TanStack Table, and 6 shadcn/ui components
+- [ ] 02-02-PLAN.md — Dashboard widgets: health score, donut chart, count cards, risk panel, calendar, quick actions
+- [ ] 02-03-PLAN.md — Compliance components: TanStack table with sorting/filtering, detail dialog, trend chart
+- [ ] 02-04-PLAN.md — Audit plan components: month-grid calendar, engagement cards, type filter, detail sheet
+- [ ] 02-05-PLAN.md — Layout enhancements: responsive top bar, mobile sidebar, loading skeletons
 - [ ] 02-06-PLAN.md — Page composition: wire all components into Dashboard, Compliance, and Audit Plan pages
 
 **Key Tasks:**
@@ -223,3 +223,4 @@
 *Updated: February 7, 2026 — Phase 1 plans created*
 *Updated: February 7, 2026 — Phase 4 plans created*
 *Updated: February 7, 2026 — Phase 3 plans created*
+*Updated: February 8, 2026 — Phase 2 plans created (6 plans in 3 waves)*

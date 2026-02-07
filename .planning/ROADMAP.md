@@ -98,13 +98,13 @@
 20. Loading states show during navigation
 21. Dashboard requirement references updated (removed DASH-07 reference to DAKSH quick action)
 
-**Plans:** 6 plans
-- [ ] 02-01-PLAN.md — Install Recharts, TanStack Table, and 6 shadcn/ui components
-- [ ] 02-02-PLAN.md — Dashboard widgets: health score, donut chart, count cards, risk panel, calendar, quick actions
-- [ ] 02-03-PLAN.md — Compliance components: TanStack table with sorting/filtering, detail dialog, trend chart
-- [ ] 02-04-PLAN.md — Audit plan components: month-grid calendar, engagement cards, type filter, detail sheet
-- [ ] 02-05-PLAN.md — Layout enhancements: responsive top bar, mobile sidebar, loading skeletons
-- [ ] 02-06-PLAN.md — Page composition: wire all components into Dashboard, Compliance, and Audit Plan pages
+**Plans:** 6 plans in 3 waves
+- [ ] 02-01-PLAN.md — Install Recharts + react-is + TanStack Table, shadcn chart + 6 UI primitives, expand compliance data to 50+, update icons
+- [ ] 02-02-PLAN.md — Dashboard widgets: RadialBarChart gauge with PolarAngleAxis, PieChart donut with ChartContainer, count cards, risk panel, calendar, quick actions
+- [ ] 02-03-PLAN.md — Compliance components: TanStack Table with sorting/filtering, detail dialog, AreaChart trend with ChartContainer
+- [ ] 02-04-PLAN.md — Audit plan components: FY month-grid calendar, engagement cards with shadcn Progress, type filter, detail Sheet
+- [ ] 02-05-PLAN.md — Layout enhancements: responsive top bar, mobile sidebar polish, Suspense loading skeleton
+- [ ] 02-06-PLAN.md — Page composition: wire all components into Dashboard, Compliance, and Audit Plan pages with human verification
 
 **Key Tasks:**
 - Build CEO dashboard with all widgets

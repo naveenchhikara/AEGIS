@@ -1,7 +1,7 @@
 # Project State: AEGIS
 
 **Current Phase:** Phase 4 — Polish & Deploy (In Progress)
-**Last Updated:** February 8, 2026 (04-04 completed)
+**Last Updated:** February 8, 2026 (04-02 completed)
 
 ---
 
@@ -22,10 +22,10 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | 1     | Complete    | 4/4   | 100%     |
 | 2     | In Progress | 5/6   | 83%      |
 | 3     | Complete    | 5/5   | 100%     |
-| 4     | In Progress | 2/8   | 25%      |
+| 4     | In Progress | 3/8   | 38%      |
 
-**Overall:** 16/23 plans complete (70%)
-████████████████████████████████░░░░░░░░ 70%
+**Overall:** 17/23 plans complete (74%)
+█████████████████████████████████░░░░░░░ 74%
 
 ---
 
@@ -33,6 +33,13 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 04-02: Hindi/Marathi/Gujarati UI Translation Files
+  - Created messages/hi.json with 224 keys in Hindi (Devanagari) using RBI Shabdavali banking terminology
+  - Created messages/mr.json with 224 keys in Marathi (Devanagari) with distinct vocabulary (ahavaal, teevrata, pralumbit)
+  - Created messages/gu.json with 224 keys in Gujarati (Gujarati script U+0A80-U+0AFF)
+  - All RBI acronyms (CRAR, NPA, PCA, DAKSH, KYC, AML, UCB, MFA) preserved in English across all locales
+  - Key structure verified identical across all 4 locale files (en, hi, mr, gu)
+  - All files parse as valid JSON
 - Completed 04-04: Responsive Design Polish
   - Mobile-first responsive grids across all 6 dashboard pages (375px+, 768px+, 1024px+)
   - Top bar touch targets increased to 44px on mobile (h-10 w-10 md:h-8 md:w-8)
@@ -353,19 +360,27 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 3. **Hidden Column Pattern Preserved:** Tables already hide non-essential columns on mobile (hidden md:inline); kept this pattern from Phase 2-3
 4. **overflow-x-auto for Report Tables:** Report tables (5-7 columns) need horizontal scroll containers on mobile since all columns are essential
 
+### From Phase 4 Plan 2
+
+1. **Hindi banking terminology source:** Used RBI Shabdavali conventions -- lekha pariksha (audit), anupaalan (compliance), jokhim (risk), prativedan (report)
+2. **Marathi distinct vocabulary:** Where Marathi differs from Hindi, used authentic Marathi: ahavaal (report), teevrata (severity), pralumbit (pending)
+3. **Gujarati audit transliteration:** Used transliterated "ઓડિટ" (audit) rather than formal "લેખા પરીક્ષા", matching common Gujarati banking software usage
+4. **Acronym preservation policy:** All RBI/banking acronyms (CRAR, NPA, PCA, DAKSH, KYC, AML, CRR, SLR, ALM, UCB, MFA) remain in English across all locales
+5. **Tech term transliteration:** Dashboard, Filter, Export, Print, Reset use script-native transliterations when no natural equivalent exists
+
 ---
 
 ## Next Steps
 
 1. Phase 2 remaining plan (02-06) still pending — page composition for Dashboard, Compliance, Audit Plan
-2. Phase 4 remaining: Hindi/Marathi/Gujarati translations, language switcher cookie integration, AWS Mumbai deployment, UAT testing
+2. Phase 4 remaining: demo data translations (04-02b), language switcher cookie integration (04-03), AWS Mumbai deployment (04-05), UAT testing (04-06/07)
 
 ---
 
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 04-04-PLAN.md (Responsive Design Polish)
+**Stopped at:** Completed 04-02-PLAN.md (Hindi/Marathi/Gujarati UI Translations)
 **Resume file:** None
 
 ---

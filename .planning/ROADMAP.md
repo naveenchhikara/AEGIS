@@ -122,8 +122,10 @@
 
 **Requirements:**
 - FIND-01, FIND-02, FIND-03, FIND-04, FIND-05, FIND-06
-- AUDT-01, AUDT-02, AUDT-03, AUDT-04, AUDT-05, AUDT-06
 - RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, RPT-06
+- DATA-02 (partial), DATA-04 (partial), RBI-02, RBI-03
+
+Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 
 **Success Criteria:**
 1. Findings list table displays all 35 findings
@@ -132,29 +134,26 @@
 4. Clicking finding opens detail page
 5. Finding detail shows all fields: observation, root cause, risk, response, action plan
 6. Timeline view displays status history
-7. Audit engagement workspace renders
-8. Audit program linkages display
-9. Board report preview shows executive summary
-10. Compliance scorecard displays with category breakdowns
-11. Print/PDF preview mode formats correctly
-12. All finding-related data loads from JSON
-13. All audit-related data loads from JSON
-14. Board report data aggregates correctly
+7. Board report preview shows executive summary
+8. Compliance scorecard displays with category breakdowns
+9. Print/PDF preview mode formats correctly
+10. All finding-related data loads from JSON
+11. Board report data aggregates correctly
+12. 50 compliance requirements in demo data
+13. 35 findings with realistic RBI-style observations
 
-**Plans:**
-- [ ] 03-01-PLAN.md — Foundation components: SeverityBadge, StatusBadge, StatusTimeline, finding utilities, Recharts
-- [ ] 03-02-PLAN.md — Data structures and demo data: findings.json, audits.json, reports.json
-- [ ] 03-03-PLAN.md — Findings list page: sortable, filterable table with TanStack Table
-- [ ] 03-04-PLAN.md — Finding detail page: all fields and status timeline
-- [ ] 03-05-PLAN.md — Audit engagement workspace: list cards and tabbed detail view
-- [ ] 03-06a-PLAN.md — Board report sections: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary, RecommendationsSection
-- [ ] 03-06b-PLAN.md — Board report composition: ComplianceScorecard, BoardReportPreview, reports page, print styles
+**Plans:** 5 plans in 3 waves
+- [ ] 03-01-PLAN.md — Expand demo data: 35 findings + 50 compliance requirements
+- [ ] 03-02-PLAN.md — Board report utilities and components: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary
+- [ ] 03-03-PLAN.md — Enhanced findings list with TanStack Table sorting/filtering
+- [ ] 03-04-PLAN.md — Finding detail page with status timeline
+- [ ] 03-05-PLAN.md — Board report composition: ComplianceScorecard, Recommendations, print styles
 
 **Key Tasks:**
+- Expand findings to 35 and compliance requirements to 50
 - Build findings list table with advanced filters
 - Build finding detail page with timeline
-- Build audit engagement workspace
-- Build board report preview
+- Build complete board report with print mode
 
 ---
 

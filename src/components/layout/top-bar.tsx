@@ -26,7 +26,7 @@ export function TopBar() {
       <Separator orientation="vertical" className="mr-2 h-4" />
 
       {/* Bank name */}
-      <h2 className="text-sm font-semibold text-foreground">
+      <h2 className="text-base font-bold tracking-tight text-foreground">
         Apex Sahakari Bank Ltd
       </h2>
 

@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { LANGUAGES, type LanguageCode } from "@/lib/constants";
 import { Lock, Mail, Shield } from "@/lib/icons";
 
 export function LoginForm() {
   const router = useRouter();
-  const [language, setLanguage] = useState<LanguageCode>("en");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
@@ -28,23 +26,6 @@ export function LoginForm() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Language pills */}
-      <div className="flex gap-1 rounded-full border border-slate-200 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
-        {LANGUAGES.map((lang) => (
-          <button
-            key={lang.code}
-            onClick={() => setLanguage(lang.code)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-              language === lang.code
-                ? "bg-primary text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {lang.short}
-          </button>
-        ))}
-      </div>
-
       {/* Login card */}
       <Card className="w-full border-0 bg-white/70 shadow-xl shadow-slate-200/50 backdrop-blur-md">
         <CardContent className="p-8">

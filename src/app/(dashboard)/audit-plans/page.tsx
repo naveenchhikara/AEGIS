@@ -1,17 +1,14 @@
+"use client";
+
+import { useState } from "react";
+import { AuditCalendar } from "@/components/audit/audit-calendar";
+import { EngagementCard } from "@/components/audit/engagement-card";
+import { AuditFilterBar } from "@/components/audit/audit-filter-bar";
+import { EngagementDetailSheet } from "@/components/audit/engagement-detail-sheet";
 import { auditPlans } from "@/data";
-import type { AuditData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AUDIT_STATUS_COLORS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
-import {
-  ClipboardList,
-  CheckCircle2,
-  Activity,
-  Clock,
-  Calendar,
-  Users,
-} from "@/lib/icons";
+import type { AuditData, AuditPlan } from "@/types";
+import { Card, CardContent } from "@/components/ui/card";
+import { ClipboardList, CheckCircle2, Activity, Clock } from "@/lib/icons";
 
 const data = auditPlans as unknown as AuditData;
 
@@ -47,111 +44,83 @@ const summaryCards = [
 ];
 
 export default function AuditPlansPage() {
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"calendar" | "cards">("calendar");
+  const [selectedAudit, setSelectedAudit] = useState<AuditPlan | null>(null);
+
+  const filteredAudits =
+    typeFilter === "all"
+      ? data.auditPlans
+      : data.auditPlans.filter((a) => a.type === typeFilter);
+
   return (
     <div className="space-y-6">
+      {/* Page header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Audit Planning
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Annual audit plan and engagement tracking
         </p>
       </div>
 
-      {/* Summary */}
+      {/* Summary cards row */}
       <div className="grid gap-3 sm:grid-cols-4">
-        {summaryCards.map((s) => (
-          <Card key={s.label}>
+        {summaryCards.map((card) => (
+          <Card key={card.label}>
             <CardContent className="flex items-center gap-3 p-4">
-              <div className={`rounded-lg p-2 ${s.bg}`}>
-                <s.icon className={`h-4 w-4 ${s.color}`} />
+              <div className={`rounded-lg p-2 ${card.bg}`}>
+                <card.icon className={`h-4 w-4 ${card.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold">{s.count}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-xl font-bold">{card.count}</p>
+                <p className="text-muted-foreground text-xs">{card.label}</p>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Audit cards grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {data.auditPlans.map((audit) => (
-          <Card key={audit.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-sm font-semibold">
-                  {audit.name}
-                </CardTitle>
-                <Badge
-                  variant="outline"
-                  className={
-                    AUDIT_STATUS_COLORS[
-                      audit.status as keyof typeof AUDIT_STATUS_COLORS
-                    ] ?? ""
-                  }
-                >
-                  {audit.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {formatDate(audit.plannedStartDate)} –{" "}
-                  {formatDate(audit.plannedEndDate)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {audit.assignedTeam.length} members
-                </span>
-              </div>
+      {/* Filter bar */}
+      <AuditFilterBar
+        typeFilter={typeFilter}
+        viewMode={viewMode}
+        onTypeChange={setTypeFilter}
+        onViewModeChange={setViewMode}
+      />
 
-              {/* Progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{audit.progress}%</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      audit.progress === 100
-                        ? "bg-emerald-500"
-                        : audit.progress > 0
-                          ? "bg-blue-500"
-                          : "bg-slate-300"
-                    }`}
-                    style={{ width: `${audit.progress}%` }}
-                  />
-                </div>
-              </div>
+      {/* Conditional view */}
+      {viewMode === "calendar" ? (
+        <AuditCalendar
+          audits={filteredAudits}
+          typeFilter={typeFilter}
+          onAuditClick={setSelectedAudit}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {filteredAudits.length > 0 ? (
+            filteredAudits.map((audit) => (
+              <EngagementCard
+                key={audit.id}
+                audit={audit}
+                onClick={() => setSelectedAudit(audit)}
+              />
+            ))
+          ) : (
+            <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-8 text-center">
+              No audits match the selected filter
+            </div>
+          )}
+        </div>
+      )}
 
-              <div className="flex gap-3 text-xs">
-                <span className="text-muted-foreground">
-                  {audit.findingsCount} findings
-                </span>
-                {audit.highFindings > 0 && (
-                  <span className="text-orange-600">
-                    {audit.highFindings} high
-                  </span>
-                )}
-                {audit.criticalFindings > 0 && (
-                  <span className="text-red-600">
-                    {audit.criticalFindings} critical
-                  </span>
-                )}
-              </div>
-
-              <p className="line-clamp-2 text-xs text-muted-foreground">
-                {audit.notes}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Detail sheet */}
+      <EngagementDetailSheet
+        audit={selectedAudit}
+        open={!!selectedAudit}
+        onOpenChange={(open) => !open && setSelectedAudit(null)}
+      />
     </div>
   );
 }

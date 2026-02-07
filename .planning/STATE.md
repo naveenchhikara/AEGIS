@@ -1,6 +1,6 @@
 # Project State: AEGIS
 
-**Current Phase:** Phase 3 — Finding Management & Reports (Complete)
+**Current Phase:** Phase 4 — Polish & Deploy (Planned)
 **Last Updated:** February 8, 2026
 
 ---
@@ -320,8 +320,8 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 ## Next Steps
 
-1. Phase 2 remaining plan (02-06) still pending
-2. Phase 4: polish, dark mode, PDF export, accessibility improvements
+1. Phase 2 remaining plan (02-06) still pending — page composition for Dashboard, Compliance, Audit Plan
+2. Phase 4: i18n (Hindi/Marathi/Gujarati), responsive polish, AWS Mumbai deployment
 
 ---
 

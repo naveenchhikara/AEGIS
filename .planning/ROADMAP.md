@@ -143,11 +143,11 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 13. 35 findings with realistic RBI-style observations
 
 **Plans:** 5 plans in 3 waves
-- [ ] 03-01-PLAN.md — Expand demo data: 35 findings + 50 compliance requirements
-- [ ] 03-02-PLAN.md — Board report utilities and components: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary
-- [ ] 03-03-PLAN.md — Enhanced findings list with TanStack Table sorting/filtering
-- [ ] 03-04-PLAN.md — Finding detail page with status timeline
-- [ ] 03-05-PLAN.md — Board report composition: ComplianceScorecard, Recommendations, print styles
+- [x] 03-01-PLAN.md — Expand demo data: 35 findings + 50 compliance requirements
+- [x] 03-02-PLAN.md — Board report utilities and components: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary
+- [x] 03-03-PLAN.md — Enhanced findings list with TanStack Table sorting/filtering
+- [x] 03-04-PLAN.md — Finding detail page with status timeline
+- [x] 03-05-PLAN.md — Board report composition: ComplianceScorecard, Recommendations, print styles
 
 **Key Tasks:**
 - Expand findings to 35 and compliance requirements to 50

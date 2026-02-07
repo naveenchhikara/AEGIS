@@ -21,11 +21,11 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | ----- | ----------- | ----- | -------- |
 | 1     | Complete    | 3/10  | 100%     |
 | 2     | In Progress | 3/6   | 50%      |
-| 3     | In Progress | 2/5   | 40%      |
+| 3     | In Progress | 3/5   | 60%      |
 | 4     | Planned     | 0/0   | 0%       |
 
-**Overall:** 8/28 plans complete (29%)
-███████████████████░░░░░░░░░░░░░░░░░░░░ 29%
+**Overall:** 9/28 plans complete (32%)
+█████████████████████░░░░░░░░░░░░░░░░░░ 32%
 
 ---
 
@@ -33,6 +33,14 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 03-04: Finding Detail Page & Status Timeline
+  - Created StatusTimeline component with vertical dots, connecting lines, chronological sorting
+  - Created FindingDetail component with 8 sections: observation, root cause, risk impact, auditee response, action plan, related info, timeline
+  - Dynamic route /findings/[id] with generateStaticParams for all 35 findings
+  - Pending responses shown in italic muted style
+  - 404 handling for invalid finding IDs
+  - Server components throughout (no "use client")
+  - pnpm build passes with all 35 finding pages pre-generated
 - Completed 03-01: Demo Data Expansion (Findings and Compliance)
   - Expanded findings from 10 to 35 with RBI-style observations across 9 categories
   - Categories include: Capital Adequacy, ALM, Cyber Security, Credit Risk, Operations, Governance, Treasury, PSL, Deposit Operations
@@ -270,11 +278,19 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 2. **Finding category naming convention:** Full category names for findings (e.g., "Priority Sector Lending") while compliance uses simplified IDs (e.g., "credit", "governance") -- matches existing conventions.
 3. **Finding distribution to active audits:** Findings only assigned to completed/in-progress audits (AUD-001 through AUD-004). Planned, on-hold, and cancelled audits have no findings.
 
+### From Phase 3 Plan 4
+
+1. **Server components for detail page:** Both FindingDetail and StatusTimeline are server components since all data comes from static JSON imports (no interactivity needed)
+2. **generateStaticParams for SSG:** All 35 finding detail pages pre-built at build time for instant navigation
+3. **Timeline dot visual hierarchy:** First event dot filled (starting point), last dot emerald-bordered (completion/current state), middle dots outlined with primary color
+4. **Pending response styling:** Awaiting/pending responses shown in italic muted style to visually distinguish from actual responses
+5. **Detail page pattern:** Dynamic [id] route with Promise params (Next.js 16), notFound() for invalid IDs, generateStaticParams for SSG
+
 ---
 
 ## Next Steps
 
-1. Continue Phase 3 with remaining plans (03-03 onwards) for finding management and reports
+1. Continue Phase 3 with remaining plans (03-05) for board reports page
 2. Phase 2 remaining plans (02-05, 02-06) still pending
 
 ---
@@ -282,7 +298,7 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 03-01-PLAN.md (Demo Data Expansion)
+**Stopped at:** Completed 03-04-PLAN.md (Finding Detail Page & Status Timeline)
 **Resume file:** None
 
 ---

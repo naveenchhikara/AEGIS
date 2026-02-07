@@ -61,15 +61,15 @@ export function RiskIndicatorPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div
-          className={`flex items-center justify-between rounded-lg border-2 p-4 ${riskColor}`}
+          className={`flex flex-col gap-2 rounded-lg border-2 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 ${riskColor}`}
           role="status"
           aria-label={`Risk level: ${riskLevel}`}
         >
           <div className="flex items-center gap-3">
             {riskIcon}
-            <span className="text-lg font-semibold">{riskLevel}</span>
+            <span className="text-base font-semibold sm:text-lg">{riskLevel}</span>
           </div>
-          <div className="text-sm opacity-75">Overall Risk Level</div>
+          <div className="text-xs opacity-75 sm:text-sm">Overall Risk Level</div>
         </div>
 
         <div>

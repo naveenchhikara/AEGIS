@@ -51,7 +51,7 @@ export function AuditCoverageChart() {
       <div className="relative">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto min-h-[200px] w-full"
+          className="mx-auto min-h-[160px] w-full md:min-h-[200px]"
           aria-label={`Audit coverage: ${completed} of ${auditPlans.auditPlans.length} audits completed`}
         >
           <PieChart accessibilityLayer={true}>

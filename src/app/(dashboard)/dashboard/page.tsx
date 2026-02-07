@@ -9,24 +9,24 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">Dashboard</h1>
+        <p className="text-muted-foreground text-xs md:text-sm">
           Audit & compliance overview for Apex Sahakari Bank Ltd
         </p>
       </div>
 
-      {/* Row 1 — Key Metrics (3 columns) */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Row 1 — Key Metrics (1 col mobile, 2 col tablet, 3 col desktop) */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <HealthScoreCard />
         <AuditCoverageChart />
         <FindingsCountCards />
       </div>
 
-      {/* Row 2 — Risk & Timeline (2 columns) */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Row 2 — Risk & Timeline (1 col mobile, 2 col tablet+) */}
+      <div className="grid gap-4 md:grid-cols-2">
         <RiskIndicatorPanel />
         <RegulatoryCalendar />
       </div>

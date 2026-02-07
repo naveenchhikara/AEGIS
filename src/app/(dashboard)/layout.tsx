@@ -39,7 +39,7 @@ export default function DashboardLayout({
       <AppSidebar />
       <SidebarInset>
         <TopBar />
-        <main id="main-content" className="flex-1 overflow-auto p-4 md:p-6">
+        <main id="main-content" className="min-w-0 flex-1 overflow-auto p-4 md:p-6">
           <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
         </main>
       </SidebarInset>

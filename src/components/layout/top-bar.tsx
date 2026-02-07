@@ -41,7 +41,7 @@ export function TopBar() {
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1.5 text-xs"
+              className="h-10 gap-1.5 px-3 text-xs md:h-8 md:px-2"
               aria-label="Change language"
             >
               <Globe className="h-4 w-4" />
@@ -66,12 +66,12 @@ export function TopBar() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-8 w-8"
+          className="relative h-10 w-10 md:h-8 md:w-8"
           aria-label="3 notifications"
         >
           <Bell className="h-4 w-4" />
           <span
-            className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full"
+            className="bg-destructive absolute top-1.5 right-1.5 h-2 w-2 rounded-full md:top-1 md:right-1"
             aria-hidden="true"
           />
         </Button>
@@ -82,7 +82,7 @@ export function TopBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 md:h-8 md:w-8"
               aria-label="User menu"
             >
               <Avatar className="h-7 w-7">

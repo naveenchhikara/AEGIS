@@ -41,7 +41,7 @@ export function HealthScoreCard() {
         <div className="relative">
           <ChartContainer
             config={chartConfig}
-            className="mx-auto min-h-[120px] w-full"
+            className="mx-auto min-h-[100px] w-full md:min-h-[120px]"
             aria-label={`Compliance health score: ${score} percent`}
           >
             <RadialBarChart

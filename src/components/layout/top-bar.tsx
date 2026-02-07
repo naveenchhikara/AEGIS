@@ -25,12 +25,12 @@ export function TopBar() {
   const currentLang = LANGUAGES.find((l) => l.code === language)!;
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
+    <header className="bg-background flex h-14 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
 
-      {/* Bank name */}
-      <h2 className="text-base font-bold tracking-tight text-foreground">
+      {/* Bank name - hidden on mobile to save space */}
+      <h2 className="text-foreground hidden text-base font-bold tracking-tight md:block">
         {bank.name}
       </h2>
 
@@ -38,7 +38,12 @@ export function TopBar() {
         {/* Language switcher */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs"
+              aria-label="Change language"
+            >
               <Globe className="h-4 w-4" />
               {currentLang.short}
             </Button>
@@ -58,17 +63,30 @@ export function TopBar() {
         </DropdownMenu>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label="Notifications">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8"
+          aria-label="3 notifications"
+        >
           <Bell className="h-4 w-4" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" aria-hidden="true" />
+          <span
+            className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full"
+            aria-hidden="true"
+          />
         </Button>
 
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="User menu"
+            >
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary text-[10px] text-primary-foreground">
+                <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
                   {currentUser.initials}
                 </AvatarFallback>
               </Avatar>
@@ -77,7 +95,7 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-48">
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{currentUser.name}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {currentUser.role}
               </p>
             </div>

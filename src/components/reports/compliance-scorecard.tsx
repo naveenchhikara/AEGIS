@@ -99,7 +99,7 @@ export function ComplianceScorecard() {
 
         {/* Category Breakdown Table */}
         <div className="overflow-x-auto">
-        <Table>
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Category</TableHead>
@@ -139,7 +139,7 @@ export function ComplianceScorecard() {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
         </div>
 
         {/* Visual Stacked Bars per Category */}

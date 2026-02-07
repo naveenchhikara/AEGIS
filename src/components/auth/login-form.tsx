@@ -70,7 +70,7 @@ export function LoginForm() {
                 className="gap-2 h-9 px-3 text-xs font-medium hover:bg-blue-50 hover:border-blue-200 transition-colors border-slate-200"
               >
                 <Globe className="h-3.5 w-3.5" />
-                <span>{selectedLanguage.flag}</span>
+                <span className="text-xs font-medium">{selectedLanguage.label}</span>
                 <span className="hidden sm:inline text-slate-600">{selectedLanguage.name}</span>
               </Button>
             </DropdownMenuTrigger>
@@ -81,7 +81,7 @@ export function LoginForm() {
                   onClick={() => setLanguage(lang.code)}
                   className="gap-3 cursor-pointer text-sm"
                 >
-                  <span className="text-base">{lang.flag}</span>
+                  <span className="text-xs font-medium text-slate-500">{lang.label}</span>
                   <span className="text-slate-700">{lang.name}</span>
                 </DropdownMenuItem>
               ))}

@@ -20,11 +20,11 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | Phase | Status | Plans | Progress |
 |-------|--------|-------|----------|
 | 1 | ( In Progress | 2/10 | 20% |
-| 2 | ( Pending | 0/6 | 0% |
-| 3 | Planned | 6/6 | 0% |
-| 4 | ( Pending | 0/7 | 0% |
+| 2 | Planned | 6/6 | 0% |
+| 3 | Planned | 7/7 | 0% |
+| 4 | Planned | 7/7 | 0% |
 
-**Overall:** 2/29 plans complete (7%)
+**Overall:** 2/30 plans complete (7%)
 
 ---
 

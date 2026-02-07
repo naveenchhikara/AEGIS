@@ -141,7 +141,14 @@
 13. All audit-related data loads from JSON
 14. Board report data aggregates correctly
 
-**Plans:** (to be planned)
+**Plans:**
+- [ ] 03-01-PLAN.md — Foundation components: SeverityBadge, StatusBadge, StatusTimeline, finding utilities, Recharts
+- [ ] 03-02-PLAN.md — Data structures and demo data: findings.json, audits.json, reports.json
+- [ ] 03-03-PLAN.md — Findings list page: sortable, filterable table with TanStack Table
+- [ ] 03-04-PLAN.md — Finding detail page: all fields and status timeline
+- [ ] 03-05-PLAN.md — Audit engagement workspace: list cards and tabbed detail view
+- [ ] 03-06a-PLAN.md — Board report sections: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary, RecommendationsSection
+- [ ] 03-06b-PLAN.md — Board report composition: ComplianceScorecard, BoardReportPreview, reports page, print styles
 
 **Key Tasks:**
 - Build findings list table with advanced filters
@@ -215,3 +222,4 @@
 *Roadmap created: February 7, 2026*
 *Updated: February 7, 2026 — Phase 1 plans created*
 *Updated: February 7, 2026 — Phase 4 plans created*
+*Updated: February 7, 2026 — Phase 3 plans created*

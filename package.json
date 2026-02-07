@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
+    "@tailwindcss/postcss": "^4.1.18",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   }

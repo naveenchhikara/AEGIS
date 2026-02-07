@@ -40,8 +40,8 @@ export function FindingsFilters({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select value={severityFilter} onValueChange={onSeverityChange}>
-        <SelectTrigger className="w-full sm:w-[160px]">
-          <SelectValue placeholder="Severity" />
+        <SelectTrigger className="w-full bg-muted sm:w-[160px]">
+          <SelectValue placeholder="All Severities" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Severities</SelectItem>
@@ -53,8 +53,8 @@ export function FindingsFilters({
       </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-full sm:w-[160px]">
-          <SelectValue placeholder="Status" />
+        <SelectTrigger className="w-full bg-muted sm:w-[160px]">
+          <SelectValue placeholder="All Statuses" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Statuses</SelectItem>
@@ -67,8 +67,8 @@ export function FindingsFilters({
       </Select>
 
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full sm:w-[200px]">
-          <SelectValue placeholder="Category" />
+        <SelectTrigger className="w-full bg-muted sm:w-[200px]">
+          <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>

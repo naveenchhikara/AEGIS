@@ -28,8 +28,8 @@ export function AuditFilterBar({
     <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
       {/* Audit Type Filter */}
       <Select value={typeFilter} onValueChange={onTypeChange}>
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="Select audit type" />
+        <SelectTrigger className="w-full bg-muted sm:w-[180px]">
+          <SelectValue placeholder="All Types" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Types</SelectItem>

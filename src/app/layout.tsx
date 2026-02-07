@@ -3,6 +3,7 @@ import {
   Noto_Sans,
   Noto_Sans_Devanagari,
   Noto_Sans_Gujarati,
+  DM_Serif_Display,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -28,6 +29,13 @@ const notoSansGujarati = Noto_Sans_Gujarati({
   weight: ["400", "500", "600", "700"],
 });
 
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  variable: "--font-dm-serif",
+  display: "swap",
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "AEGIS — Audit & Compliance Platform",
   description:
@@ -45,7 +53,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${notoSans.variable} ${notoSansDevanagari.variable} ${notoSansGujarati.variable}`}
+      className={`${notoSans.variable} ${notoSansDevanagari.variable} ${notoSansGujarati.variable} ${dmSerifDisplay.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen font-sans antialiased">

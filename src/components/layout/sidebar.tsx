@@ -13,7 +13,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { APP_NAME } from "@/lib/constants";
 
 export function AppSidebar() {
@@ -28,7 +27,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">{APP_NAME}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-sidebar-foreground/60">
               UCB Audit Platform
             </span>
           </div>

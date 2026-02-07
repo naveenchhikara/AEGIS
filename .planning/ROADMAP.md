@@ -2,7 +2,7 @@
 
 **Milestone:** Clickable Prototype (Phase 0)
 **Timeline:** 3 weeks (Feb 9 - Feb 27, 2026)
-**Target:** Demo-able product with Sahyadri UCB dummy data deployed to AWS Mumbai
+**Target:** Demo-able product with Apex Sahakari Bank dummy data deployed to AWS Mumbai
 
 ---
 
@@ -19,7 +19,7 @@
 
 ## Phase 1: Project Setup & Demo Data
 
-**Goal:** Initialize Next.js project and create all demo data files for Sahyadri UCB
+**Goal:** Initialize Next.js project and create all demo data files for Apex Sahakari Bank
 
 **Requirements:**
 - DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
@@ -33,7 +33,7 @@
 3. Login screen displays with logo, language selector, and MFA prompt
 4. Sidebar navigation renders with all 7 menu items
 5. Clicking navigation items routes to placeholder pages
-6. Sahyadri UCB profile JSON loads and displays on a test page
+6. Apex Sahakari Bank profile JSON loads and displays on a test page
 7. 50+ RBI compliance requirements load from JSON (sourced from provided RBI circular PDFs)
 8. 8-10 planned audits load from JSON
 9. 35 findings load from JSON with realistic RBI-style observations
@@ -210,7 +210,7 @@
 **Clickable Prototype Complete When:**
 - [ ] All 6 screens are accessible via navigation
 - [ ] All 47 v1 requirements are implemented
-- [ ] Demo data (Sahyadri UCB) loads correctly on all screens
+- [ ] Demo data (Apex Sahakari Bank) loads correctly on all screens
 - [ ] Application is deployed to AWS Mumbai with valid SSL
 - [ ] Demo works on desktop, tablet, and mobile
 - [ ] All 4 languages (EN/HI/MR/GU) work

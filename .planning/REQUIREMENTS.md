@@ -79,7 +79,7 @@ Requirements for the clickable prototype (Phase 0, Weeks 1-3). This milestone es
 
 ### Demo Data
 
-- [ ] **DATA-01**: Sahyadri UCB profile: bank name, branch list, departments, staff directory
+- [ ] **DATA-01**: Apex Sahakari Bank profile: bank name, branch list, departments, staff directory
 - [ ] **DATA-02**: 50+ RBI compliance requirements with categories, due dates, statuses (sourced from provided RBI circular PDFs)
 - [ ] **DATA-03**: 8-10 planned audits with team assignments and progress
 - [ ] **DATA-04**: 35 open findings with realistic descriptions, severities, root causes, responses (sourced from common RBI observations)

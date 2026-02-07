@@ -20,15 +20,3 @@ export { default as auditPlans } from './demo/audit-plans.json';
 export { default as findings } from './demo/findings.json';
 export { default as rbiCirculars } from './demo/rbi-circulars.json';
 
-// Type re-exports for convenience
-export type {
-  RBICircular,
-  ComplianceRequirement,
-  BankProfile,
-  StaffMember,
-  Branch,
-  AuditPlan,
-  Finding,
-  CommonObservation,
-  ComplianceCategory
-} from '../types';

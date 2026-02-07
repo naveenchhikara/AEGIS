@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) to manage internal audits and track compliance with RBI regulations. Banks can plan audits, track compliance requirements, manage findings from audit to closure, view executive dashboards, and generate board reports — all in a web application with multi-language support (English, Hindi, Marathi, Gujarati).
 
-The initial milestone is a **clickable prototype** — a fully navigable demo with realistic Sahyadri UCB data that can be shown to prospective clients to validate the product and secure pilot commitments.
+The initial milestone is a **clickable prototype** — a fully navigable demo with realistic Apex Sahakari Bank data that can be shown to prospective clients to validate the product and secure pilot commitments.
 
 ## Core Value
 
@@ -20,7 +20,7 @@ If nothing else works, the platform must let a bank prove they are tracking all 
 
 ### Active
 
-- [ ] **Clickable Prototype** — Fully navigable demo with 7 screens using Sahyadri UCB dummy data, deployed to AWS Mumbai
+- [ ] **Clickable Prototype** — Fully navigable demo with 7 screens using Apex Sahakari Bank dummy data, deployed to AWS Mumbai
 - [ ] **Login Screen** — Demo login with MFA prompt UI, language selector (EN/HI/MR/GU), logo placeholder
 - [ ] **CEO Dashboard** — Compliance health score, donut charts, finding counts, DAKSH indicator, PCA status, regulatory calendar
 - [ ] **Compliance Registry** — Filterable/sortable table of 50 RBI requirements with status badges and evidence counts
@@ -50,7 +50,7 @@ If nothing else works, the platform must let a bank prove they are tracking all 
 
 **Competition:** Enterprise solutions (TeamMate, AuditBoard) are too expensive and complex. Generic tools lack banking-specific compliance content. Our moat is domain expertise.
 
-**Reference Customer:** Sahyadri UCB — profile, org structure, and compliance requirements form the basis for demo data.
+**Reference Customer:** Apex Sahakari Bank — profile, org structure, and compliance requirements form the basis for demo data.
 
 ## Constraints
 

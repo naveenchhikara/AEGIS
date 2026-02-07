@@ -4,7 +4,7 @@
 
 AEGIS is a multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage internal audits and track compliance with RBI regulations. Built for the Indian banking sector with multi-language support (English, Hindi, Marathi, Gujarati).
 
-**Current Phase:** Clickable prototype with demo data for Sahyadri UCB. No backend/auth yet — all data from JSON files.
+**Current Phase:** Clickable prototype with demo data for Apex Sahakari Bank. No backend/auth yet — all data from JSON files.
 
 **Current State:** App scaffolding (components, layouts, pages) was reset in commit `e735e42`. Only the data layer and project config exist. The UI needs to be rebuilt from scratch.
 
@@ -33,7 +33,7 @@ pnpm lint             # Run ESLint
 Project Doc/                # Business docs, blueprints, RBI circulars reference
 src/
 ├── data/
-│   ├── demo/              # Demo data JSON files (Sahyadri UCB)
+│   ├── demo/              # Demo data JSON files (Apex Sahakari Bank)
 │   ├── rbi-regulations/   # RBI regulation knowledge base (JSON + TS modules)
 │   └── index.ts           # Barrel export for all demo data
 ```
@@ -44,7 +44,7 @@ src/
 
 | File | Purpose |
 |------|---------|
-| `src/data/demo/bank-profile.json` | Sahyadri UCB bank details |
+| `src/data/demo/bank-profile.json` | Apex Sahakari Bank details |
 | `src/data/demo/staff.json` | Bank staff/auditors |
 | `src/data/demo/branches.json` | Branch network |
 | `src/data/demo/compliance-requirements.json` | 50 RBI requirements with status |

@@ -64,10 +64,10 @@ export function HealthScoreCard() {
             </RadialBarChart>
           </ChartContainer>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl font-bold">{score}%</span>
+            <span className="text-4xl font-bold">{score}%</span>
           </div>
         </div>
-        <p className="text-muted-foreground mt-2 text-center text-sm">
+        <p className="text-muted-foreground mt-2 text-center text-base">
           {compData.summary.compliant} of {compData.summary.total} requirements
           compliant
         </p>

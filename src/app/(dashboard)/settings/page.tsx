@@ -18,7 +18,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Bank profile and platform configuration
         </p>
       </div>
@@ -35,46 +35,46 @@ export default function SettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">Bank Name</p>
-                <p className="text-sm font-medium">{bank.name}</p>
+                <p className="text-sm text-muted-foreground">Bank Name</p>
+                <p className="text-base font-medium">{bank.name}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Location</p>
-                <p className="text-sm">{bank.location}</p>
+                <p className="text-sm text-muted-foreground">Location</p>
+                <p className="text-base">{bank.location}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Established</p>
-                <p className="text-sm">{formatDate(bank.established, "long")}</p>
+                <p className="text-sm text-muted-foreground">Established</p>
+                <p className="text-base">{formatDate(bank.established, "long")}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Tier</p>
-                <p className="text-sm">{bank.tier}</p>
+                <p className="text-sm text-muted-foreground">Tier</p>
+                <p className="text-base">{bank.tier}</p>
               </div>
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   RBI License No.
                 </p>
-                <p className="font-mono text-sm">{bank.rbiLicenseNo}</p>
+                <p className="font-mono text-base">{bank.rbiLicenseNo}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">UCB Type</p>
-                <p className="text-sm">
+                <p className="text-sm text-muted-foreground">UCB Type</p>
+                <p className="text-base">
                   {bank.registrationDetails.ucbType}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Paid-up Capital
                 </p>
-                <p className="text-sm">
+                <p className="text-base">
                   ₹{bank.paidUpCapital} {bank.paidUpCapitalUnit}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Business Mix</p>
-                <p className="text-sm">
+                <p className="text-sm text-muted-foreground">Business Mix</p>
+                <p className="text-base">
                   ₹{bank.businessMix} {bank.businessMixUnit}
                 </p>
               </div>
@@ -97,17 +97,17 @@ export default function SettingsPage() {
               <p className="text-2xl font-bold">
                 {staffData.metadata.totalStaff}
               </p>
-              <p className="text-xs text-muted-foreground">Total Staff</p>
+              <p className="text-sm text-muted-foreground">Total Staff</p>
             </div>
             <div>
               <p className="text-2xl font-bold">
                 {staffData.metadata.departments}
               </p>
-              <p className="text-xs text-muted-foreground">Departments</p>
+              <p className="text-sm text-muted-foreground">Departments</p>
             </div>
             <div>
               <p className="text-2xl font-bold">{bank.departments.length}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Department Heads
               </p>
             </div>
@@ -139,8 +139,8 @@ export default function SettingsPage() {
               <div className="flex flex-col items-center gap-2 py-4 text-center">
                 <section.icon className="h-8 w-8 text-muted-foreground/50" />
                 <p className="font-medium">{section.title}</p>
-                <p className="text-xs text-muted-foreground">{section.desc}</p>
-                <p className="mt-2 text-xs text-muted-foreground/60">
+                <p className="text-sm text-muted-foreground">{section.desc}</p>
+                <p className="mt-2 text-sm text-muted-foreground/60">
                   Planned
                 </p>
               </div>

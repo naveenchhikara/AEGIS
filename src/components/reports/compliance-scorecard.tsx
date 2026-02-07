@@ -90,8 +90,8 @@ export function ComplianceScorecard() {
             {scorecard.overallScore}%
           </p>
           <div>
-            <p className="text-xs font-medium md:text-sm">Overall Compliance Score</p>
-            <p className="text-xs text-muted-foreground md:text-sm">
+            <p className="text-sm font-medium md:text-base">Overall Compliance Score</p>
+            <p className="text-sm text-muted-foreground md:text-base">
               {scorecard.totalRequirements} total requirements assessed
             </p>
           </div>
@@ -149,7 +149,7 @@ export function ComplianceScorecard() {
           </p>
           {scorecard.byCategory.map((cat) => (
             <div key={cat.category} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{cat.category}</span>
                 <span
                   className={cn("font-medium", getScoreColor(cat.score))}
@@ -168,7 +168,7 @@ export function ComplianceScorecard() {
           ))}
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 pt-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
               Compliant

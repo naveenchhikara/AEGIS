@@ -37,7 +37,7 @@ export function ExecutiveSummary() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-base md:text-lg">Executive Summary</CardTitle>
-            <CardDescription className="text-xs md:text-sm">{data.reportPeriod} | {data.bankName}</CardDescription>
+            <CardDescription className="text-sm md:text-base">{data.reportPeriod} | {data.bankName}</CardDescription>
           </div>
           <Badge
             className={cn(
@@ -58,7 +58,7 @@ export function ExecutiveSummary() {
             <p className="text-sm font-medium text-amber-800 mb-1">
               Key Risk Areas
             </p>
-            <ul className="list-disc list-inside text-xs text-amber-700 space-y-0.5 md:text-sm">
+            <ul className="list-disc list-inside text-sm text-amber-700 space-y-0.5 md:text-base">
               {data.riskFactors.map((factor) => (
                 <li key={factor}>{factor}</li>
               ))}
@@ -70,7 +70,7 @@ export function ExecutiveSummary() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
           {/* Compliance Score */}
           <div className="rounded-lg border p-3 md:p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 md:text-sm">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 md:text-base">
               <ShieldCheck className="h-4 w-4" />
               Compliance Score
             </div>
@@ -86,25 +86,25 @@ export function ExecutiveSummary() {
 
           {/* Total Findings */}
           <div className="rounded-lg border p-3 md:p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 md:text-sm">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 md:text-base">
               <AlertTriangle className="h-4 w-4" />
               Total Findings
             </div>
             <p className="text-2xl font-bold md:text-3xl">{data.totalFindings}</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {data.criticalFindings} critical, {data.highFindings} high
             </p>
           </div>
 
           {/* Open Findings */}
           <div className="rounded-lg border p-3 md:p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1 md:text-sm">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 md:text-base">
               <TrendingUp className="h-4 w-4" />
               Open Findings
             </div>
             <p className="text-2xl font-bold md:text-3xl">{data.openFindings}</p>
             {data.overdueFindings > 0 && (
-              <p className="text-xs text-red-600 font-medium mt-1">
+              <p className="text-sm text-red-600 font-medium mt-1">
                 {data.overdueFindings} overdue
               </p>
             )}
@@ -114,8 +114,8 @@ export function ExecutiveSummary() {
         {/* Audit Status */}
         <div className="rounded-lg border p-3 md:p-4">
           <div className="flex flex-col gap-1 mb-2 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-xs font-medium md:text-sm">Audit Completion</span>
-            <span className="text-xs text-muted-foreground md:text-sm">
+            <span className="text-sm font-medium md:text-base">Audit Completion</span>
+            <span className="text-sm text-muted-foreground md:text-base">
               {data.completedAudits}/{data.totalAudits} audits completed (
               {data.auditCompletionRate}%)
             </span>
@@ -125,17 +125,17 @@ export function ExecutiveSummary() {
 
         {/* Financial Position */}
         <div className="rounded-lg border p-3 md:p-4">
-          <div className="flex items-center gap-2 text-xs font-medium mb-3 md:text-sm">
+          <div className="flex items-center gap-2 text-sm font-medium mb-3 md:text-base">
             <Building2 className="h-4 w-4" />
             Financial Position
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground md:text-sm">CRAR</p>
+              <p className="text-sm text-muted-foreground md:text-base">CRAR</p>
               <p className="text-lg font-semibold md:text-xl">{data.crar}%</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground md:text-sm">Gross NPA</p>
+              <p className="text-sm text-muted-foreground md:text-base">Gross NPA</p>
               <p className="text-lg font-semibold md:text-xl">{data.npa}%</p>
             </div>
           </div>

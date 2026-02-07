@@ -86,7 +86,7 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.getValue("id")}</span>
+      <span className="font-mono text-sm">{row.getValue("id")}</span>
     ),
   },
   {
@@ -103,7 +103,7 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="line-clamp-2 text-xs font-medium md:text-sm">{row.getValue("title")}</span>
+      <span className="line-clamp-2 text-sm font-medium md:text-base">{row.getValue("title")}</span>
     ),
   },
   {
@@ -120,7 +120,7 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="hidden text-xs md:inline">{row.getValue("category")}</span>
+      <span className="hidden text-sm md:inline">{row.getValue("category")}</span>
     ),
     filterFn: (row, id, value) => {
       return row.getValue(id) === value;

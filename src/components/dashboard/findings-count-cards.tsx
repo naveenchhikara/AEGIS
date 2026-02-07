@@ -34,7 +34,7 @@ export function FindingsCountCards() {
               <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
                 {totalFindings}
               </div>
-              <div className="text-muted-foreground text-xs">Total</div>
+              <div className="text-muted-foreground text-sm">Total</div>
             </div>
           </div>
         </CardContent>
@@ -51,7 +51,7 @@ export function FindingsCountCards() {
               <div className="text-2xl font-bold text-red-900 dark:text-red-100">
                 {criticalFindings}
               </div>
-              <div className="text-muted-foreground text-xs">Critical</div>
+              <div className="text-muted-foreground text-sm">Critical</div>
             </div>
           </div>
         </CardContent>
@@ -68,7 +68,7 @@ export function FindingsCountCards() {
               <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">
                 {openFindings}
               </div>
-              <div className="text-muted-foreground text-xs">Open</div>
+              <div className="text-muted-foreground text-sm">Open</div>
             </div>
           </div>
         </CardContent>
@@ -85,7 +85,7 @@ export function FindingsCountCards() {
               <div className="text-destructive text-2xl font-bold">
                 {overdueFindings}
               </div>
-              <div className="text-muted-foreground text-xs">Overdue</div>
+              <div className="text-muted-foreground text-sm">Overdue</div>
             </div>
           </div>
         </CardContent>

@@ -61,7 +61,7 @@ export function RegulatoryCalendar() {
                       <span className="text-muted-foreground">{formatDate(req.dueDate)}</span>
                       <span className={relative.className}>{relative.text}</span>
                     </div>
-                    <div className="text-sm font-medium">{req.title}</div>
+                    <div className="text-base font-medium">{req.title}</div>
                     <div className="mt-1">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${

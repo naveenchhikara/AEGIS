@@ -49,7 +49,7 @@ export default function FindingsPage() {
         <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
           Audit Findings
         </h1>
-        <p className="text-xs text-muted-foreground md:text-sm">
+        <p className="text-sm text-muted-foreground md:text-base">
           {data.summary.total} findings across all audits
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function FindingsPage() {
               </div>
               <div>
                 <p className="text-lg font-bold md:text-xl">{s.count}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-sm text-muted-foreground">{s.label}</p>
               </div>
             </CardContent>
           </Card>

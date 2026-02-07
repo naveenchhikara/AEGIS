@@ -64,7 +64,7 @@ export function ComplianceTable() {
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.getValue("id")}</span>
+        <span className="font-mono text-sm">{row.getValue("id")}</span>
       ),
     },
     {
@@ -88,8 +88,8 @@ export function ComplianceTable() {
       header: "Description",
       cell: ({ row }) => (
         <div className="max-w-[200px] md:max-w-[300px]">
-          <div className="truncate font-medium text-xs md:text-sm">{row.getValue("title")}</div>
-          <div className="text-muted-foreground line-clamp-1 text-xs md:text-sm">
+          <div className="truncate font-medium text-sm md:text-base">{row.getValue("title")}</div>
+          <div className="text-muted-foreground line-clamp-1 text-sm md:text-base">
             {row.original.description}
           </div>
         </div>

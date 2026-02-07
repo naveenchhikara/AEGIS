@@ -35,7 +35,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{pendingResponse}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Pending Your Response
               </p>
             </div>
@@ -48,7 +48,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{awaitingReview}</p>
-              <p className="text-xs text-muted-foreground">Awaiting Review</p>
+              <p className="text-sm text-muted-foreground">Awaiting Review</p>
             </div>
           </CardContent>
         </Card>
@@ -59,7 +59,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{data.summary.total}</p>
-              <p className="text-xs text-muted-foreground">Total Findings</p>
+              <p className="text-sm text-muted-foreground">Total Findings</p>
             </div>
           </CardContent>
         </Card>
@@ -85,11 +85,11 @@ export default function AuditeePage() {
                     className="flex items-start justify-between gap-3 rounded-lg border p-4"
                   >
                     <div>
-                      <p className="text-sm font-medium">{f.title}</p>
-                      <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                      <p className="text-base font-medium">{f.title}</p>
+                      <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
                         {f.observation}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Due: {formatDate(f.targetDate)}
                       </p>
                     </div>

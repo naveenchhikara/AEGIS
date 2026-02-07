@@ -73,10 +73,10 @@ export function AuditCoverageChart() {
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold">
               {completed}/{auditPlans.auditPlans.length}
             </div>
-            <div className="text-muted-foreground text-xs">Audits</div>
+            <div className="text-muted-foreground text-sm">Audits</div>
           </div>
         </div>
       </div>

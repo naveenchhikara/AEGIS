@@ -61,7 +61,7 @@ export default function CompliancePage() {
         <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
           Compliance Registry
         </h1>
-        <p className="text-muted-foreground text-xs md:text-sm">
+        <p className="text-muted-foreground text-sm md:text-base">
           RBI regulatory compliance requirements tracker
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function CompliancePage() {
               </div>
               <div>
                 <p className="text-lg font-bold md:text-xl">{card.count}</p>
-                <p className="text-muted-foreground text-xs">{card.label}</p>
+                <p className="text-muted-foreground text-sm">{card.label}</p>
               </div>
             </CardContent>
           </Card>

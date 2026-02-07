@@ -38,7 +38,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
         </a>
 
         <div className="space-y-2">
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="font-mono text-sm text-muted-foreground">
             {finding.id}
           </p>
           <h1 className="text-2xl font-bold">{finding.title}</h1>
@@ -69,7 +69,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-4 text-base text-muted-foreground">
             <span>
               Assigned: <strong>{finding.assignedAuditor}</strong>
             </span>
@@ -91,7 +91,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed">{finding.observation}</p>
+          <p className="text-base leading-relaxed">{finding.observation}</p>
         </CardContent>
       </Card>
 
@@ -104,7 +104,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed">{finding.rootCause}</p>
+          <p className="text-base leading-relaxed">{finding.rootCause}</p>
         </CardContent>
       </Card>
 
@@ -117,7 +117,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed">{finding.riskImpact}</p>
+          <p className="text-base leading-relaxed">{finding.riskImpact}</p>
         </CardContent>
       </Card>
 
@@ -135,7 +135,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
               {finding.auditeeResponse}
             </p>
           ) : (
-            <p className="text-sm leading-relaxed">
+            <p className="text-base leading-relaxed">
               {finding.auditeeResponse}
             </p>
           )}
@@ -156,7 +156,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
               {finding.actionPlan}
             </p>
           ) : (
-            <p className="text-sm leading-relaxed">{finding.actionPlan}</p>
+            <p className="text-base leading-relaxed">{finding.actionPlan}</p>
           )}
         </CardContent>
       </Card>
@@ -169,18 +169,18 @@ export function FindingDetail({ finding }: FindingDetailProps) {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-1">
                 Related RBI Circular
               </p>
-              <p className="font-mono text-sm text-primary">
+              <p className="font-mono text-base text-primary">
                 {finding.relatedCircular}
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-1">
                 Related Requirement
               </p>
-              <p className="font-mono text-sm">{finding.relatedRequirement}</p>
+              <p className="font-mono text-base">{finding.relatedRequirement}</p>
             </div>
           </div>
         </CardContent>

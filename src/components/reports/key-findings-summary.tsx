@@ -91,21 +91,21 @@ export function KeyFindingsSummary() {
                     {/* Content */}
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-sm leading-tight">
+                        <p className="font-medium text-base leading-tight">
                           {finding.title}
                         </p>
                         {finding.isOverdue && (
-                          <Badge className="shrink-0 bg-red-600 text-white border-red-600 text-[10px]">
+                          <Badge className="shrink-0 bg-red-600 text-white border-red-600 text-xs">
                             OVERDUE
                           </Badge>
                         )}
                       </div>
 
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {finding.observation}
                       </p>
 
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:gap-3">
+                      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:gap-3">
                         <span className="hidden sm:inline">{finding.assignedAuditor}</span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -113,7 +113,7 @@ export function KeyFindingsSummary() {
                         </span>
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0"
+                          className="text-xs px-1.5 py-0"
                         >
                           {finding.status}
                         </Badge>

@@ -43,7 +43,7 @@ export function LoginForm() {
               <span className="text-xl font-bold tracking-wide text-foreground">
                 AEGIS
               </span>
-              <span className="text-[11px] tracking-widest text-muted-foreground">
+              <span className="text-xs tracking-widest text-muted-foreground">
                 SAPIEX TECHNOLOGY
               </span>
             </div>
@@ -132,15 +132,15 @@ export function LoginForm() {
 
           {/* Trust indicators */}
           <div className="mt-4 flex items-center justify-center gap-3">
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Lock className="h-3 w-3" />
               <span>256-bit Encryption</span>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               <span>RBI Compliant</span>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               <span>SOC 2 Certified</span>
             </div>

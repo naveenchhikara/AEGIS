@@ -91,7 +91,7 @@ export function AuditCalendar({
         return (
           <Card key={monthKey}>
             <CardHeader className="p-3 pb-1 sm:pb-2">
-              <CardTitle className="text-muted-foreground text-[10px] font-medium sm:text-xs">
+              <CardTitle className="text-muted-foreground text-xs font-medium sm:text-sm">
                 {monthData.label}
               </CardTitle>
             </CardHeader>
@@ -102,7 +102,7 @@ export function AuditCalendar({
                     <div
                       key={audit.id}
                       className={cn(
-                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 bg-muted/30 px-2 py-1.5 text-xs font-medium transition-colors duration-150 sm:py-1",
+                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 bg-muted/30 px-2 py-1.5 text-sm font-medium transition-colors duration-150 sm:py-1",
                         AUDIT_STATUS_BORDER[audit.status],
                       )}
                       role="button"

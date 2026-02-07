@@ -13,7 +13,7 @@ export default function DashboardPage() {
       {/* Page header */}
       <div>
         <h1 className="text-lg font-semibold tracking-tight md:text-2xl">Dashboard</h1>
-        <p className="text-muted-foreground text-xs md:text-sm">
+        <p className="text-muted-foreground text-sm md:text-base">
           Audit & compliance overview for Apex Sahakari Bank Ltd
         </p>
       </div>

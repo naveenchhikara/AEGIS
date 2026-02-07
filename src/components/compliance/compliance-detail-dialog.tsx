@@ -65,7 +65,7 @@ export function ComplianceDetailDialog({
         <DialogHeader>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground font-mono text-xs">
+              <span className="text-muted-foreground font-mono text-sm">
                 {requirement.id}
               </span>
               <Badge className={STATUS_COLORS[requirement.status]}>
@@ -84,13 +84,13 @@ export function ComplianceDetailDialog({
           {/* Details Grid */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Category
               </div>
               <div>{categoryDisplay}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Priority
               </div>
               <Badge className={PRIORITY_COLORS[requirement.priority]}>
@@ -99,25 +99,25 @@ export function ComplianceDetailDialog({
               </Badge>
             </div>
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Assigned To
               </div>
               <div>{requirement.assignedToName}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Due Date
               </div>
               <div>{formatDate(requirement.dueDate)}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Last Review
               </div>
               <div>{formatDate(requirement.lastReviewDate)}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Next Review
               </div>
               <div>{formatDate(requirement.nextReviewDate)}</div>
@@ -126,19 +126,19 @@ export function ComplianceDetailDialog({
 
           {/* Reference */}
           <div className="space-y-1">
-            <div className="text-muted-foreground text-sm font-medium">
+            <div className="text-muted-foreground text-base font-medium">
               Reference
             </div>
-            <div className="font-mono text-sm">{requirement.reference}</div>
+            <div className="font-mono text-base">{requirement.reference}</div>
           </div>
 
           {/* Notes */}
           {requirement.notes && (
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm font-medium">
+              <div className="text-muted-foreground text-base font-medium">
                 Notes
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-muted-foreground text-base">
                 {requirement.notes}
               </div>
             </div>
@@ -146,7 +146,7 @@ export function ComplianceDetailDialog({
 
           {/* Evidence */}
           <div className="space-y-3">
-            <div className="text-sm font-medium">
+            <div className="text-base font-medium">
               Evidence ({requirement.evidenceCount} documents)
             </div>
             {requirement.evidenceCount > 0 ? (
@@ -155,7 +155,7 @@ export function ComplianceDetailDialog({
                   (_, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 rounded-md border p-2 text-sm"
+                      className="flex items-center gap-2 rounded-md border p-2 text-base"
                     >
                       <FileText className="text-muted-foreground h-4 w-4" />
                       <span>{EVIDENCE_NAMES[index % EVIDENCE_NAMES.length]}.pdf</span>

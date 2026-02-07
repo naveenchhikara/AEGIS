@@ -49,15 +49,23 @@ export function LoginForm() {
       <Card className="w-full border-0 bg-white/70 shadow-xl shadow-slate-200/50 backdrop-blur-md">
         <CardContent className="p-8">
           {/* Logo */}
-          <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="mb-8 flex flex-col items-center gap-2">
             <Image
-              src="/logos/aegis-logo.png"
+              src="/logos/aegis-mark.png"
               alt="AEGIS"
-              width={180}
-              height={60}
-              className="h-14 w-auto"
+              width={56}
+              height={56}
+              className="h-14 w-14"
               priority
             />
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold tracking-wide text-foreground">
+                AEGIS
+              </span>
+              <span className="text-[11px] tracking-widest text-muted-foreground">
+                SAPIEX TECHNOLOGY
+              </span>
+            </div>
             <p className="text-center text-sm text-muted-foreground">
               Audit & Compliance Platform for UCBs
             </p>

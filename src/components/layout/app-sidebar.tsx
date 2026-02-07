@@ -31,25 +31,24 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 function SidebarLogo() {
   const { state } = useSidebar();
   return (
-    <Link href="/dashboard" className="flex items-center gap-2 px-2 py-1">
-      {state === "expanded" ? (
-        <Image
-          src="/logos/aegis-logo.png"
-          alt="AEGIS"
-          width={140}
-          height={40}
-          className="h-8 w-auto brightness-0 invert"
-          priority
-        />
-      ) : (
-        <Image
-          src="/logos/aegis-mark.png"
-          alt="AEGIS"
-          width={28}
-          height={28}
-          className="h-7 w-7 brightness-0 invert"
-          priority
-        />
+    <Link href="/dashboard" className="flex items-center gap-2.5">
+      <Image
+        src="/logos/aegis-mark.png"
+        alt="AEGIS"
+        width={36}
+        height={36}
+        className="h-9 w-9 shrink-0"
+        priority
+      />
+      {state === "expanded" && (
+        <div className="flex flex-col">
+          <span className="text-sm font-bold tracking-wide text-sidebar-foreground">
+            AEGIS
+          </span>
+          <span className="text-[10px] tracking-wider text-sidebar-foreground/60">
+            SAPIEX TECHNOLOGY
+          </span>
+        </div>
       )}
     </Link>
   );

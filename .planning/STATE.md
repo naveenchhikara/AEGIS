@@ -33,6 +33,14 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 02-01: Dependencies and Data Expansion
+  - Installed recharts 3.7.0, @tanstack/react-table 8.21.3, react-is 19.2.4
+  - Installed shadcn chart component (ChartContainer, ChartTooltip, ChartConfig)
+  - Installed 6 shadcn/ui primitives (select, tabs, popover, scroll-area, progress, checkbox)
+  - Expanded compliance requirements from 15 to 55 requirements across 6 categories
+  - Added 18 Phase 2 icons to barrel export
+  - Fixed TypeScript compatibility in chart component for recharts 3.7.0
+  - Build passes successfully
 - Completed 02-05: Responsive Layout & Loading States
   - NAV-02: Top bar with user profile dropdown, language switcher, and notifications bell
   - NAV-03: Sidebar collapses to hamburger menu on mobile via shadcn Sheet component
@@ -173,6 +181,13 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 7. **Keyboard Navigation:** NavigationMenu supports keyboard navigation (Tab, Arrow keys, Enter, Space)
 8. **Mobile Drawer:** SidebarTrigger opens Sheet on mobile, closes on click outside
 
+### From Phase 2 Plan 1
+
+1. **shadcn ChartContainer Pattern:** Use shadcn ChartContainer instead of raw Recharts ResponsiveContainer for all charts - provides themed tooltips, CSS variable colors, and accessibility layer
+2. **react-is Direct Dependency:** Install react-is explicitly as direct dependency - recharts 3.7.0 lists it as peer dependency, pnpm requires explicit install
+3. **Category Simplification:** Map RBI compliance regulations to 6 simplified categories (market-risk, risk-management, credit, governance, operations, it) for cleaner Phase 2 filtering
+4. **Realistic Compliance Data:** Maintain status distribution (30 compliant, 16 partial, 5 non-compliant, 4 pending) reflecting typical UCB scenario for prototype demonstrations
+
 ### From Phase 2 Plan 5
 
 1. **Mobile-First Responsive Design:** Hide non-essential elements on mobile (bank name with hidden md:block)
@@ -196,7 +211,7 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 02-05-PLAN.md (Responsive Layout & Loading States)
+**Stopped at:** Completed 02-01-PLAN.md (Dependencies and Data Expansion)
 **Resume file:** None
 
 ---

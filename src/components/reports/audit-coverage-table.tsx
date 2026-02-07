@@ -49,6 +49,7 @@ export function AuditCoverageTable() {
       </CardHeader>
 
       <CardContent>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -102,6 +103,7 @@ export function AuditCoverageTable() {
             </TableRow>
           </TableFooter>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

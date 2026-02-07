@@ -44,26 +44,26 @@ const severityCards = [
 
 export default function FindingsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
           Audit Findings
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground md:text-sm">
           {data.summary.total} findings across all audits
         </p>
       </div>
 
-      {/* Severity distribution */}
-      <div className="grid gap-3 sm:grid-cols-4">
+      {/* Severity distribution — 2 cols mobile, 4 cols sm+ */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {severityCards.map((s) => (
           <Card key={s.label}>
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className={`rounded-lg p-2 ${s.bg}`}>
+            <CardContent className="flex items-center gap-2 p-3 md:gap-3 md:p-4">
+              <div className={`rounded-lg p-1.5 md:p-2 ${s.bg}`}>
                 <s.icon className={`h-4 w-4 ${s.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold">{s.count}</p>
+                <p className="text-lg font-bold md:text-xl">{s.count}</p>
                 <p className="text-xs text-muted-foreground">{s.label}</p>
               </div>
             </CardContent>

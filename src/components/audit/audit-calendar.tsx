@@ -83,26 +83,26 @@ export function AuditCalendar({
   };
 
   return (
-    <div className="grid grid-cols-3 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4">
       {FY_MONTHS.map((monthData) => {
         const monthKey = `${monthData.year}-${monthData.month}`;
         const monthAudits = auditsByMonth[monthKey] || [];
 
         return (
           <Card key={monthKey}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-muted-foreground text-xs font-medium">
+            <CardHeader className="p-3 pb-1 sm:pb-2">
+              <CardTitle className="text-muted-foreground text-[10px] font-medium sm:text-xs">
                 {monthData.label}
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="p-3 pt-0">
               {monthAudits.length > 0 ? (
                 <div className="space-y-1.5">
                   {monthAudits.map((audit) => (
                     <div
                       key={audit.id}
                       className={cn(
-                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 px-2 py-1 text-xs transition-colors duration-150",
+                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 px-2 py-1.5 text-xs transition-colors duration-150 sm:py-1",
                         AUDIT_STATUS_BORDER[audit.status],
                       )}
                       role="button"

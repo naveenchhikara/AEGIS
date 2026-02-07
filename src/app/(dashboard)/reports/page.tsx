@@ -12,14 +12,14 @@ const bank = bankProfile as unknown as BankProfile;
 
 export default function ReportsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Report Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
             Board Report
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground md:text-sm">
             {bank.name} | Internal Audit Report &mdash; Q3 FY 2025-26
           </p>
         </div>
@@ -27,7 +27,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Body */}
-      <div className="print-report space-y-6">
+      <div className="print-report space-y-4 md:space-y-6">
         <ExecutiveSummary />
 
         <Separator />

@@ -54,27 +54,27 @@ export default function AuditPlansPage() {
       : data.auditPlans.filter((a) => a.type === typeFilter);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
           Audit Planning
         </h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs md:text-sm">
           Annual audit plan and engagement tracking
         </p>
       </div>
 
-      {/* Summary cards row */}
-      <div className="grid gap-3 sm:grid-cols-4">
+      {/* Summary cards row — 2 cols mobile, 4 cols sm+ */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.label}>
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className={`rounded-lg p-2 ${card.bg}`}>
+            <CardContent className="flex items-center gap-2 p-3 md:gap-3 md:p-4">
+              <div className={`rounded-lg p-1.5 md:p-2 ${card.bg}`}>
                 <card.icon className={`h-4 w-4 ${card.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold">{card.count}</p>
+                <p className="text-lg font-bold md:text-xl">{card.count}</p>
                 <p className="text-muted-foreground text-xs">{card.label}</p>
               </div>
             </CardContent>
@@ -98,7 +98,7 @@ export default function AuditPlansPage() {
           onAuditClick={setSelectedAudit}
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
           {filteredAudits.length > 0 ? (
             filteredAudits.map((audit) => (
               <EngagementCard
@@ -108,7 +108,7 @@ export default function AuditPlansPage() {
               />
             ))
           ) : (
-            <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-8 text-center">
+            <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-6 text-center text-sm md:p-8">
               No audits match the selected filter
             </div>
           )}

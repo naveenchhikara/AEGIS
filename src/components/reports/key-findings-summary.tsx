@@ -73,10 +73,10 @@ export function KeyFindingsSummary() {
                 {group.map((finding) => (
                   <div
                     key={finding.id}
-                    className={`flex gap-3 rounded-lg border border-l-4 p-3 ${SEVERITY_SECTION_STYLES[finding.severity] || ""}`}
+                    className={`flex gap-2 rounded-lg border border-l-4 p-2 sm:gap-3 sm:p-3 ${SEVERITY_SECTION_STYLES[finding.severity] || ""}`}
                   >
                     {/* Severity Badge */}
-                    <div className="shrink-0 pt-0.5">
+                    <div className="hidden shrink-0 pt-0.5 sm:block">
                       <Badge
                         className={
                           SEVERITY_COLORS[
@@ -105,8 +105,8 @@ export function KeyFindingsSummary() {
                         {finding.observation}
                       </p>
 
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{finding.assignedAuditor}</span>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:gap-3">
+                        <span className="hidden sm:inline">{finding.assignedAuditor}</span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatDate(finding.targetDate)}

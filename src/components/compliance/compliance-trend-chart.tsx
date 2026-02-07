@@ -42,7 +42,7 @@ export function ComplianceTrendChart() {
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="min-h-[200px] w-full"
+          className="min-h-[180px] w-full md:min-h-[200px]"
           aria-label="Compliance health trend chart showing scores from August 2025 to January 2026"
         >
           <AreaChart data={trendData} accessibilityLayer>

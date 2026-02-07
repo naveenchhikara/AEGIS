@@ -80,24 +80,25 @@ export function ComplianceScorecard() {
 
       <CardContent className="space-y-6">
         {/* Overall Score */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <p
             className={cn(
-              "text-4xl font-bold",
+              "text-3xl font-bold md:text-4xl",
               getScoreColor(scorecard.overallScore),
             )}
           >
             {scorecard.overallScore}%
           </p>
           <div>
-            <p className="text-sm font-medium">Overall Compliance Score</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs font-medium md:text-sm">Overall Compliance Score</p>
+            <p className="text-xs text-muted-foreground md:text-sm">
               {scorecard.totalRequirements} total requirements assessed
             </p>
           </div>
         </div>
 
         {/* Category Breakdown Table */}
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -139,6 +140,7 @@ export function ComplianceScorecard() {
             ))}
           </TableBody>
         </Table>
+        </div>
 
         {/* Visual Stacked Bars per Category */}
         <div className="space-y-3">

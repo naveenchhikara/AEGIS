@@ -47,9 +47,7 @@ export function AuditFilterBar({
           variant="ghost"
           size="icon"
           onClick={() => onViewModeChange("calendar")}
-          className={
-            viewMode === "calendar" ? "bg-accent text-accent-foreground" : ""
-          }
+          className={`h-10 w-10 md:h-9 md:w-9 ${viewMode === "calendar" ? "bg-accent text-accent-foreground" : ""}`}
           aria-label="Calendar view"
           aria-pressed={viewMode === "calendar"}
         >
@@ -59,9 +57,7 @@ export function AuditFilterBar({
           variant="ghost"
           size="icon"
           onClick={() => onViewModeChange("cards")}
-          className={
-            viewMode === "cards" ? "bg-accent text-accent-foreground" : ""
-          }
+          className={`h-10 w-10 md:h-9 md:w-9 ${viewMode === "cards" ? "bg-accent text-accent-foreground" : ""}`}
           aria-label="Card grid view"
           aria-pressed={viewMode === "cards"}
         >

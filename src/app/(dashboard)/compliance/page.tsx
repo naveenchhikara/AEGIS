@@ -55,27 +55,27 @@ const summaryCards = [
 
 export default function CompliancePage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
           Compliance Registry
         </h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs md:text-sm">
           RBI regulatory compliance requirements tracker
         </p>
       </div>
 
-      {/* Summary cards row */}
-      <div className="grid gap-3 sm:grid-cols-5">
+      {/* Summary cards row — 2 cols mobile, 3 cols sm, 5 cols md+ */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {summaryCards.map((card) => (
           <Card key={card.label}>
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className={`rounded-lg p-2 ${card.bg}`}>
+            <CardContent className="flex items-center gap-2 p-3 md:gap-3 md:p-4">
+              <div className={`rounded-lg p-1.5 md:p-2 ${card.bg}`}>
                 <card.icon className={`h-4 w-4 ${card.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold">{card.count}</p>
+                <p className="text-lg font-bold md:text-xl">{card.count}</p>
                 <p className="text-muted-foreground text-xs">{card.label}</p>
               </div>
             </CardContent>
@@ -83,8 +83,8 @@ export default function CompliancePage() {
         ))}
       </div>
 
-      {/* Main content - Table (2 cols) and Trend Chart (1 col) */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* Main content - stacked on mobile, 2+1 cols on desktop */}
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ComplianceTable />
         </div>

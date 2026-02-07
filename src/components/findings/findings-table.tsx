@@ -103,7 +103,7 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="text-sm font-medium">{row.getValue("title")}</span>
+      <span className="line-clamp-2 text-xs font-medium md:text-sm">{row.getValue("title")}</span>
     ),
   },
   {

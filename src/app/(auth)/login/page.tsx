@@ -8,11 +8,10 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-md px-4">
+    <div className="w-full flex flex-col items-center">
       <LoginForm />
-      <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p>&copy; 2026 {process.env.NEXT_PUBLIC_APP_NAME || "AEGIS"}. All rights reserved.</p>
-        <p className="mt-1 text-xs">UCB Internal Audit & Compliance Platform</p>
+      <footer className="mt-8 text-center text-xs text-muted-foreground">
+        <p>&copy; 2026 AEGIS. All rights reserved.</p>
       </footer>
     </div>
   );

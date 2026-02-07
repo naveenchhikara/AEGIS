@@ -169,7 +169,14 @@
 13. Demo works on tablets
 14. Demo script is ready (15-min and 30-min versions)
 
-**Plans:** (to be planned)
+**Plans:**
+- [ ] 04-01-PLAN.md — i18n Foundation with next-intl
+- [ ] 04-02-PLAN.md — Translation Content for All UI Labels
+- [ ] 04-03-PLAN.md — Language Switcher UI Component
+- [ ] 04-04-PLAN.md — Responsive Design Polish
+- [ ] 04-05-PLAN.md — AWS Infrastructure Setup
+- [ ] 04-06-PLAN.md — SSL Certificate and Domain Configuration
+- [ ] 04-07-PLAN.md — Application Deployment and Demo Preparation
 
 **Key Tasks:**
 - Set up i18n framework (next-intl)
@@ -200,4 +207,5 @@
 ---
 
 *Roadmap created: February 7, 2026*
-*Updated: February 7, 2026 — Phase 1 revised to 10 plans (split for scope)*
+*Updated: February 7, 2026 — Phase 1 plans created*
+*Updated: February 7, 2026 — Phase 4 plans created*

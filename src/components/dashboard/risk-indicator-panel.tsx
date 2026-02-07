@@ -28,6 +28,7 @@ const overdueFindings = findingsData.findings.filter(
 let riskLevel = "Low Risk";
 let riskColor =
   "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-100 dark:border-green-700";
+let riskBorderColor = "border-l-green-500";
 let riskIcon = (
   <TrendingUp className="h-5 w-5 text-green-700 dark:text-green-300" />
 );
@@ -36,11 +37,13 @@ if (criticalFindingsOpen > 0) {
   riskLevel = "High Risk";
   riskColor =
     "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-100 dark:border-red-700";
+  riskBorderColor = "border-l-red-500";
   riskIcon = <CircleAlert className="h-5 w-5 text-red-700 dark:text-red-300" />;
 } else if (highFindingsOpen > 2) {
   riskLevel = "Medium-High Risk";
   riskColor =
     "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-100 dark:border-orange-700";
+  riskBorderColor = "border-l-orange-500";
   riskIcon = (
     <CircleAlert className="h-5 w-5 text-orange-700 dark:text-orange-300" />
   );
@@ -48,6 +51,7 @@ if (criticalFindingsOpen > 0) {
   riskLevel = "Medium Risk";
   riskColor =
     "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-100 dark:border-amber-700";
+  riskBorderColor = "border-l-amber-500";
   riskIcon = (
     <CircleAlert className="h-5 w-5 text-amber-700 dark:text-amber-300" />
   );
@@ -55,7 +59,7 @@ if (criticalFindingsOpen > 0) {
 
 export function RiskIndicatorPanel() {
   return (
-    <Card>
+    <Card className={`border-l-4 ${riskBorderColor}`}>
       <CardHeader>
         <CardTitle>Risk Overview</CardTitle>
       </CardHeader>

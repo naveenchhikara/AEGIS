@@ -19,20 +19,22 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 1 — Key Metrics (1 col mobile, 2 col tablet, 3 col desktop) */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="animate-fade-in-up grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <HealthScoreCard />
         <AuditCoverageChart />
         <FindingsCountCards />
       </div>
 
       {/* Row 2 — Risk & Timeline (1 col mobile, 2 col tablet+) */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="animate-fade-in-up delay-2 grid gap-4 md:grid-cols-2">
         <RiskIndicatorPanel />
         <RegulatoryCalendar />
       </div>
 
       {/* Row 3 — Actions (full width) */}
-      <QuickActions />
+      <div className="animate-fade-in-up delay-3">
+        <QuickActions />
+      </div>
     </div>
   );
 }

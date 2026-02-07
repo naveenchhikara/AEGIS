@@ -102,7 +102,7 @@ export function AuditCalendar({
                     <div
                       key={audit.id}
                       className={cn(
-                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 px-2 py-1.5 text-xs transition-colors duration-150 sm:py-1",
+                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 bg-muted/30 px-2 py-1.5 text-xs font-medium transition-colors duration-150 sm:py-1",
                         AUDIT_STATUS_BORDER[audit.status],
                       )}
                       role="button"
@@ -116,7 +116,7 @@ export function AuditCalendar({
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-xs">--</p>
+                <div className="min-h-[2rem]" />
               )}
             </CardContent>
           </Card>

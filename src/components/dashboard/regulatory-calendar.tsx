@@ -10,6 +10,19 @@ import { formatDate } from "@/lib/utils";
 
 const compData = demoComplianceRequirements as unknown as ComplianceData;
 
+function getRelativeLabel(dueDate: string): { text: string; className: string } {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return { text: "Overdue", className: "text-red-600 dark:text-red-400 font-medium" };
+  if (diffDays === 0) return { text: "Due today", className: "text-red-600 dark:text-red-400 font-medium" };
+  if (diffDays <= 7) return { text: `Due in ${diffDays}d`, className: "text-amber-600 dark:text-amber-400 font-medium" };
+  return { text: `Due in ${diffDays}d`, className: "text-muted-foreground" };
+}
+
 // Sort by due date and get upcoming deadlines
 const upcomingDeadlines = compData.complianceRequirements
   .filter((req) => req.dueDate && req.status !== "compliant")
@@ -37,13 +50,16 @@ export function RegulatoryCalendar() {
                   statusColors[req.status as keyof typeof statusColors] ||
                   "border-l-blue-500";
 
+                const relative = getRelativeLabel(req.dueDate);
+
                 return (
                   <li
                     key={req.id}
                     className={`hover:bg-muted/50 cursor-pointer border-l-2 pl-3 transition-colors duration-150 ${borderClass}`}
                   >
-                    <div className="text-muted-foreground text-xs">
-                      {formatDate(req.dueDate)}
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">{formatDate(req.dueDate)}</span>
+                      <span className={relative.className}>{relative.text}</span>
                     </div>
                     <div className="text-sm font-medium">{req.title}</div>
                     <div className="mt-1">

@@ -24,7 +24,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Bank Profile */}
-      <Card>
+      <Card className="animate-fade-in-up">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Building2 className="h-4 w-4" />
@@ -84,7 +84,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Staff Summary */}
-      <Card>
+      <Card className="animate-fade-in-up delay-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="h-4 w-4" />
@@ -116,7 +116,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Placeholder sections */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="animate-fade-in-up delay-2 grid gap-4 md:grid-cols-3">
         {[
           {
             title: "Security",
@@ -134,14 +134,14 @@ export default function SettingsPage() {
             desc: "Core banking system, email gateway, SMS provider",
           },
         ].map((section) => (
-          <Card key={section.title}>
+          <Card key={section.title} className="border-dashed">
             <CardContent className="p-5">
               <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <section.icon className="h-8 w-8 text-muted-foreground/30" />
+                <section.icon className="h-8 w-8 text-muted-foreground/50" />
                 <p className="font-medium">{section.title}</p>
                 <p className="text-xs text-muted-foreground">{section.desc}</p>
                 <p className="mt-2 text-xs text-muted-foreground/60">
-                  Coming in Phase 2
+                  Planned
                 </p>
               </div>
             </CardContent>

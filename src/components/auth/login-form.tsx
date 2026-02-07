@@ -129,6 +129,22 @@ export function LoginForm() {
               email and password to access the dashboard
             </p>
           </div>
+
+          {/* Trust indicators */}
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              <span>256-bit Encryption</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Shield className="h-3 w-3" />
+              <span>RBI Compliant</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Shield className="h-3 w-3" />
+              <span>SOC 2 Certified</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

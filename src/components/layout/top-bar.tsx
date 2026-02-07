@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -17,22 +18,35 @@ import { currentUser } from "@/lib/current-user";
 import { bankProfile } from "@/data";
 import type { BankProfile } from "@/types";
 import Link from "next/link";
+import { navItems } from "@/lib/nav-items";
 
 const bank = bankProfile as unknown as BankProfile;
 
 export function TopBar() {
   const [language, setLanguage] = useState<LanguageCode>("en");
   const currentLang = LANGUAGES.find((l) => l.code === language)!;
+  const pathname = usePathname();
+
+  // Derive page name from pathname using navItems
+  const currentPage = navItems.find((item) => pathname.startsWith(item.href))?.title;
 
   return (
     <header className="bg-background flex h-14 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
 
-      {/* Bank name - hidden on mobile to save space */}
-      <h2 className="text-foreground hidden text-base font-bold tracking-tight md:block">
-        {bank.name}
-      </h2>
+      {/* Bank name + breadcrumb - hidden on mobile to save space */}
+      <div className="hidden items-center gap-2 md:flex">
+        <h2 className="text-foreground text-base font-bold tracking-tight">
+          {bank.name}
+        </h2>
+        {currentPage && (
+          <>
+            <span className="text-muted-foreground/50">/</span>
+            <span className="text-sm text-muted-foreground">{currentPage}</span>
+          </>
+        )}
+      </div>
 
       <div className="ml-auto flex items-center gap-1">
         {/* Language switcher */}

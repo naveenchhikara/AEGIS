@@ -58,9 +58,9 @@ function calculateAge(createdAt: string): number {
 }
 
 function ageColorClass(days: number): string {
-  if (days > 90) return "text-red-600 font-medium";
-  if (days > 60) return "text-amber-600 font-medium";
-  if (days < 30) return "text-green-600";
+  if (days > 180) return "text-red-600 font-medium";
+  if (days > 120) return "text-amber-600 font-medium";
+  if (days <= 60) return "text-green-600";
   return "text-muted-foreground";
 }
 

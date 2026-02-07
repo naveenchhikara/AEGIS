@@ -25,6 +25,15 @@ const CATEGORY_MAP: Record<string, string> = {
   "market-risk": "Market Risk",
 };
 
+const EVIDENCE_NAMES = [
+  "CRAR Computation Sheet",
+  "Board Resolution",
+  "RBI Return Filing",
+  "Internal Audit Report",
+  "Policy Document",
+  "Compliance Certificate",
+];
+
 const PRIORITY_COLORS = {
   critical: "bg-red-100 text-red-800 border-red-200",
   high: "bg-orange-100 text-orange-800 border-orange-200",
@@ -149,7 +158,7 @@ export function ComplianceDetailDialog({
                       className="flex items-center gap-2 rounded-md border p-2 text-sm"
                     >
                       <FileText className="text-muted-foreground h-4 w-4" />
-                      <span>Evidence Document {index + 1}</span>
+                      <span>{EVIDENCE_NAMES[index % EVIDENCE_NAMES.length]}.pdf</span>
                     </div>
                   ),
                 )}

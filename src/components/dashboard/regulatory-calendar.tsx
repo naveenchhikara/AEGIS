@@ -6,6 +6,7 @@ import type { ComplianceData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowRight } from "@/lib/icons";
+import { formatDate } from "@/lib/utils";
 
 const compData = demoComplianceRequirements as unknown as ComplianceData;
 
@@ -42,7 +43,7 @@ export function RegulatoryCalendar() {
                     className={`hover:bg-muted/50 cursor-pointer border-l-2 pl-3 transition-colors duration-150 ${borderClass}`}
                   >
                     <div className="text-muted-foreground text-xs">
-                      {req.dueDate}
+                      {formatDate(req.dueDate)}
                     </div>
                     <div className="text-sm font-medium">{req.title}</div>
                     <div className="mt-1">

@@ -112,7 +112,7 @@ const columns: ColumnDef<Finding>[] = [
       <Button
         variant="ghost"
         size="sm"
-        className="-ml-3"
+        className="-ml-3 hidden md:flex"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Category
@@ -120,7 +120,7 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="text-xs">{row.getValue("category")}</span>
+      <span className="hidden text-xs md:inline">{row.getValue("category")}</span>
     ),
     filterFn: (row, id, value) => {
       return row.getValue(id) === value;

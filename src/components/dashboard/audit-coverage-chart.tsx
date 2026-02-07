@@ -71,7 +71,7 @@ export function AuditCoverageChart() {
             <ChartTooltip content={<ChartTooltipContent />} />
           </PieChart>
         </ChartContainer>
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-2xl font-bold">
               {completed}/{auditPlans.auditPlans.length}

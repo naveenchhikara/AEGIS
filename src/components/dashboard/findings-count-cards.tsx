@@ -27,7 +27,7 @@ export function FindingsCountCards() {
         className="border-blue-200 bg-blue-50/50 dark:border-blue-900/50 dark:bg-blue-950/20"
         aria-label="Total findings: {totalFindings}"
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <div>
@@ -44,7 +44,7 @@ export function FindingsCountCards() {
         className="border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/20"
         aria-label={`Critical findings: ${criticalFindings}`}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <CircleAlert className="h-5 w-5 text-red-600 dark:text-red-400" />
             <div>
@@ -61,7 +61,7 @@ export function FindingsCountCards() {
         className="border-amber-200 bg-amber-50/50 dark:border-amber-900/50 dark:bg-amber-950/20"
         aria-label={`Open findings: ${openFindings}`}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             <div>
@@ -78,7 +78,7 @@ export function FindingsCountCards() {
         className="bg-destructive/10 border-destructive/50 dark:bg-destructive/20"
         aria-label={`Overdue findings: ${overdueFindings}`}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <Clock className="text-destructive h-5 w-5" />
             <div>

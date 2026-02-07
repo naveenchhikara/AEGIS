@@ -17,15 +17,15 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 ## Progress
 
-| Phase | Status | Plans       | Progress |
-| ----- | ------ | ----------- | -------- | ---- |
-|       | 1      | Complete    | 3/10     | 100% |
-|       | 2      | In Progress | 2/6      | 33%  |
-|       | 3      | Planned     | 7/7      | 0%   |
-|       | 4      | Planned     | 7/7      | 0%   |
+| Phase | Status      | Plans | Progress |
+| ----- | ----------- | ----- | -------- |
+| 1     | Complete    | 3/10  | 100%     |
+| 2     | In Progress | 3/6   | 50%      |
+| 3     | Planned     | 7/7   | 0%       |
+| 4     | Planned     | 7/7   | 0%       |
 
-**Overall:** 5/30 plans complete (17%)
-████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 17%
+**Overall:** 6/30 plans complete (20%)
+██████████████░░░░░░░░░░░░░░░░░░░░░░░░░ 20%
 
 ---
 

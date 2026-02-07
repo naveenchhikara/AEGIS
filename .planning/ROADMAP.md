@@ -41,6 +41,15 @@
 11. RBI circular PDFs are catalogued for reference
 12. Common RBI observations are documented for finding generation
 
+**Plans:**
+- [ ] 01-01-PLAN.md — Foundation: Types, RBI circulars index, common observations
+- [ ] 01-02-PLAN.md — Initialize Next.js 14 with App Router
+- [ ] 01-03-PLAN.md — Install shadcn/ui components and create project structure
+- [ ] 01-04-PLAN.md — Create login screen with authentication layout
+- [ ] 01-05-PLAN.md — Create dashboard layout with sidebar and top bar
+- [ ] 01-06-PLAN.md — Create placeholder pages for all 7 routes
+- [ ] 01-07-PLAN.md — Create all demo data files for Sahyadri UCB
+
 **Key Tasks:**
 - Initialize Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Install and configure shadcn/ui
@@ -86,6 +95,8 @@
 20. Loading states show during navigation
 21. Dashboard requirement references updated (removed DASH-07 reference to DAKSH quick action)
 
+**Plans:** (to be planned)
+
 **Key Tasks:**
 - Build CEO dashboard with all widgets
 - Implement Recharts for visualizations
@@ -121,6 +132,8 @@
 13. All audit-related data loads from JSON
 14. Board report data aggregates correctly
 
+**Plans:** (to be planned)
+
 **Key Tasks:**
 - Build findings list table with advanced filters
 - Build finding detail page with timeline
@@ -153,6 +166,8 @@
 13. Demo works on tablets
 14. Demo script is ready (15-min and 30-min versions)
 
+**Plans:** (to be planned)
+
 **Key Tasks:**
 - Set up i18n framework (next-intl)
 - Create translation files for EN/HI/MR/GU
@@ -182,3 +197,4 @@
 ---
 
 *Roadmap created: February 7, 2026*
+*Updated: February 7, 2026 — Phase 1 plans created*

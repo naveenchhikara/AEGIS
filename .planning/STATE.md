@@ -21,11 +21,11 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | ----- | ----------- | ----- | -------- |
 | 1     | Complete    | 3/10  | 100%     |
 | 2     | In Progress | 3/6   | 50%      |
-| 3     | In Progress | 1/5   | 20%      |
+| 3     | In Progress | 2/5   | 40%      |
 | 4     | Planned     | 0/0   | 0%       |
 
-**Overall:** 7/28 plans complete (25%)
-█████████████████░░░░░░░░░░░░░░░░░░░░░░ 25%
+**Overall:** 8/28 plans complete (29%)
+███████████████████░░░░░░░░░░░░░░░░░░░░ 29%
 
 ---
 
@@ -33,6 +33,14 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 03-01: Demo Data Expansion (Findings and Compliance)
+  - Expanded findings from 10 to 35 with RBI-style observations across 9 categories
+  - Categories include: Capital Adequacy, ALM, Cyber Security, Credit Risk, Operations, Governance, Treasury, PSL, Deposit Operations
+  - Severity distribution: 3 critical, 8 high, 14 medium, 10 low
+  - Status distribution: 5 draft, 6 submitted, 7 reviewed, 9 responded, 8 closed
+  - Each finding has complete timeline events (1-5 per finding)
+  - Compliance requirements confirmed at 55 (already expanded in Phase 2 Plan 1, exceeds 50 target)
+  - pnpm build passes
 - Completed 03-02: Board Report Data Utilities and Section Components
   - Created report-utils.ts with 5 data aggregation functions (getExecutiveSummary, getAuditCoverage, getTopFindings, getComplianceScorecard, getRecommendations)
   - All functions import demo data from @/data and export typed interfaces
@@ -256,6 +264,12 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 4. **Audit Completion Excludes Cancelled:** Cancelled audits excluded from completion rate denominator for accurate percentage
 5. **Auto-Generated Recommendations:** Recommendations derived from critical/high findings grouped by category with earliest target date
 
+### From Phase 3 Plan 1
+
+1. **Compliance data preserved from Phase 2:** Compliance requirements already at 55 entries from Phase 2 Plan 1 expansion. Not modified to avoid destroying existing data that components depend on.
+2. **Finding category naming convention:** Full category names for findings (e.g., "Priority Sector Lending") while compliance uses simplified IDs (e.g., "credit", "governance") -- matches existing conventions.
+3. **Finding distribution to active audits:** Findings only assigned to completed/in-progress audits (AUD-001 through AUD-004). Planned, on-hold, and cancelled audits have no findings.
+
 ---
 
 ## Next Steps
@@ -268,7 +282,7 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 03-02-PLAN.md (Board Report Data Utilities and Section Components)
+**Stopped at:** Completed 03-01-PLAN.md (Demo Data Expansion)
 **Resume file:** None
 
 ---

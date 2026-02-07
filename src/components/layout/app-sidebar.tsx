@@ -17,6 +17,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { navItems } from "@/lib/nav-items";
+import { currentUser } from "@/lib/current-user";
 import { ChevronsUpDown, LogOut } from "@/lib/icons";
 import {
   DropdownMenu,
@@ -71,7 +72,7 @@ export function AppSidebar() {
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/dashboard" &&
-                    pathname.startsWith(item.href));
+                    pathname.startsWith(item.href + "/"));
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
@@ -103,15 +104,15 @@ export function AppSidebar() {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-sidebar-primary text-xs text-sidebar-primary-foreground">
-                      RD
+                      {currentUser.initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      Rajesh Deshmukh
+                      {currentUser.name}
                     </span>
                     <span className="truncate text-xs text-sidebar-foreground/60">
-                      CEO
+                      {currentUser.role}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -126,13 +127,13 @@ export function AppSidebar() {
                 <div className="flex items-center gap-2 px-2 py-1.5">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-xs text-primary-foreground">
-                      RD
+                      {currentUser.initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid text-sm leading-tight">
-                    <span className="font-semibold">Rajesh Deshmukh</span>
+                    <span className="font-semibold">{currentUser.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      rajesh.deshmukh@apexbank.example
+                      {currentUser.email}
                     </span>
                   </div>
                 </div>

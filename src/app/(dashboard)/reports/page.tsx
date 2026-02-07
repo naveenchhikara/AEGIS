@@ -16,6 +16,7 @@ import {
   Building2,
   TrendingUp,
 } from "@/lib/icons";
+import { formatDate } from "@/lib/utils";
 
 const bank = bankProfile as unknown as BankProfile;
 const compData = demoComplianceRequirements as unknown as ComplianceData;
@@ -126,11 +127,7 @@ export default function ReportsPage() {
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     Assigned: {f.assignedAuditor} &middot; Target:{" "}
-                    {new Date(f.targetDate).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatDate(f.targetDate)}
                   </p>
                 </div>
               ))}

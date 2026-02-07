@@ -2,6 +2,7 @@ import { demoComplianceRequirements } from "@/data";
 import type { ComplianceData } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -138,11 +139,7 @@ export default function CompliancePage() {
                     {req.assignedToName}
                   </TableCell>
                   <TableCell className="text-sm">
-                    {new Date(req.dueDate).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatDate(req.dueDate)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SEVERITY_COLORS, FINDING_STATUS_COLORS } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import {
   CircleAlert,
   AlertTriangle,
@@ -155,11 +156,7 @@ export default function FindingsPage() {
                     {f.assignedAuditor}
                   </TableCell>
                   <TableCell className="text-sm">
-                    {new Date(f.targetDate).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatDate(f.targetDate)}
                   </TableCell>
                 </TableRow>
               ))}

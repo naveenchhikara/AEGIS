@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Globe, LogOut, Settings } from "@/lib/icons";
 import { LANGUAGES, type LanguageCode } from "@/lib/constants";
+import { currentUser } from "@/lib/current-user";
 import Link from "next/link";
 
 export function TopBar() {
@@ -64,15 +65,17 @@ export function TopBar() {
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="bg-primary text-[10px] text-primary-foreground">
-                  RD
+                  {currentUser.initials}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">Rajesh Deshmukh</p>
-              <p className="text-xs text-muted-foreground">CEO</p>
+              <p className="text-sm font-medium">{currentUser.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {currentUser.role}
+              </p>
             </div>
             <DropdownMenuItem asChild>
               <Link href="/settings">

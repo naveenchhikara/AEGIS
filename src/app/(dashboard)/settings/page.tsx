@@ -8,6 +8,7 @@ import {
   Shield,
   Globe,
 } from "@/lib/icons";
+import { formatDate } from "@/lib/utils";
 
 const bank = bankProfile as unknown as BankProfile;
 const staffData = staff as unknown as StaffData;
@@ -43,13 +44,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Established</p>
-                <p className="text-sm">
-                  {new Date(bank.established).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
+                <p className="text-sm">{formatDate(bank.established, "long")}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Tier</p>

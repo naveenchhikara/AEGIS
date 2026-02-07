@@ -3,6 +3,7 @@ import type { AuditData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AUDIT_STATUS_COLORS } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import {
   ClipboardList,
   CheckCircle2,
@@ -103,12 +104,7 @@ export default function AuditPlansPage() {
                     "en-IN",
                     { day: "2-digit", month: "short" },
                   )}{" "}
-                  –{" "}
-                  {new Date(audit.plannedEndDate).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  – {formatDate(audit.plannedEndDate)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="h-3 w-3" />

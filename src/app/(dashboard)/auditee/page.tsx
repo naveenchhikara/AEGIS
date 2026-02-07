@@ -2,6 +2,7 @@ import { findings } from "@/data";
 import type { FindingsData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, FileText, Clock, AlertTriangle } from "@/lib/icons";
+import { formatDate } from "@/lib/utils";
 
 const data = findings as unknown as FindingsData;
 
@@ -88,12 +89,7 @@ export default function AuditeePage() {
                         {f.observation}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Due:{" "}
-                        {new Date(f.targetDate).toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        Due: {formatDate(f.targetDate)}
                       </p>
                     </div>
                     <span

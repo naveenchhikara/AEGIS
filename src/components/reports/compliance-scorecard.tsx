@@ -24,11 +24,6 @@ function getScoreColor(score: number): string {
   return "text-red-600";
 }
 
-function getScoreBgColor(score: number): string {
-  if (score >= 80) return "bg-emerald-600";
-  if (score >= 60) return "bg-amber-600";
-  return "bg-red-600";
-}
 
 function StackedBar({
   compliant,

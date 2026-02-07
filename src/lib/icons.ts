@@ -37,6 +37,8 @@ export {
   CircleAlert,
   BarChart3,
   Activity,
+  ArrowUp,
+  ArrowDown,
   ArrowUpDown,
   Plus,
   Filter,

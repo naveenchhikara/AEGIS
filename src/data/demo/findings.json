@@ -1,0 +1,431 @@
+{
+  "findings": [
+    {
+      "id": "FND-001",
+      "auditId": "AUD-001",
+      "title": "CRAR Below Regulatory Threshold",
+      "category": "Capital Adequacy",
+      "severity": "critical",
+      "status": "responded",
+      "observation": "Capital to Risk-weighted Assets Ratio (CRAR) fell to 8.2% in September 2025, below the regulatory minimum of 9% as per RBI Basel III guidelines. The decline was primarily due to accelerated credit growth during Q2 2025 without proportionate capital infusion.",
+      "rootCause": "Credit portfolio grew by 15% in Q2 2025 while capital increased by only 2%. Board approved capital plan not executed in timely manner. Capital raising through share issue delayed due to market conditions.",
+      "riskImpact": "Below regulatory CRAR exposes the bank to supervisory action from RBI including restrictions on dividend declaration, branch expansion, and credit growth. PCA framework trigger if CRAR falls below 7.5%.",
+      "auditeeResponse": "Management acknowledges the observation. Board has approved emergency capital infusion of 50 lakh through share issuance to existing members. CRAR improved to 10.8% as of December 2025. Capital monitoring now done weekly instead of monthly.",
+      "actionPlan": "1. Complete capital infusion of 50 lakh by January 2026 (In Progress). 2. Review capital raising strategy quarterly. 3. Implement monthly CRAR forecasting. 4. Board committee review of capital position every month.",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2026-01-31",
+      "createdAt": "2025-10-01",
+      "updatedAt": "2025-12-15",
+      "timeline": [
+        {
+          "id": "TL-001-01",
+          "date": "2025-10-01",
+          "action": "Finding identified during quarterly CRAR review",
+          "actor": "Amit Joshi"
+        },
+        {
+          "id": "TL-001-02",
+          "date": "2025-10-05",
+          "action": "Formal audit report submitted to Audit Committee",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-001-03",
+          "date": "2025-10-15",
+          "action": "Management response submitted",
+          "actor": "Rajesh Deshmukh"
+        },
+        {
+          "id": "TL-001-04",
+          "date": "2025-11-30",
+          "action": "Board approved capital infusion plan",
+          "actor": "Subhash Jadhav"
+        },
+        {
+          "id": "TL-001-05",
+          "date": "2025-12-15",
+          "action": "First tranche of capital infused. CRAR now at 10.2%",
+          "actor": "Deepak Ghorpade"
+        }
+      ],
+      "relatedCircular": "RBI/2023-24/117",
+      "relatedRequirement": "CAP-001"
+    },
+    {
+      "id": "FND-002",
+      "auditId": "AUD-002",
+      "title": "No Approved ALM Policy",
+      "category": "Asset Liability Management",
+      "severity": "high",
+      "status": "reviewed",
+      "observation": "The bank does not have a Board-approved Asset Liability Management (ALM) policy. Gap analysis reports are prepared but not formalized into a comprehensive policy. ALCO committee meetings held irregularly without documented minutes.",
+      "rootCause": "ALM function viewed as Treasury responsibility rather than risk management function. Treasury head left in March 2025 and position vacant for 4 months. Lack of understanding about ALM requirements among senior management.",
+      "riskImpact": "Inability to manage interest rate risk in banking book. Potential for earnings volatility due to asset-liability maturity mismatches. RBI may issue supervisory observations during annual inspection.",
+      "auditeeResponse": "Management accepts the finding. New Treasury Head appointed in August 2025. Draft ALM policy prepared and submitted to Risk Management Committee. ALCO constituted with proper terms of reference.",
+      "actionPlan": "1. Obtain Board approval for ALM policy by January 2026. 2. Conduct monthly ALCO meetings with documented minutes. 3. Implement gap analysis reporting with trigger levels. 4. Train staff on ALM concepts.",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2026-01-31",
+      "createdAt": "2025-08-10",
+      "updatedAt": "2025-12-01",
+      "timeline": [
+        {
+          "id": "TL-002-01",
+          "date": "2025-08-10",
+          "action": "Finding identified during branch audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-002-02",
+          "date": "2025-08-20",
+          "action": "Report submitted to Audit Committee",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-002-03",
+          "date": "2025-09-15",
+          "action": "Management response received",
+          "actor": "Meena Naik"
+        },
+        {
+          "id": "TL-002-04",
+          "date": "2025-12-01",
+          "action": "Draft ALM policy reviewed by RMC. Pending Board approval",
+          "actor": "Amit Joshi"
+        }
+      ],
+      "relatedCircular": "RBI/2021-22/108",
+      "relatedRequirement": "MR-001"
+    },
+    {
+      "id": "FND-003",
+      "auditId": "AUD-003",
+      "title": "Annual Cyber Security Audit Not Conducted",
+      "category": "Cyber Security",
+      "severity": "high",
+      "status": "submitted",
+      "observation": "Annual cyber security audit for FY 2024-25 not conducted as mandated by RBI cyber security framework. Last cyber audit conducted in March 2024. IS audit is in progress but does not cover comprehensive cyber security framework.",
+      "rootCause": "CISO position vacant since July 2025. IT Manager handling both IT operations and security responsibilities. Lack of budget allocation for specialized cyber security audit firm. Management priority given to core banking operations.",
+      "riskImpact": "Undetected vulnerabilities in IT systems. Non-compliance with RBI CSF guidelines may attract adverse remarks during supervisory review. Increased exposure to cyber threats including phishing, ransomware, and data breaches.",
+      "auditeeResponse": "Awaiting management response. IS audit in progress includes cyber security module. Proposal for empanelment of CERT-In empanelled auditor submitted for Board approval.",
+      "actionPlan": "Pending management response",
+      "assignedAuditor": "Vikram Kulkarni",
+      "targetDate": "2026-02-28",
+      "createdAt": "2025-11-10",
+      "updatedAt": "2025-11-10",
+      "timeline": [
+        {
+          "id": "TL-003-01",
+          "date": "2025-11-10",
+          "action": "Finding identified during IS audit",
+          "actor": "Vikram Kulkarni"
+        },
+        {
+          "id": "TL-003-02",
+          "date": "2025-11-15",
+          "action": "Report submitted to Audit Committee",
+          "actor": "Priya Sharma"
+        }
+      ],
+      "relatedCircular": "RBI/2022-23/153",
+      "relatedRequirement": "CYB-001"
+    },
+    {
+      "id": "FND-004",
+      "auditId": "AUD-002",
+      "title": "Credit Appraisal Deficiencies - MSME Loans",
+      "category": "Credit Risk",
+      "severity": "high",
+      "status": "responded",
+      "observation": "Sample of 25 MSME loans revealed deficiencies in 8 cases (32%). Issues include: outdated financial statements (more than 12 months old), missing collateral security documents, inadequate borrower rating, andsanctions exceeding delegated authority.",
+      "rootCause": "Credit department understaffed with 2 officer positions vacant. Pressure to achieve priority sector lending targets leading to compromised due diligence. Lack of proper credit appraisal training for new staff.",
+      "riskImpact": "Potential NPA emergence from inadequately appressed accounts. Collateral security may not be enforceable if documents incomplete. Regulatory criticism expected during RBI inspection on credit governance.",
+      "auditeeResponse": "Management acknowledges deficiencies. All 8 cases identified have been regularized with fresh documentation. Two officers appointed in December 2025. Credit appraisal manual being updated with checklists.",
+      "actionPlan": "1. Complete documentation regularization for all 8 cases (Completed). 2. Conduct refresher training on credit appraisal for all credit officers (January 2026). 3. Implement pre-sanction audit for loans above 25 lakh. 4. Quarterly review of sample loans by Audit Committee.",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2026-01-31",
+      "createdAt": "2025-08-09",
+      "updatedAt": "2025-12-20",
+      "timeline": [
+        {
+          "id": "TL-004-01",
+          "date": "2025-08-09",
+          "action": "Finding identified during credit audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-004-02",
+          "date": "2025-08-15",
+          "action": "Report submitted to management",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-004-03",
+          "date": "2025-09-01",
+          "action": "Management submitted response with remediation plan",
+          "actor": "Suresh Patil"
+        },
+        {
+          "id": "TL-004-04",
+          "date": "2025-12-20",
+          "action": "All 8 cases regularized. New officers joined",
+          "actor": "Suresh Patil"
+        }
+      ],
+      "relatedCircular": "RBI/2023-24/89",
+      "relatedRequirement": "CR-004"
+    },
+    {
+      "id": "FND-005",
+      "auditId": "AUD-001",
+      "title": "KYC Deficiencies in 15 Accounts",
+      "category": "Operations",
+      "severity": "medium",
+      "status": "closed",
+      "observation": "KYC review of Kothrud branch identified 15 accounts with outdated KYC documents. 8 accounts had PAN more than 10 years old without re-verification, 5 accounts had address change not updated, 2 accounts had expired PANs.",
+      "rootCause": "KYC review schedule not adhered to due to staff shortage. Branch manager focused on business targets. Lack of automated KYC expiry alerts in core banking system.",
+      "riskImpact": "Non-compliance with KYC/AML regulations. Potential action from RBI and FIU-IND. Accounts may be frozen if KYC not updated. Reputational risk if used for illicit activities.",
+      "auditeeResponse": "All 15 accounts have been updated with fresh KYC documents. Branch implemented monthly KYC review calendar. Request submitted to IT for automated alerts.",
+      "actionPlan": "1. Monthly KYC review schedule implemented (Completed). 2. Automated expiry alerts requested from IT (Pending). 3. Staff training on KYC norms conducted (Completed).",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2025-10-31",
+      "createdAt": "2025-07-24",
+      "updatedAt": "2025-11-15",
+      "timeline": [
+        {
+          "id": "TL-005-01",
+          "date": "2025-07-24",
+          "action": "Finding identified during branch audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-005-02",
+          "date": "2025-08-01",
+          "action": "Report submitted",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-005-03",
+          "date": "2025-08-15",
+          "action": "All accounts updated. Response submitted",
+          "actor": "Rahul Joshi"
+        },
+        {
+          "id": "TL-005-04",
+          "date": "2025-11-15",
+          "action": "Finding closed after verification",
+          "actor": "Priya Sharma"
+        }
+      ],
+      "relatedCircular": "RBI/2021-22/65",
+      "relatedRequirement": "OPS-001"
+    },
+    {
+      "id": "FND-006",
+      "auditId": "AUD-003",
+      "title": "BCP DR Testing Not Conducted",
+      "category": "Cyber Security",
+      "severity": "medium",
+      "status": "submitted",
+      "observation": "Annual Business Continuity Plan testing not conducted in FY 2024-25. DR site exists but failover testing last done in March 2024. BCP document not updated after core banking system upgrade in June 2025.",
+      "rootCause": "IT department focused on CBS migration. DR testing requires coordination with vendors which was delayed. No dedicated BCP coordinator appointed.",
+      "riskImpact": "Inability to recover operations within RTO/RPO in case of disaster. Regulatory non-compliance with RBI BCP guidelines. Potential business disruption risk.",
+      "auditeeResponse": "Awaiting management response",
+      "actionPlan": "Pending management response",
+      "assignedAuditor": "Vikram Kulkarni",
+      "targetDate": "2026-02-28",
+      "createdAt": "2025-11-10",
+      "updatedAt": "2025-11-10",
+      "timeline": [
+        {
+          "id": "TL-006-01",
+          "date": "2025-11-10",
+          "action": "Finding identified during IS audit",
+          "actor": "Vikram Kulkarni"
+        },
+        {
+          "id": "TL-006-02",
+          "date": "2025-11-15",
+          "action": "Report submitted to Audit Committee",
+          "actor": "Priya Sharma"
+        }
+      ],
+      "relatedCircular": "RBI/2022-23/153",
+      "relatedRequirement": "CYB-004"
+    },
+    {
+      "id": "FND-007",
+      "auditId": "AUD-004",
+      "title": "Large Exposure Above Single Borrower Limit",
+      "category": "Credit Risk",
+      "severity": "medium",
+      "status": "reviewed",
+      "observation": "Two borrower exposures identified at 26.8% and 27.2% of eligible capital, exceeding the 25% single borrower limit. Exposure 1: ABC Enterprises Ltd - 3.25 crore. Exposure 2: XYZ Constructions Pvt Ltd - 3.31 crore.",
+      "rootCause": "Credit monitoring system does not generate real-time alerts for exposure limits. Manual exposure calculation done monthly, allowing limit breaches to occur. Group exposure monitoring not integrated with single borrower limits.",
+      "riskImpact": "Regulatory non-compliance with RBI large exposure norms. Concentration risk if borrower defaults. Potential supervisory action from RBI.",
+      "auditeeResponse": "Management acknowledges the overlimits. Both exposures are secured with adequate collateral and regular in servicing. Exposure reduction plan submitted -将通过 loan repayment and exposure capping. System upgrade proposed for real-time monitoring.",
+      "actionPlan": "1. Reduce exposure to ABC Enterprises by 50 lakh by January 2026. 2. Reduce exposure to XYZ Constructions by 60 lakh by February 2026. 3. Implement automated exposure monitoring system by March 2026.",
+      "assignedAuditor": "Suresh Patil",
+      "targetDate": "2026-03-31",
+      "createdAt": "2025-12-10",
+      "updatedAt": "2025-12-20",
+      "timeline": [
+        {
+          "id": "TL-007-01",
+          "date": "2025-12-10",
+          "action": "Finding identified during credit audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-007-02",
+          "date": "2025-12-15",
+          "action": "Report submitted to Audit Committee",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-007-03",
+          "date": "2025-12-20",
+          "action": "Management response reviewed",
+          "actor": "Suresh Patil"
+        }
+      ],
+      "relatedCircular": "RBI/2023-24/89",
+      "relatedRequirement": "CR-005"
+    },
+    {
+      "id": "FND-008",
+      "auditId": "AUD-002",
+      "title": "Cash Management Irregularities",
+      "category": "Operations",
+      "severity": "medium",
+      "status": "responded",
+      "observation": "Cash branch at Camp branch showed discrepancies in 3 monthly counts during Q3 2025. Variance ranges from 500 to 2,500. No root cause analysis conducted for variances.",
+      "rootCause": "Cash counting done by single staff without dual verification. Cash retention limit exceeded during peak days. CCTV coverage blind spot in cash strong room area.",
+      "riskImpact": "Potential for internal fraud. Regulatory non-compliance with cash management guidelines. Reputational risk if discrepancies recur.",
+      "auditeeResponse": "Dual verification implemented for all cash counts. Cash retention limit monitored daily. CCTV coverage expanded to cover blind spot area. 3 staff members counselled.",
+      "actionPlan": "1. Dual verification implemented (Completed). 2. CCTV coverage expanded (Completed). 3. Surprise cash counts by senior management (Monthly).",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2025-12-31",
+      "createdAt": "2025-08-09",
+      "updatedAt": "2025-12-15",
+      "timeline": [
+        {
+          "id": "TL-008-01",
+          "date": "2025-08-09",
+          "action": "Finding identified during branch audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-008-02",
+          "date": "2025-08-20",
+          "action": "Report submitted",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-008-03",
+          "date": "2025-09-10",
+          "action": "Management response received",
+          "actor": "Suresh Patil"
+        },
+        {
+          "id": "TL-008-04",
+          "date": "2025-12-15",
+          "action": "All corrective actions verified",
+          "actor": "Priya Sharma"
+        }
+      ],
+      "relatedCircular": "RBI/2020-21/45",
+      "relatedRequirement": "OPS-003"
+    },
+    {
+      "id": "FND-009",
+      "auditId": "AUD-001",
+      "title": "Audit Committee Meeting Delay",
+      "category": "Governance",
+      "severity": "low",
+      "status": "closed",
+      "observation": "Q2 2025 Audit Committee meeting delayed by 45 days. Should have been held by July 15, 2025 but held on August 30, 2025. Audit reports for Q1 2025 not reviewed on time.",
+      "rootCause": "Chairman's health issues during July-August 2025. Quorum requirements not met with 2 directors unavailable. Rescheduling conflicts with other board meetings.",
+      "riskImpact": "Delayed review of audit findings affecting remediation timelines. Non-compliance with RBI governance guidelines on meeting frequency.",
+      "auditeeResponse": "Management acknowledges the delay. All pending audit reports were reviewed in the delayed meeting. Calendar for 2026 meetings fixed with buffer dates. Alternate director appointed for Audit Committee.",
+      "actionPlan": "1. Fixed meeting calendar for 2026 (Completed). 2. Alternate director appointed (Completed). 3. Meeting reminders to be sent 30 days in advance.",
+      "assignedAuditor": "Priya Sharma",
+      "targetDate": "2025-10-31",
+      "createdAt": "2025-07-24",
+      "updatedAt": "2025-10-30",
+      "timeline": [
+        {
+          "id": "TL-009-01",
+          "date": "2025-07-24",
+          "action": "Observation noted during audit",
+          "actor": "Priya Sharma"
+        },
+        {
+          "id": "TL-009-02",
+          "date": "2025-08-30",
+          "action": "Committee meeting held, reports reviewed",
+          "actor": "Subhash Jadhav"
+        },
+        {
+          "id": "TL-009-03",
+          "date": "2025-10-30",
+          "action": "Corrective actions verified, finding closed",
+          "actor": "Priya Sharma"
+        }
+      ],
+      "relatedCircular": "RBI/2022-23/76",
+      "relatedRequirement": "GOV-003"
+    },
+    {
+      "id": "FND-010",
+      "auditId": "AUD-004",
+      "title": "NPA Provision Shortfall",
+      "category": "Credit Risk",
+      "severity": "low",
+      "status": "draft",
+      "observation": "Sample check of 5 NPA accounts revealed provision shortfall of 2.5 lakh in one account. Borrower classified as sub-standard but provision maintained at 20% instead of required 25%.",
+      "rootCause": "Manual error in provision calculation. System provision rate not updated after RBI guideline change in July 2025. Review by controlling not done before submission.",
+      "riskImpact": "Under-provisioning affects profit accuracy. Regulatory non-compliance. Potential adjustment requirement from statutory auditors.",
+      "auditeeResponse": "Provision shortfall rectified immediately. System provision rates updated. Controlling officer now certifies all provision calculations before submission.",
+      "actionPlan": "1. Shortfall rectified and system updated (Completed). 2. All NPA provisions reverified for FY 2024-25 (In Progress).",
+      "assignedAuditor": "Suresh Patil",
+      "targetDate": "2026-01-15",
+      "createdAt": "2025-12-10",
+      "updatedAt": "2025-12-10",
+      "timeline": [
+        {
+          "id": "TL-010-01",
+          "date": "2025-12-10",
+          "action": "Finding identified during NPA review",
+          "actor": "Suresh Patil"
+        }
+      ],
+      "relatedCircular": "RBI/2023-24/117",
+      "relatedRequirement": "CR-003"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "bySeverity": {
+      "critical": 1,
+      "high": 3,
+      "medium": 4,
+      "low": 2
+    },
+    "byStatus": {
+      "draft": 1,
+      "submitted": 2,
+      "reviewed": 2,
+      "responded": 3,
+      "closed": 2
+    },
+    "byCategory": {
+      "Capital Adequacy": 1,
+      "Asset Liability Management": 1,
+      "Cyber Security": 2,
+      "Credit Risk": 3,
+      "Operations": 2,
+      "Governance": 1
+    },
+    "lastUpdated": "2025-12-20"
+  }
+}

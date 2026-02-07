@@ -47,8 +47,11 @@
 - [ ] 01-03-PLAN.md — Install shadcn/ui components and create project structure
 - [ ] 01-04-PLAN.md — Create login screen with authentication layout
 - [ ] 01-05-PLAN.md — Create dashboard layout with sidebar and top bar
-- [ ] 01-06-PLAN.md — Create placeholder pages for all 7 routes
-- [ ] 01-07-PLAN.md — Create all demo data files for Sahyadri UCB
+- [ ] 01-06-PLAN.md — Create main feature placeholder pages (Dashboard, Compliance, Audit Plan)
+- [ ] 01-07-PLAN.md — Create secondary placeholder pages (Findings, Board Report, Auditee, Settings)
+- [ ] 01-08-PLAN.md — Create bank profile and compliance requirements data
+- [ ] 01-09-PLAN.md — Create audit plans and findings data
+- [ ] 01-10-PLAN.md — Create compliance calendar and connect data to dashboard
 
 **Key Tasks:**
 - Initialize Next.js 14 (App Router) + TypeScript + Tailwind CSS
@@ -197,4 +200,4 @@
 ---
 
 *Roadmap created: February 7, 2026*
-*Updated: February 7, 2026 — Phase 1 plans created*
+*Updated: February 7, 2026 — Phase 1 revised to 10 plans (split for scope)*

@@ -1,0 +1,210 @@
+{
+  "auditPlans": [
+    {
+      "id": "AUD-001",
+      "name": "तिमाही 3 2025 शाखा लेखापरीक्षा - कोथरूड",
+      "type": "branch-audit",
+      "branchId": "BR002",
+      "branchName": "कोथरूड शाखा",
+      "departmentId": "dept-005",
+      "plannedStartDate": "2025-07-15",
+      "plannedEndDate": "2025-07-25",
+      "actualStartDate": "2025-07-15",
+      "actualEndDate": "2025-07-24",
+      "assignedTeam": [
+        "Priya Sharma",
+        "R. Kumar (External)"
+      ],
+      "status": "completed",
+      "progress": 100,
+      "findingsCount": 4,
+      "criticalFindings": 0,
+      "highFindings": 1,
+      "createdAt": "2025-06-20",
+      "updatedAt": "2025-07-24",
+      "notes": "शाखा लेखापरीक्षा पूर्ण। KYC दस्तावेज़ीकरण से संबंधित 1 उच्च निष्कर्ष।"
+    },
+    {
+      "id": "AUD-002",
+      "name": "तिमाही 3 2025 शाखा लेखापरीक्षा - कैम्प",
+      "type": "branch-audit",
+      "branchId": "BR004",
+      "branchName": "कैम्प शाखा",
+      "departmentId": "dept-005",
+      "plannedStartDate": "2025-08-01",
+      "plannedEndDate": "2025-08-10",
+      "actualStartDate": "2025-08-01",
+      "actualEndDate": "2025-08-09",
+      "assignedTeam": [
+        "Priya Sharma",
+        "M. Desai (External)"
+      ],
+      "status": "completed",
+      "progress": 100,
+      "findingsCount": 6,
+      "criticalFindings": 0,
+      "highFindings": 2,
+      "createdAt": "2025-07-01",
+      "updatedAt": "2025-08-09",
+      "notes": "शाखा लेखापरीक्षा पूर्ण। नकद प्रबंधन और ऋण दस्तावेज़ीकरण पर 2 उच्च निष्कर्ष।"
+    },
+    {
+      "id": "AUD-003",
+      "name": "तिमाही 4 2025 सूचना प्रणाली लेखापरीक्षा",
+      "type": "is-audit",
+      "branchId": "BR001",
+      "branchName": "प्रधान कार्यालय - IT प्रणालियाँ",
+      "departmentId": "dept-003",
+      "plannedStartDate": "2025-11-01",
+      "plannedEndDate": "2025-11-15",
+      "actualStartDate": "2025-11-01",
+      "assignedTeam": [
+        "Vikram Kulkarni",
+        "Priya Sharma",
+        "CyberTech Solutions (External)"
+      ],
+      "status": "in-progress",
+      "progress": 60,
+      "findingsCount": 3,
+      "criticalFindings": 0,
+      "highFindings": 1,
+      "createdAt": "2025-10-01",
+      "updatedAt": "2025-11-10",
+      "notes": "नेटवर्क सुरक्षा समीक्षा पूर्ण। एप्लिकेशन सुरक्षा समीक्षा प्रगति पर।"
+    },
+    {
+      "id": "AUD-004",
+      "name": "तिमाही 4 2025 ऋण पोर्टफोलियो लेखापरीक्षा",
+      "type": "credit-audit",
+      "branchId": "BR001",
+      "branchName": "प्रधान कार्यालय - ऋण विभाग",
+      "departmentId": "dept-001",
+      "plannedStartDate": "2025-12-01",
+      "plannedEndDate": "2025-12-20",
+      "actualStartDate": "2025-12-01",
+      "assignedTeam": [
+        "Priya Sharma",
+        "S. Patil",
+        "K. Rao (External)"
+      ],
+      "status": "in-progress",
+      "progress": 45,
+      "findingsCount": 2,
+      "criticalFindings": 0,
+      "highFindings": 1,
+      "createdAt": "2025-11-01",
+      "updatedAt": "2025-12-10",
+      "notes": "प्राथमिकता क्षेत्र ऋण समीक्षा पूर्ण। NPA खातों की समीक्षा प्रगति पर।"
+    },
+    {
+      "id": "AUD-005",
+      "name": "तिमाही 1 2026 अनुपालन लेखापरीक्षा",
+      "type": "compliance-audit",
+      "branchId": "BR001",
+      "branchName": "सभी शाखाएँ - अनुपालन समीक्षा",
+      "departmentId": "dept-004",
+      "plannedStartDate": "2026-01-15",
+      "plannedEndDate": "2026-02-15",
+      "assignedTeam": [
+        "Priya Sharma",
+        "Amit Joshi",
+        "Compliance Experts Inc (External)"
+      ],
+      "status": "planned",
+      "progress": 0,
+      "findingsCount": 0,
+      "criticalFindings": 0,
+      "highFindings": 0,
+      "createdAt": "2025-12-01",
+      "updatedAt": "2025-12-01",
+      "notes": "सभी नियामक आवश्यकताओं को कवर करने वाली वार्षिक अनुपालन लेखापरीक्षा।"
+    },
+    {
+      "id": "AUD-006",
+      "name": "तिमाही 1 2026 वार्षिक RBI निरीक्षण तैयारी",
+      "type": "compliance-audit",
+      "branchId": "BR001",
+      "branchName": "सभी शाखाएँ - पूर्ण दायरा",
+      "departmentId": "dept-004",
+      "plannedStartDate": "2026-02-01",
+      "plannedEndDate": "2026-03-15",
+      "assignedTeam": [
+        "Priya Sharma",
+        "Amit Joshi",
+        "Suresh Patil",
+        "Vikram Kulkarni",
+        "Meena Naik"
+      ],
+      "status": "planned",
+      "progress": 0,
+      "findingsCount": 0,
+      "criticalFindings": 0,
+      "highFindings": 0,
+      "createdAt": "2025-12-15",
+      "updatedAt": "2025-12-15",
+      "notes": "आगामी RBI वार्षिक निरीक्षण के लिए व्यापक तैयारी।"
+    },
+    {
+      "id": "AUD-007",
+      "name": "तिमाही 4 2025 राजस्व लेखापरीक्षा - पिंपरी",
+      "type": "revenue-audit",
+      "branchId": "BR007",
+      "branchName": "पिंपरी शाखा",
+      "departmentId": "dept-002",
+      "plannedStartDate": "2025-11-15",
+      "plannedEndDate": "2025-11-30",
+      "assignedTeam": [
+        "Priya Sharma",
+        "D. Ghorpade"
+      ],
+      "status": "on-hold",
+      "progress": 25,
+      "findingsCount": 0,
+      "criticalFindings": 0,
+      "highFindings": 0,
+      "createdAt": "2025-10-15",
+      "updatedAt": "2025-11-20",
+      "notes": "नई राजस्व मान्यता मानदंडों पर RBI से स्पष्टीकरण प्राप्त होने तक रोका गया।"
+    },
+    {
+      "id": "AUD-008",
+      "name": "तिमाही 3 2025 समवर्ती लेखापरीक्षा - हडपसर",
+      "type": "branch-audit",
+      "branchId": "BR010",
+      "branchName": "हडपसर शाखा",
+      "departmentId": "dept-005",
+      "plannedStartDate": "2025-09-01",
+      "plannedEndDate": "2025-09-30",
+      "assignedTeam": [
+        "Internal Audit Team"
+      ],
+      "status": "cancelled",
+      "progress": 0,
+      "findingsCount": 0,
+      "criticalFindings": 0,
+      "highFindings": 0,
+      "createdAt": "2025-08-01",
+      "updatedAt": "2025-08-20",
+      "notes": "रद्द। तिमाही 4 2025 वार्षिक निरीक्षण दायरे में विलय किया गया।"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "completed": 2,
+    "in-progress": 2,
+    "planned": 2,
+    "on-hold": 1,
+    "cancelled": 1,
+    "byType": {
+      "branch-audit": 3,
+      "is-audit": 1,
+      "credit-audit": 1,
+      "compliance-audit": 2,
+      "revenue-audit": 1
+    },
+    "totalFindings": 15,
+    "criticalFindings": 0,
+    "highFindings": 5,
+    "lastUpdated": "2025-12-10"
+  }
+}

@@ -181,26 +181,27 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 13. Demo works on tablets
 14. Demo script is ready (15-min and 30-min versions)
 
-**Plans:**
-- [ ] 04-01-PLAN.md — i18n Foundation with next-intl
-- [ ] 04-02-PLAN.md — Translation Content for All UI Labels
-- [ ] 04-03-PLAN.md — Language Switcher UI Component
-- [ ] 04-04-PLAN.md — Responsive Design Polish
-- [ ] 04-05-PLAN.md — AWS Infrastructure Setup
-- [ ] 04-06-PLAN.md — SSL Certificate and Domain Configuration
-- [ ] 04-07-PLAN.md — Application Deployment and Demo Preparation
+**Plans:** 7 plans in 3 waves
+- [ ] 04-01-PLAN.md — i18n foundation: install next-intl, cookie-based locale, Noto Sans fonts, English messages
+- [ ] 04-02-PLAN.md — Translation content: Hindi, Marathi, Gujarati message files with banking terminology
+- [ ] 04-03-PLAN.md — Language switcher wiring, translate all components, print stylesheet
+- [ ] 04-04-PLAN.md — Responsive design polish: mobile/tablet layouts, touch targets, adaptive grids
+- [ ] 04-05-PLAN.md — AWS infrastructure: deployment configs, Lightsail instance provisioning
+- [ ] 04-06-PLAN.md — Server setup: Node.js/PM2/Nginx installation, repo clone, SSL decision
+- [ ] 04-07-PLAN.md — Application deployment, end-to-end verification, demo scripts
 
 **Key Tasks:**
-- Set up i18n framework (next-intl)
+- Set up i18n framework (next-intl) with cookie-based locale
+- Switch fonts to Noto Sans family for multi-script support
 - Create translation files for EN/HI/MR/GU
-- Implement language switcher with persistence
-- Test all translations for banking terminology
-- Responsive design testing and fixes
-- Set up AWS Lightsail instance (Mumbai)
+- Wire language switcher to next-intl cookie mechanism
+- Replace all hardcoded strings with translation calls
+- Responsive design testing and fixes across breakpoints
+- Set up AWS Lightsail instance (Mumbai ap-south-1)
 - Configure PM2, Nginx, SSL
 - Deploy application to production
 - End-to-end testing on production URL
-- Prepare demo scripts
+- Prepare 15-min and 30-min demo scripts
 
 ---
 
@@ -223,3 +224,4 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 *Updated: February 7, 2026 — Phase 4 plans created*
 *Updated: February 7, 2026 — Phase 3 plans created*
 *Updated: February 8, 2026 — Phase 2 plans created (6 plans in 3 waves)*
+*Updated: February 8, 2026 — Phase 4 plans finalized (7 plans in 3 waves)*

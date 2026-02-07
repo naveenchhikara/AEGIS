@@ -1,6 +1,6 @@
 # Project State: AEGIS
 
-**Current Phase:** Phase 4 — Polish & Deploy (Planned)
+**Current Phase:** Phase 4 — Polish & Deploy (In Progress)
 **Last Updated:** February 8, 2026
 
 ---
@@ -22,10 +22,10 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | 1     | Complete    | 4/4   | 100%     |
 | 2     | In Progress | 5/6   | 83%      |
 | 3     | Complete    | 5/5   | 100%     |
-| 4     | Planned     | 0/7   | 0%       |
+| 4     | In Progress | 1/8   | 13%      |
 
-**Overall:** 14/22 plans complete (64%)
-█████████████████████████████░░░░░░░░░░░ 64%
+**Overall:** 15/23 plans complete (65%)
+██████████████████████████████░░░░░░░░░░ 65%
 
 ---
 
@@ -33,6 +33,16 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 04-01: i18n Foundation & Font Setup
+  - Installed next-intl 4.8.2 with cookie-based locale detection (no i18n routing)
+  - Created src/i18n/request.ts reading NEXT_LOCALE cookie, supports en/hi/mr/gu
+  - Updated next.config.ts with createNextIntlPlugin wrapper
+  - Replaced Inter font with Noto Sans (Latin), Noto Sans Devanagari, Noto Sans Gujarati
+  - Root layout wraps children with NextIntlClientProvider (async, dynamic locale)
+  - Created messages/en.json with 224 translation keys across 11 namespaces
+  - Updated tailwind.config.ts and globals.css for new font variables
+  - All routes now dynamic (server-rendered) due to cookie-based locale in root layout
+  - pnpm build passes successfully
 - Completed 03-05: Board Report Page & Print Styles
   - Created ComplianceScorecard component with overall score, category breakdown table, stacked bar visualizations per category
   - Created RecommendationsSection component with priority badges, descriptions, linked finding IDs, target dates
@@ -316,19 +326,26 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 3. **Recommendation finding links:** Recommendations link finding IDs to /findings/{id} pages via Next.js Link for full navigability
 4. **Minimal client component:** PrintButton is the only client component on the board report page, keeping everything else server-rendered
 
+### From Phase 4 Plan 1
+
+1. **Font Switch:** Replaced Inter with Noto Sans family (Latin + Devanagari + Gujarati) for multi-script support
+2. **Cookie-based Locale Detection:** Used NEXT_LOCALE cookie with next-intl "without i18n routing" approach — no URL prefixes, no middleware.ts
+3. **Messages Namespace Structure:** 11 namespaces (Common, Navigation, TopBar, Dashboard, Compliance, AuditPlan, Findings, Reports, Auditee, Settings, Login) with flat camelCase keys
+4. **Dynamic Routes Accepted:** All routes became dynamic (server-rendered on demand) due to cookie reading in root layout — required for per-request locale
+
 ---
 
 ## Next Steps
 
 1. Phase 2 remaining plan (02-06) still pending — page composition for Dashboard, Compliance, Audit Plan
-2. Phase 4: i18n (Hindi/Marathi/Gujarati), responsive polish, AWS Mumbai deployment
+2. Phase 4 remaining: Hindi/Marathi/Gujarati translations, language switcher cookie integration, responsive polish, AWS Mumbai deployment
 
 ---
 
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 03-05-PLAN.md (Board Report Page & Print Styles)
+**Stopped at:** Completed 04-01-PLAN.md (i18n Foundation & Font Setup)
 **Resume file:** None
 
 ---

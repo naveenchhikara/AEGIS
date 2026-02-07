@@ -19,13 +19,13 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 | Phase | Status      | Plans | Progress |
 | ----- | ----------- | ----- | -------- |
-| 1     | Complete    | 3/10  | 100%     |
-| 2     | In Progress | 3/6   | 50%      |
-| 3     | In Progress | 3/5   | 60%      |
-| 4     | Planned     | 0/0   | 0%       |
+| 1     | Complete    | 4/4   | 100%     |
+| 2     | In Progress | 5/6   | 83%      |
+| 3     | In Progress | 4/5   | 80%      |
+| 4     | Planned     | 0/7   | 0%       |
 
-**Overall:** 9/28 plans complete (32%)
-█████████████████████░░░░░░░░░░░░░░░░░░ 32%
+**Overall:** 13/22 plans complete (59%)
+████████████████████████████░░░░░░░░░░░░ 59%
 
 ---
 
@@ -41,6 +41,14 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
   - 404 handling for invalid finding IDs
   - Server components throughout (no "use client")
   - pnpm build passes with all 35 finding pages pre-generated
+- Completed 03-03: Findings Table with TanStack Sorting and Filtering
+  - Created FindingsTable with TanStack Table (7 sortable columns: ID, Title, Category, Severity, Status, Auditor, Age)
+  - Created FindingsFilters with severity, status, and category dropdown filters
+  - Custom sort for severity (critical > high > medium > low) and status (draft > submitted > reviewed > responded > closed)
+  - Age column calculated from createdAt with color coding (red > 90d, amber > 60d, green < 30d)
+  - Row click navigates to /findings/{id} with keyboard accessibility
+  - Updated findings page: server-rendered severity summary cards + client FindingsTable component
+  - pnpm build passes successfully
 - Completed 03-01: Demo Data Expansion (Findings and Compliance)
   - Expanded findings from 10 to 35 with RBI-style observations across 9 categories
   - Categories include: Capital Adequacy, ALM, Cyber Security, Credit Risk, Operations, Governance, Treasury, PSL, Deposit Operations
@@ -278,6 +286,13 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 2. **Finding category naming convention:** Full category names for findings (e.g., "Priority Sector Lending") while compliance uses simplified IDs (e.g., "credit", "governance") -- matches existing conventions.
 3. **Finding distribution to active audits:** Findings only assigned to completed/in-progress audits (AUD-001 through AUD-004). Planned, on-hold, and cancelled audits have no findings.
 
+### From Phase 3 Plan 3
+
+1. **Dynamic category filter list:** Categories derived from data at module level rather than hardcoded, automatically updates when findings data changes
+2. **Age color thresholds:** Red > 90 days, amber > 60 days, green < 30 days, muted for 30-60 days -- based on typical audit finding resolution timelines
+3. **Custom severity/status sort:** Domain-specific sort orders via lookup maps (SEVERITY_ORDER, STATUS_ORDER) instead of alphabetical
+4. **Categories as prop:** FindingsFilters receives categories as a prop for reusability rather than importing data directly
+
 ### From Phase 3 Plan 4
 
 1. **Server components for detail page:** Both FindingDetail and StatusTimeline are server components since all data comes from static JSON imports (no interactivity needed)
@@ -290,15 +305,15 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 ## Next Steps
 
-1. Continue Phase 3 with remaining plans (03-05) for board reports page
-2. Phase 2 remaining plans (02-05, 02-06) still pending
+1. Continue Phase 3 with remaining plan (03-05) for board reports page
+2. Phase 2 remaining plans (02-06) still pending
 
 ---
 
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 03-04-PLAN.md (Finding Detail Page & Status Timeline)
+**Stopped at:** Completed 03-03-PLAN.md (Findings Table with TanStack Sorting and Filtering)
 **Resume file:** None
 
 ---

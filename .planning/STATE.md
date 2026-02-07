@@ -1,4 +1,4 @@
-# Project State: AuditNexus
+# Project State: AEGIS
 
 **Current Phase:** Phase 1 — Project Setup & Demo Data
 **Last Updated:** February 7, 2026

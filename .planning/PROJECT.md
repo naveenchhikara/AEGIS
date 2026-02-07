@@ -1,4 +1,4 @@
-# AuditNexus - UCB Internal Audit & Compliance Platform
+# AEGIS - UCB Internal Audit & Compliance Platform
 
 ## What This Is
 

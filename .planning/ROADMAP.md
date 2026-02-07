@@ -1,4 +1,4 @@
-# Roadmap: AuditNexus Clickable Prototype
+# Roadmap: AEGIS Clickable Prototype
 
 **Milestone:** Clickable Prototype (Phase 0)
 **Timeline:** 3 weeks (Feb 9 - Feb 27, 2026)

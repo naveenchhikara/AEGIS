@@ -1,4 +1,4 @@
-# Requirements: AuditNexus - UCB Internal Audit & Compliance Platform
+# Requirements: AEGIS - UCB Internal Audit & Compliance Platform
 
 **Defined:** February 7, 2026
 **Core Value:** UCB audit teams can demonstrate complete compliance coverage to RBI and their board with clear evidence, while CEOs get real-time visibility into audit status and risk exposure.

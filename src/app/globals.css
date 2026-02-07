@@ -110,8 +110,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-noto-sans), sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Indian script font families */
+html[lang="hi"] body,
+html[lang="mr"] body {
+  font-family: var(--font-noto-devanagari), var(--font-noto-sans), sans-serif;
+}
+
+html[lang="gu"] body {
+  font-family: var(--font-noto-gujarati), var(--font-noto-sans), sans-serif;
 }
 
 /* Board Report Print Styles */

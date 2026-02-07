@@ -14,7 +14,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Globe, LogOut, Settings } from "@/lib/icons";
 import { LANGUAGES, type LanguageCode } from "@/lib/constants";
 import { currentUser } from "@/lib/current-user";
+import { bankProfile } from "@/data";
+import type { BankProfile } from "@/types";
 import Link from "next/link";
+
+const bank = bankProfile as unknown as BankProfile;
 
 export function TopBar() {
   const [language, setLanguage] = useState<LanguageCode>("en");
@@ -27,7 +31,7 @@ export function TopBar() {
 
       {/* Bank name */}
       <h2 className="text-base font-bold tracking-tight text-foreground">
-        Apex Sahakari Bank Ltd
+        {bank.name}
       </h2>
 
       <div className="ml-auto flex items-center gap-1">
@@ -54,9 +58,9 @@ export function TopBar() {
         </DropdownMenu>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative h-8 w-8">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label="Notifications">
           <Bell className="h-4 w-4" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
+          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" aria-hidden="true" />
         </Button>
 
         {/* User dropdown */}

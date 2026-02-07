@@ -16,6 +16,7 @@ import {
   Building2,
   TrendingUp,
 } from "@/lib/icons";
+import { SEVERITY_COLORS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 
 const bank = bankProfile as unknown as BankProfile;
@@ -113,9 +114,9 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex rounded px-1.5 py-0.5 text-xs font-medium ${
-                        f.severity === "critical"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-orange-100 text-orange-700"
+                        SEVERITY_COLORS[
+                          f.severity as keyof typeof SEVERITY_COLORS
+                        ] ?? ""
                       }`}
                     >
                       {f.severity.toUpperCase()}

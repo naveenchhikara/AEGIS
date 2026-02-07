@@ -10,6 +10,7 @@ import type {
 } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SEVERITY_COLORS } from "@/lib/constants";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -127,13 +128,9 @@ export default function DashboardPage() {
                     <Badge
                       variant="outline"
                       className={
-                        f.severity === "critical"
-                          ? "border-red-200 bg-red-50 text-red-700"
-                          : f.severity === "high"
-                            ? "border-orange-200 bg-orange-50 text-orange-700"
-                            : f.severity === "medium"
-                              ? "border-yellow-200 bg-yellow-50 text-yellow-700"
-                              : "border-green-200 bg-green-50 text-green-700"
+                        SEVERITY_COLORS[
+                          f.severity as keyof typeof SEVERITY_COLORS
+                        ] ?? ""
                       }
                     >
                       {f.severity}

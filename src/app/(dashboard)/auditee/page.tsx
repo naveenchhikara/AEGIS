@@ -2,6 +2,7 @@ import { findings } from "@/data";
 import type { FindingsData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, FileText, Clock, AlertTriangle } from "@/lib/icons";
+import { SEVERITY_COLORS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 
 const data = findings as unknown as FindingsData;
@@ -94,13 +95,9 @@ export default function AuditeePage() {
                     </div>
                     <span
                       className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-                        f.severity === "critical"
-                          ? "bg-red-100 text-red-700"
-                          : f.severity === "high"
-                            ? "bg-orange-100 text-orange-700"
-                            : f.severity === "medium"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-green-100 text-green-700"
+                        SEVERITY_COLORS[
+                          f.severity as keyof typeof SEVERITY_COLORS
+                        ] ?? ""
                       }`}
                     >
                       {f.severity}

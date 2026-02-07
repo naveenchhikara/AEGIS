@@ -100,11 +100,8 @@ export default function AuditPlansPage() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {new Date(audit.plannedStartDate).toLocaleDateString(
-                    "en-IN",
-                    { day: "2-digit", month: "short" },
-                  )}{" "}
-                  – {formatDate(audit.plannedEndDate)}
+                  {formatDate(audit.plannedStartDate)} –{" "}
+                  {formatDate(audit.plannedEndDate)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="h-3 w-3" />

@@ -1,17 +1,7 @@
 import { findings } from "@/data";
 import type { FindingsData } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { SEVERITY_COLORS, FINDING_STATUS_COLORS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
+import { FindingsTable } from "@/components/findings/findings-table";
 import {
   CircleAlert,
   AlertTriangle,
@@ -52,14 +42,6 @@ const severityCards = [
   },
 ];
 
-const statusCards = [
-  { label: "Draft", count: data.summary.byStatus.draft ?? 0 },
-  { label: "Submitted", count: data.summary.byStatus.submitted ?? 0 },
-  { label: "Reviewed", count: data.summary.byStatus.reviewed ?? 0 },
-  { label: "Responded", count: data.summary.byStatus.responded ?? 0 },
-  { label: "Closed", count: data.summary.byStatus.closed ?? 0 },
-];
-
 export default function FindingsPage() {
   return (
     <div className="space-y-6">
@@ -89,81 +71,8 @@ export default function FindingsPage() {
         ))}
       </div>
 
-      {/* Status distribution */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4">
-            {statusCards.map((s) => (
-              <div key={s.label} className="flex items-center gap-2">
-                <span className="text-sm font-medium">{s.count}</span>
-                <span className="text-xs text-muted-foreground">
-                  {s.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Findings table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">ID</TableHead>
-                <TableHead>Finding</TableHead>
-                <TableHead className="w-28">Category</TableHead>
-                <TableHead className="w-24">Severity</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-28">Auditor</TableHead>
-                <TableHead className="w-28">Target Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.findings.map((f) => (
-                <TableRow key={f.id}>
-                  <TableCell className="font-mono text-xs">{f.id}</TableCell>
-                  <TableCell>
-                    <p className="text-sm font-medium">{f.title}</p>
-                  </TableCell>
-                  <TableCell className="text-xs">{f.category}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        SEVERITY_COLORS[
-                          f.severity as keyof typeof SEVERITY_COLORS
-                        ] ?? ""
-                      }
-                    >
-                      {f.severity}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        FINDING_STATUS_COLORS[
-                          f.status as keyof typeof FINDING_STATUS_COLORS
-                        ] ?? ""
-                      }
-                    >
-                      {f.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {f.assignedAuditor}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(f.targetDate)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Findings table with sorting, filtering, and row navigation */}
+      <FindingsTable />
     </div>
   );
 }

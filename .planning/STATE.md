@@ -17,15 +17,15 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 ## Progress
 
-| Phase | Status      | Plans | Progress |
-| ----- | ----------- | ----- | -------- |
-| 1     | Complete    | 3/10  | 100%     |
-| 2     | In Progress | 1/6   | 17%      |
-| 3     | Planned     | 7/7   | 0%       |
-| 4     | Planned     | 7/7   | 0%       |
+| Phase | Status | Plans       | Progress |
+| ----- | ------ | ----------- | -------- | ---- |
+|       | 1      | Complete    | 3/10     | 100% |
+|       | 2      | In Progress | 2/6      | 33%  |
+|       | 3      | Planned     | 7/7      | 0%   |
+|       | 4      | Planned     | 7/7      | 0%   |
 
-**Overall:** 4/30 plans complete (13%)
-███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 13%
+**Overall:** 5/30 plans complete (17%)
+████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 17%
 
 ---
 
@@ -33,6 +33,18 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- Completed 02-03: Compliance Registry Components
+  - Created ComplianceTable component with 55 requirements using TanStack Table
+  - Implemented 7 sortable columns (ID, Category, Description, Status, Due Date, Evidence, Assigned To)
+  - Created ComplianceFilters component with category and status dropdowns
+  - Created ComplianceDetailDialog showing full requirement details and evidence list
+  - Created ComplianceTrendChart with ChartContainer and AreaChart showing 6-month health trend
+  - Used ChartConfig with CSS variable colors (--chart-1)
+  - Added accessibilityLayer on AreaChart for screen readers
+  - Implemented reduced motion detection via prefers-reduced-motion media query
+  - Status badges show correct colors (compliant=green, partial=yellow, non-compliant=red, pending=gray)
+  - Fixed missing 'compliant' status in regulatory-calendar.tsx (Rule 3 - Blocking)
+  - pnpm build passes successfully
 - Completed 02-01: Dependencies and Data Expansion
   - Installed recharts 3.7.0, @tanstack/react-table 8.21.3, react-is 19.2.4
   - Installed shadcn chart component (ChartContainer, ChartTooltip, ChartConfig)
@@ -199,6 +211,15 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 7. **Loading Skeleton:** Grid layout matching dashboard structure (header row, 4 card columns, main content area)
 8. **Touch Targets:** 32px buttons acceptable for prototype (44px preferred for production)
 
+### From Phase 2 Plan 2
+
+1. **Dynamic color mapping in HealthScoreCard** - Score >= 80% → green, >= 50% → amber, else → red
+2. **ChartContainer pattern** - Use shadcn/ui ChartContainer wrapper instead of raw ResponsiveContainer for consistent theming and tooltips
+3. **ChartConfig usage** - Define colors via ChartConfig object with CSS variables (--color-KEY) instead of hardcoded hex values
+4. **Accessibility triple redundancy** - Risk level and findings cards use color + icon + text (never color-only) for screen readers
+5. **Reduced motion** - All chart components detect `prefers-reduced-motion: reduce` media query and disable animations
+6. **Regulatory calendar filtering** - Show only non-compliant requirements sorted by due date, max 5 items
+
 ---
 
 ## Next Steps
@@ -211,7 +232,7 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 02-01-PLAN.md (Dependencies and Data Expansion)
+**Stopped at:** Completed 02-02-PLAN.md (Dashboard Widgets)
 **Resume file:** None
 
 ---

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/lib/prisma";
+import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 
@@ -12,15 +12,24 @@ import { hasPermission, type Role } from "@/lib/permissions";
  * Zod validation schema for editable settings.
  *
  * READ-ONLY fields NOT included (DE11):
- * - rbiLicenseNo — set during onboarding
- * - name (legal bank name) — set during onboarding
- * - state (of registration) — set during onboarding
- * - tier — set during onboarding
- * - Fiscal year — hardcoded April-March (DE7)
+ * - name (legal bank name) — set during onboarding, cannot be updated
+ * - rbiLicenseNo (RBI License Number) — set during onboarding, cannot be updated
+ * - state (state of registration) — set during onboarding, cannot be updated
+ * - tier (UCB Tier) — set during onboarding, cannot be updated
+ * - incorporationDate — set during onboarding, cannot be updated
+ * - Fiscal Year — hardcoded April-March (DE7), not configurable
+ *
+ * EDITABLE fields:
+ * - shortName, address, city, pincode, phone, email, website, nabardRegistrationNo
  */
 const settingsSchema = z.object({
   shortName: z.string().min(1).max(50).optional(),
+  address: z.string().max(500).optional().nullable(),
   city: z.string().min(1).max(100).optional(),
+  pincode: z.string().max(6).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  website: z.string().url().optional().nullable(),
   nabardRegistrationNo: z.string().max(50).optional().nullable(),
 });
 

@@ -1,7 +1,8 @@
 import "server-only";
 import { getRequiredSession } from "./session";
-import { prismaForTenant } from "./prisma";
+import { prismaForTenant } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
+import type { TenantSettings } from "@/types";
 
 /**
  * DATA ACCESS LAYER PATTERN (canonical example for all DAL modules):
@@ -18,50 +19,7 @@ import type { Prisma } from "@/generated/prisma/client";
  * - Every function follows this exact 5-step pattern
  */
 
-/**
- * Tenant settings type returned by getTenantSettings.
- * Matches Prisma Tenant model select fields.
- *
- * READ-ONLY fields (set during onboarding, DE11):
- * - name (legal bank name)
- * - rbiLicenseNo (RBI License Number)
- * - state (state of registration)
- * - tier (UCB Tier)
- *
- * EDITABLE fields (can be updated via settings page):
- * - shortName, address, city, pincode, phone, email, website
- *
- * REGULATORY fields (display-only, DE8):
- * - scheduledBankStatus, nabardRegistrationNo, multiStateLicense
- * - dakshScore, pcaStatus, lastRbiInspectionDate, rbiRiskRating
- */
-export type TenantSettings = {
-  id: string;
-  name: string; // Legal bank name (read-only, DE11)
-  shortName: string;
-  rbiLicenseNo: string; // RBI License Number (read-only, DE11)
-  tier: string; // UCB Tier (read-only)
-  state: string; // State of registration (read-only, DE11)
-  city: string;
-  address: string | null; // Editable
-  pincode: string | null; // Editable
-  phone: string | null; // Editable
-  email: string | null; // Editable
-  website: string | null; // Editable
-  incorporationDate: Date | null; // Bank establishment date
-  scheduledBankStatus: boolean;
-  nabardRegistrationNo: string | null;
-  multiStateLicense: boolean;
-  dakshScore: unknown | null; // Prisma Decimal
-  dakshScoreDate: Date | null;
-  pcaStatus: string;
-  pcaEffectiveDate: Date | null;
-  lastRbiInspectionDate: Date | null;
-  rbiRiskRating: string | null;
-  settings: unknown | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+export type { TenantSettings };
 
 /**
  * Get tenant settings (bank profile) from PostgreSQL.
@@ -85,18 +43,12 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
     where: { id: tenantId },
     select: {
       id: true,
-      name: true, // Legal bank name (read-only, DE11)
+      name: true,
       shortName: true,
-      rbiLicenseNo: true, // RBI License Number (read-only, DE11)
-      tier: true, // UCB Tier (read-only)
-      state: true, // State of registration (read-only, DE11)
+      rbiLicenseNo: true,
+      tier: true,
+      state: true,
       city: true,
-      address: true, // Editable
-      pincode: true, // Editable
-      phone: true, // Editable
-      email: true, // Editable
-      website: true, // Editable
-      incorporationDate: true, // Bank establishment date
       scheduledBankStatus: true,
       nabardRegistrationNo: true,
       multiStateLicense: true,
@@ -128,30 +80,16 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
  * Update editable tenant settings.
  *
  * READ-ONLY fields NOT updatable (DE11):
- * - name (legal bank name) — set during onboarding
- * - rbiLicenseNo (RBI License Number) — set during onboarding
- * - state (state of registration) — set during onboarding
- * - tier (UCB Tier) — set during onboarding
- * - incorporationDate — set during onboarding
- * - Fiscal Year — hardcoded April-March (DE7), not configurable
+ * - name (legal bank name), rbiLicenseNo, state, tier
  *
- * EDITABLE fields:
- * - shortName, address, city, pincode, phone, email, website
+ * EDITABLE fields: shortName, city, nabardRegistrationNo
  *
  * @param data - Validated editable fields only
  */
 export async function updateTenantSettingsDAL(
   data: Pick<
     Prisma.TenantUpdateInput,
-    | "shortName"
-    | "address"
-    | "city"
-    | "pincode"
-    | "phone"
-    | "email"
-    | "website"
-    | "nabardRegistrationNo"
-    | "settings"
+    "shortName" | "city" | "nabardRegistrationNo" | "settings"
   >,
 ) {
   // Step 1: Get authenticated session

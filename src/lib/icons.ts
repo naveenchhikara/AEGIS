@@ -54,4 +54,7 @@ export {
   UserCircle,
   PauseCircle,
   ArrowRight,
+  Save,
+  Info,
+  CalendarRange,
 } from "lucide-react";

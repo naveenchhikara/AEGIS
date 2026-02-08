@@ -1,155 +1,38 @@
-import { getTranslations } from "next-intl/server";
-import { bankProfile, staff } from "@/data";
-import type { BankProfile, StaffData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Building2, Users, Shield, Globe } from "@/lib/icons";
-import { formatDate } from "@/lib/utils";
-
-const bank = bankProfile as unknown as BankProfile;
-const staffData = staff as unknown as StaffData;
+import { requirePermission } from "@/lib/guards";
+import { getTenantSettings } from "@/data-access/settings";
+import { BankProfileForm } from "@/components/settings/bank-profile-form";
 
 export default async function SettingsPage() {
-  const t = await getTranslations("Settings");
-  const tCommon = await getTranslations("Common");
+  await requirePermission("admin:manage_settings");
+  const settings = await getTenantSettings();
+
+  if (!settings) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground text-base">
+            Manage your bank profile and system settings.
+          </p>
+        </div>
+        <div className="flex items-center justify-center rounded-lg border border-dashed p-12">
+          <p className="text-muted-foreground">
+            Bank profile not found. Please complete onboarding.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-base">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground text-base">
+          Manage your bank profile and system settings.
+        </p>
       </div>
-
-      {/* Bank Profile */}
-      <Card className="animate-fade-in-up">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Building2 className="h-4 w-4" />
-            {t("bankProfile")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-3">
-              <div>
-                <p className="text-muted-foreground text-sm">{t("bankName")}</p>
-                <p className="text-base font-medium">{bank.name}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">{t("location")}</p>
-                <p className="text-base">{bank.location}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">
-                  {t("established")}
-                </p>
-                <p className="text-base">
-                  {formatDate(bank.established, "long")}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">{t("tier")}</p>
-                <p className="text-base">{bank.tier}</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <p className="text-muted-foreground text-sm">
-                  {t("rbiLicenseNo")}
-                </p>
-                <p className="font-mono text-base">{bank.rbiLicenseNo}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">{t("ucbType")}</p>
-                <p className="text-base">{bank.registrationDetails.ucbType}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">
-                  {t("paidUpCapital")}
-                </p>
-                <p className="text-base">
-                  ₹{bank.paidUpCapital} {bank.paidUpCapitalUnit}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">
-                  {t("businessMix")}
-                </p>
-                <p className="text-base">
-                  ₹{bank.businessMix} {bank.businessMixUnit}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Staff Summary */}
-      <Card className="animate-fade-in-up delay-1">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="h-4 w-4" />
-            {t("staffOverview")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-6">
-            <div>
-              <p className="text-2xl font-bold">
-                {staffData.metadata.totalStaff}
-              </p>
-              <p className="text-muted-foreground text-sm">{t("totalStaff")}</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">
-                {staffData.metadata.departments}
-              </p>
-              <p className="text-muted-foreground text-sm">
-                {t("departments")}
-              </p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{bank.departments.length}</p>
-              <p className="text-muted-foreground text-sm">
-                {t("departmentHeads")}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Placeholder sections */}
-      <div className="animate-fade-in-up grid gap-4 delay-2 md:grid-cols-3">
-        {[
-          {
-            title: t("security"),
-            icon: Shield,
-            desc: t("securityDesc"),
-          },
-          {
-            title: t("localization"),
-            icon: Globe,
-            desc: t("localizationDesc"),
-          },
-          {
-            title: t("integrations"),
-            icon: Settings,
-            desc: t("integrationsDesc"),
-          },
-        ].map((section) => (
-          <Card key={section.title} className="border-dashed">
-            <CardContent className="p-5">
-              <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <section.icon className="text-muted-foreground/50 h-8 w-8" />
-                <p className="font-medium">{section.title}</p>
-                <p className="text-muted-foreground text-sm">{section.desc}</p>
-                <p className="text-muted-foreground/60 mt-2 text-sm">
-                  {tCommon("comingSoon")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <BankProfileForm settings={settings} />
     </div>
   );
 }

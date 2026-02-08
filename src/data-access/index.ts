@@ -15,13 +15,13 @@
 
 // Settings module (canonical example for all DAL modules)
 export { getTenantSettings, updateTenantSettingsDAL } from "./settings";
-export type { TenantSettings } from "./settings";
+export type { TenantSettings } from "@/types";
 
 // Session module (tenantId source of truth)
 export { getRequiredSession, getOptionalSession } from "./session";
 
 // Prisma module (tenant-scoped client with RLS)
-export { prismaForTenant } from "./prisma";
+export { prismaForTenant } from "@/lib/prisma";
 
 // Users module (05-04)
 export { getUsers, getUserById } from "./users";

@@ -1,5 +1,35 @@
 // Types matching actual demo JSON data shapes
 
+// ─── Database model types (used by DAL and UI) ─────────────────────────────
+
+/**
+ * Tenant settings as returned by getTenantSettings DAL function.
+ * Matches the Prisma Tenant model fields displayed on the settings page.
+ */
+export interface TenantSettings {
+  id: string;
+  name: string;
+  shortName: string;
+  rbiLicenseNo: string;
+  tier: string;
+  state: string;
+  city: string;
+  scheduledBankStatus: boolean;
+  nabardRegistrationNo: string | null;
+  multiStateLicense: boolean;
+  dakshScore: unknown | null; // Prisma Decimal
+  dakshScoreDate: Date | null;
+  pcaStatus: string;
+  pcaEffectiveDate: Date | null;
+  lastRbiInspectionDate: Date | null;
+  rbiRiskRating: string | null;
+  settings: unknown | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ─── Demo JSON data types ──────────────────────────────────────────────────
+
 export interface Department {
   id: string;
   name: string;

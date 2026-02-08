@@ -4,8 +4,10 @@ import { auth } from "@/lib/auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
+import { SessionWarningWrapper } from "@/components/auth/session-warning-wrapper";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UnauthorizedToast } from "./unauthorized-toast";
 
 function PageLoadingSkeleton() {
   return (
@@ -52,9 +54,19 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const user = session.user;
+  const userName = user.name || "User";
+  const userEmail = user.email || "";
+  const userInitials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+  const userRoles = (user as any).roles || [];
+
   // Valid session → render children wrapped in layout
-  // Note: TopBar and AppSidebar currently use currentUser() from current-user.ts
-  // In future, we can pass session.user to these components for better data flow
+  // Pass session data to AppSidebar for role-based navigation filtering
   return (
     <SidebarProvider>
       {/* Skip-to-content link - visible on keyboard focus */}
@@ -65,12 +77,23 @@ export default async function DashboardLayout({
         Skip to main content
       </a>
 
-      {/* App Sidebar */}
-      <AppSidebar />
+      {/* App Sidebar with role-based navigation filtering */}
+      <AppSidebar
+        roles={userRoles}
+        userName={userName}
+        userEmail={userEmail}
+        userInitials={userInitials}
+      />
 
       <SidebarInset>
         {/* Top Bar */}
         <TopBar />
+
+        {/* Session timeout warning (client component) */}
+        <SessionWarningWrapper />
+
+        {/* Unauthorized access notification */}
+        <UnauthorizedToast />
 
         <main
           id="main-content"

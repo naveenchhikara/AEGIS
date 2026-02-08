@@ -10,19 +10,14 @@
  * - getPermissions() returns union of all role permissions
  */
 
+import { Role as PrismaRole } from "@/generated/prisma/enums";
+
 /**
  * User roles in the AEGIS platform.
- * Matches the Role enum in Prisma schema (05-02).
+ * Re-exported from Prisma schema to ensure type compatibility.
  */
-export enum Role {
-  AUDITOR = "AUDITOR",
-  AUDIT_MANAGER = "AUDIT_MANAGER",
-  CAE = "CAE", // Chief Audit Executive
-  CCO = "CCO", // Chief Compliance Officer
-  CEO = "CEO", // Chief Executive Officer
-  AUDITEE = "AUDITEE",
-  BOARD_OBSERVER = "BOARD_OBSERVER", // Reserved — no permissions defined yet (DE9)
-}
+export type Role = PrismaRole;
+export const Role = PrismaRole;
 
 /**
  * Granular permissions across the platform.
@@ -179,7 +174,14 @@ export function canApproveObservation(
  * Excludes BOARD_OBSERVER which is reserved and not assignable yet.
  */
 export function getAssignableRoles(): Role[] {
-  return Object.values(Role).filter((role) => role !== Role.BOARD_OBSERVER);
+  return [
+    Role.AUDITOR,
+    Role.AUDIT_MANAGER,
+    Role.CAE,
+    Role.CCO,
+    Role.CEO,
+    Role.AUDITEE,
+  ];
 }
 
 /**

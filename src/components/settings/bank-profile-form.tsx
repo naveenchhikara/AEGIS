@@ -17,7 +17,7 @@ import {
 } from "@/lib/icons";
 import { updateTenantSettings } from "@/actions/settings";
 import { useToast } from "@/components/ui/use-toast";
-import type { TenantSettings } from "@/types";
+import type { TenantSettings } from "@/data-access";
 
 interface BankProfileFormProps {
   settings: TenantSettings;
@@ -38,7 +38,12 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
 
   // Editable fields state
   const [shortName, setShortName] = useState(settings.shortName);
+  const [address, setAddress] = useState(settings.address ?? "");
   const [city, setCity] = useState(settings.city);
+  const [pincode, setPincode] = useState(settings.pincode ?? "");
+  const [phone, setPhone] = useState(settings.phone ?? "");
+  const [email, setEmail] = useState(settings.email ?? "");
+  const [website, setWebsite] = useState(settings.website ?? "");
   const [nabardRegistrationNo, setNabardRegistrationNo] = useState(
     settings.nabardRegistrationNo ?? "",
   );
@@ -59,7 +64,12 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
     startTransition(async () => {
       const result = await updateTenantSettings({
         shortName,
+        address: address || null,
         city,
+        pincode: pincode || null,
+        phone: phone || null,
+        email: email || null,
+        website: website || null,
         nabardRegistrationNo: nabardRegistrationNo || null,
       });
       if (result.success) {
@@ -141,6 +151,20 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
                 className="bg-muted"
               />
             </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-sm">
+                Incorporation Date
+              </Label>
+              <Input
+                value={
+                  settings.incorporationDate
+                    ? formatDateDisplay(settings.incorporationDate)
+                    : "Not available"
+                }
+                disabled
+                className="bg-muted"
+              />
+            </div>
           </div>
           <p className="text-muted-foreground mt-3 flex items-center gap-1 text-xs">
             <Info className="h-3 w-3" />
@@ -165,6 +189,8 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
                 id="shortName"
                 value={shortName}
                 onChange={(e) => setShortName(e.target.value)}
+                placeholder="e.g., Apex Bank"
+                maxLength={50}
               />
             </div>
             <div className="space-y-2">
@@ -173,6 +199,60 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
                 id="city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                placeholder="City name"
+                maxLength={100}
+                required
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Street address"
+                maxLength={500}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pincode">Pincode</Label>
+              <Input
+                id="pincode"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="6-digit pincode"
+                maxLength={6}
+                pattern="[0-9]{6}"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+91 1234567890"
+                maxLength={20}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="contact@bank.com"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://www.bank.com"
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
@@ -184,6 +264,7 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
                 value={nabardRegistrationNo}
                 onChange={(e) => setNabardRegistrationNo(e.target.value)}
                 placeholder="Enter NABARD registration number"
+                maxLength={50}
               />
             </div>
           </div>

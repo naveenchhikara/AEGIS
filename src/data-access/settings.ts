@@ -1,6 +1,6 @@
 import "server-only";
 import { getRequiredSession } from "./session";
-import { prismaForTenant } from "@/lib/prisma";
+import { prismaForTenant } from "./prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { TenantSettings } from "@/types";
 
@@ -49,6 +49,12 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
       tier: true,
       state: true,
       city: true,
+      address: true,
+      pincode: true,
+      phone: true,
+      email: true,
+      website: true,
+      incorporationDate: true,
       scheduledBankStatus: true,
       nabardRegistrationNo: true,
       multiStateLicense: true,

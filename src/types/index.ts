@@ -14,6 +14,12 @@ export interface TenantSettings {
   tier: string;
   state: string;
   city: string;
+  address: string | null;
+  pincode: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  incorporationDate: Date | null;
   scheduledBankStatus: boolean;
   nabardRegistrationNo: string | null;
   multiStateLicense: boolean;
@@ -26,6 +32,29 @@ export interface TenantSettings {
   settings: unknown | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Audit log entry as returned by audit trail DAL queries.
+ * Matches the AuditLog Prisma model with joined user name.
+ */
+export interface AuditLogEntry {
+  id: string;
+  sequenceNumber: bigint;
+  tenantId: string;
+  tableName: string;
+  recordId: string;
+  operation: string;
+  actionType: string | null;
+  oldData: unknown | null;
+  newData: unknown | null;
+  userId: string | null;
+  userName: string | null; // Joined from User table
+  justification: string | null;
+  ipAddress: string | null;
+  sessionId: string | null;
+  retentionExpiresAt: Date | null;
+  createdAt: Date;
 }
 
 // ─── Demo JSON data types ──────────────────────────────────────────────────

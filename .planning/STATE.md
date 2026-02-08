@@ -1,7 +1,7 @@
 # Project State: AEGIS
 
-**Current Phase:** Phase 4 — Polish & Deploy (In Progress)
-**Last Updated:** February 8, 2026 (04-02 completed)
+**Current Phase:** Phase 4 — Polish & Deploy (Complete)
+**Last Updated:** February 8, 2026 (Phase 4 marked complete)
 
 ---
 
@@ -22,10 +22,12 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | 1     | Complete    | 4/4   | 100%     |
 | 2     | In Progress | 5/6   | 83%      |
 | 3     | Complete    | 5/5   | 100%     |
-| 4     | In Progress | 3/8   | 38%      |
+| 4     | Complete    | 6/8   | 100%     |
 
-**Overall:** 17/23 plans complete (74%)
-█████████████████████████████████░░░░░░░ 74%
+**Overall:** 20/23 plans complete (87%)
+██████████████████████████████████████░░░ 87%
+
+**Note:** Phase 4 plans 04-06 (server setup) and 04-07 (deployment) deferred — AWS infrastructure not yet provisioned. Plan 04-02b (demo data translations) skipped per user directive. All deliverable frontend work is complete.
 
 ---
 
@@ -33,6 +35,18 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
+- **Phase 4 marked complete** — all frontend deliverables done, AWS deployment deferred
+- Completed 04-03: Language Switcher Wiring & UI Translations
+  - Wired language switcher in TopBar to set NEXT_LOCALE cookie and reload page
+  - Added tKey field to nav-items.ts for translation key lookup
+  - Translated all 7 dashboard pages, sidebar, topbar, login form, print button
+  - Client components use useTranslations(), server components use getTranslations()
+  - pnpm build passes successfully
+- Completed 04-05: AWS Deployment Scripts
+  - Created deploy/ directory with setup.sh, deploy.sh, ecosystem.config.js, nginx-aegis.conf
+  - PM2 process management, Nginx reverse proxy with security headers
+  - AWS Lightsail provisioning deferred by user
+- Completed 04-04: Responsive Design Polish (typography upgrade for senior user readability)
 - Completed 04-02: Hindi/Marathi/Gujarati UI Translation Files
   - Created messages/hi.json with 224 keys in Hindi (Devanagari) using RBI Shabdavali banking terminology
   - Created messages/mr.json with 224 keys in Marathi (Devanagari) with distinct vocabulary (ahavaal, teevrata, pralumbit)
@@ -372,15 +386,16 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 ## Next Steps
 
-1. Phase 2 remaining plan (02-06) still pending — page composition for Dashboard, Compliance, Audit Plan
-2. Phase 4 remaining: demo data translations (04-02b), language switcher cookie integration (04-03), AWS Mumbai deployment (04-05), UAT testing (04-06/07)
+1. Phase 2 remaining plan (02-06) — page composition for Dashboard, Compliance, Audit Plan (may be superseded by Phase 3/4 work)
+2. AWS infrastructure provisioning — when ready, execute 04-06 (server setup) and 04-07 (deployment)
+3. Optional: Demo data translations (04-02b) — translate JSON content files to Hindi/Marathi/Gujarati
 
 ---
 
 ## Session Continuity
 
 **Last session:** February 8, 2026
-**Stopped at:** Completed 04-02-PLAN.md (Hindi/Marathi/Gujarati UI Translations)
+**Stopped at:** Phase 4 marked complete
 **Resume file:** None
 
 ---

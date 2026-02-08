@@ -1,17 +1,17 @@
 # Project State: AEGIS
 
-**Current Phase:** Phase 4 — Polish & Deploy (Complete)
-**Last Updated:** February 8, 2026 (Phase 4 marked complete)
+**Current Phase:** v1.0 Milestone Complete — Ready for next milestone
+**Last Updated:** February 8, 2026 (v1.0 milestone archived)
 
 ---
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated February 7, 2026)
+See: `.planning/PROJECT.md` (updated February 8, 2026)
 
 **Core value:** UCB audit teams can demonstrate complete compliance coverage to RBI and their board with clear evidence, while CEOs get real-time visibility into audit status and risk exposure.
 
-**Current focus:** Building clickable prototype to secure pilot commitments
+**Current focus:** v1.0 shipped — planning next milestone
 
 ---
 

@@ -44,3 +44,49 @@ export async function getCurrentTenantId(): Promise<string> {
   // For now, users have a tenantId field on their record
   return (session.user as any).tenantId as string;
 }
+
+/**
+ * Get user roles from session.
+ *
+ * Returns the roles array from the authenticated user.
+ */
+export async function getSessionRoles(): Promise<string[]> {
+  const session = await getRequiredSession();
+  // Extract roles from user object
+  // Note: User model has roles as Role[] enum array
+  const roles = (session.user as any).roles || [];
+  return roles;
+}
+
+/**
+ * Check if user has a specific role.
+ *
+ * @param role - Role to check for
+ * @returns true if user has the role, false otherwise
+ */
+export async function hasRole(role: string): Promise<boolean> {
+  const roles = await getSessionRoles();
+  return roles.includes(role);
+}
+
+/**
+ * Check if user has any of the specified roles.
+ *
+ * @param roles - Array of roles to check for
+ * @returns true if user has any of the roles, false otherwise
+ */
+export async function hasAnyRole(roles: string[]): Promise<boolean> {
+  const userRoles = await getSessionRoles();
+  return roles.some((role) => userRoles.includes(role));
+}
+
+/**
+ * Check if user has all of the specified roles.
+ *
+ * @param roles - Array of roles to check for
+ * @returns true if user has all of the roles, false otherwise
+ */
+export async function hasAllRoles(roles: string[]): Promise<boolean> {
+  const userRoles = await getSessionRoles();
+  return roles.every((role) => userRoles.includes(role));
+}

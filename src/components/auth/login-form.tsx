@@ -136,18 +136,10 @@ export function LoginForm() {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-4 flex items-center justify-center gap-3">
-            <div className="text-muted-foreground flex items-center gap-1 text-xs">
-              <Lock className="h-3 w-3" />
-              <span>256-bit Encryption</span>
-            </div>
+          <div className="mt-4 flex items-center justify-center">
             <div className="text-muted-foreground flex items-center gap-1 text-xs">
               <Shield className="h-3 w-3" />
               <span>RBI Compliant</span>
-            </div>
-            <div className="text-muted-foreground flex items-center gap-1 text-xs">
-              <Shield className="h-3 w-3" />
-              <span>SOC 2 Certified</span>
             </div>
           </div>
         </CardContent>

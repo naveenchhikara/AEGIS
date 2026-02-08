@@ -22,12 +22,12 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 | 1     | Complete    | 4/4   | 100%     |
 | 2     | In Progress | 5/6   | 83%      |
 | 3     | Complete    | 5/5   | 100%     |
-| 4     | Complete    | 6/8   | 100%     |
+| 4     | Complete    | 8/8   | 100%     |
 
-**Overall:** 20/23 plans complete (87%)
-██████████████████████████████████████░░░ 87%
+**Overall:** 22/23 plans complete (96%)
+██████████████████████████████████████████ 96%
 
-**Note:** Phase 4 plans 04-06 (server setup) and 04-07 (deployment) deferred — AWS infrastructure not yet provisioned. Plan 04-02b (demo data translations) skipped per user directive. All deliverable frontend work is complete.
+**Note:** Plan 04-02b (demo data translations) skipped per user directive. All other plans complete including AWS deployment.
 
 ---
 
@@ -35,7 +35,9 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 
 **February 8, 2026**
 
-- **Phase 4 marked complete** — all frontend deliverables done, AWS deployment deferred
+- **Phase 4 marked complete** — all 8 plans done (04-02b skipped)
+- Completed 04-06: Server Setup (AWS Lightsail provisioned and configured)
+- Completed 04-07: Application Deployment (production deployment and demo scripts)
 - Completed 04-03: Language Switcher Wiring & UI Translations
   - Wired language switcher in TopBar to set NEXT_LOCALE cookie and reload page
   - Added tKey field to nav-items.ts for translation key lookup
@@ -387,8 +389,7 @@ See: `.planning/PROJECT.md` (updated February 7, 2026)
 ## Next Steps
 
 1. Phase 2 remaining plan (02-06) — page composition for Dashboard, Compliance, Audit Plan (may be superseded by Phase 3/4 work)
-2. AWS infrastructure provisioning — when ready, execute 04-06 (server setup) and 04-07 (deployment)
-3. Optional: Demo data translations (04-02b) — translate JSON content files to Hindi/Marathi/Gujarati
+2. Optional: Demo data translations (04-02b) — translate JSON content files to Hindi/Marathi/Gujarati
 
 ---
 

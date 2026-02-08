@@ -1,7 +1,7 @@
 # Project State: AEGIS
 
-**Current Phase:** v1.0 Milestone Complete — Ready for next milestone
-**Last Updated:** February 8, 2026 (v1.0 milestone archived)
+**Current Phase:** v2.0 Working Core MVP — Defining requirements
+**Last Updated:** February 8, 2026 (v2.0 milestone started)
 
 ---
 
@@ -9,13 +9,15 @@
 
 See: `.planning/PROJECT.md` (updated February 8, 2026)
 
-**Core value:** UCB audit teams can demonstrate complete compliance coverage to RBI and their board with clear evidence, while CEOs get real-time visibility into audit status and risk exposure.
+**Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
 
-**Current focus:** v1.0 shipped — planning next milestone
+**Current focus:** v2.0 Working Core MVP — defining requirements
 
 ---
 
-## Progress
+## Milestone History
+
+### v1.0 Clickable Prototype (Shipped 2026-02-08)
 
 | Phase | Status   | Plans | Progress |
 | ----- | -------- | ----- | -------- |
@@ -24,10 +26,16 @@ See: `.planning/PROJECT.md` (updated February 8, 2026)
 | 3     | Complete | 5/5   | 100%     |
 | 4     | Complete | 8/8   | 100%     |
 
-**Overall:** 23/23 plans complete (100%)
-████████████████████████████████████████████ 100%
+23/23 plans complete. Plan 04-02b skipped per user directive.
 
-**Note:** Plan 04-02b (demo data translations) skipped per user directive. All phases complete.
+---
+
+## v2.0 Progress
+
+(Roadmap not yet created — defining requirements)
+
+**Overall:** 0%
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 
 ---
 

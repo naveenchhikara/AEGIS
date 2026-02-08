@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 5 of 10 (Foundation & Migration)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-08 — v2.0 roadmap created with 6 phases covering 59 requirements
+Plan: 1 of TBD in current phase
+Status: In progress
+Last activity: 2026-02-08 — Completed 05-01: Infrastructure Foundation
 
-Progress: [████░░░░░░░░░░░░░░░░] 17% (23/135+ plans complete across all milestones)
+Progress: [████░░░░░░░░░░░░░░░░] 18% (24/135+ plans complete across all milestones)
 
 ## Performance Metrics
 
@@ -27,16 +27,17 @@ Progress: [████░░░░░░░░░░░░░░░░] 17% (23
 
 **By Milestone:**
 
-| Milestone | Phases | Plans | Status   | Completed  |
-| --------- | ------ | ----- | -------- | ---------- |
-| v1.0      | 1-4    | 23/23 | Complete | 2026-02-08 |
-| v2.0      | 5-10   | 0/TBD | Pending  | -          |
+| Milestone | Phases | Plans | Status      | Completed  |
+| --------- | ------ | ----- | ----------- | ---------- |
+| v1.0      | 1-4    | 23/23 | Complete    | 2026-02-08 |
+| v2.0      | 5-10   | 1/TBD | In progress | 2026-02-08 |
 
 **Recent Trend:**
 
 - v1.0 shipped 2026-02-08 (Phases 1-4 complete)
 - v2.0 roadmap created 2026-02-08
-- Next: Plan Phase 5
+- 05-01: Infrastructure Foundation completed 2026-02-08
+- Next: Continue Phase 5 planning or execute 05-02
 
 ## Accumulated Context
 
@@ -45,6 +46,9 @@ Progress: [████░░░░░░░░░░░░░░░░] 17% (23
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting v2.0 work:
 
+- **No Redis in Phase 5 (D3):** Better Auth uses database sessions by default. Redis will be added in Phase 8 for email queue. (05-01)
+- **S3 IAM Policy: PutObject + GetObject only (D10, S6):** Evidence files are immutable once uploaded. Soft-delete via database `deleted_at` timestamp if needed. (05-01)
+- **DR Replication Target (DE10):** Must target ap-south-2 (Hyderabad) only. Never replicate to non-India AWS region. (05-01)
 - **PostgreSQL RLS for multi-tenancy:** Tenant isolation enforced at database level; even app bugs can't leak data (Pending)
 - **Better Auth (not NextAuth.js):** Auth.js joined Better Auth in Sept 2025; Better Auth has better Next.js 16 support (Pending)
 - **React-PDF for board reports:** Pure React, no headless browser; works client-side and server-side (Pending)
@@ -59,6 +63,9 @@ None yet.
 
 **Phase 5 (Foundation) readiness:**
 
+- Docker daemon not running — User must start Docker Desktop before `docker-compose up -d`
+- AWS CLI not configured — User must run `aws configure` and `./scripts/setup-s3.sh dev`
+- PostgreSQL schema not created — Prisma migrations to be added in Phase 6
 - RLS policy testing requires dedicated app role, not superuser (see research/SUMMARY.md)
 - Auth.js + next-intl cookie conflict must be validated (middleware ordering)
 - Data import trap: ~20 client components import JSON; all need server-fetch refactoring
@@ -76,8 +83,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: v2.0 roadmap and STATE.md created
-Resume file: None
+Stopped at: Completed 05-01: Infrastructure Foundation
+Resume file: .planning/phases/05-foundation-and-migration/05-01-SUMMARY.md
 
 ---
 

@@ -65,11 +65,17 @@ Plans:
 7. System suggests potential repeat findings and auto-escalates severity when confirmed
 8. Findings page displays real observation data from PostgreSQL
 
-**Plans:** TBD
+**Plans:** 7 plans
 
 Plans:
 
-- [ ] 06-01: TBD (to be planned)
+- [ ] 06-01-PLAN.md — Schema extension (version, resolvedDuringFieldwork, RBI circular junction table, pg_trgm indexes)
+- [ ] 06-02-PLAN.md — State machine TDD (canTransition, getAvailableTransitions, escalateSeverity)
+- [ ] 06-03-PLAN.md — Observation CRUD server actions + DAL (create, transition, resolve-fieldwork)
+- [ ] 06-04-PLAN.md — Repeat finding detection + confirm/dismiss (pg_trgm, severity escalation)
+- [ ] 06-05-PLAN.md — Create observation form UI + findings list migration to PostgreSQL
+- [ ] 06-06-PLAN.md — Observation detail page migration + timeline + actions panel
+- [ ] 06-07-PLAN.md — End-to-end verification checkpoint
 
 ---
 

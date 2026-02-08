@@ -200,3 +200,30 @@ export async function detectAuditGaps(
   `;
   return gaps.map((g) => ({ missingSequence: g.missing_sequence }));
 }
+
+/**
+ * Get client IP address from request headers.
+ *
+ * Extracts IP from X-Forwarded-For header (reverse proxy)
+ * or falls back to X-Real-IP header.
+ *
+ * @returns IP address string or empty string
+ */
+export async function getClientIpAddress(): Promise<string> {
+  const headersList = await headers();
+  const xForwardedFor = headersList.get("x-forwarded-for");
+  const xRealIp = headersList.get("x-real-ip");
+
+  // Prefer X-Forwarded-For (reverse proxy)
+  if (xForwardedFor) {
+    // X-Forwarded-For can contain multiple IPs: client, proxy1, proxy2
+    return xForwardedFor.split(",")[0].trim();
+  }
+
+  // Fallback to X-Real-IP
+  if (xRealIp) {
+    return xRealIp;
+  }
+
+  return "";
+}

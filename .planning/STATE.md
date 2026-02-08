@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 5 of 10 (Foundation & Migration)
-Plan: 1 of TBD in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-02-08 — Completed 05-01: Infrastructure Foundation
+Last activity: 2026-02-08 — Completed 05-04: Role-Based Access Control
 
-Progress: [████░░░░░░░░░░░░░░░░] 18% (24/135+ plans complete across all milestones)
+Progress: [████░░░░░░░░░░░░░░░░] 20% (27/135+ plans complete across all milestones)
 
 ## Performance Metrics
 
@@ -39,7 +39,8 @@ Progress: [████░░░░░░░░░░░░░░░░] 18% (24
 - 05-01: Infrastructure Foundation completed 2026-02-08
 - 05-02: Prisma Setup completed 2026-02-08
 - 05-03: Authentication Implementation completed 2026-02-08
-- Next: Continue with 05-04
+- 05-04: Role-Based Access Control completed 2026-02-08
+- Next: Continue with 05-05
 
 ## Accumulated Context
 
@@ -57,6 +58,12 @@ Recent decisions affecting v2.0 work:
 - **Rate limiting:** 10 attempts/15min per email, 30min lockout after 5 failures (05-03)
 - **Concurrent sessions:** Max 2 per user (05-03)
 - **Two-layer auth protection:** proxy.ts (UX) + layout.tsx (security) for zero content flash (05-03)
+- **Multi-role RBAC:** Users can hold multiple roles; permission checks use roles.some() not role === (D13, D20) (05-04)
+- **Role type from Prisma:** Import Role type from Prisma to ensure type compatibility between DB and app layer (05-04)
+- **Permission-first design:** Every feature requires explicit permission; no implicit access based on role name (05-04)
+- **Self-role-change prevention:** Admins cannot change their own roles to prevent privilege escalation (05-04)
+- **Justification for role changes:** All role changes require justification text for audit trail (DE6) (05-04)
+- **BOARD_OBSERVER reserved:** Role exists but has no permissions, shows empty state gracefully (DE9) (05-04)
 - **React-PDF for board reports:** Pure React, no headless browser; works client-side and server-side (Pending)
 - **AWS SES for email:** Mumbai region; reliable for banking clients; Rs 70/1000 emails (Pending)
 - **Bottom-up observation architecture:** Individual observations are atoms; all macro views derived by aggregation (Pending)
@@ -91,10 +98,10 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 05-03: Authentication Implementation
-Resume file: .planning/phases/05-foundation-and-migration/05-03-SUMMARY.md
+Stopped at: Completed 05-04: Role-Based Access Control
+Resume file: .planning/phases/05-foundation-and-migration/05-04-SUMMARY.md
 
 ---
 
 _State initialized: 2026-02-07_
-_Last updated: 2026-02-08 after v2.0 roadmap creation_
+_Last updated: 2026-02-08 after completing 05-04: Role-Based Access Control_

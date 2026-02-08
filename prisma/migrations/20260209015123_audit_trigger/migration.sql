@@ -44,11 +44,11 @@ BEGIN
     "ipAddress",
     "sessionId",
     "retentionExpiresAt",
-    "createdAt"
+    createdat  -- lowercase to match PostgreSQL default
   ) VALUES (
     gen_random_uuid(),
-    _tenant_id,
-    _user_id,
+    _tenant_id::UUID,  -- Cast TEXT to UUID (from current_setting)
+    _user_id::UUID,
     TG_TABLE_NAME,
     CASE
       WHEN TG_OP = 'DELETE' THEN OLD.id::TEXT

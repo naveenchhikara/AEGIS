@@ -17,8 +17,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { navItems } from "@/lib/nav-items";
-import { currentUser } from "@/lib/current-user";
+import { filterNavByRoles } from "@/lib/nav-items";
+import { type Role, getRoleDisplayName } from "@/lib/permissions";
 import { ChevronsUpDown, LogOut } from "@/lib/icons";
 import {
   DropdownMenu,
@@ -28,6 +28,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+interface AppSidebarProps {
+  /** User's roles for filtering navigation items */
+  roles?: Role[];
+  /** User's name for display in sidebar footer */
+  userName?: string;
+  /** User's email for display in sidebar footer */
+  userEmail?: string;
+  /** User's initials for avatar */
+  userInitials?: string;
+}
 
 function SidebarLogo() {
   const { state } = useSidebar();
@@ -55,10 +66,21 @@ function SidebarLogo() {
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({
+  roles = [],
+  userName = "User",
+  userEmail = "user@example.com",
+  userInitials = "U",
+}: AppSidebarProps) {
   const pathname = usePathname();
   const tNav = useTranslations("Navigation");
   const tTopBar = useTranslations("TopBar");
+
+  // Filter nav items based on user's roles
+  const visibleNavItems = filterNavByRoles(roles);
+
+  // Display role badges (comma-separated if multiple roles)
+  const roleBadges = roles.map((role) => getRoleDisplayName(role)).join(", ");
 
   return (
     <Sidebar collapsible="icon">
@@ -67,33 +89,44 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" &&
-                    pathname.startsWith(item.href + "/"));
-                const label = tNav(item.tKey);
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={label}
-                    >
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {visibleNavItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleNavItems.map((item) => {
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/dashboard" &&
+                      pathname.startsWith(item.href + "/"));
+                  const label = tNav(item.tKey);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={label}
+                      >
+                        <Link href={item.href}>
+                          <item.icon />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : (
+          // No permissions - show empty state
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <div className="text-sidebar-foreground/60 px-4 py-2 text-sm">
+                No permissions assigned. Please contact administrator.
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -107,15 +140,13 @@ export function AppSidebar() {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs">
-                      {currentUser.initials}
+                      {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {currentUser.name}
-                    </span>
+                    <span className="truncate font-semibold">{userName}</span>
                     <span className="text-sidebar-foreground/60 truncate text-xs">
-                      {currentUser.role}
+                      {roleBadges}
                     </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -130,13 +161,13 @@ export function AppSidebar() {
                 <div className="flex items-center gap-2 px-2 py-1.5">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {currentUser.initials}
+                      {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid text-sm leading-tight">
-                    <span className="font-semibold">{currentUser.name}</span>
+                    <span className="font-semibold">{userName}</span>
                     <span className="text-muted-foreground text-xs">
-                      {currentUser.email}
+                      {userEmail}
                     </span>
                   </div>
                 </div>

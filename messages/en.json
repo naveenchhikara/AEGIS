@@ -261,6 +261,8 @@
     "signupFailed": "Signup failed. Please try again.",
     "min8Chars": "At least 8 characters",
     "oneUppercase": "One uppercase letter",
-    "oneNumber": "One number"
+    "oneNumber": "One number",
+    "sessionExpired": "Session Expired",
+    "sessionExpiredMessage": "Your session has expired. Please sign in again to continue."
   }
 }

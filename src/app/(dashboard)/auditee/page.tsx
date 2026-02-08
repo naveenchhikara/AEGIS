@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { findings } from "@/data";
 import type { FindingsData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,16 +16,15 @@ const awaitingReview = data.findings.filter(
   (f) => f.status === "responded",
 ).length;
 
-export default function AuditeePage() {
+export default async function AuditeePage() {
+  const t = await getTranslations("Auditee");
+  const tCommon = await getTranslations("Common");
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Auditee Portal
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Respond to audit findings and track remediation
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -36,7 +36,7 @@ export default function AuditeePage() {
             <div>
               <p className="text-2xl font-bold">{pendingResponse}</p>
               <p className="text-muted-foreground text-sm">
-                Pending Your Response
+                {t("pendingYourResponse")}
               </p>
             </div>
           </CardContent>
@@ -48,7 +48,9 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{awaitingReview}</p>
-              <p className="text-muted-foreground text-sm">Awaiting Review</p>
+              <p className="text-muted-foreground text-sm">
+                {t("awaitingReview")}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -59,7 +61,9 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{data.summary.total}</p>
-              <p className="text-muted-foreground text-sm">Total Findings</p>
+              <p className="text-muted-foreground text-sm">
+                {t("totalFindings")}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -70,7 +74,7 @@ export default function AuditeePage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Findings Pending Your Response
+              {t("findingsPendingResponse")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -88,7 +92,7 @@ export default function AuditeePage() {
                         {f.observation}
                       </p>
                       <p className="text-muted-foreground mt-1 text-sm">
-                        Due: {formatDate(f.targetDate)}
+                        {tCommon("due")}: {formatDate(f.targetDate)}
                       </p>
                     </div>
                     <span
@@ -113,11 +117,9 @@ export default function AuditeePage() {
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <UserCheck className="text-muted-foreground/30 h-12 w-12" />
             <div>
-              <p className="font-medium">Auditee Response Portal</p>
+              <p className="font-medium">{t("portalTitle")}</p>
               <p className="text-muted-foreground mt-1 max-w-md text-sm">
-                In the full release, auditees will be able to respond to
-                findings, upload evidence documents, track remediation progress,
-                and communicate with auditors directly through this portal.
+                {t("portalDescription")}
               </p>
             </div>
           </div>

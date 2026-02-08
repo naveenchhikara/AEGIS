@@ -58,3 +58,85 @@ export async function setAuditContext(
   await tx.$executeRaw`SELECT set_config('app.current_ip_address', ${context.ipAddress ?? ""}, TRUE)`;
   await tx.$executeRaw`SELECT set_config('app.current_session_id', ${context.sessionId ?? ""}, TRUE)`;
 }
+
+/**
+ * Standard action types (document for consistency)
+ *
+ * Observation actions:
+ * - observation.created
+ * - observation.updated
+ * - observation.status_changed
+ * - observation.approved
+ *
+ * User actions:
+ * - user.created
+ * - user.role_changed (requires justification)
+ * - user.deactivated
+ *
+ * Compliance actions:
+ * - compliance.status_changed
+ * - compliance.marked_na (requires justification)
+ *
+ * Finding actions:
+ * - finding.created
+ * - finding.closed (requires justification)
+ * - finding.severity_changed
+ *
+ * Audit plan actions:
+ * - audit_plan.created
+ * - audit_plan.updated
+ *
+ * Tenant actions:
+ * - tenant.settings_updated
+ *
+ * Evidence actions:
+ * - evidence.uploaded
+ *
+ * Operations requiring justification (DE6):
+ * - finding.closed
+ * - user.role_changed
+ * - compliance.marked_na
+ * - observation.status_changed (to terminal states)
+ */
+export const AUDIT_ACTION_TYPES = {
+  OBSERVATION: {
+    CREATED: 'observation.created',
+    UPDATED: 'observation.updated',
+    STATUS_CHANGED: 'observation.status_changed',
+    APPROVED: 'observation.approved',
+  },
+  USER: {
+    CREATED: 'user.created',
+    ROLE_CHANGED: 'user.role_changed',
+    DEACTIVATED: 'user.deactivated',
+  },
+  COMPLIANCE: {
+    STATUS_CHANGED: 'compliance.status_changed',
+    MARKED_NA: 'compliance.marked_na',
+  },
+  FINDING: {
+    CREATED: 'finding.created',
+    CLOSED: 'finding.closed',
+    SEVERITY_CHANGED: 'finding.severity_changed',
+  },
+  AUDIT_PLAN: {
+    CREATED: 'audit_plan.created',
+    UPDATED: 'audit_plan.updated',
+  },
+  TENANT: {
+    SETTINGS_UPDATED: 'tenant.settings_updated',
+  },
+  EVIDENCE: {
+    UPLOADED: 'evidence.uploaded',
+  },
+} as const;
+
+/**
+ * Actions that require justification text (DE6)
+ */
+export const AUDIT_ACTIONS_REQUIRING_JUSTIFICATION = [
+  AUDIT_ACTION_TYPES.FINDING.CLOSED,
+  AUDIT_ACTION_TYPES.USER.ROLE_CHANGED,
+  AUDIT_ACTION_TYPES.COMPLIANCE.MARKED_NA,
+  AUDIT_ACTION_TYPES.OBSERVATION.STATUS_CHANGED, // when changing to terminal states
+] as const;

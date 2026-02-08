@@ -1,23 +1,11 @@
 "use client";
 
-import { type Role } from "@/lib/permissions";
 import { UserList } from "@/components/admin/user-list";
 import { RoleAssignmentForm } from "@/components/admin/role-assignment-form";
 import { useState } from "react";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  roles: Role[];
-  lastLoginAt: Date | null;
-  _count: {
-    createdObservations: number;
-  };
-}
-
 interface AdminUsersClientProps {
-  users: User[];
+  users: any[];
   currentUserId: string;
 }
 
@@ -25,16 +13,16 @@ export default function AdminUsersClient({
   users,
   currentUserId,
 }: AdminUsersClientProps) {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
 
-  const handleUserClick = (user: User) => {
+  const handleUserClick = (user: any) => {
     setSelectedUser(user);
     setShowRoleDialog(true);
   };
 
   const handleRoleUpdateSuccess = async () => {
-    // In production, we'd revalidate the page
+    // In production, we'd revalidate page
     // For now, close dialog and reload page
     setShowRoleDialog(false);
     window.location.reload();

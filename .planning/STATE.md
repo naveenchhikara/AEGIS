@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 5 of 10 (Foundation & Migration)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-02-08 — Completed 05-04: Role-Based Access Control
+Last activity: 2026-02-09 — Ready to execute 05-05: Data Access Layer Patterns
 
-Progress: [████░░░░░░░░░░░░░░░░] 20% (27/135+ plans complete across all milestones)
+Progress: [█████░░░░░░░░░░░░░░] 22% (30/135+ plans complete across all milestones)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 23 (v1.0 complete)
+- Total plans completed: 30 (v1.0 complete)
 - Average duration: Not tracked (v1.0 executed rapidly)
 - Total execution time: ~3 days (v1.0 prototype)
 
@@ -30,7 +30,7 @@ Progress: [████░░░░░░░░░░░░░░░░] 20% (27
 | Milestone | Phases | Plans | Status      | Completed  |
 | --------- | ------ | ----- | ----------- | ---------- |
 | v1.0      | 1-4    | 23/23 | Complete    | 2026-02-08 |
-| v2.0      | 5-10   | 1/TBD | In progress | 2026-02-08 |
+| v2.0      | 5-10   | 6/TBD | In progress | 2026-02-09 |
 
 **Recent Trend:**
 
@@ -40,7 +40,7 @@ Progress: [████░░░░░░░░░░░░░░░░] 20% (27
 - 05-02: Prisma Setup completed 2026-02-08
 - 05-03: Authentication Implementation completed 2026-02-08
 - 05-04: Role-Based Access Control completed 2026-02-08
-- Next: Continue with 05-05
+- 05-05: Next plan in phase
 
 ## Accumulated Context
 
@@ -53,20 +53,15 @@ Recent decisions affecting v2.0 work:
 - **S3 IAM Policy: PutObject + GetObject only (D10, S6):** Evidence files are immutable once uploaded. Soft-delete via database `deleted_at` timestamp if needed. (05-01)
 - **DR Replication Target (DE10):** Must target ap-south-2 (Hyderabad) only. Never replicate to non-India AWS region. (05-01)
 - **PostgreSQL RLS for multi-tenancy:** Tenant isolation enforced at database level; even app bugs can't leak data (Pending)
-- **Better Auth selected for Next.js 16 support:** Better Auth provides better DX and Next.js 16 compatibility vs NextAuth.js (05-03)
-- **Session management:** 30min idle timeout, 8hr absolute, session-only cookie (clears on browser close) (05-03)
-- **Rate limiting:** 10 attempts/15min per email, 30min lockout after 5 failures (05-03)
-- **Concurrent sessions:** Max 2 per user (05-03)
-- **Two-layer auth protection:** proxy.ts (UX) + layout.tsx (security) for zero content flash (05-03)
-- **Multi-role RBAC:** Users can hold multiple roles; permission checks use roles.some() not role === (D13, D20) (05-04)
-- **Role type from Prisma:** Import Role type from Prisma to ensure type compatibility between DB and app layer (05-04)
-- **Permission-first design:** Every feature requires explicit permission; no implicit access based on role name (05-04)
-- **Self-role-change prevention:** Admins cannot change their own roles to prevent privilege escalation (05-04)
-- **Justification for role changes:** All role changes require justification text for audit trail (DE6) (05-04)
-- **BOARD_OBSERVER reserved:** Role exists but has no permissions, shows empty state gracefully (DE9) (05-04)
+- **Better Auth (not NextAuth.js):** Auth.js joined Better Auth in Sept 2025; Better Auth has better Next.js 16 support (05-03)
 - **React-PDF for board reports:** Pure React, no headless browser; works client-side and server-side (Pending)
 - **AWS SES for email:** Mumbai region; reliable for banking clients; Rs 70/1000 emails (Pending)
 - **Bottom-up observation architecture:** Individual observations are atoms; all macro views derived by aggregation (Pending)
+- **Multi-role RBAC:** Users can hold multiple roles; permission checks use roles.some() not role === (D13, D20) (05-04)
+- **Role type from Prisma:** Import Role type from Prisma to ensure type compatibility between DB and app layer (05-04)
+- **Self-role-change prevention:** Admins cannot change their own roles to prevent privilege escalation (05-04)
+- **Justification for role changes:** All role changes require justification text for audit trail (DE6) (05-04)
+- **Permission-first design:** Every feature requires explicit permission; no implicit access based on role name (05-04)
 
 ### Pending Todos
 
@@ -79,8 +74,8 @@ None yet.
 - Docker daemon not running — User must start Docker Desktop before `docker-compose up -d`
 - AWS CLI not configured — User must run `aws configure` and `./scripts/setup-s3.sh dev`
 - PostgreSQL schema not created — Prisma migrations to be added in Phase 6
-- **Better Auth Prisma schema needs to be generated and applied** — Run `npx @better-auth/cli generate` or manually add Better Auth tables to schema.prisma (05-03)
-- **User model needs Better Auth fields** — emailVerified, image, password fields need to be added (05-03)
+- **Better Auth schema needs to be generated and applied** — Run `npx @better-auth/cli generate` or manually add Better Auth tables to schema.prisma (05-03)
+- **User model needs Better Auth fields** — emailVerified, image, password fields need to be added to User model (05-03)
 - RLS policy testing requires dedicated app role, not superuser (see research/SUMMARY.md)
 - Auth.js + next-intl cookie conflict must be validated (middleware ordering)
 - Data import trap: ~20 client components import JSON; all need server-fetch refactoring
@@ -97,11 +92,11 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Completed 05-04: Role-Based Access Control
+Last session: 2026-02-09
+Stopped at: Ready to execute 05-05: Data Access Layer Patterns
 Resume file: .planning/phases/05-foundation-and-migration/05-04-SUMMARY.md
 
 ---
 
 _State initialized: 2026-02-07_
-_Last updated: 2026-02-08 after completing 05-04: Role-Based Access Control_
+_Last updated: 2026-02-09 after 05-04 completion_

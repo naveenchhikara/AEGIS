@@ -147,81 +147,92 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements. Updated after roadmap creation.
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| FNDN-01     | —     | Pending |
-| FNDN-02     | —     | Pending |
-| FNDN-03     | —     | Pending |
-| FNDN-04     | —     | Pending |
-| FNDN-05     | —     | Pending |
-| FNDN-06     | —     | Pending |
-| FNDN-07     | —     | Pending |
-| FNDN-08     | —     | Pending |
-| OBS-01      | —     | Pending |
-| OBS-02      | —     | Pending |
-| OBS-03      | —     | Pending |
-| OBS-04      | —     | Pending |
-| OBS-05      | —     | Pending |
-| OBS-06      | —     | Pending |
-| OBS-07      | —     | Pending |
-| OBS-08      | —     | Pending |
-| OBS-09      | —     | Pending |
-| OBS-10      | —     | Pending |
-| OBS-11      | —     | Pending |
-| AUD-01      | —     | Pending |
-| AUD-02      | —     | Pending |
-| AUD-03      | —     | Pending |
-| AUD-04      | —     | Pending |
-| AUD-05      | —     | Pending |
-| AUD-06      | —     | Pending |
-| AUD-07      | —     | Pending |
-| DASH-01     | —     | Pending |
-| DASH-02     | —     | Pending |
-| DASH-03     | —     | Pending |
-| DASH-04     | —     | Pending |
-| DASH-05     | —     | Pending |
-| DASH-06     | —     | Pending |
-| NOTF-01     | —     | Pending |
-| NOTF-02     | —     | Pending |
-| NOTF-03     | —     | Pending |
-| NOTF-04     | —     | Pending |
-| NOTF-05     | —     | Pending |
-| NOTF-06     | —     | Pending |
-| RPT-01      | —     | Pending |
-| RPT-02      | —     | Pending |
-| RPT-03      | —     | Pending |
-| RPT-04      | —     | Pending |
-| RPT-05      | —     | Pending |
-| EXP-01      | —     | Pending |
-| EXP-02      | —     | Pending |
-| EXP-03      | —     | Pending |
-| EXP-04      | —     | Pending |
-| EXP-05      | —     | Pending |
-| EVID-01     | —     | Pending |
-| EVID-02     | —     | Pending |
-| EVID-03     | —     | Pending |
-| EVID-04     | —     | Pending |
-| EVID-05     | —     | Pending |
-| ONBD-01     | —     | Pending |
-| ONBD-02     | —     | Pending |
-| ONBD-03     | —     | Pending |
-| ONBD-04     | —     | Pending |
-| ONBD-05     | —     | Pending |
-| ONBD-06     | —     | Pending |
-| CMPL-01     | —     | Pending |
-| CMPL-02     | —     | Pending |
-| CMPL-03     | —     | Pending |
-| CMPL-04     | —     | Pending |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| FNDN-01     | Phase 5  | Pending |
+| FNDN-02     | Phase 5  | Pending |
+| FNDN-03     | Phase 5  | Pending |
+| FNDN-04     | Phase 5  | Pending |
+| FNDN-05     | Phase 5  | Pending |
+| FNDN-06     | Phase 5  | Pending |
+| FNDN-07     | Phase 5  | Pending |
+| FNDN-08     | Phase 5  | Pending |
+| OBS-01      | Phase 6  | Pending |
+| OBS-02      | Phase 6  | Pending |
+| OBS-03      | Phase 6  | Pending |
+| OBS-04      | Phase 6  | Pending |
+| OBS-05      | Phase 6  | Pending |
+| OBS-06      | Phase 6  | Pending |
+| OBS-07      | Phase 6  | Pending |
+| OBS-08      | Phase 6  | Pending |
+| OBS-09      | Phase 6  | Pending |
+| OBS-10      | Phase 6  | Pending |
+| OBS-11      | Phase 6  | Pending |
+| AUD-01      | Phase 7  | Pending |
+| AUD-02      | Phase 7  | Pending |
+| AUD-03      | Phase 7  | Pending |
+| AUD-04      | Phase 7  | Pending |
+| AUD-05      | Phase 7  | Pending |
+| AUD-06      | Phase 7  | Pending |
+| AUD-07      | Phase 7  | Pending |
+| EVID-01     | Phase 7  | Pending |
+| EVID-02     | Phase 7  | Pending |
+| EVID-03     | Phase 7  | Pending |
+| EVID-04     | Phase 7  | Pending |
+| EVID-05     | Phase 7  | Pending |
+| NOTF-01     | Phase 8  | Pending |
+| NOTF-02     | Phase 8  | Pending |
+| NOTF-03     | Phase 8  | Pending |
+| NOTF-04     | Phase 8  | Pending |
+| NOTF-05     | Phase 8  | Pending |
+| NOTF-06     | Phase 8  | Pending |
+| RPT-01      | Phase 8  | Pending |
+| RPT-02      | Phase 8  | Pending |
+| RPT-03      | Phase 8  | Pending |
+| RPT-04      | Phase 8  | Pending |
+| RPT-05      | Phase 8  | Pending |
+| EXP-01      | Phase 8  | Pending |
+| EXP-02      | Phase 8  | Pending |
+| EXP-03      | Phase 8  | Pending |
+| EXP-04      | Phase 8  | Pending |
+| EXP-05      | Phase 8  | Pending |
+| DASH-01     | Phase 9  | Pending |
+| DASH-02     | Phase 9  | Pending |
+| DASH-03     | Phase 9  | Pending |
+| DASH-04     | Phase 9  | Pending |
+| DASH-05     | Phase 9  | Pending |
+| DASH-06     | Phase 9  | Pending |
+| ONBD-01     | Phase 10 | Pending |
+| ONBD-02     | Phase 10 | Pending |
+| ONBD-03     | Phase 10 | Pending |
+| ONBD-04     | Phase 10 | Pending |
+| ONBD-05     | Phase 10 | Pending |
+| ONBD-06     | Phase 10 | Pending |
+| CMPL-01     | Phase 10 | Pending |
+| CMPL-02     | Phase 10 | Pending |
+| CMPL-03     | Phase 10 | Pending |
+| CMPL-04     | Phase 10 | Pending |
 
 **Coverage:**
 
 - v2.0 requirements: 59 total
-- Mapped to phases: 0
-- Unmapped: 59 (awaiting roadmap creation)
+- Mapped to phases: 59
+- Unmapped: 0
+
+**Phase distribution:**
+
+- Phase 5 (Foundation & Migration): 8 requirements
+- Phase 6 (Observation Lifecycle): 11 requirements
+- Phase 7 (Auditee Portal & Evidence): 12 requirements
+- Phase 8 (Notifications & Reports): 16 requirements
+- Phase 9 (Dashboards): 6 requirements
+- Phase 10 (Onboarding & Compliance): 10 requirements
+
+**Coverage:** 100% ✓
 
 ---
 
 _Requirements defined: 2026-02-08_
-_Last updated: 2026-02-08 after initial definition_
+_Last updated: 2026-02-08 after roadmap creation with phase mappings_

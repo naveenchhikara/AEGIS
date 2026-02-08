@@ -31,14 +31,14 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <div className="space-y-4">
         <a
           href="/findings"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Findings
         </a>
 
         <div className="space-y-2">
-          <p className="font-mono text-sm text-muted-foreground">
+          <p className="text-muted-foreground font-mono text-sm">
             {finding.id}
           </p>
           <h1 className="text-2xl font-bold">{finding.title}</h1>
@@ -64,12 +64,12 @@ export function FindingDetail({ finding }: FindingDetailProps) {
             >
               {finding.status}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               {finding.category}
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-base text-muted-foreground">
+          <div className="text-muted-foreground flex flex-wrap gap-4 text-base">
             <span>
               Assigned: <strong>{finding.assignedAuditor}</strong>
             </span>
@@ -86,7 +86,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Eye className="text-muted-foreground h-4 w-4" />
             Observation
           </CardTitle>
         </CardHeader>
@@ -99,7 +99,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <AlertTriangle className="text-muted-foreground h-4 w-4" />
             Root Cause Analysis
           </CardTitle>
         </CardHeader>
@@ -112,7 +112,7 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Shield className="text-muted-foreground h-4 w-4" />
             Risk Impact
           </CardTitle>
         </CardHeader>
@@ -125,13 +125,13 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="text-muted-foreground h-4 w-4" />
             Auditee Response
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isPendingResponse ? (
-            <p className="text-sm italic text-muted-foreground">
+            <p className="text-muted-foreground text-sm italic">
               {finding.auditeeResponse}
             </p>
           ) : (
@@ -146,13 +146,13 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle2 className="text-muted-foreground h-4 w-4" />
             Action Plan
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isPendingActionPlan ? (
-            <p className="text-sm italic text-muted-foreground">
+            <p className="text-muted-foreground text-sm italic">
               {finding.actionPlan}
             </p>
           ) : (
@@ -169,18 +169,20 @@ export function FindingDetail({ finding }: FindingDetailProps) {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-muted-foreground mb-1 text-sm">
                 Related RBI Circular
               </p>
-              <p className="font-mono text-base text-primary">
+              <p className="text-primary font-mono text-base">
                 {finding.relatedCircular}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-muted-foreground mb-1 text-sm">
                 Related Requirement
               </p>
-              <p className="font-mono text-base">{finding.relatedRequirement}</p>
+              <p className="font-mono text-base">
+                {finding.relatedRequirement}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -190,9 +192,9 @@ export function FindingDetail({ finding }: FindingDetailProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="text-muted-foreground h-4 w-4" />
             Status Timeline
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="text-muted-foreground text-xs font-normal">
               ({finding.timeline.length} events)
             </span>
           </CardTitle>

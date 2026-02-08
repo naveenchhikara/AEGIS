@@ -46,7 +46,15 @@ must_haves:
       contains: "id, severity, status, observation, timeline"
     - path: "src/data/index.ts"
       provides: "Central export for all demo data"
-      exports: ["bankProfile", "staff", "branches", "complianceRequirements", "auditPlans", "findings"]
+      exports:
+        [
+          "bankProfile",
+          "staff",
+          "branches",
+          "complianceRequirements",
+          "auditPlans",
+          "findings",
+        ]
   key_links:
     - from: "compliance-requirements.json"
       to: "rbi-regulations/compliance-requirements.json"
@@ -118,6 +126,7 @@ Output: Complete demo data set representing a Tier 2 Maharashtra cooperative ban
     - Each branch: code (BR002-BR012), location, manager name
 
     Use ISO 8601 dates throughout.
+
   </action>
   <verify>
     Check JSON validity:
@@ -162,6 +171,7 @@ Output: Complete demo data set representing a Tier 2 Maharashtra cooperative ban
     - Teams: mix of Priya Sharma + external auditors
 
     Reference existing compliance requirements IDs from src/data/rbi-regulations/compliance-requirements.json
+
   </action>
   <verify>
     Check JSON validity and reference consistency:
@@ -219,6 +229,7 @@ Output: Complete demo data set representing a Tier 2 Maharashtra cooperative ban
     ```
 
     Ensure all dates are ISO 8601 format.
+
   </action>
   <verify>
     Check JSON validity and TypeScript exports:
@@ -244,12 +255,13 @@ Output: Complete demo data set representing a Tier 2 Maharashtra cooperative ban
 </verification>
 
 <success_criteria>
+
 1. Can import and use all demo data from src/data/index.ts
 2. Data represents plausible Tier 2 UCB scenario
 3. Audit findings reflect real RBI observation patterns
 4. Staff and branch data scale appropriately for prototype
 5. All foreign key references resolve correctly
-</success_criteria>
+   </success_criteria>
 
 <output>
 After completion, create `.planning/quick/002-demo-data/002-SUMMARY.md`

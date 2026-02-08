@@ -16,34 +16,35 @@ The standard approach is well-established: shadcn/ui provides a `chart` componen
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| recharts | 3.7.0 | Charts (donut, area, radial gauge) | React 19 peer dep support, shadcn/ui's official charting layer, 165+ code snippets in Context7 |
-| @tanstack/react-table | 8.21.3 | Headless sortable/filterable data table | Standard React table solution, 1800+ code snippets in Context7, shadcn/ui Data Table pattern |
-| react-is | 19.2.4 | Peer dependency of recharts | Required by recharts; must match React version |
+| Library               | Version | Purpose                                 | Why Standard                                                                                   |
+| --------------------- | ------- | --------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| recharts              | 3.7.0   | Charts (donut, area, radial gauge)      | React 19 peer dep support, shadcn/ui's official charting layer, 165+ code snippets in Context7 |
+| @tanstack/react-table | 8.21.3  | Headless sortable/filterable data table | Standard React table solution, 1800+ code snippets in Context7, shadcn/ui Data Table pattern   |
+| react-is              | 19.2.4  | Peer dependency of recharts             | Required by recharts; must match React version                                                 |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| shadcn/ui chart | (installed via CLI) | `ChartContainer`, `ChartTooltip`, `ChartConfig` wrappers | All charts -- replaces raw `ResponsiveContainer` |
-| shadcn/ui select | (installed via CLI) | Filter dropdowns | Category/status/type filter controls |
-| shadcn/ui tabs | (installed via CLI) | View switching | Calendar vs card view toggle on audit page |
-| shadcn/ui popover | (installed via CLI) | Calendar picker, filter popovers | Date pickers, complex filter UIs |
-| shadcn/ui scroll-area | (installed via CLI) | Scrollable regions | Dashboard widget lists, detail modals |
-| shadcn/ui progress | (installed via CLI) | Progress bars | Audit engagement completion (AUDT-05) |
-| shadcn/ui checkbox | (installed via CLI) | Multi-select filters | Compliance registry filters |
+| Library               | Version             | Purpose                                                  | When to Use                                      |
+| --------------------- | ------------------- | -------------------------------------------------------- | ------------------------------------------------ |
+| shadcn/ui chart       | (installed via CLI) | `ChartContainer`, `ChartTooltip`, `ChartConfig` wrappers | All charts -- replaces raw `ResponsiveContainer` |
+| shadcn/ui select      | (installed via CLI) | Filter dropdowns                                         | Category/status/type filter controls             |
+| shadcn/ui tabs        | (installed via CLI) | View switching                                           | Calendar vs card view toggle on audit page       |
+| shadcn/ui popover     | (installed via CLI) | Calendar picker, filter popovers                         | Date pickers, complex filter UIs                 |
+| shadcn/ui scroll-area | (installed via CLI) | Scrollable regions                                       | Dashboard widget lists, detail modals            |
+| shadcn/ui progress    | (installed via CLI) | Progress bars                                            | Audit engagement completion (AUDT-05)            |
+| shadcn/ui checkbox    | (installed via CLI) | Multi-select filters                                     | Compliance registry filters                      |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Recharts | Nivo, Victory, visx | Recharts has official shadcn/ui integration; others would require custom theming |
-| TanStack Table | AG Grid, Mantine DataTable | TanStack is headless (fits shadcn/ui approach); AG Grid is too heavy for a prototype |
-| Raw ResponsiveContainer | shadcn ChartContainer | ChartContainer provides themed tooltips, CSS variable colors, accessibility layer; use it |
-| react-big-calendar | Custom month grid | A full calendar library is overkill for a 12-month FY grid showing audit pills |
+| Instead of              | Could Use                  | Tradeoff                                                                                  |
+| ----------------------- | -------------------------- | ----------------------------------------------------------------------------------------- |
+| Recharts                | Nivo, Victory, visx        | Recharts has official shadcn/ui integration; others would require custom theming          |
+| TanStack Table          | AG Grid, Mantine DataTable | TanStack is headless (fits shadcn/ui approach); AG Grid is too heavy for a prototype      |
+| Raw ResponsiveContainer | shadcn ChartContainer      | ChartContainer provides themed tooltips, CSS variable colors, accessibility layer; use it |
+| react-big-calendar      | Custom month grid          | A full calendar library is overkill for a 12-month FY grid showing audit pills            |
 
 **Installation:**
+
 ```bash
 pnpm add recharts @tanstack/react-table react-is
 npx shadcn@latest add chart --yes --overwrite
@@ -55,6 +56,7 @@ npx shadcn@latest add select tabs popover scroll-area progress checkbox --yes --
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 src/
 ├── components/
@@ -94,6 +96,7 @@ src/
 **Why:** ChartContainer provides themed tooltips that match the shadcn design system, automatic CSS variable color mapping (`var(--color-KEY)`), and the `accessibilityLayer` prop on Recharts chart components for screen reader support.
 
 **Example:**
+
 ```typescript
 // Source: Context7 /websites/ui_shadcn - chart docs
 "use client"
@@ -135,6 +138,7 @@ export function AuditCoverageChart() {
 **When to use:** The compliance registry table.
 
 **Example:**
+
 ```typescript
 // Source: Context7 /websites/ui_shadcn - data table docs
 "use client"
@@ -224,12 +228,13 @@ function ComplianceTable() {
 **When to use:** Every component that reads demo data.
 
 **Example:**
+
 ```typescript
 // Already established in codebase
-import { demoComplianceRequirements } from "@/data"
-import type { ComplianceData } from "@/types"
+import { demoComplianceRequirements } from "@/data";
+import type { ComplianceData } from "@/types";
 
-const data = demoComplianceRequirements as unknown as ComplianceData
+const data = demoComplianceRequirements as unknown as ComplianceData;
 ```
 
 ### Anti-Patterns to Avoid
@@ -244,57 +249,64 @@ const data = demoComplianceRequirements as unknown as ComplianceData
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Chart tooltips | Custom `<div>` positioned on hover | `ChartTooltipContent` from shadcn/ui chart | Handles positioning, theming, dark mode, responsive behavior |
-| Sortable table headers | Custom sort state + icon toggle | TanStack Table `getSortedRowModel()` + `column.toggleSorting()` | Handles multi-sort, sort direction, stable sort |
-| Filtered table | Custom `Array.filter()` on render | TanStack Table `getFilteredRowModel()` + `columnFilters` state | Handles multiple filters, filter removal, filter count |
-| Progress bars | `<div>` with width percentage | shadcn/ui `Progress` component | Handles animation, accessibility (`role="progressbar"`), colors |
-| Side panels | Custom positioned `<div>` | shadcn/ui `Sheet` component | Handles slide animation, backdrop, focus trap, keyboard dismiss |
-| Modal dialogs | Custom overlay | shadcn/ui `Dialog` component | Handles focus trap, Escape key, click-outside, scroll lock |
-| Scrollable lists | `overflow-y: auto` | shadcn/ui `ScrollArea` component | Custom scrollbar styling, touch support, consistent cross-browser |
+| Problem                | Don't Build                        | Use Instead                                                     | Why                                                               |
+| ---------------------- | ---------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Chart tooltips         | Custom `<div>` positioned on hover | `ChartTooltipContent` from shadcn/ui chart                      | Handles positioning, theming, dark mode, responsive behavior      |
+| Sortable table headers | Custom sort state + icon toggle    | TanStack Table `getSortedRowModel()` + `column.toggleSorting()` | Handles multi-sort, sort direction, stable sort                   |
+| Filtered table         | Custom `Array.filter()` on render  | TanStack Table `getFilteredRowModel()` + `columnFilters` state  | Handles multiple filters, filter removal, filter count            |
+| Progress bars          | `<div>` with width percentage      | shadcn/ui `Progress` component                                  | Handles animation, accessibility (`role="progressbar"`), colors   |
+| Side panels            | Custom positioned `<div>`          | shadcn/ui `Sheet` component                                     | Handles slide animation, backdrop, focus trap, keyboard dismiss   |
+| Modal dialogs          | Custom overlay                     | shadcn/ui `Dialog` component                                    | Handles focus trap, Escape key, click-outside, scroll lock        |
+| Scrollable lists       | `overflow-y: auto`                 | shadcn/ui `ScrollArea` component                                | Custom scrollbar styling, touch support, consistent cross-browser |
 
 **Key insight:** shadcn/ui has dedicated chart primitives (`ChartContainer`, `ChartTooltip`, `ChartLegend`) that the existing plans did NOT use. These should replace raw Recharts `ResponsiveContainer` + custom tooltips throughout.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Missing `chart.tsx` Component
+
 **What goes wrong:** Plans reference Recharts `ResponsiveContainer` directly, but shadcn/ui provides a `chart` component with `ChartContainer` that provides themed integration.
 **Why it happens:** The shadcn chart component must be installed separately (`npx shadcn@latest add chart`) and was not included in the existing Phase 1 setup.
 **How to avoid:** Install chart component in Plan 02-01 alongside other shadcn primitives. Use `ChartContainer` instead of `ResponsiveContainer` in all chart components.
 **Warning signs:** Charts don't match the shadcn theme, custom tooltip code is being written.
 
 ### Pitfall 2: Recharts SSR Hydration Errors
+
 **What goes wrong:** Recharts renders SVG client-side. If a chart component is rendered as a Server Component, the server HTML won't match the client HTML, causing hydration errors.
 **Why it happens:** Next.js App Router defaults to Server Components. Forgetting `"use client"` on chart files causes SSR mismatches.
 **How to avoid:** Every file that imports from `recharts` MUST have `"use client"` at the top. This is already noted in the existing plans.
 **Warning signs:** Console errors about "Hydration failed" or "Text content does not match."
 
 ### Pitfall 3: Recharts `react-is` Peer Dependency
+
 **What goes wrong:** pnpm warns about unmet peer dependency for `react-is` when installing recharts.
 **Why it happens:** Recharts 3.7.0 lists `react-is` as a peer dependency (not a regular dependency). pnpm is strict about peer deps.
 **How to avoid:** Explicitly install `react-is` alongside recharts: `pnpm add recharts react-is`.
 **Warning signs:** pnpm install warnings about missing peer dependency.
 
 ### Pitfall 4: TanStack Table + React Compiler
+
 **What goes wrong:** TanStack Table v8 doesn't re-render properly when the React Compiler is enabled. The table instance returned from `useReactTable` doesn't update as expected under aggressive memoization.
 **Why it happens:** TanStack Table v8 has internal optimization patterns that conflict with the React Compiler's automatic memoization.
 **How to avoid:** Do NOT enable `reactCompiler: true` in `next.config.ts` while using TanStack Table v8. The React Compiler is opt-in in Next.js 16 (not enabled by default), and it is currently NOT enabled in this project.
 **Warning signs:** Table data doesn't update after state changes, filters appear to do nothing.
 
 ### Pitfall 5: ChartContainer Requires `min-h-[VALUE]`
+
 **What goes wrong:** Chart renders with zero height, appearing invisible.
 **Why it happens:** `ChartContainer` (unlike `ResponsiveContainer` which takes `height` prop) needs a CSS min-height to establish a rendering box.
 **How to avoid:** Always set `className="min-h-[200px] w-full"` (or appropriate height) on `ChartContainer`.
 **Warning signs:** Chart container exists in DOM but has 0px height.
 
 ### Pitfall 6: Compliance Data Has Only 15 Requirements (Not 50+)
+
 **What goes wrong:** COMP-01 requires "50+ RBI compliance requirements" but the demo data only has 15.
 **Why it happens:** The current `compliance-requirements.json` was created with 15 items during Quick Task 002.
 **How to avoid:** Either expand the demo data to 50+ requirements (from the RBI regulations knowledge base in `src/data/rbi-regulations/`), or note this as a known gap for later data expansion. The table component should handle any number of rows.
 **Warning signs:** Table looks sparse, success criteria #2 fails.
 
 ### Pitfall 7: Tailwind v4 CSS Variable Syntax
+
 **What goes wrong:** Using `var(--chart-1)` works in plain CSS but chart colors defined as `hsl(var(--chart-1))` need the HSL values stored WITHOUT the `hsl()` wrapper in the CSS variable.
 **Why it happens:** The project's globals.css stores chart colors as HSL triplets (e.g., `--chart-1: 207 90% 35%`) which are then wrapped with `hsl()` in the `@theme inline` block.
 **How to avoid:** Use `hsl(var(--chart-1))` in ChartConfig color values, matching the pattern in globals.css `@theme inline` block. Or use hex/oklch colors directly.
@@ -303,6 +315,7 @@ Problems that look simple but have existing solutions:
 ## Code Examples
 
 ### Donut Chart (Audit Coverage - DASH-02)
+
 ```typescript
 // Source: Context7 /recharts/recharts - PieChart + shadcn chart pattern
 "use client"
@@ -361,6 +374,7 @@ export function AuditCoverageChart() {
 ```
 
 ### Area Chart (Compliance Trend - COMP-06)
+
 ```typescript
 // Source: Context7 /recharts/recharts - AreaChart + shadcn chart pattern
 "use client"
@@ -408,6 +422,7 @@ export function ComplianceTrendChart() {
 ```
 
 ### Sortable Table Header (from shadcn Data Table pattern)
+
 ```typescript
 // Source: Context7 /websites/ui_shadcn - data table docs
 import { Button } from "@/components/ui/button"
@@ -446,6 +461,7 @@ const columns: ColumnDef<ComplianceRequirement>[] = [
 ```
 
 ### RadialBarChart as Gauge (Health Score - DASH-01)
+
 ```typescript
 // Source: Context7 /recharts/recharts - RadialBarChart
 "use client"
@@ -479,21 +495,23 @@ export function HealthScoreCard({ score }: { score: number }) {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Raw `ResponsiveContainer` | shadcn `ChartContainer` + `ChartConfig` | shadcn/ui chart component release (2024) | Themed tooltips, CSS variable colors, accessibility |
-| Custom chart tooltips | `ChartTooltipContent` from shadcn | shadcn/ui chart component | No custom tooltip code needed |
-| Manual table sorting/filtering | TanStack Table v8 with row models | TanStack Table v8 stable | Declarative sorting/filtering with `getSortedRowModel()` / `getFilteredRowModel()` |
-| Custom progress bars | shadcn/ui `Progress` component | Available since shadcn launch | Accessible, animated, consistent with design system |
-| Recharts 2.x with react-is workaround | Recharts 3.7.0 with React 19 peer dep | Recharts 3.x (2025) | Clean peer dependency, no workaround needed |
+| Old Approach                          | Current Approach                        | When Changed                             | Impact                                                                             |
+| ------------------------------------- | --------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| Raw `ResponsiveContainer`             | shadcn `ChartContainer` + `ChartConfig` | shadcn/ui chart component release (2024) | Themed tooltips, CSS variable colors, accessibility                                |
+| Custom chart tooltips                 | `ChartTooltipContent` from shadcn       | shadcn/ui chart component                | No custom tooltip code needed                                                      |
+| Manual table sorting/filtering        | TanStack Table v8 with row models       | TanStack Table v8 stable                 | Declarative sorting/filtering with `getSortedRowModel()` / `getFilteredRowModel()` |
+| Custom progress bars                  | shadcn/ui `Progress` component          | Available since shadcn launch            | Accessible, animated, consistent with design system                                |
+| Recharts 2.x with react-is workaround | Recharts 3.7.0 with React 19 peer dep   | Recharts 3.x (2025)                      | Clean peer dependency, no workaround needed                                        |
 
 **Deprecated/outdated:**
+
 - **Recharts 2.x:** Still works but 3.x has proper React 19 support and improved TypeScript types
 - **TanStack Table `@tanstack/react-table` v7:** v8 has been stable for years; v7 had a completely different API
 
 ## Existing Plans Assessment
 
 ### What the existing plans got right:
+
 1. **Correct library choices:** Recharts + TanStack Table is the standard stack
 2. **Component structure:** 6 dashboard widgets, 4 compliance components, 4 audit components is well-organized
 3. **Wave dependency model:** Plan 01 (deps) -> Plans 02-05 (components, parallel) -> Plan 06 (composition) is correct
@@ -503,6 +521,7 @@ export function HealthScoreCard({ score }: { score: number }) {
 7. **Audit calendar design:** Custom month grid instead of react-big-calendar is appropriate
 
 ### What the existing plans got wrong or missed:
+
 1. **Missing shadcn chart component:** Plans reference raw `ResponsiveContainer` instead of `ChartContainer`. The shadcn `chart` component (`npx shadcn@latest add chart`) is not mentioned anywhere. This is the biggest gap.
 2. **Missing `react-is` dependency:** Recharts 3.7.0 requires `react-is` as a peer dep. Not mentioned in Plan 02-01.
 3. **Chart color pattern:** Plans use hardcoded hex colors (`#10B981`, `#3B82F6`) instead of CSS variable pattern (`var(--color-KEY)`) from ChartConfig.
@@ -531,6 +550,7 @@ export function HealthScoreCard({ score }: { score: number }) {
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Context7 `/recharts/recharts` - PieChart, RadialBarChart, AreaChart patterns, ResponsiveContainer usage
 - Context7 `/websites/tanstack_table` - useReactTable setup with sorting, filtering, column definitions
 - Context7 `/websites/ui_shadcn` - Data Table pattern, Chart component, ChartContainer/ChartConfig/ChartTooltip
@@ -540,17 +560,20 @@ export function HealthScoreCard({ score }: { score: number }) {
 - [shadcn/ui Data Table docs](https://ui.shadcn.com/docs/components/radix/data-table) - TanStack Table integration pattern
 
 ### Secondary (MEDIUM confidence)
+
 - [Next.js 16 blog](https://nextjs.org/blog/next-16) - React Compiler is opt-in, not default
 - [Next.js reactCompiler config](https://nextjs.org/docs/app/api-reference/config/next-config-js/reactCompiler) - promoted from experimental to stable, but not enabled by default
 - [TanStack Table + React Compiler issue](https://github.com/TanStack/table/issues/5567) - confirmed open issue, workaround is `"use no memo"`
 - [recharts React 19 issue](https://github.com/recharts/recharts/issues/4558) - historical context, now resolved in 3.x
 
 ### Tertiary (LOW confidence)
+
 - Web search results for Recharts SSR hydration patterns - general Next.js hydration guidance, not Recharts-specific testing
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - verified via Context7 docs, npm registry, and shadcn/ui official docs
 - Architecture: HIGH - patterns match Context7 code examples and shadcn/ui documented patterns
 - Pitfalls: HIGH - React Compiler issue verified via GitHub issue #5567; recharts peer deps verified via npm; Tailwind v4 gotcha from project memory

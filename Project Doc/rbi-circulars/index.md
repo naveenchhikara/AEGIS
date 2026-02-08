@@ -20,33 +20,33 @@ Project Doc/rbi-circulars/
 
 ## Circular Categories
 
-| Category | Description | Typical Compliance Areas |
-|----------|-------------|-------------------------|
-| **Risk Management** | Basel III, risk-based supervision, asset liability management | Risk monitoring, capital adequacy, risk committee |
-| **Governance** | Board composition, fit & proper, related party transactions | Board oversight, director appointments, disclosure |
-| **Operations** | KYC, AML, customer service, grievance redressal | Customer onboarding, transaction monitoring, complaints |
-| **IT** | Information security, cyber resilience, business continuity | IT controls, data protection, DR/BCP testing |
-| **Credit** | Loan classification, NPAs, provisioning, credit appraisal | Credit assessment, asset quality, loan monitoring |
-| **Market Risk** | Interest rate risk, liquidity management, investment guidelines | Treasury operations, investment portfolio, ALM |
+| Category            | Description                                                     | Typical Compliance Areas                                |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------- |
+| **Risk Management** | Basel III, risk-based supervision, asset liability management   | Risk monitoring, capital adequacy, risk committee       |
+| **Governance**      | Board composition, fit & proper, related party transactions     | Board oversight, director appointments, disclosure      |
+| **Operations**      | KYC, AML, customer service, grievance redressal                 | Customer onboarding, transaction monitoring, complaints |
+| **IT**              | Information security, cyber resilience, business continuity     | IT controls, data protection, DR/BCP testing            |
+| **Credit**          | Loan classification, NPAs, provisioning, credit appraisal       | Credit assessment, asset quality, loan monitoring       |
+| **Market Risk**     | Interest rate risk, liquidity management, investment guidelines | Treasury operations, investment portfolio, ALM          |
 
 ## Circular to Requirements Mapping
 
 ### Format
 
-| Circular ID | Title | Date | Category | Mapped Requirements |
-|-------------|-------|------|----------|-------------------|
+| Circular ID     | Title          | Date       | Category | Mapped Requirements   |
+| --------------- | -------------- | ---------- | -------- | --------------------- |
 | RBI/YYYY-NN/### | Circular Title | YYYY-MM-DD | Category | REQ-001, REQ-002, ... |
 
 ### Sample Entries
 
-| Circular ID | Title | Date | Category | Mapped Requirements |
-|-------------|-------|------|----------|-------------------|
-| RBI/2023-24/117 | Governance in UCBs - Directors | 2023-08-15 | Governance | GOV-001, GOV-002, GOV-005 |
-| RBI/2023-24/098 | Risk Management and Internal Control | 2023-06-22 | Risk Management | RISK-001, RISK-003, RISK-007 |
-| RBI/2022-23/245 | Cyber Security Framework | 2022-12-01 | IT | IT-001, IT-002, IT-004, IT-008 |
-| RBI/2023-24/056 | NPA Norms and Asset Classification | 2023-04-10 | Credit | CR-001, CR-002, CR-003 |
-| RBI/2023-24/089 | KYC/AML Guidelines | 2023-05-28 | Operations | OPS-001, OPS-002, OPS-004 |
-| RBI/2022-23/178 | ALM and Liquidity Management | 2022-09-15 | Market Risk | MR-001, MR-002 |
+| Circular ID     | Title                                | Date       | Category        | Mapped Requirements            |
+| --------------- | ------------------------------------ | ---------- | --------------- | ------------------------------ |
+| RBI/2023-24/117 | Governance in UCBs - Directors       | 2023-08-15 | Governance      | GOV-001, GOV-002, GOV-005      |
+| RBI/2023-24/098 | Risk Management and Internal Control | 2023-06-22 | Risk Management | RISK-001, RISK-003, RISK-007   |
+| RBI/2022-23/245 | Cyber Security Framework             | 2022-12-01 | IT              | IT-001, IT-002, IT-004, IT-008 |
+| RBI/2023-24/056 | NPA Norms and Asset Classification   | 2023-04-10 | Credit          | CR-001, CR-002, CR-003         |
+| RBI/2023-24/089 | KYC/AML Guidelines                   | 2023-05-28 | Operations      | OPS-001, OPS-002, OPS-004      |
+| RBI/2022-23/178 | ALM and Liquidity Management         | 2022-09-15 | Market Risk     | MR-001, MR-002                 |
 
 ## Requirement ID Convention
 
@@ -73,21 +73,25 @@ Examples:
 Below are commonly referenced circulars for Urban Cooperative Banks:
 
 ### Governance
+
 - **UCB Directions**: Master directions on governance in UCBs
 - **Fit and Proper**: Criteria for board appointments
 - **RPT Norms**: Related Party Transactions disclosure
 
 ### Risk Management
+
 - **RBS Framework**: Risk Based Supervision guidelines
 - **Basel III**: Capital adequacy and disclosure norms
 - **ORM**: Operational Risk Management requirements
 
 ### IT & Security
+
 - **Cyber Security**: Baseline cyber security controls
 - **BCP/DR**: Business Continuity Planning framework
 - **IT Examination**: IT inspection guidelines
 
 ### Credit & Operations
+
 - **KYC/AML**: Customer identification procedures
 - **NPA Norms**: Asset classification and provisioning
 - **Customer Service**: Grievance redressal mechanism

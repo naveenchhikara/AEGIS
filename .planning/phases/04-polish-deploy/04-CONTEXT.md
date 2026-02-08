@@ -14,18 +14,21 @@ Add multi-language support (Hindi, Marathi, Gujarati) to all UI and demo data, f
 ## Implementation Decisions
 
 ### Translation scope
+
 - Translate EVERYTHING visible — UI labels, navigation, buttons, headings, AND all demo data (finding descriptions, audit names, compliance content, bank details)
 - All 35 findings fully translated into Hindi, Marathi, and Gujarati (descriptions, root causes, action plans)
 - Banking acronyms stay in English (CRAR, NPA, ALM, DAKSH, PCA) — these are industry-standard terms bankers know in English
 - AI-generated translations (Claude/LLM) — acceptable quality for prototype demo, no professional translation service needed
 
 ### Language switcher UX
+
 - Dropdown in top bar showing all 4 languages in their native script: English, हिन्दी, मराठी, ગુજરાતી
 - Default language: English on first visit
 - Smooth fade transition (200-300ms) when switching languages — no page reload, masks text reflow
 - Language preference persisted via cookie — next visit loads in last-selected language
 
 ### Responsive design
+
 - Primary demo target: Desktop/laptop (hero experience)
 - Mobile/tablet: Polished responsive — thoughtful adapted layouts, not just "not broken"
 - Charts on mobile: Simplified representations (e.g., progress bars instead of radial chart, numbers instead of donut) — faster loading, cleaner
@@ -35,6 +38,7 @@ Add multi-language support (Hindi, Marathi, Gujarati) to all UI and demo data, f
 - Board report print: Optimized for A4 paper size (standard in India)
 
 ### Deployment
+
 - AWS Lightsail Mumbai (ap-south-1), Small instance ($5/mo, 1GB RAM, 1 vCPU)
 - AWS account already exists — just provision the instance
 - Custom domain will be provided later — plan for custom domain support
@@ -43,11 +47,13 @@ Add multi-language support (Hindi, Marathi, Gujarati) to all UI and demo data, f
 - Node.js + PM2 + Nginx stack
 
 ### Demo scripts
+
 - Markdown docs with step-by-step instructions, screenshots, and talking points
 - Two versions: 15-minute and 30-minute
 - Language switching: brief mention, not a centerpiece — focus demo time on core audit/compliance features
 
 ### Claude's Discretion
+
 - Multilingual print support for board report (whether Devanagari/Gujarati scripts print correctly in PDF)
 - Specific chart simplification choices per widget on mobile
 - Demo script structure and flow
@@ -75,5 +81,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 04-polish-deploy*
-*Context gathered: February 8, 2026*
+_Phase: 04-polish-deploy_
+_Context gathered: February 8, 2026_

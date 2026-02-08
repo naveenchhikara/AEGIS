@@ -181,6 +181,7 @@ _Completed: 2026-02-07_
 ## Self-Check: PASSED
 
 **Created files:**
+
 - ✅ src/components/dashboard/health-score-card.tsx
 - ✅ src/components/dashboard/audit-coverage-chart.tsx
 - ✅ src/components/dashboard/findings-count-cards.tsx
@@ -189,6 +190,7 @@ _Completed: 2026-02-07_
 - ✅ src/components/dashboard/quick-actions.tsx
 
 **Commits:**
+
 - ✅ 240f2ea (docs 02-02 commit)
 - ✅ 2049061 (feat 02-02 task 1)
 - ✅ 4549393 (feat 02-02 task 2)

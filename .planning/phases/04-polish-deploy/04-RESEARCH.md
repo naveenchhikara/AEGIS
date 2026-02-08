@@ -18,33 +18,34 @@ Font support is a critical concern: Inter (the current font) does NOT support De
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| next-intl | ^4.8 | i18n framework for Next.js App Router | De facto standard for Next.js i18n; ICU message format; supports both Server and Client Components |
-| Noto Sans | - | Latin script font | Google's universal font family; matches well with Devanagari/Gujarati variants |
-| Noto Sans Devanagari | - | Hindi/Marathi script font | Google's official Devanagari font; covers Hindi and Marathi |
-| Noto Sans Gujarati | - | Gujarati script font | Google's official Gujarati font |
-| PM2 | latest | Node.js process manager | Auto-restart, logging, system startup integration |
-| Nginx | latest | Reverse proxy | SSL termination, static file serving, proxy to Node.js |
-| Certbot | latest | Let's Encrypt SSL client | Free SSL certificates, auto-renewal |
+| Library              | Version | Purpose                               | Why Standard                                                                                       |
+| -------------------- | ------- | ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| next-intl            | ^4.8    | i18n framework for Next.js App Router | De facto standard for Next.js i18n; ICU message format; supports both Server and Client Components |
+| Noto Sans            | -       | Latin script font                     | Google's universal font family; matches well with Devanagari/Gujarati variants                     |
+| Noto Sans Devanagari | -       | Hindi/Marathi script font             | Google's official Devanagari font; covers Hindi and Marathi                                        |
+| Noto Sans Gujarati   | -       | Gujarati script font                  | Google's official Gujarati font                                                                    |
+| PM2                  | latest  | Node.js process manager               | Auto-restart, logging, system startup integration                                                  |
+| Nginx                | latest  | Reverse proxy                         | SSL termination, static file serving, proxy to Node.js                                             |
+| Certbot              | latest  | Let's Encrypt SSL client              | Free SSL certificates, auto-renewal                                                                |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @media print CSS | N/A | Print/PDF styling | RPT-06 print preview mode |
+| Library          | Version | Purpose           | When to Use               |
+| ---------------- | ------- | ----------------- | ------------------------- |
+| @media print CSS | N/A     | Print/PDF styling | RPT-06 print preview mode |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| next-intl | react-i18next | react-i18next works but lacks Next.js App Router-specific optimizations; next-intl is purpose-built for Next.js |
-| next-intl without routing | next-intl with localePrefix: 'never' | localePrefix: 'never' still requires [locale] folder restructure; without-routing mode avoids this entirely |
-| Noto Sans | Mukta font family | Mukta covers Devanagari+Gujarati+Latin but has fewer weights; Noto Sans gives more flexibility |
-| AWS Lightsail | Vercel | Lightsail chosen for data localization (Mumbai region, RBI compliance) and cost predictability |
-| Nginx + PM2 | Docker container | Overkill for a demo prototype; Nginx+PM2 is simpler and well-documented |
+| Instead of                | Could Use                            | Tradeoff                                                                                                        |
+| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| next-intl                 | react-i18next                        | react-i18next works but lacks Next.js App Router-specific optimizations; next-intl is purpose-built for Next.js |
+| next-intl without routing | next-intl with localePrefix: 'never' | localePrefix: 'never' still requires [locale] folder restructure; without-routing mode avoids this entirely     |
+| Noto Sans                 | Mukta font family                    | Mukta covers Devanagari+Gujarati+Latin but has fewer weights; Noto Sans gives more flexibility                  |
+| AWS Lightsail             | Vercel                               | Lightsail chosen for data localization (Mumbai region, RBI compliance) and cost predictability                  |
+| Nginx + PM2               | Docker container                     | Overkill for a demo prototype; Nginx+PM2 is simpler and well-documented                                         |
 
 **Installation:**
+
 ```bash
 pnpm add next-intl
 ```
@@ -79,12 +80,12 @@ src/
 
 ```typescript
 // src/i18n/request.ts
-import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { getRequestConfig } from "next-intl/server";
+import { cookies } from "next/headers";
 
 export default getRequestConfig(async () => {
   const store = await cookies();
-  const locale = store.get('NEXT_LOCALE')?.value || 'en';
+  const locale = store.get("NEXT_LOCALE")?.value || "en";
 
   return {
     locale,
@@ -95,8 +96,8 @@ export default getRequestConfig(async () => {
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
+import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {};
 const withNextIntl = createNextIntlPlugin();
@@ -110,9 +111,9 @@ export default withNextIntl(nextConfig);
 
 ```typescript
 // Language switching in a Client Component
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 function switchLocale(locale: string) {
   document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${60 * 60 * 24 * 365}`;
@@ -169,33 +170,38 @@ function switchLocale(locale: string) {
 
 ```typescript
 // src/app/layout.tsx
-import { Noto_Sans, Noto_Sans_Devanagari, Noto_Sans_Gujarati } from 'next/font/google';
+import {
+  Noto_Sans,
+  Noto_Sans_Devanagari,
+  Noto_Sans_Gujarati,
+} from "next/font/google";
 
 const notoSans = Noto_Sans({
-  subsets: ['latin'],
-  variable: '--font-noto-sans',
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-noto-sans",
+  display: "swap",
 });
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
-  subsets: ['devanagari'],
-  variable: '--font-noto-devanagari',
-  display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  subsets: ["devanagari"],
+  variable: "--font-noto-devanagari",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 const notoSansGujarati = Noto_Sans_Gujarati({
-  subsets: ['gujarati'],
-  variable: '--font-noto-gujarati',
-  display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  subsets: ["gujarati"],
+  variable: "--font-noto-gujarati",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 ```
 
 Then apply the appropriate font-family via CSS based on the `lang` attribute on `<html>`:
 
 ```css
-html[lang="hi"] body, html[lang="mr"] body {
+html[lang="hi"] body,
+html[lang="mr"] body {
   font-family: var(--font-noto-devanagari), var(--font-noto-sans), sans-serif;
 }
 html[lang="gu"] body {
@@ -211,19 +217,42 @@ html[lang="gu"] body {
 ```css
 @media print {
   /* Hide navigation and chrome */
-  nav, .sidebar, header, footer, .no-print { display: none !important; }
+  nav,
+  .sidebar,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
 
   /* Clean page layout */
-  body { background: white; color: black; font-size: 12pt; }
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
 
   /* Page break control */
-  .page-break-before { page-break-before: always; }
-  .page-break-after { page-break-after: always; }
-  .avoid-break { page-break-inside: avoid; }
+  .page-break-before {
+    page-break-before: always;
+  }
+  .page-break-after {
+    page-break-after: always;
+  }
+  .avoid-break {
+    page-break-inside: avoid;
+  }
 
   /* Table styling for print */
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #000; padding: 4px 8px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th,
+  td {
+    border: 1px solid #000;
+    padding: 4px 8px;
+  }
 }
 ```
 
@@ -238,15 +267,15 @@ html[lang="gu"] body {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| i18n framework | Custom translation lookup | next-intl | ICU message format, pluralization, number/date formatting, Server+Client components |
-| Locale detection | Custom cookie parsing | next-intl getRequestConfig with cookies() | Race conditions, SSR/client mismatch |
-| Pluralization | `count === 1 ? 'item' : 'items'` | ICU plural syntax in message files | Hindi/Marathi/Gujarati have different plural rules than English |
-| Number formatting | `toLocaleString()` calls | next-intl formatNumber | Consistent formatting across server/client |
-| SSL certificates | Self-signed certs | Let's Encrypt via Certbot | Free, auto-renewable, trusted by all browsers |
-| Process management | systemd service files | PM2 | Auto-restart, zero-downtime reload, log management |
-| Reverse proxy | Direct Node.js port exposure | Nginx | SSL termination, security headers, static file caching |
+| Problem            | Don't Build                      | Use Instead                               | Why                                                                                 |
+| ------------------ | -------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| i18n framework     | Custom translation lookup        | next-intl                                 | ICU message format, pluralization, number/date formatting, Server+Client components |
+| Locale detection   | Custom cookie parsing            | next-intl getRequestConfig with cookies() | Race conditions, SSR/client mismatch                                                |
+| Pluralization      | `count === 1 ? 'item' : 'items'` | ICU plural syntax in message files        | Hindi/Marathi/Gujarati have different plural rules than English                     |
+| Number formatting  | `toLocaleString()` calls         | next-intl formatNumber                    | Consistent formatting across server/client                                          |
+| SSL certificates   | Self-signed certs                | Let's Encrypt via Certbot                 | Free, auto-renewable, trusted by all browsers                                       |
+| Process management | systemd service files            | PM2                                       | Auto-restart, zero-downtime reload, log management                                  |
+| Reverse proxy      | Direct Node.js port exposure     | Nginx                                     | SSL termination, security headers, static file caching                              |
 
 **Key insight:** Indian languages have complex plural rules (Hindi has two categories: one and other; Gujarati has the same). ICU MessageFormat in next-intl handles this correctly out of the box -- never hand-roll pluralization logic.
 
@@ -315,10 +344,10 @@ html[lang="gu"] body {
 ```typescript
 // src/i18n/request.ts
 // Source: https://next-intl.dev/docs/getting-started/app-router/without-i18n-routing
-import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { getRequestConfig } from "next-intl/server";
+import { cookies } from "next/headers";
 
-const SUPPORTED_LOCALES = ['en', 'hi', 'mr', 'gu'] as const;
+const SUPPORTED_LOCALES = ["en", "hi", "mr", "gu"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 function isValidLocale(locale: string): locale is Locale {
@@ -327,8 +356,8 @@ function isValidLocale(locale: string): locale is Locale {
 
 export default getRequestConfig(async () => {
   const store = await cookies();
-  const raw = store.get('NEXT_LOCALE')?.value || 'en';
-  const locale = isValidLocale(raw) ? raw : 'en';
+  const raw = store.get("NEXT_LOCALE")?.value || "en";
+  const locale = isValidLocale(raw) ? raw : "en";
 
   return {
     locale,
@@ -456,31 +485,34 @@ server {
 ```javascript
 // ecosystem.config.js (on the server)
 module.exports = {
-  apps: [{
-    name: 'aegis',
-    script: 'node_modules/.bin/next',
-    args: 'start',
-    cwd: '/home/ubuntu/aegis',
-    instances: 1,
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3000,
+  apps: [
+    {
+      name: "aegis",
+      script: "node_modules/.bin/next",
+      args: "start",
+      cwd: "/home/ubuntu/aegis",
+      instances: 1,
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+      },
     },
-  }],
+  ],
 };
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| middleware.ts | proxy.ts | Next.js 16 (2025) | File renamed; exported function renamed from `middleware` to `proxy` |
-| next-intl v3 | next-intl v4 | Late 2025 | ESM-only, session cookies by default, simplified provider setup |
-| Manual locale cookie | Automatic cookie via next-intl | next-intl 4.0 | GDPR-compliant session cookies; only set when user switches locale |
-| Tailwind v3 config | Tailwind v4 @theme | Tailwind v4 (2025) | Breakpoints via `--breakpoint-*` CSS variables in `@theme` |
-| react-intl | next-intl | 2023+ | next-intl is purpose-built for Next.js App Router with RSC support |
+| Old Approach         | Current Approach               | When Changed       | Impact                                                               |
+| -------------------- | ------------------------------ | ------------------ | -------------------------------------------------------------------- |
+| middleware.ts        | proxy.ts                       | Next.js 16 (2025)  | File renamed; exported function renamed from `middleware` to `proxy` |
+| next-intl v3         | next-intl v4                   | Late 2025          | ESM-only, session cookies by default, simplified provider setup      |
+| Manual locale cookie | Automatic cookie via next-intl | next-intl 4.0      | GDPR-compliant session cookies; only set when user switches locale   |
+| Tailwind v3 config   | Tailwind v4 @theme             | Tailwind v4 (2025) | Breakpoints via `--breakpoint-*` CSS variables in `@theme`           |
+| react-intl           | next-intl                      | 2023+              | next-intl is purpose-built for Next.js App Router with RSC support   |
 
 **Deprecated/outdated:**
+
 - `middleware.ts` in Next.js 16 -- renamed to `proxy.ts` (but not needed for this project's i18n approach)
 - next-intl v3 `locale` argument in `getRequestConfig` -- use `await requestLocale` (v3.22+) or just `cookies()` (without routing)
 - CommonJS imports of next-intl -- v4 is ESM-only
@@ -511,13 +543,13 @@ module.exports = {
 
 ### Tailwind CSS v4 Breakpoints (Default)
 
-| Prefix | Min Width | Target |
-|--------|-----------|--------|
-| (none) | 0px | Mobile (default) |
-| `sm` | 640px | Large phones / small tablets |
-| `md` | 768px | Tablets |
-| `lg` | 1024px | Laptops |
-| `xl` | 1280px | Desktops |
+| Prefix | Min Width | Target                       |
+| ------ | --------- | ---------------------------- |
+| (none) | 0px       | Mobile (default)             |
+| `sm`   | 640px     | Large phones / small tablets |
+| `md`   | 768px     | Tablets                      |
+| `lg`   | 1024px    | Laptops                      |
+| `xl`   | 1280px    | Desktops                     |
 
 ### Key Responsive Patterns for AEGIS
 
@@ -536,6 +568,7 @@ Start with mobile layout (unprefixed utilities), then add breakpoint prefixes fo
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [next-intl App Router Setup](https://next-intl.dev/docs/getting-started/app-router) -- Installation, configuration, component usage
 - [next-intl Without i18n Routing](https://next-intl.dev/docs/getting-started/app-router/without-i18n-routing) -- Cookie-based locale without URL prefixes
 - [next-intl Routing Configuration](https://next-intl.dev/docs/routing/configuration) -- localePrefix options, cookie settings
@@ -547,6 +580,7 @@ Start with mobile layout (unprefixed utilities), then add breakpoint prefixes fo
 - [next-intl Middleware/Proxy](https://next-intl.dev/docs/routing/middleware) -- proxy.ts naming in Next.js 16
 
 ### Secondary (MEDIUM confidence)
+
 - [Next.js deployment with PM2 + Nginx + Certbot](https://dev.to/j3rry320/deploy-your-nextjs-app-like-a-pro-a-step-by-step-guide-using-nginx-pm2-certbot-and-git-on-your-linux-server-3286) -- Deployment commands and config
 - [AWS Lightsail Pricing](https://aws.amazon.com/lightsail/pricing/) -- $5/month for 1 vCPU, 0.5 GB RAM
 - [Noto Sans Devanagari on Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari) -- Font availability
@@ -554,11 +588,13 @@ Start with mobile layout (unprefixed utilities), then add breakpoint prefixes fo
 - [RBI Shabdavali](https://shabdavali.rbi.org.in/) -- Official RBI banking glossary (English-Hindi only)
 
 ### Tertiary (LOW confidence)
+
 - Banking terminology for Marathi and Gujarati -- No authoritative source found; needs domain expert validation
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH -- next-intl is the established standard for Next.js i18n; PM2+Nginx is standard for Node.js deployment
 - Architecture (i18n): HIGH -- "Without routing" approach documented in official next-intl docs
 - Architecture (deployment): HIGH -- AWS Lightsail Mumbai + Nginx + PM2 is well-documented

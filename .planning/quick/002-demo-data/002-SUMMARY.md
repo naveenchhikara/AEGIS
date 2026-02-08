@@ -2,7 +2,8 @@
 phase: quick
 plan: 002
 subsystem: demo-data
-tags: [demo-data, ucb, audit-findings, compliance, indian-banking, json, typescript]
+tags:
+  [demo-data, ucb, audit-findings, compliance, indian-banking, json, typescript]
 
 # Dependency graph
 requires:
@@ -17,7 +18,8 @@ provides:
   - 8 audit plans covering all lifecycle states
   - 10 audit findings reflecting common RBI observations
   - 6 RBI circulars referenced in findings
-affects: [compliance-dashboard, audit-planning, findings-tracker, demo-prototype]
+affects:
+  [compliance-dashboard, audit-planning, findings-tracker, demo-prototype]
 
 # Tech tracking
 tech-stack:
@@ -148,17 +150,20 @@ None - no external service configuration required. All data is self-contained in
 ## Next Phase Readiness
 
 **Ready for:**
+
 - Demo prototype can now load and display realistic UCB data
 - Compliance dashboard can show mixed-status requirements
 - Audit planning interface can use realistic audit plans
 - Findings tracker can display example findings with timeline
 
 **Notes:**
+
 - All demo data uses ISO 8601 date format consistently
 - Category IDs match existing RBI knowledge base for reference integrity
 - Data scales appropriately for prototype demonstrations
 - JSON files validated, TypeScript compilation successful
 
 ---
-*Quick Task: 002*
-*Completed: 2026-02-07*
+
+_Quick Task: 002_
+_Completed: 2026-02-07_

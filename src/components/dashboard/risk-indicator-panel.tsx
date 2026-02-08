@@ -71,9 +71,13 @@ export function RiskIndicatorPanel() {
         >
           <div className="flex items-center gap-3">
             {riskIcon}
-            <span className="text-base font-semibold sm:text-lg">{riskLevel}</span>
+            <span className="text-base font-semibold sm:text-lg">
+              {riskLevel}
+            </span>
           </div>
-          <div className="text-xs opacity-75 sm:text-sm">Overall Risk Level</div>
+          <div className="text-xs opacity-75 sm:text-sm">
+            Overall Risk Level
+          </div>
         </div>
 
         <div>

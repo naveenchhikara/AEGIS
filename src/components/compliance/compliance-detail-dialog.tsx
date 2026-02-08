@@ -158,7 +158,9 @@ export function ComplianceDetailDialog({
                       className="flex items-center gap-2 rounded-md border p-2 text-base"
                     >
                       <FileText className="text-muted-foreground h-4 w-4" />
-                      <span>{EVIDENCE_NAMES[index % EVIDENCE_NAMES.length]}.pdf</span>
+                      <span>
+                        {EVIDENCE_NAMES[index % EVIDENCE_NAMES.length]}.pdf
+                      </span>
                     </div>
                   ),
                 )}

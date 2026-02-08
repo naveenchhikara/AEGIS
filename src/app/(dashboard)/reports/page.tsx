@@ -19,7 +19,7 @@ export default function ReportsPage() {
           <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
             Board Report
           </h1>
-          <p className="text-xs text-muted-foreground md:text-sm">
+          <p className="text-muted-foreground text-xs md:text-sm">
             {bank.name} | Internal Audit Report &mdash; Q3 FY 2025-26
           </p>
         </div>
@@ -48,7 +48,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Footer (print only) */}
-      <div className="hidden print:block mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
+      <div className="text-muted-foreground mt-8 hidden border-t pt-4 text-center text-xs print:block">
         <p>
           Confidential &mdash; Prepared by Internal Audit Department,{" "}
           {bank.name}

@@ -12,9 +12,9 @@
       ],
       "category": "governance",
       "sections": [
-        {"sectionNumber": "1.1", "title": "Short Title"},
-        {"sectionNumber": "1.2", "title": "Commencement"},
-        {"sectionNumber": "1.3", "title": "Applicability"}
+        { "sectionNumber": "1.1", "title": "Short Title" },
+        { "sectionNumber": "1.2", "title": "Commencement" },
+        { "sectionNumber": "1.3", "title": "Applicability" }
       ],
       "ucbRelevance": "high",
       "notes": "Establishes the legal framework and timeline for Basel III implementation in UCBs."
@@ -31,10 +31,10 @@
       ],
       "category": "governance",
       "sections": [
-        {"sectionNumber": "2.1", "title": "Tier 1 UCB Applicability"},
-        {"sectionNumber": "2.2", "title": "Tier 2 UCB Applicability"},
-        {"sectionNumber": "2.3", "title": "Tier 3 & 4 UCB Applicability"},
-        {"sectionNumber": "2.4", "title": "Transitional Arrangements"}
+        { "sectionNumber": "2.1", "title": "Tier 1 UCB Applicability" },
+        { "sectionNumber": "2.2", "title": "Tier 2 UCB Applicability" },
+        { "sectionNumber": "2.3", "title": "Tier 3 & 4 UCB Applicability" },
+        { "sectionNumber": "2.4", "title": "Transitional Arrangements" }
       ],
       "ucbRelevance": "critical",
       "notes": "Critical chapter defining when each tier of UCB must comply with Basel III requirements. Tier 1 UCBs commence from April 1, 2026."
@@ -51,12 +51,12 @@
       ],
       "category": "capital",
       "sections": [
-        {"sectionNumber": "3.1", "title": "Capital Instrument Definitions"},
-        {"sectionNumber": "3.2", "title": "Tier 1 Capital Definitions"},
-        {"sectionNumber": "3.3", "title": "Tier 2 Capital Definitions"},
-        {"sectionNumber": "3.4", "title": "Risk-Weighted Assets"},
-        {"sectionNumber": "3.5", "title": "Exposure Definitions"},
-        {"sectionNumber": "3.6", "title": "Regulatory Definitions"}
+        { "sectionNumber": "3.1", "title": "Capital Instrument Definitions" },
+        { "sectionNumber": "3.2", "title": "Tier 1 Capital Definitions" },
+        { "sectionNumber": "3.3", "title": "Tier 2 Capital Definitions" },
+        { "sectionNumber": "3.4", "title": "Risk-Weighted Assets" },
+        { "sectionNumber": "3.5", "title": "Exposure Definitions" },
+        { "sectionNumber": "3.6", "title": "Regulatory Definitions" }
       ],
       "ucbRelevance": "high",
       "notes": "Contains 25+ key definitions essential for understanding and implementing Basel III."
@@ -74,12 +74,12 @@
       ],
       "category": "capital",
       "sections": [
-        {"sectionNumber": "4.1", "title": "Regulatory Capital Structure"},
-        {"sectionNumber": "4.2", "title": "Tier 1 Capital Components"},
-        {"sectionNumber": "4.3", "title": "Tier 2 Capital Components"},
-        {"sectionNumber": "4.4", "title": "Deductions from Capital"},
-        {"sectionNumber": "4.5", "title": "Limits on Capital Instruments"},
-        {"sectionNumber": "4.6", "title": "UCB-Specific Capital Treatment"}
+        { "sectionNumber": "4.1", "title": "Regulatory Capital Structure" },
+        { "sectionNumber": "4.2", "title": "Tier 1 Capital Components" },
+        { "sectionNumber": "4.3", "title": "Tier 2 Capital Components" },
+        { "sectionNumber": "4.4", "title": "Deductions from Capital" },
+        { "sectionNumber": "4.5", "title": "Limits on Capital Instruments" },
+        { "sectionNumber": "4.6", "title": "UCB-Specific Capital Treatment" }
       ],
       "ucbRelevance": "critical",
       "notes": "Core chapter defining what qualifies as regulatory capital for UCBs."
@@ -97,11 +97,14 @@
       ],
       "category": "capital",
       "sections": [
-        {"sectionNumber": "5.1", "title": "Minimum Capital Ratio Requirements"},
-        {"sectionNumber": "5.2", "title": "Tier 1 Capital Requirements"},
-        {"sectionNumber": "5.3", "title": "Capital Conservation Buffer"},
-        {"sectionNumber": "5.4", "title": "Countercyclical Buffer"},
-        {"sectionNumber": "5.5", "title": "Transitional Arrangements"}
+        {
+          "sectionNumber": "5.1",
+          "title": "Minimum Capital Ratio Requirements"
+        },
+        { "sectionNumber": "5.2", "title": "Tier 1 Capital Requirements" },
+        { "sectionNumber": "5.3", "title": "Capital Conservation Buffer" },
+        { "sectionNumber": "5.4", "title": "Countercyclical Buffer" },
+        { "sectionNumber": "5.5", "title": "Transitional Arrangements" }
       ],
       "ucbRelevance": "critical",
       "notes": "Sets the CRAR minimum at 9% for all UCBs with Tier 1 minimum of 6%."
@@ -119,11 +122,11 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "6.1", "title": "Overview of Risk-Weighted Assets"},
-        {"sectionNumber": "6.2", "title": "Credit Risk RWA"},
-        {"sectionNumber": "6.3", "title": "Market Risk RWA"},
-        {"sectionNumber": "6.4", "title": "Operational Risk RWA"},
-        {"sectionNumber": "6.5", "title": "Total RWA"}
+        { "sectionNumber": "6.1", "title": "Overview of Risk-Weighted Assets" },
+        { "sectionNumber": "6.2", "title": "Credit Risk RWA" },
+        { "sectionNumber": "6.3", "title": "Market Risk RWA" },
+        { "sectionNumber": "6.4", "title": "Operational Risk RWA" },
+        { "sectionNumber": "6.5", "title": "Total RWA" }
       ],
       "ucbRelevance": "high",
       "notes": "Fundamental to calculating capital ratios."
@@ -143,13 +146,13 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "7.1", "title": "Standardized Approach Overview"},
-        {"sectionNumber": "7.2", "title": "Claims on Sovereigns"},
-        {"sectionNumber": "7.3", "title": "Claims on Banks"},
-        {"sectionNumber": "7.4", "title": "Claims on Corporates"},
-        {"sectionNumber": "7.5", "title": "Retail Exposures"},
-        {"sectionNumber": "7.6", "title": "Secured by Collateral"},
-        {"sectionNumber": "7.7", "title": "Off-Balance Sheet Items"}
+        { "sectionNumber": "7.1", "title": "Standardized Approach Overview" },
+        { "sectionNumber": "7.2", "title": "Claims on Sovereigns" },
+        { "sectionNumber": "7.3", "title": "Claims on Banks" },
+        { "sectionNumber": "7.4", "title": "Claims on Corporates" },
+        { "sectionNumber": "7.5", "title": "Retail Exposures" },
+        { "sectionNumber": "7.6", "title": "Secured by Collateral" },
+        { "sectionNumber": "7.7", "title": "Off-Balance Sheet Items" }
       ],
       "ucbRelevance": "high",
       "notes": "Provides risk weights for different categories of loans and advances."
@@ -166,9 +169,12 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "8.1", "title": "Scope of Securitization Framework"},
-        {"sectionNumber": "8.2", "title": "Definitions"},
-        {"sectionNumber": "8.3", "title": "Standardized Approach"}
+        {
+          "sectionNumber": "8.1",
+          "title": "Scope of Securitization Framework"
+        },
+        { "sectionNumber": "8.2", "title": "Definitions" },
+        { "sectionNumber": "8.3", "title": "Standardized Approach" }
       ],
       "ucbRelevance": "medium",
       "notes": "Limited relevance for most UCBs as securitization activities are rare."
@@ -185,8 +191,8 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "9.1", "title": "Counterparty Risk Overview"},
-        {"sectionNumber": "9.2", "title": "Standardized Approach"}
+        { "sectionNumber": "9.1", "title": "Counterparty Risk Overview" },
+        { "sectionNumber": "9.2", "title": "Standardized Approach" }
       ],
       "ucbRelevance": "medium",
       "notes": "Relevant for UCBs engaged in derivatives and securities financing."
@@ -204,8 +210,8 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "10.1", "title": "Market Risk Scope"},
-        {"sectionNumber": "10.2", "title": "Standardized Approach"}
+        { "sectionNumber": "10.1", "title": "Market Risk Scope" },
+        { "sectionNumber": "10.2", "title": "Standardized Approach" }
       ],
       "ucbRelevance": "medium",
       "notes": "Applicable to UCBs with significant trading portfolios."
@@ -222,10 +228,10 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "11.1", "title": "Operational Risk Definition"},
-        {"sectionNumber": "11.2", "title": "Standardized Approach"},
-        {"sectionNumber": "11.3", "title": "Business Indicator Calculation"},
-        {"sectionNumber": "11.4", "title": "Capital Requirement Computation"}
+        { "sectionNumber": "11.1", "title": "Operational Risk Definition" },
+        { "sectionNumber": "11.2", "title": "Standardized Approach" },
+        { "sectionNumber": "11.3", "title": "Business Indicator Calculation" },
+        { "sectionNumber": "11.4", "title": "Capital Requirement Computation" }
       ],
       "ucbRelevance": "high",
       "notes": "Applicable to all UCBs based on their business activities."
@@ -242,9 +248,9 @@
       ],
       "category": "risk",
       "sections": [
-        {"sectionNumber": "12.1", "title": "Large Exposure Limit"},
-        {"sectionNumber": "12.2", "title": "Exposure Calculation"},
-        {"sectionNumber": "12.3", "title": "Exemptions"}
+        { "sectionNumber": "12.1", "title": "Large Exposure Limit" },
+        { "sectionNumber": "12.2", "title": "Exposure Calculation" },
+        { "sectionNumber": "12.3", "title": "Exemptions" }
       ],
       "ucbRelevance": "high",
       "notes": "Critical for managing credit concentration in UCB lending."
@@ -262,11 +268,11 @@
       ],
       "category": "disclosure",
       "sections": [
-        {"sectionNumber": "13.1", "title": "Disclosure Principles"},
-        {"sectionNumber": "13.2", "title": "Capital Structure Disclosures"},
-        {"sectionNumber": "13.3", "title": "Capital Adequacy Disclosures"},
-        {"sectionNumber": "13.4", "title": "Risk Management Disclosures"},
-        {"sectionNumber": "13.5", "title": "UCB Disclosure Requirements"}
+        { "sectionNumber": "13.1", "title": "Disclosure Principles" },
+        { "sectionNumber": "13.2", "title": "Capital Structure Disclosures" },
+        { "sectionNumber": "13.3", "title": "Capital Adequacy Disclosures" },
+        { "sectionNumber": "13.4", "title": "Risk Management Disclosures" },
+        { "sectionNumber": "13.5", "title": "UCB Disclosure Requirements" }
       ],
       "ucbRelevance": "high",
       "notes": "Required for scheduled UCBs and Tier 1 UCBs."
@@ -283,9 +289,9 @@
       ],
       "category": "reporting",
       "sections": [
-        {"sectionNumber": "14.1", "title": "Reporting Requirements"},
-        {"sectionNumber": "14.2", "title": "Submission Timeline"},
-        {"sectionNumber": "14.3", "title": "Reporting Formats"}
+        { "sectionNumber": "14.1", "title": "Reporting Requirements" },
+        { "sectionNumber": "14.2", "title": "Submission Timeline" },
+        { "sectionNumber": "14.3", "title": "Reporting Formats" }
       ],
       "ucbRelevance": "high",
       "notes": "Defines periodic reporting obligations to RBI."
@@ -301,8 +307,8 @@
       ],
       "category": "governance",
       "sections": [
-        {"sectionNumber": "15.1", "title": "Penalty for Non-compliance"},
-        {"sectionNumber": "15.2", "title": "Regulatory Actions"}
+        { "sectionNumber": "15.1", "title": "Penalty for Non-compliance" },
+        { "sectionNumber": "15.2", "title": "Regulatory Actions" }
       ],
       "ucbRelevance": "high",
       "notes": "Important for understanding consequences of non-compliance."
@@ -485,11 +491,7 @@
       "title": "NBFC-UCB Interactions",
       "chapterNumber": "NBFC-1",
       "summary": "Guidelines for interactions between UCBs and NBFCs including co-lending arrangements.",
-      "keyTopics": [
-        "Co-Lending",
-        "Outsourcing Guidelines",
-        "Due Diligence"
-      ],
+      "keyTopics": ["Co-Lending", "Outsourcing Guidelines", "Due Diligence"],
       "category": "operations",
       "ucbRelevance": "medium"
     }

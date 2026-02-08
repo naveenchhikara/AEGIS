@@ -2,7 +2,16 @@
 phase: 04-polish-deploy
 plan: 02
 subsystem: i18n
-tags: [hindi, marathi, gujarati, devanagari, translations, rbi-terminology, next-intl]
+tags:
+  [
+    hindi,
+    marathi,
+    gujarati,
+    devanagari,
+    translations,
+    rbi-terminology,
+    next-intl,
+  ]
 
 # Dependency graph
 requires:
@@ -108,5 +117,6 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 ---
-*Phase: 04-polish-deploy*
-*Completed: 2026-02-08*
+
+_Phase: 04-polish-deploy_
+_Completed: 2026-02-08_

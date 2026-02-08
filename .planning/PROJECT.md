@@ -63,13 +63,14 @@ If nothing else works, the platform must let a bank prove they are tracking all 
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| **SaaS multi-tenant architecture** | Single codebase serves all clients; zero client-side IT dependency; rapid iteration | — Pending |
-| **Clickable prototype first** | Sell first, build incrementally; demo with dummy data builds confidence before real data pilot | — Pending |
-| **English + 3 Indian languages** | UCBs operate in regional languages; staff more comfortable in Hindi/Marathi/Gujarati | — Pending |
-| **AWS Mumbai region** | RBI data localization requirements; latency for Indian users | — Pending |
-| **AI-assisted development** | Lean budget cannot support dedicated dev team; domain expertise is the differentiator, not coding | — Pending |
+| Decision                           | Rationale                                                                                         | Outcome   |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------- | --------- |
+| **SaaS multi-tenant architecture** | Single codebase serves all clients; zero client-side IT dependency; rapid iteration               | — Pending |
+| **Clickable prototype first**      | Sell first, build incrementally; demo with dummy data builds confidence before real data pilot    | — Pending |
+| **English + 3 Indian languages**   | UCBs operate in regional languages; staff more comfortable in Hindi/Marathi/Gujarati              | — Pending |
+| **AWS Mumbai region**              | RBI data localization requirements; latency for Indian users                                      | — Pending |
+| **AI-assisted development**        | Lean budget cannot support dedicated dev team; domain expertise is the differentiator, not coding | — Pending |
 
 ---
-*Last updated: Feb 7, 2026 after initialization*
+
+_Last updated: Feb 7, 2026 after initialization_

@@ -144,12 +144,14 @@ _Completed: February 7, 2026_
 ## Self-Check: PASSED
 
 **Files created:**
+
 - ✓ src/components/compliance/compliance-table.tsx
 - ✓ src/components/compliance/compliance-filters.tsx
 - ✓ src/components/compliance/compliance-detail-dialog.tsx
 - ✓ src/components/compliance/compliance-trend-chart.tsx
 
 **Commits verified:**
+
 - 163332d: feat(02-03): implement compliance table with TanStack Table and filters
 - 4549393: feat(02-03): implement compliance trend chart with ChartContainer
 - c40b484: docs(02-03): complete compliance registry components plan

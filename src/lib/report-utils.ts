@@ -22,8 +22,7 @@ import type {
 // Cast imported JSON data to proper types
 const findingsData = findings as unknown as FindingsData;
 const auditData = auditPlans as unknown as AuditData;
-const complianceData =
-  demoComplianceRequirements as unknown as ComplianceData;
+const complianceData = demoComplianceRequirements as unknown as ComplianceData;
 const bank = bankProfile as unknown as BankProfile;
 
 // ---------------------------------------------------------------------------
@@ -156,12 +155,8 @@ export function getExecutiveSummary(): ExecutiveSummaryData {
   const criticalFindings = allFindings.filter(
     (f) => f.severity === "critical",
   ).length;
-  const highFindings = allFindings.filter(
-    (f) => f.severity === "high",
-  ).length;
-  const openFindings = allFindings.filter(
-    (f) => f.status !== "closed",
-  ).length;
+  const highFindings = allFindings.filter((f) => f.severity === "high").length;
+  const openFindings = allFindings.filter((f) => f.status !== "closed").length;
 
   // Overdue findings: targetDate < today AND status !== "closed"
   const now = new Date();
@@ -183,8 +178,7 @@ export function getExecutiveSummary(): ExecutiveSummaryData {
   const categoryRiskMap: Record<string, number> = {};
   for (const f of allFindings) {
     if (f.severity === "critical" || f.severity === "high") {
-      categoryRiskMap[f.category] =
-        (categoryRiskMap[f.category] || 0) + 1;
+      categoryRiskMap[f.category] = (categoryRiskMap[f.category] || 0) + 1;
     }
   }
   const riskFactors = Object.entries(categoryRiskMap)
@@ -193,17 +187,13 @@ export function getExecutiveSummary(): ExecutiveSummaryData {
     .map(([category]) => category);
 
   // Audit counts (exclude cancelled)
-  const activeAudits = allAudits.filter(
-    (a) => a.status !== "cancelled",
-  );
+  const activeAudits = allAudits.filter((a) => a.status !== "cancelled");
   const totalAudits = activeAudits.length;
   const completedAudits = activeAudits.filter(
     (a) => a.status === "completed",
   ).length;
   const auditCompletionRate =
-    totalAudits > 0
-      ? Math.round((completedAudits / totalAudits) * 100)
-      : 0;
+    totalAudits > 0 ? Math.round((completedAudits / totalAudits) * 100) : 0;
 
   return {
     bankName: bank.name,
@@ -272,12 +262,9 @@ export function getTopFindings(limit: number = 10): TopFinding[] {
   // Sort by severity (critical first), then by status (open before closed)
   const sorted = [...allFindings].sort((a, b) => {
     const sevDiff =
-      (SEVERITY_ORDER[a.severity] ?? 99) -
-      (SEVERITY_ORDER[b.severity] ?? 99);
+      (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99);
     if (sevDiff !== 0) return sevDiff;
-    return (
-      (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99)
-    );
+    return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
   });
 
   return sorted.slice(0, limit).map((f: Finding) => ({
@@ -353,8 +340,7 @@ export function getComplianceScorecard(): ComplianceScorecard {
 
   const byCategory = Object.entries(categoryMap).map(
     ([categoryId, counts]) => ({
-      category:
-        CATEGORY_DISPLAY_NAMES[categoryId] || categoryId,
+      category: CATEGORY_DISPLAY_NAMES[categoryId] || categoryId,
       total: counts.total,
       compliant: counts.compliant,
       partial: counts.partial,
@@ -396,9 +382,7 @@ export function getRecommendations(): Recommendation[] {
 
   for (const [category, catFindings] of Object.entries(categoryFindings)) {
     // Determine priority: if any critical findings exist, recommendation is critical
-    const hasCritical = catFindings.some(
-      (f) => f.severity === "critical",
-    );
+    const hasCritical = catFindings.some((f) => f.severity === "critical");
     const priority: "critical" | "high" | "medium" = hasCritical
       ? "critical"
       : "high";
@@ -409,9 +393,7 @@ export function getRecommendations(): Recommendation[] {
     }, catFindings[0].targetDate);
 
     // Build description referencing finding titles
-    const findingTitles = catFindings
-      .map((f) => f.title)
-      .join("; ");
+    const findingTitles = catFindings.map((f) => f.title).join("; ");
     const description = `Address ${catFindings.length} ${priority === "critical" ? "critical" : "high-priority"} finding(s) in ${category}: ${findingTitles}. Immediate remediation required to mitigate regulatory and operational risk.`;
 
     recommendations.push({
@@ -432,8 +414,7 @@ export function getRecommendations(): Recommendation[] {
 
   recommendations.sort(
     (a, b) =>
-      (PRIORITY_ORDER[a.priority] ?? 99) -
-      (PRIORITY_ORDER[b.priority] ?? 99),
+      (PRIORITY_ORDER[a.priority] ?? 99) - (PRIORITY_ORDER[b.priority] ?? 99),
   );
 
   return recommendations;

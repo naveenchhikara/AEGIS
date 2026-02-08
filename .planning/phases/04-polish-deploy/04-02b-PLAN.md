@@ -163,6 +163,7 @@ Output: 18 translated JSON files (6 per locale) in locale-specific subdirectorie
     - `applicability` — translate
 
     Use the same Hindi banking terminology as defined in plan 04-02 for consistency. AI-generated translations are acceptable for prototype quality (per user decision).
+
   </action>
   <verify>
     - All 6 files exist in `src/data/demo/hi/`
@@ -202,6 +203,7 @@ Output: 18 translated JSON files (6 per locale) in locale-specific subdirectorie
     - Branch addresses use Marathi transliteration
 
     Use the same Marathi banking terminology as defined in plan 04-02 Task 2 for consistency.
+
   </action>
   <verify>
     - All 6 files exist in `src/data/demo/mr/`
@@ -342,6 +344,7 @@ Output: 18 translated JSON files (6 per locale) in locale-specific subdirectorie
     - Falls back to English for unknown locales or missing data
     - Staff data is always English (names are proper nouns)
     - Exported as a named export `getLocaleData`
+
   </action>
   <verify>
     - All 6 files exist in `src/data/demo/gu/`
@@ -371,6 +374,7 @@ Output: 18 translated JSON files (6 per locale) in locale-specific subdirectorie
 </verification>
 
 <success_criteria>
+
 - 18 translated demo data JSON files exist (6 per locale x 3 locales)
 - All 35 findings fully translated in all 3 languages (descriptions, root causes, action plans, timeline events)
 - All 55 compliance requirements translated in all 3 languages
@@ -379,7 +383,7 @@ Output: 18 translated JSON files (6 per locale) in locale-specific subdirectorie
 - Locale-aware data loading utility works with English fallback
 - RBI acronyms preserved in English, person names unchanged, IDs/dates/enums unchanged
 - All JSON files valid and correctly structured
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, create `.planning/phases/04-polish-deploy/04-02b-SUMMARY.md`

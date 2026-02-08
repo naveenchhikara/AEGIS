@@ -59,6 +59,7 @@ completed: 2026-02-08
 ## Accomplishments
 
 ### Task 1: Install next-intl and configure i18n foundation
+
 - Installed next-intl 4.8.2 via pnpm
 - Created `src/i18n/request.ts` with cookie-based locale detection reading `NEXT_LOCALE` cookie
 - Supports 4 locales: en (default), hi, mr, gu
@@ -66,6 +67,7 @@ completed: 2026-02-08
 - No middleware.ts created (using "without i18n routing" approach)
 
 ### Task 2: Switch fonts and wrap layout with i18n provider
+
 - Replaced Inter with Noto Sans (Latin), Noto Sans Devanagari, Noto Sans Gujarati
 - All three font CSS variables applied to `<html>` element
 - Root layout made async, calls `getLocale()` and `getMessages()` from next-intl/server
@@ -79,28 +81,28 @@ completed: 2026-02-08
 
 ## Task Commits
 
-| Task | Name | Commit | Key Files |
-|------|------|--------|-----------|
-| 1 | Install next-intl and configure i18n foundation | cbc1fb2 | src/i18n/request.ts, next.config.ts, package.json |
-| 2 | Switch fonts, add i18n provider and English messages | abb6489 | src/app/layout.tsx, globals.css, tailwind.config.ts, messages/en.json |
+| Task | Name                                                 | Commit  | Key Files                                                             |
+| ---- | ---------------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| 1    | Install next-intl and configure i18n foundation      | cbc1fb2 | src/i18n/request.ts, next.config.ts, package.json                     |
+| 2    | Switch fonts, add i18n provider and English messages | abb6489 | src/app/layout.tsx, globals.css, tailwind.config.ts, messages/en.json |
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
+| File                  | Purpose                                             |
+| --------------------- | --------------------------------------------------- |
 | `src/i18n/request.ts` | Cookie-based locale detection with getRequestConfig |
-| `messages/en.json` | English translation keys (224 keys, 11 namespaces) |
+| `messages/en.json`    | English translation keys (224 keys, 11 namespaces)  |
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `next.config.ts` | Added createNextIntlPlugin wrapper |
-| `src/app/layout.tsx` | Switched from Inter to Noto Sans fonts, added NextIntlClientProvider, async layout |
-| `src/app/globals.css` | Added Noto Sans font-family base rule and Indian script CSS rules |
-| `tailwind.config.ts` | Updated font-family from --font-inter to --font-noto-sans |
-| `package.json` | Added next-intl dependency |
-| `pnpm-lock.yaml` | Lock file updated with next-intl and dependencies |
+| File                  | Changes                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `next.config.ts`      | Added createNextIntlPlugin wrapper                                                 |
+| `src/app/layout.tsx`  | Switched from Inter to Noto Sans fonts, added NextIntlClientProvider, async layout |
+| `src/app/globals.css` | Added Noto Sans font-family base rule and Indian script CSS rules                  |
+| `tailwind.config.ts`  | Updated font-family from --font-inter to --font-noto-sans                          |
+| `package.json`        | Added next-intl dependency                                                         |
+| `pnpm-lock.yaml`      | Lock file updated with next-intl and dependencies                                  |
 
 ## Decisions Made
 

@@ -64,7 +64,11 @@ function ageColorClass(days: number): string {
   return "text-muted-foreground";
 }
 
-function SortIcon({ column }: { column: { getIsSorted: () => false | "asc" | "desc" } }) {
+function SortIcon({
+  column,
+}: {
+  column: { getIsSorted: () => false | "asc" | "desc" };
+}) {
   const sorted = column.getIsSorted();
   if (sorted === "asc") return <ArrowUp className="ml-1 h-3.5 w-3.5" />;
   if (sorted === "desc") return <ArrowDown className="ml-1 h-3.5 w-3.5" />;
@@ -103,7 +107,9 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="line-clamp-2 text-sm font-medium md:text-base">{row.getValue("title")}</span>
+      <span className="line-clamp-2 text-sm font-medium md:text-base">
+        {row.getValue("title")}
+      </span>
     ),
   },
   {
@@ -120,7 +126,9 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="hidden text-sm md:inline">{row.getValue("category")}</span>
+      <span className="hidden text-sm md:inline">
+        {row.getValue("category")}
+      </span>
     ),
     filterFn: (row, id, value) => {
       return row.getValue(id) === value;
@@ -170,7 +178,9 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status") as keyof typeof FINDING_STATUS_COLORS;
+      const status = row.getValue(
+        "status",
+      ) as keyof typeof FINDING_STATUS_COLORS;
       return (
         <Badge
           variant="outline"
@@ -237,8 +247,9 @@ const columns: ColumnDef<Finding>[] = [
 export function FindingsTable() {
   const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] =
-    React.useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
 
   // Filter state for dropdowns
   const [severityFilter, setSeverityFilter] = React.useState("all");
@@ -316,7 +327,7 @@ export function FindingsTable() {
         onReset={handleReset}
       />
 
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         {isFiltered
           ? `Showing ${filteredCount} of ${totalCount} findings`
           : `${totalCount} findings`}
@@ -347,10 +358,8 @@ export function FindingsTable() {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="cursor-pointer transition-colors hover:bg-muted/50"
-                    onClick={() =>
-                      router.push(`/findings/${row.original.id}`)
-                    }
+                    className="hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/findings/${row.original.id}`)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {

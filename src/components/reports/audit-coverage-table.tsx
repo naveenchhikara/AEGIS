@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -51,57 +46,57 @@ export function AuditCoverageTable() {
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Audit Type</TableHead>
-              <TableHead className="text-right">Planned</TableHead>
-              <TableHead className="text-right">Completed</TableHead>
-              <TableHead className="text-right">In Progress</TableHead>
-              <TableHead className="text-right">Completion Rate</TableHead>
-            </TableRow>
-          </TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Audit Type</TableHead>
+                <TableHead className="text-right">Planned</TableHead>
+                <TableHead className="text-right">Completed</TableHead>
+                <TableHead className="text-right">In Progress</TableHead>
+                <TableHead className="text-right">Completion Rate</TableHead>
+              </TableRow>
+            </TableHeader>
 
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.type}>
-                <TableCell className="font-medium">{row.type}</TableCell>
-                <TableCell className="text-right">{row.planned}</TableCell>
-                <TableCell className="text-right">{row.completed}</TableCell>
-                <TableCell className="text-right">{row.inProgress}</TableCell>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.type}>
+                  <TableCell className="font-medium">{row.type}</TableCell>
+                  <TableCell className="text-right">{row.planned}</TableCell>
+                  <TableCell className="text-right">{row.completed}</TableCell>
+                  <TableCell className="text-right">{row.inProgress}</TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right",
+                      getCompletionRateColor(row.completionRate),
+                    )}
+                  >
+                    {row.completionRate}%
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+
+            <TableFooter>
+              <TableRow>
+                <TableCell className="font-bold">Total</TableCell>
+                <TableCell className="text-right font-bold">
+                  {totals.planned}
+                </TableCell>
+                <TableCell className="text-right font-bold">
+                  {totals.completed}
+                </TableCell>
+                <TableCell className="text-right font-bold">
+                  {totals.inProgress}
+                </TableCell>
                 <TableCell
                   className={cn(
                     "text-right",
-                    getCompletionRateColor(row.completionRate),
+                    getCompletionRateColor(totalCompletionRate),
                   )}
                 >
-                  {row.completionRate}%
+                  {totalCompletionRate}%
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-
-          <TableFooter>
-            <TableRow>
-              <TableCell className="font-bold">Total</TableCell>
-              <TableCell className="text-right font-bold">
-                {totals.planned}
-              </TableCell>
-              <TableCell className="text-right font-bold">
-                {totals.completed}
-              </TableCell>
-              <TableCell className="text-right font-bold">
-                {totals.inProgress}
-              </TableCell>
-              <TableCell
-                className={cn(
-                  "text-right",
-                  getCompletionRateColor(totalCompletionRate),
-                )}
-              >
-                {totalCompletionRate}%
-              </TableCell>
-            </TableRow>
-          </TableFooter>
+            </TableFooter>
           </Table>
         </div>
       </CardContent>

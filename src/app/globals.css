@@ -117,7 +117,9 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-noto-sans), sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
   h1 {
     font-family: var(--font-dm-serif), var(--font-noto-sans), serif;

@@ -88,7 +88,9 @@ export function ComplianceTable() {
       header: "Description",
       cell: ({ row }) => (
         <div className="max-w-[200px] md:max-w-[300px]">
-          <div className="truncate font-medium text-sm md:text-base">{row.getValue("title")}</div>
+          <div className="truncate text-sm font-medium md:text-base">
+            {row.getValue("title")}
+          </div>
           <div className="text-muted-foreground line-clamp-1 text-sm md:text-base">
             {row.original.description}
           </div>

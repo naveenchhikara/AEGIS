@@ -8,12 +8,12 @@
 
 ## Phase Overview
 
-| Phase | Name | Requirements | Success Criteria |
-|-------|------|--------------|------------------|
-| 1 | Project Setup & Demo Data | 12 | Project skeleton running locally with demo data files |
-| 2 | Core Screens | 21 | Dashboard, Compliance Registry, Audit Plan screens working |
-| 3 | Finding Management & Reports | 8 | Finding detail, Board Report screens working |
-| 4 | Polish & Deploy | 5 | Multi-language, responsive design, deployed to AWS |
+| Phase | Name                         | Requirements | Success Criteria                                           |
+| ----- | ---------------------------- | ------------ | ---------------------------------------------------------- |
+| 1     | Project Setup & Demo Data    | 12           | Project skeleton running locally with demo data files      |
+| 2     | Core Screens                 | 21           | Dashboard, Compliance Registry, Audit Plan screens working |
+| 3     | Finding Management & Reports | 8            | Finding detail, Board Report screens working               |
+| 4     | Polish & Deploy              | 5            | Multi-language, responsive design, deployed to AWS         |
 
 ---
 
@@ -22,12 +22,14 @@
 **Goal:** Initialize Next.js project and create all demo data files for Apex Sahakari Bank
 
 **Requirements:**
+
 - DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
 - RBI-01, RBI-02, RBI-03
 - AUTH-01, AUTH-02, AUTH-03
 - NAV-01, NAV-04
 
 **Success Criteria:**
+
 1. Next.js 14 project runs locally with TypeScript and Tailwind CSS
 2. shadcn/ui components installed and configured
 3. Login screen displays with logo, language selector, and MFA prompt
@@ -42,6 +44,7 @@
 12. Common RBI observations are documented for finding generation
 
 **Plans:**
+
 - [ ] 01-01-PLAN.md — Foundation: Types, RBI circulars index, common observations
 - [ ] 01-02-PLAN.md — Initialize Next.js 14 with App Router
 - [ ] 01-03-PLAN.md — Install shadcn/ui components and create project structure
@@ -54,6 +57,7 @@
 - [ ] 01-10-PLAN.md — Create compliance calendar and connect data to dashboard
 
 **Key Tasks:**
+
 - Initialize Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Install and configure shadcn/ui
 - Create app layout with sidebar navigation
@@ -71,11 +75,13 @@
 **Goal:** Build the three most important screens: Dashboard, Compliance Registry, and Audit Plan
 
 **Requirements:**
+
 - DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06
 - COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06
 - NAV-02, NAV-03
 
 **Success Criteria:**
+
 1. Dashboard displays all widgets: health score, donut chart, count cards, risk indicator, regulatory calendar
 2. Compliance registry table displays 50+ requirements
 3. Table is sortable by all columns
@@ -99,6 +105,7 @@
 21. Dashboard requirement references updated (removed DASH-07 reference to DAKSH quick action)
 
 **Plans:** 6 plans in 3 waves
+
 - [ ] 02-01-PLAN.md — Install Recharts + react-is + TanStack Table, shadcn chart + 6 UI primitives, expand compliance data to 50+, update icons
 - [ ] 02-02-PLAN.md — Dashboard widgets: RadialBarChart gauge with PolarAngleAxis, PieChart donut with ChartContainer, count cards, risk panel, calendar, quick actions
 - [ ] 02-03-PLAN.md — Compliance components: TanStack Table with sorting/filtering, detail dialog, AreaChart trend with ChartContainer
@@ -107,6 +114,7 @@
 - [ ] 02-06-PLAN.md — Page composition: wire all components into Dashboard, Compliance, and Audit Plan pages with human verification
 
 **Key Tasks:**
+
 - Build CEO dashboard with all widgets
 - Implement Recharts for visualizations
 - Build compliance registry table with filters
@@ -121,6 +129,7 @@
 **Goal:** Build finding detail and board report preview screens
 
 **Requirements:**
+
 - FIND-01, FIND-02, FIND-03, FIND-04, FIND-05, FIND-06
 - RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, RPT-06
 - DATA-02 (partial), DATA-04 (partial), RBI-02, RBI-03
@@ -128,6 +137,7 @@
 Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 
 **Success Criteria:**
+
 1. Findings list table displays all 35 findings
 2. Severity badges show correct colors (Critical=red, High=orange, etc.)
 3. Filterable by severity, status, category
@@ -143,6 +153,7 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 13. 35 findings with realistic RBI-style observations
 
 **Plans:** 5 plans in 3 waves
+
 - [x] 03-01-PLAN.md — Expand demo data: 35 findings + 50 compliance requirements
 - [x] 03-02-PLAN.md — Board report utilities and components: ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary
 - [x] 03-03-PLAN.md — Enhanced findings list with TanStack Table sorting/filtering
@@ -150,6 +161,7 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 - [x] 03-05-PLAN.md — Board report composition: ComplianceScorecard, Recommendations, print styles
 
 **Key Tasks:**
+
 - Expand findings to 35 and compliance requirements to 50
 - Build findings list table with advanced filters
 - Build finding detail page with timeline
@@ -162,10 +174,12 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 **Goal:** Add multi-language support, finalize responsive design, and deploy to AWS Mumbai
 
 **Requirements:**
+
 - I18N-01, I18N-02, I18N-03
 - RPT-06
 
 **Success Criteria:**
+
 1. All UI labels have Hindi, Marathi, Gujarati translations
 2. Language switcher in top bar persists preference
 3. Switching language updates all visible labels immediately
@@ -182,6 +196,7 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 14. Demo script is ready (15-min and 30-min versions)
 
 **Plans:** 7 plans in 3 waves
+
 - [ ] 04-01-PLAN.md — i18n foundation: install next-intl, cookie-based locale, Noto Sans fonts, English messages
 - [ ] 04-02-PLAN.md — Translation content: Hindi, Marathi, Gujarati message files with banking terminology
 - [ ] 04-03-PLAN.md — Language switcher wiring, translate all components, print stylesheet
@@ -191,6 +206,7 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 - [ ] 04-07-PLAN.md — Application deployment, end-to-end verification, demo scripts
 
 **Key Tasks:**
+
 - Set up i18n framework (next-intl) with cookie-based locale
 - Switch fonts to Noto Sans family for multi-script support
 - Create translation files for EN/HI/MR/GU
@@ -208,6 +224,7 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 ## Milestone Success Criteria
 
 **Clickable Prototype Complete When:**
+
 - [ ] All 6 screens are accessible via navigation
 - [ ] All 47 v1 requirements are implemented
 - [ ] Demo data (Apex Sahakari Bank) loads correctly on all screens
@@ -219,9 +236,9 @@ Note: AUDT-01 through AUDT-06 are covered by Phase 2 plans (02-04, 02-06).
 
 ---
 
-*Roadmap created: February 7, 2026*
-*Updated: February 7, 2026 — Phase 1 plans created*
-*Updated: February 7, 2026 — Phase 4 plans created*
-*Updated: February 7, 2026 — Phase 3 plans created*
-*Updated: February 8, 2026 — Phase 2 plans created (6 plans in 3 waves)*
-*Updated: February 8, 2026 — Phase 4 plans finalized (7 plans in 3 waves)*
+_Roadmap created: February 7, 2026_
+_Updated: February 7, 2026 — Phase 1 plans created_
+_Updated: February 7, 2026 — Phase 4 plans created_
+_Updated: February 7, 2026 — Phase 3 plans created_
+_Updated: February 8, 2026 — Phase 2 plans created (6 plans in 3 waves)_
+_Updated: February 8, 2026 — Phase 4 plans finalized (7 plans in 3 waves)_

@@ -76,6 +76,7 @@ completed: 2026-02-08
 ## Accomplishments
 
 ### Task 1: Dashboard Layout and Mobile Touch Targets
+
 - Added `min-w-0` to main content area preventing flex children from causing horizontal overflow
 - Increased top bar button touch targets from 32px to 44px on mobile (h-10 w-10), reverting to 32px on desktop (md:h-8 md:w-8)
 - Language switcher button height increased to 40px on mobile
@@ -85,6 +86,7 @@ completed: 2026-02-08
 - Regulatory calendar "View All" link given 44px minimum height on mobile
 
 ### Task 2: Data-Heavy Pages Responsive Polish
+
 - **Compliance page**: Summary cards grid changed from sm:grid-cols-5 to grid-cols-2 sm:grid-cols-3 md:grid-cols-5; table description column truncated on mobile; trend chart height responsive
 - **Audit Plans page**: Summary cards grid from sm:grid-cols-4 to grid-cols-2 sm:grid-cols-4; calendar grid from grid-cols-3 to grid-cols-2 sm:grid-cols-3; view toggle buttons 44px on mobile
 - **Findings page**: Summary cards grid from sm:grid-cols-4 to grid-cols-2 sm:grid-cols-4; finding title truncated with line-clamp-2 on mobile
@@ -93,35 +95,35 @@ completed: 2026-02-08
 
 ## Task Commits
 
-| Task | Name | Commit | Key Changes |
-|------|------|--------|-------------|
-| 1 | Dashboard layout + touch targets | dd0d8da | layout.tsx, top-bar.tsx, dashboard/page.tsx, 4 widget components |
-| 2 | Data-heavy pages responsive | ae2d258 | compliance, audit-plans, findings, reports pages + 8 components |
+| Task | Name                             | Commit  | Key Changes                                                      |
+| ---- | -------------------------------- | ------- | ---------------------------------------------------------------- |
+| 1    | Dashboard layout + touch targets | dd0d8da | layout.tsx, top-bar.tsx, dashboard/page.tsx, 4 widget components |
+| 2    | Data-heavy pages responsive      | ae2d258 | compliance, audit-plans, findings, reports pages + 8 components  |
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| src/app/(dashboard)/layout.tsx | Added min-w-0 to prevent flex overflow |
-| src/app/(dashboard)/dashboard/page.tsx | Responsive grid (1/2/3 cols), responsive text |
-| src/app/(dashboard)/compliance/page.tsx | 2-col mobile cards, responsive spacing |
-| src/app/(dashboard)/audit-plans/page.tsx | 2-col mobile cards, responsive spacing |
-| src/app/(dashboard)/findings/page.tsx | 2-col mobile cards, responsive text |
-| src/app/(dashboard)/reports/page.tsx | Stacked header, responsive spacing |
-| src/components/layout/top-bar.tsx | 44px touch targets on mobile buttons |
-| src/components/dashboard/health-score-card.tsx | Responsive chart min-height |
-| src/components/dashboard/audit-coverage-chart.tsx | Responsive chart min-height |
-| src/components/dashboard/risk-indicator-panel.tsx | Stacking layout on mobile |
-| src/components/dashboard/regulatory-calendar.tsx | 44px touch target on "View All" |
-| src/components/compliance/compliance-table.tsx | Responsive description column width/text |
-| src/components/compliance/compliance-trend-chart.tsx | Responsive chart min-height |
-| src/components/audit/audit-calendar.tsx | 2-col grid on mobile, compact card padding |
-| src/components/audit/audit-filter-bar.tsx | 44px toggle buttons on mobile |
-| src/components/findings/findings-table.tsx | line-clamp-2 on title, responsive text |
-| src/components/reports/executive-summary.tsx | Stacked badge/metrics, responsive text |
-| src/components/reports/audit-coverage-table.tsx | overflow-x-auto wrapper |
-| src/components/reports/key-findings-summary.tsx | Hidden severity badge mobile, flex-wrap |
-| src/components/reports/compliance-scorecard.tsx | overflow-x-auto wrapper, responsive text |
+| File                                                 | Changes                                       |
+| ---------------------------------------------------- | --------------------------------------------- |
+| src/app/(dashboard)/layout.tsx                       | Added min-w-0 to prevent flex overflow        |
+| src/app/(dashboard)/dashboard/page.tsx               | Responsive grid (1/2/3 cols), responsive text |
+| src/app/(dashboard)/compliance/page.tsx              | 2-col mobile cards, responsive spacing        |
+| src/app/(dashboard)/audit-plans/page.tsx             | 2-col mobile cards, responsive spacing        |
+| src/app/(dashboard)/findings/page.tsx                | 2-col mobile cards, responsive text           |
+| src/app/(dashboard)/reports/page.tsx                 | Stacked header, responsive spacing            |
+| src/components/layout/top-bar.tsx                    | 44px touch targets on mobile buttons          |
+| src/components/dashboard/health-score-card.tsx       | Responsive chart min-height                   |
+| src/components/dashboard/audit-coverage-chart.tsx    | Responsive chart min-height                   |
+| src/components/dashboard/risk-indicator-panel.tsx    | Stacking layout on mobile                     |
+| src/components/dashboard/regulatory-calendar.tsx     | 44px touch target on "View All"               |
+| src/components/compliance/compliance-table.tsx       | Responsive description column width/text      |
+| src/components/compliance/compliance-trend-chart.tsx | Responsive chart min-height                   |
+| src/components/audit/audit-calendar.tsx              | 2-col grid on mobile, compact card padding    |
+| src/components/audit/audit-filter-bar.tsx            | 44px toggle buttons on mobile                 |
+| src/components/findings/findings-table.tsx           | line-clamp-2 on title, responsive text        |
+| src/components/reports/executive-summary.tsx         | Stacked badge/metrics, responsive text        |
+| src/components/reports/audit-coverage-table.tsx      | overflow-x-auto wrapper                       |
+| src/components/reports/key-findings-summary.tsx      | Hidden severity badge mobile, flex-wrap       |
+| src/components/reports/compliance-scorecard.tsx      | overflow-x-auto wrapper, responsive text      |
 
 ## Decisions Made
 

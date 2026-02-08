@@ -4,12 +4,12 @@ Deployment configuration for AWS Lightsail (Ubuntu 22.04 LTS, ap-south-1 Mumbai)
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `setup.sh` | One-time server setup (Node.js, pnpm, PM2, Nginx) |
-| `ecosystem.config.js` | PM2 process configuration |
-| `nginx-aegis.conf` | Nginx reverse proxy configuration |
-| `deploy.sh` | Pull, build, and restart deployment script |
+| File                  | Purpose                                           |
+| --------------------- | ------------------------------------------------- |
+| `setup.sh`            | One-time server setup (Node.js, pnpm, PM2, Nginx) |
+| `ecosystem.config.js` | PM2 process configuration                         |
+| `nginx-aegis.conf`    | Nginx reverse proxy configuration                 |
+| `deploy.sh`           | Pull, build, and restart deployment script        |
 
 ## Prerequisites
 

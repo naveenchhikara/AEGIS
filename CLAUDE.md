@@ -54,15 +54,15 @@ src/
 
 ## Key Demo Data Files
 
-| File | Purpose |
-|------|---------|
-| `src/data/demo/bank-profile.json` | Apex Sahakari Bank details |
-| `src/data/demo/staff.json` | Bank staff/auditors |
-| `src/data/demo/branches.json` | Branch network |
-| `src/data/demo/compliance-requirements.json` | 55 RBI requirements with status |
-| `src/data/demo/audit-plans.json` | Annual audit plan |
-| `src/data/demo/findings.json` | 35 audit findings with RBI-style observations |
-| `src/data/demo/rbi-circulars.json` | RBI circular references |
+| File                                         | Purpose                                       |
+| -------------------------------------------- | --------------------------------------------- |
+| `src/data/demo/bank-profile.json`            | Apex Sahakari Bank details                    |
+| `src/data/demo/staff.json`                   | Bank staff/auditors                           |
+| `src/data/demo/branches.json`                | Branch network                                |
+| `src/data/demo/compliance-requirements.json` | 55 RBI requirements with status               |
+| `src/data/demo/audit-plans.json`             | Annual audit plan                             |
+| `src/data/demo/findings.json`                | 35 audit findings with RBI-style observations |
+| `src/data/demo/rbi-circulars.json`           | RBI circular references                       |
 
 ## Domain Context
 

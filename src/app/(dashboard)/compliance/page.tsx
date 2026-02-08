@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ComplianceTable } from "@/components/compliance/compliance-table";
 import { ComplianceTrendChart } from "@/components/compliance/compliance-trend-chart";
 import { demoComplianceRequirements } from "@/data";
@@ -15,54 +16,57 @@ import {
 
 const data = demoComplianceRequirements as unknown as ComplianceData;
 
-const summaryCards = [
-  {
-    label: "Total",
-    count: data.summary.total,
-    icon: ShieldCheck,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-  },
-  {
-    label: "Compliant",
-    count: data.summary.compliant,
-    icon: CheckCircle2,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-  },
-  {
-    label: "Partial",
-    count: data.summary.partial,
-    icon: AlertTriangle,
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-  },
-  {
-    label: "Non-Compliant",
-    count: data.summary["non-compliant"],
-    icon: XCircle,
-    color: "text-red-600",
-    bg: "bg-red-50",
-  },
-  {
-    label: "Pending",
-    count: data.summary.pending,
-    icon: Clock,
-    color: "text-slate-600",
-    bg: "bg-slate-50",
-  },
-];
-
 export default function CompliancePage() {
+  const t = useTranslations("Compliance");
+  const tCommon = useTranslations("Common");
+
+  const summaryCards = [
+    {
+      label: tCommon("total"),
+      count: data.summary.total,
+      icon: ShieldCheck,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: t("compliant"),
+      count: data.summary.compliant,
+      icon: CheckCircle2,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+    {
+      label: t("partial"),
+      count: data.summary.partial,
+      icon: AlertTriangle,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+    },
+    {
+      label: t("nonCompliant"),
+      count: data.summary["non-compliant"],
+      icon: XCircle,
+      color: "text-red-600",
+      bg: "bg-red-50",
+    },
+    {
+      label: t("pending"),
+      count: data.summary.pending,
+      icon: Clock,
+      color: "text-slate-600",
+      bg: "bg-slate-50",
+    },
+  ];
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Page header */}
       <div>
         <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          Compliance Registry
+          {t("title")}
         </h1>
         <p className="text-muted-foreground text-sm md:text-base">
-          RBI regulatory compliance requirements tracker
+          {t("subtitle")}
         </p>
       </div>
 

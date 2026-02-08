@@ -102,7 +102,7 @@ export function AuditCalendar({
                     <div
                       key={audit.id}
                       className={cn(
-                        "hover:bg-accent cursor-pointer truncate rounded border-l-2 bg-muted/30 px-2 py-1.5 text-sm font-medium transition-colors duration-150 sm:py-1",
+                        "hover:bg-accent bg-muted/30 cursor-pointer truncate rounded border-l-2 px-2 py-1.5 text-sm font-medium transition-colors duration-150 sm:py-1",
                         AUDIT_STATUS_BORDER[audit.status],
                       )}
                       role="button"

@@ -119,77 +119,79 @@ Requirements for Phase 1 (Working Core MVP, Weeks 4-10) — not part of clickabl
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
+| Feature                                  | Reason                                                                       |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
 | Role-based views (CAE, Auditor, Auditee) | CEO view only in prototype; other roles added in MVP based on pilot feedback |
-| Real authentication in prototype | Demo uses hardcoded login; real auth deferred to MVP (Week 4) |
-| Backend/database in prototype | All data from JSON files; MVP adds PostgreSQL and APIs (Week 4) |
-| Email notifications | Requires SES integration; deferred to MVP (Week 11) |
-| Maker-checker workflows | Pilot-ready feature; deferred to Phase 2 (Week 11) |
-| PDF generation | Preview only in prototype; actual PDF export in MVP (Week 10) |
-| On-premise deployment | SaaS-only architecture; no single-tenant option |
-| Mobile app | Web-first responsive design; native app not planned |
-| Advanced analytics | Basic dashboards in prototype; advanced analytics in v2 |
+| Real authentication in prototype         | Demo uses hardcoded login; real auth deferred to MVP (Week 4)                |
+| Backend/database in prototype            | All data from JSON files; MVP adds PostgreSQL and APIs (Week 4)              |
+| Email notifications                      | Requires SES integration; deferred to MVP (Week 11)                          |
+| Maker-checker workflows                  | Pilot-ready feature; deferred to Phase 2 (Week 11)                           |
+| PDF generation                           | Preview only in prototype; actual PDF export in MVP (Week 10)                |
+| On-premise deployment                    | SaaS-only architecture; no single-tenant option                              |
+| Mobile app                               | Web-first responsive design; native app not planned                          |
+| Advanced analytics                       | Basic dashboards in prototype; advanced analytics in v2                      |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| NAV-01 | Phase 1 | Pending |
-| NAV-02 | Phase 1 | Pending |
-| NAV-03 | Phase 1 | Pending |
-| NAV-04 | Phase 1 | Pending |
-| DASH-01 | Phase 2 | Pending |
-| DASH-02 | Phase 2 | Pending |
-| DASH-03 | Phase 2 | Pending |
-| DASH-04 | Phase 2 | Pending |
-| DASH-05 | Phase 2 | Pending |
-| DASH-06 | Phase 2 | Pending |
-| DASH-07 | Phase 2 | Pending |
-| COMP-01 | Phase 2 | Pending |
-| COMP-02 | Phase 2 | Pending |
-| COMP-03 | Phase 2 | Pending |
-| COMP-04 | Phase 2 | Pending |
-| COMP-05 | Phase 2 | Pending |
-| COMP-06 | Phase 2 | Pending |
-| AUDT-01 | Phase 3 | Pending |
-| AUDT-02 | Phase 3 | Pending |
-| AUDT-03 | Phase 3 | Pending |
-| AUDT-04 | Phase 3 | Pending |
-| AUDT-05 | Phase 3 | Pending |
-| AUDT-06 | Phase 3 | Pending |
-| FIND-01 | Phase 3 | Complete |
-| FIND-02 | Phase 3 | Complete |
-| FIND-03 | Phase 3 | Complete |
-| FIND-04 | Phase 3 | Complete |
-| FIND-05 | Phase 3 | Complete |
-| FIND-06 | Phase 3 | Complete |
-| RPT-01 | Phase 3 | Complete |
-| RPT-02 | Phase 3 | Complete |
-| RPT-03 | Phase 3 | Complete |
-| RPT-04 | Phase 3 | Complete |
-| RPT-05 | Phase 3 | Complete |
-| RPT-06 | Phase 3 | Complete |
-| RBI-01 | Phase 1 | Pending |
-| RBI-02 | Phase 1 | Pending |
-| RBI-03 | Phase 1 | Pending |
-| I18N-01 | Phase 4 | Pending |
-| I18N-02 | Phase 4 | Pending |
-| I18N-03 | Phase 4 | Pending |
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
+| Requirement | Phase   | Status   |
+| ----------- | ------- | -------- |
+| AUTH-01     | Phase 1 | Pending  |
+| AUTH-02     | Phase 1 | Pending  |
+| AUTH-03     | Phase 1 | Pending  |
+| NAV-01      | Phase 1 | Pending  |
+| NAV-02      | Phase 1 | Pending  |
+| NAV-03      | Phase 1 | Pending  |
+| NAV-04      | Phase 1 | Pending  |
+| DASH-01     | Phase 2 | Pending  |
+| DASH-02     | Phase 2 | Pending  |
+| DASH-03     | Phase 2 | Pending  |
+| DASH-04     | Phase 2 | Pending  |
+| DASH-05     | Phase 2 | Pending  |
+| DASH-06     | Phase 2 | Pending  |
+| DASH-07     | Phase 2 | Pending  |
+| COMP-01     | Phase 2 | Pending  |
+| COMP-02     | Phase 2 | Pending  |
+| COMP-03     | Phase 2 | Pending  |
+| COMP-04     | Phase 2 | Pending  |
+| COMP-05     | Phase 2 | Pending  |
+| COMP-06     | Phase 2 | Pending  |
+| AUDT-01     | Phase 3 | Pending  |
+| AUDT-02     | Phase 3 | Pending  |
+| AUDT-03     | Phase 3 | Pending  |
+| AUDT-04     | Phase 3 | Pending  |
+| AUDT-05     | Phase 3 | Pending  |
+| AUDT-06     | Phase 3 | Pending  |
+| FIND-01     | Phase 3 | Complete |
+| FIND-02     | Phase 3 | Complete |
+| FIND-03     | Phase 3 | Complete |
+| FIND-04     | Phase 3 | Complete |
+| FIND-05     | Phase 3 | Complete |
+| FIND-06     | Phase 3 | Complete |
+| RPT-01      | Phase 3 | Complete |
+| RPT-02      | Phase 3 | Complete |
+| RPT-03      | Phase 3 | Complete |
+| RPT-04      | Phase 3 | Complete |
+| RPT-05      | Phase 3 | Complete |
+| RPT-06      | Phase 3 | Complete |
+| RBI-01      | Phase 1 | Pending  |
+| RBI-02      | Phase 1 | Pending  |
+| RBI-03      | Phase 1 | Pending  |
+| I18N-01     | Phase 4 | Pending  |
+| I18N-02     | Phase 4 | Pending  |
+| I18N-03     | Phase 4 | Pending  |
+| DATA-01     | Phase 1 | Pending  |
+| DATA-02     | Phase 1 | Pending  |
+| DATA-03     | Phase 1 | Pending  |
+| DATA-04     | Phase 1 | Pending  |
+| DATA-05     | Phase 1 | Pending  |
 
 **Coverage:**
+
 - v1 requirements: 47 total
 - Mapped to phases: 47
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: February 7, 2026*
-*Last updated: February 7, 2026 after initial definition*
+
+_Requirements defined: February 7, 2026_
+_Last updated: February 7, 2026 after initial definition_

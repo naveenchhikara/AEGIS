@@ -8,7 +8,7 @@ interface StatusTimelineProps {
 export function StatusTimeline({ events }: StatusTimelineProps) {
   if (events.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground italic">
+      <p className="text-muted-foreground text-sm italic">
         No timeline events recorded.
       </p>
     );
@@ -28,7 +28,7 @@ export function StatusTimeline({ events }: StatusTimelineProps) {
           <div key={event.id} className="relative flex gap-4 pb-8 last:pb-0">
             {/* Vertical connecting line */}
             {!isLast && (
-              <div className="absolute left-[7px] top-4 h-full w-px bg-border" />
+              <div className="bg-border absolute top-4 left-[7px] h-full w-px" />
             )}
 
             {/* Timeline dot */}
@@ -37,18 +37,18 @@ export function StatusTimeline({ events }: StatusTimelineProps) {
                 isFirst
                   ? "border-primary bg-primary"
                   : isLast
-                    ? "border-emerald-500 bg-background"
+                    ? "bg-background border-emerald-500"
                     : "border-primary bg-background"
               }`}
             />
 
             {/* Content */}
             <div className="flex flex-col gap-0.5">
-              <time className="text-xs font-medium text-muted-foreground">
+              <time className="text-muted-foreground text-xs font-medium">
                 {formatDate(event.date, "long")}
               </time>
               <p className="text-sm">{event.action}</p>
-              <p className="text-xs text-muted-foreground">by {event.actor}</p>
+              <p className="text-muted-foreground text-xs">by {event.actor}</p>
             </div>
           </div>
         );

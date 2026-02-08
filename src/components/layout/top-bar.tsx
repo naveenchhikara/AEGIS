@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Globe, LogOut, Settings } from "@/lib/icons";
-import { LANGUAGES, type LanguageCode } from "@/lib/constants";
+import { LANGUAGES } from "@/lib/constants";
 import { currentUser } from "@/lib/current-user";
 import { bankProfile } from "@/data";
 import type { BankProfile } from "@/types";
@@ -22,13 +22,21 @@ import { navItems } from "@/lib/nav-items";
 
 const bank = bankProfile as unknown as BankProfile;
 
+function switchLocale(newLocale: string) {
+  document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365}`;
+  window.location.reload();
+}
+
 export function TopBar() {
-  const [language, setLanguage] = useState<LanguageCode>("en");
-  const currentLang = LANGUAGES.find((l) => l.code === language)!;
+  const locale = useLocale();
+  const t = useTranslations("TopBar");
+  const tNav = useTranslations("Navigation");
+  const currentLang = LANGUAGES.find((l) => l.code === locale)!;
   const pathname = usePathname();
 
   // Derive page name from pathname using navItems
-  const currentPage = navItems.find((item) => pathname.startsWith(item.href))?.title;
+  const currentNav = navItems.find((item) => pathname.startsWith(item.href));
+  const currentPage = currentNav ? tNav(currentNav.tKey) : undefined;
 
   return (
     <header className="bg-background flex h-14 shrink-0 items-center gap-2 border-b px-4">
@@ -43,7 +51,7 @@ export function TopBar() {
         {currentPage && (
           <>
             <span className="text-muted-foreground/50">/</span>
-            <span className="text-sm text-muted-foreground">{currentPage}</span>
+            <span className="text-muted-foreground text-sm">{currentPage}</span>
           </>
         )}
       </div>
@@ -56,7 +64,7 @@ export function TopBar() {
               variant="ghost"
               size="sm"
               className="h-10 gap-1.5 px-3 text-xs md:h-8 md:px-2"
-              aria-label="Change language"
+              aria-label={t("changeLanguage")}
             >
               <Globe className="h-4 w-4" />
               {currentLang.short}
@@ -66,8 +74,8 @@ export function TopBar() {
             {LANGUAGES.map((lang) => (
               <DropdownMenuItem
                 key={lang.code}
-                onClick={() => setLanguage(lang.code)}
-                className={language === lang.code ? "bg-accent" : ""}
+                onClick={() => switchLocale(lang.code)}
+                className={locale === lang.code ? "bg-accent" : ""}
               >
                 <span className="mr-2 font-medium">{lang.short}</span>
                 {lang.label}
@@ -81,7 +89,7 @@ export function TopBar() {
           variant="ghost"
           size="icon"
           className="relative h-10 w-10 md:h-8 md:w-8"
-          aria-label="3 notifications"
+          aria-label={t("notifications", { count: 3 })}
         >
           <Bell className="h-4 w-4" />
           <span
@@ -97,7 +105,7 @@ export function TopBar() {
               variant="ghost"
               size="icon"
               className="h-10 w-10 md:h-8 md:w-8"
-              aria-label="User menu"
+              aria-label={t("userMenu")}
             >
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
@@ -116,13 +124,13 @@ export function TopBar() {
             <DropdownMenuItem asChild>
               <Link href="/settings">
                 <Settings className="mr-2 h-4 w-4" />
-                Settings
+                {tNav("settings")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/login">
                 <LogOut className="mr-2 h-4 w-4" />
-                Sign out
+                {t("signOut")}
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,8 @@ import { Lock, Mail, Shield } from "@/lib/icons";
 
 export function LoginForm() {
   const router = useRouter();
+  const t = useTranslations("Login");
+  const tCommon = useTranslations("Common");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
@@ -40,15 +43,15 @@ export function LoginForm() {
               priority
             />
             <div className="flex flex-col items-center">
-              <span className="text-xl font-bold tracking-wide text-foreground">
-                AEGIS
+              <span className="text-foreground text-xl font-bold tracking-wide">
+                {tCommon("appName")}
               </span>
-              <span className="text-xs tracking-widest text-muted-foreground">
-                SAPIEX TECHNOLOGY
+              <span className="text-muted-foreground text-xs tracking-widest">
+                {tCommon("companyName")}
               </span>
             </div>
-            <p className="text-center text-sm text-muted-foreground">
-              Audit & Compliance Platform for UCBs
+            <p className="text-muted-foreground text-center text-sm">
+              {tCommon("appTagline")}
             </p>
           </div>
 
@@ -56,14 +59,14 @@ export function LoginForm() {
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
+                {t("emailAddress")}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="rajesh.deshmukh@apexbank.example"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -75,14 +78,14 @@ export function LoginForm() {
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
-                Password
+                {t("password")}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter password"
+                  placeholder={t("passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
@@ -94,16 +97,18 @@ export function LoginForm() {
             {/* MFA */}
             <div className="space-y-2">
               <Label htmlFor="mfa" className="text-sm font-medium">
-                MFA Code{" "}
-                <span className="text-muted-foreground">(optional)</span>
+                {t("mfaCode")}{" "}
+                <span className="text-muted-foreground">
+                  ({tCommon("optional")})
+                </span>
               </Label>
               <div className="relative">
-                <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Shield className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   id="mfa"
                   type="text"
                   inputMode="numeric"
-                  placeholder="6-digit code"
+                  placeholder={t("mfaDigitPlaceholder")}
                   maxLength={6}
                   value={mfaCode}
                   onChange={(e) => setMfaCode(e.target.value)}
@@ -118,29 +123,29 @@ export function LoginForm() {
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-200/50 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? t("signingIn") : t("signIn")}
             </Button>
           </form>
 
           {/* Demo hint */}
           <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
             <p className="text-center text-xs text-blue-700">
-              <span className="font-medium">Demo Mode:</span> Enter any valid
-              email and password to access the dashboard
+              <span className="font-medium">{tCommon("demoMode")}:</span>{" "}
+              {tCommon("demoHint")}
             </p>
           </div>
 
           {/* Trust indicators */}
           <div className="mt-4 flex items-center justify-center gap-3">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
               <Lock className="h-3 w-3" />
               <span>256-bit Encryption</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
               <Shield className="h-3 w-3" />
               <span>RBI Compliant</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
               <Shield className="h-3 w-3" />
               <span>SOC 2 Certified</span>
             </div>
@@ -149,8 +154,8 @@ export function LoginForm() {
       </Card>
 
       {/* Footer */}
-      <p className="text-xs text-muted-foreground">
-        Secured by AEGIS &middot; Sapiex Technology
+      <p className="text-muted-foreground text-xs">
+        {tCommon("securedBy")} &middot; {tCommon("companyName")}
       </p>
     </div>
   );

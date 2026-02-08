@@ -1,20 +1,29 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { HealthScoreCard } from "@/components/dashboard/health-score-card";
 import { AuditCoverageChart } from "@/components/dashboard/audit-coverage-chart";
 import { FindingsCountCards } from "@/components/dashboard/findings-count-cards";
 import { RiskIndicatorPanel } from "@/components/dashboard/risk-indicator-panel";
 import { RegulatoryCalendar } from "@/components/dashboard/regulatory-calendar";
 import { QuickActions } from "@/components/dashboard/quick-actions";
+import { bankProfile } from "@/data";
+import type { BankProfile } from "@/types";
+
+const bank = bankProfile as unknown as BankProfile;
 
 export default function DashboardPage() {
+  const t = useTranslations("Dashboard");
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">Dashboard</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          {t("title")}
+        </h1>
         <p className="text-muted-foreground text-sm md:text-base">
-          Audit & compliance overview for Apex Sahakari Bank Ltd
+          {t("subtitle", { bankName: bank.name })}
         </p>
       </div>
 
@@ -26,7 +35,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 2 — Risk & Timeline (1 col mobile, 2 col tablet+) */}
-      <div className="animate-fade-in-up delay-2 grid gap-4 md:grid-cols-2">
+      <div className="animate-fade-in-up grid gap-4 delay-2 md:grid-cols-2">
         <RiskIndicatorPanel />
         <RegulatoryCalendar />
       </div>

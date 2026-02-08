@@ -22,7 +22,7 @@ export default function AuditeePage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Auditee Portal
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Respond to audit findings and track remediation
         </p>
       </div>
@@ -35,7 +35,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{pendingResponse}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Pending Your Response
               </p>
             </div>
@@ -48,7 +48,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{awaitingReview}</p>
-              <p className="text-sm text-muted-foreground">Awaiting Review</p>
+              <p className="text-muted-foreground text-sm">Awaiting Review</p>
             </div>
           </CardContent>
         </Card>
@@ -59,7 +59,7 @@ export default function AuditeePage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{data.summary.total}</p>
-              <p className="text-sm text-muted-foreground">Total Findings</p>
+              <p className="text-muted-foreground text-sm">Total Findings</p>
             </div>
           </CardContent>
         </Card>
@@ -76,9 +76,7 @@ export default function AuditeePage() {
           <CardContent>
             <div className="space-y-3">
               {data.findings
-                .filter(
-                  (f) => f.status === "submitted" || f.status === "draft",
-                )
+                .filter((f) => f.status === "submitted" || f.status === "draft")
                 .map((f) => (
                   <div
                     key={f.id}
@@ -86,10 +84,10 @@ export default function AuditeePage() {
                   >
                     <div>
                       <p className="text-base font-medium">{f.title}</p>
-                      <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 line-clamp-1 text-sm">
                         {f.observation}
                       </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-sm">
                         Due: {formatDate(f.targetDate)}
                       </p>
                     </div>
@@ -113,10 +111,10 @@ export default function AuditeePage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <UserCheck className="h-12 w-12 text-muted-foreground/30" />
+            <UserCheck className="text-muted-foreground/30 h-12 w-12" />
             <div>
               <p className="font-medium">Auditee Response Portal</p>
-              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-1 max-w-md text-sm">
                 In the full release, auditees will be able to respond to
                 findings, upload evidence documents, track remediation progress,
                 and communicate with auditors directly through this portal.

@@ -752,12 +752,7 @@
       "Cyber Security",
       "Operations"
     ],
-    "ucbTiers": [
-      "All UCBs",
-      "Tier 1 UCBs",
-      "Tier 2 UCBs",
-      "Scheduled UCBs"
-    ],
+    "ucbTiers": ["All UCBs", "Tier 1 UCBs", "Tier 2 UCBs", "Scheduled UCBs"],
     "lastUpdated": "2025-12-01",
     "source": "UCB Guidelines by RBI - Comprehensive Compilation (December 2025)",
     "idFormat": "CATEGORY-NNN"

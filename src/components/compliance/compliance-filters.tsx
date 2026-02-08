@@ -28,7 +28,7 @@ export function ComplianceFilters({
   return (
     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full bg-muted sm:w-[180px]">
+        <SelectTrigger className="bg-muted w-full sm:w-[180px]">
           <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent>
@@ -43,7 +43,7 @@ export function ComplianceFilters({
       </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-full bg-muted sm:w-[180px]">
+        <SelectTrigger className="bg-muted w-full sm:w-[180px]">
           <SelectValue placeholder="All Statuses" />
         </SelectTrigger>
         <SelectContent>

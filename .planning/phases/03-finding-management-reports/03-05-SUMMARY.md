@@ -2,7 +2,15 @@
 phase: 03-finding-management-reports
 plan: 05
 subsystem: ui
-tags: [board-report, compliance-scorecard, recommendations, print-css, shadcn, next.js]
+tags:
+  [
+    board-report,
+    compliance-scorecard,
+    recommendations,
+    print-css,
+    shadcn,
+    next.js,
+  ]
 
 # Dependency graph
 requires:
@@ -62,6 +70,7 @@ completed: 2026-02-08
 - **Files modified:** 5
 
 ## Accomplishments
+
 - ComplianceScorecard component with overall score, category breakdown table, and stacked bar visualizations per category
 - RecommendationsSection component with priority badges, descriptions, linked finding IDs, and target dates
 - Board report page composing all 5 sections (ExecutiveSummary, AuditCoverageTable, KeyFindingsSummary, ComplianceScorecard, RecommendationsSection) with print button
@@ -75,6 +84,7 @@ Each task was committed atomically:
 2. **Task 2: Compose board report page and add print styles** - `1922175` (feat)
 
 ## Files Created/Modified
+
 - `src/components/reports/compliance-scorecard.tsx` - Compliance scorecard with overall score, category table, stacked bar visualization, and legend
 - `src/components/reports/recommendations-section.tsx` - Prioritized recommendations with severity badges, descriptions, finding links, target dates
 - `src/components/reports/print-button.tsx` - Small client component wrapping window.print() in a Button
@@ -82,6 +92,7 @@ Each task was committed atomically:
 - `src/app/globals.css` - Added @media print block with card/table/badge/layout overrides for A4 output
 
 ## Decisions Made
+
 - Used simple div-based stacked bars for category visualizations instead of recharts (lighter, more print-friendly, no client component needed)
 - Print styles use attribute selectors ([class*="card"]) to target shadcn component output without requiring additional class names
 - Recommendations link finding IDs to /findings/{id} pages via Next.js Link for full navigability
@@ -92,12 +103,15 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 3 complete: all 5 plans (data expansion, board report utils, findings table, finding detail, board report page) are done
 - Phase 2 Plan 6 (02-06) still pending
 - Ready for Phase 4: polish, dark mode, PDF export, accessibility improvements
@@ -106,5 +120,6 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 ---
-*Phase: 03-finding-management-reports*
-*Completed: 2026-02-08*
+
+_Phase: 03-finding-management-reports_
+_Completed: 2026-02-08_

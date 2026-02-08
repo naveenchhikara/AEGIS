@@ -1,4 +1,5 @@
 # UCB Internal Audit & Compliance Monitoring Platform
+
 ## Project Plan — 16-Week Execution Calendar
 
 **Version:** 1.0
@@ -17,30 +18,30 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 
 ## Phase Overview
 
-| Phase | Name | Weeks | Dates | Key Deliverable |
-|-------|------|-------|-------|-----------------|
-| Phase 0 | Clickable Prototype | Weeks 1–3 | Feb 9 – Feb 27 | Interactive demo deployed to AWS Mumbai |
-| Phase 1 | Working Core MVP | Weeks 4–10 | Mar 2 – Apr 17 | 4 core modules with real database |
-| Phase 2 | Pilot-Ready | Weeks 11–14 | Apr 20 – May 15 | Production-quality platform ready for real users |
-| Phase 3 | First Pilots | Weeks 15–16+ | May 18 – Jun 1+ | 2–3 UCBs onboarded and running pilots |
+| Phase   | Name                | Weeks        | Dates           | Key Deliverable                                  |
+| ------- | ------------------- | ------------ | --------------- | ------------------------------------------------ |
+| Phase 0 | Clickable Prototype | Weeks 1–3    | Feb 9 – Feb 27  | Interactive demo deployed to AWS Mumbai          |
+| Phase 1 | Working Core MVP    | Weeks 4–10   | Mar 2 – Apr 17  | 4 core modules with real database                |
+| Phase 2 | Pilot-Ready         | Weeks 11–14  | Apr 20 – May 15 | Production-quality platform ready for real users |
+| Phase 3 | First Pilots        | Weeks 15–16+ | May 18 – Jun 1+ | 2–3 UCBs onboarded and running pilots            |
 
 ---
 
 ## Milestones
 
-| # | Milestone | Target Date | Success Criteria |
-|---|-----------|-------------|------------------|
-| M1 | Project Skeleton Live | Feb 13 (Fri W1) | Next.js project deployed to AWS Lightsail with login page and navigation |
-| M2 | 3 Key Screens Complete | Feb 20 (Fri W2) | Dashboard, compliance registry, audit plan screens with dummy data |
-| M3 | **Clickable Prototype Live** | Feb 27 (Fri W3) | All 7 screens deployed; demo script ready; 3 client demos scheduled |
-| M4 | Auth + Multi-Tenancy Working | Mar 13 (Fri W4–5) | Users can register, login with MFA, see only their tenant data |
-| M5 | Compliance Registry Module | Mar 20 (Fri W6) | CRUD for compliance requirements; task assignment; status tracking |
-| M6 | Audit Planning Module | Mar 27 (Fri W7) | Audit universe, annual plan, engagement setup functional |
-| M7 | Finding Management Module | Apr 10 (Fri W8–9) | Full finding lifecycle: create, review, respond, track, filter |
-| M8 | **Working MVP Complete** | Apr 17 (Fri W10) | All 4 modules live; dashboards connected; PDF reports generating |
-| M9 | Pilot-Ready Features Added | May 1 (Fri W12) | Maker-checker, auditee portal, email notifications, i18n |
-| M10 | **Pilot-Ready Platform** | May 15 (Fri W14) | Full demo dataset; CSV import; deployment hardened; monitoring live |
-| M11 | **First Pilots Running** | Jun 1 (Mon W16) | 2–3 UCBs onboarded; training complete; users logging in daily |
+| #   | Milestone                    | Target Date       | Success Criteria                                                         |
+| --- | ---------------------------- | ----------------- | ------------------------------------------------------------------------ |
+| M1  | Project Skeleton Live        | Feb 13 (Fri W1)   | Next.js project deployed to AWS Lightsail with login page and navigation |
+| M2  | 3 Key Screens Complete       | Feb 20 (Fri W2)   | Dashboard, compliance registry, audit plan screens with dummy data       |
+| M3  | **Clickable Prototype Live** | Feb 27 (Fri W3)   | All 7 screens deployed; demo script ready; 3 client demos scheduled      |
+| M4  | Auth + Multi-Tenancy Working | Mar 13 (Fri W4–5) | Users can register, login with MFA, see only their tenant data           |
+| M5  | Compliance Registry Module   | Mar 20 (Fri W6)   | CRUD for compliance requirements; task assignment; status tracking       |
+| M6  | Audit Planning Module        | Mar 27 (Fri W7)   | Audit universe, annual plan, engagement setup functional                 |
+| M7  | Finding Management Module    | Apr 10 (Fri W8–9) | Full finding lifecycle: create, review, respond, track, filter           |
+| M8  | **Working MVP Complete**     | Apr 17 (Fri W10)  | All 4 modules live; dashboards connected; PDF reports generating         |
+| M9  | Pilot-Ready Features Added   | May 1 (Fri W12)   | Maker-checker, auditee portal, email notifications, i18n                 |
+| M10 | **Pilot-Ready Platform**     | May 15 (Fri W14)  | Full demo dataset; CSV import; deployment hardened; monitoring live      |
+| M11 | **First Pilots Running**     | Jun 1 (Mon W16)   | 2–3 UCBs onboarded; training complete; users logging in daily            |
 
 ---
 
@@ -51,6 +52,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 1: Feb 9 – Feb 13
+
 **Theme:** Project Setup & Core Layout
 
 **Domain Lead (Person 1):**
@@ -76,6 +78,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 2: Feb 16 – Feb 20
+
 **Theme:** Core Screens with Dummy Data
 
 **Domain Lead (Person 1):**
@@ -101,6 +104,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 3: Feb 23 – Feb 27
+
 **Theme:** Complete Prototype & Deploy
 
 **Domain Lead (Person 1):**
@@ -130,6 +134,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 4: Mar 2 – Mar 6
+
 **Theme:** Infrastructure + Auth Foundation
 
 **Domain Lead (Person 1):**
@@ -155,6 +160,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 5: Mar 9 – Mar 13
+
 **Theme:** Auth Completion + Compliance Registry Start
 
 **Domain Lead (Person 1):**
@@ -180,6 +186,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 6: Mar 16 – Mar 20
+
 **Theme:** Compliance Task Workflow + Audit Planning Start
 
 **Domain Lead (Person 1):**
@@ -205,6 +212,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 7: Mar 23 – Mar 27
+
 **Theme:** Audit Planning Completion + Finding Management Start
 
 **Domain Lead (Person 1):**
@@ -230,6 +238,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 8: Mar 30 – Apr 3
+
 **Theme:** Finding Management Core
 
 **Domain Lead (Person 1):**
@@ -255,6 +264,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 9: Apr 6 – Apr 10
+
 **Theme:** Dashboards Start + Finding Polish
 
 **Domain Lead (Person 1):**
@@ -280,6 +290,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 10: Apr 13 – Apr 17
+
 **Theme:** Reports + MVP Completion
 
 **Domain Lead (Person 1):**
@@ -309,6 +320,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 11: Apr 20 – Apr 24
+
 **Theme:** Maker-Checker + Auditee Portal
 
 **Domain Lead (Person 1):**
@@ -334,6 +346,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 12: Apr 27 – May 1
+
 **Theme:** Notifications + i18n
 
 **Domain Lead (Person 1):**
@@ -359,6 +372,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 13: May 4 – May 8
+
 **Theme:** Demo Dataset + Data Import
 
 **Domain Lead (Person 1):**
@@ -384,6 +398,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 14: May 11 – May 15
+
 **Theme:** Hardening + Pilot Preparation
 
 **Domain Lead (Person 1):**
@@ -413,6 +428,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 15: May 18 – May 22
+
 **Theme:** Pilot Onboarding
 
 **Domain Lead (Person 1):**
@@ -438,6 +454,7 @@ This project plan translates the Bootstrap Execution Plan into a week-by-week ac
 ---
 
 #### Week 16: May 25 – May 29
+
 **Theme:** Pilot Support + Iteration
 
 **Domain Lead (Person 1):**
@@ -511,42 +528,42 @@ Week 13–14: Demo Data + Hardening
 
 ## Risk Register
 
-| Risk | Likelihood | Impact | Mitigation | Owner |
-|------|-----------|--------|------------|-------|
-| Client expects full product at demo | High | High | Set expectations with pilot SKU framework; Pilot A is sandbox only | Person 1 |
-| AI-generated code has bugs | High | Medium | Manual review every feature; RLS prevents data leaks; Sentry monitoring | Person 2 |
-| Client demo feedback requires major pivot | Medium | High | Buffer 2 days in Week 4 for feedback synthesis; Phase 1 priorities adjustable | Person 1 |
-| AWS setup takes longer than expected | Low | Medium | Fallback: use Lightsail database instead of RDS for Week 4 | Person 2 |
-| MFA implementation complexity | Medium | Medium | Use proven NextAuth + TOTP library; fallback to email OTP if TOTP delayed | Person 2 |
-| Translation quality for banking terms | Medium | Medium | Domain lead reviews all translations; create banking terminology glossary first | Person 1 |
-| Pilot UCB IT approval delays | High | High | Provide Vendor Risk Pack proactively; start paperwork at Pilot A stage | Person 1 |
-| Single server capacity under multi-tenant load | Low | Medium | Lightsail upgrade path is instant (4GB → 8GB → 16GB); monitor CloudWatch | Person 2 |
+| Risk                                           | Likelihood | Impact | Mitigation                                                                      | Owner    |
+| ---------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------- | -------- |
+| Client expects full product at demo            | High       | High   | Set expectations with pilot SKU framework; Pilot A is sandbox only              | Person 1 |
+| AI-generated code has bugs                     | High       | Medium | Manual review every feature; RLS prevents data leaks; Sentry monitoring         | Person 2 |
+| Client demo feedback requires major pivot      | Medium     | High   | Buffer 2 days in Week 4 for feedback synthesis; Phase 1 priorities adjustable   | Person 1 |
+| AWS setup takes longer than expected           | Low        | Medium | Fallback: use Lightsail database instead of RDS for Week 4                      | Person 2 |
+| MFA implementation complexity                  | Medium     | Medium | Use proven NextAuth + TOTP library; fallback to email OTP if TOTP delayed       | Person 2 |
+| Translation quality for banking terms          | Medium     | Medium | Domain lead reviews all translations; create banking terminology glossary first | Person 1 |
+| Pilot UCB IT approval delays                   | High       | High   | Provide Vendor Risk Pack proactively; start paperwork at Pilot A stage          | Person 1 |
+| Single server capacity under multi-tenant load | Low        | Medium | Lightsail upgrade path is instant (4GB → 8GB → 16GB); monitor CloudWatch        | Person 2 |
 
 ---
 
 ## Infrastructure Cost Timeline
 
-| Phase | Monthly Cost (INR) | Cumulative (INR) | Components |
-|-------|-------------------|-------------------|------------|
-| Phase 0 (W1–3) | 3,000–4,000 | 3,000–4,000 | Lightsail instance only |
-| Phase 1 (W4–10) | 4,000–6,000 | 10,000–15,000 | Lightsail + RDS + S3 + SES |
-| Phase 2 (W11–14) | 5,000–8,000 | 15,000–23,000 | Same + increased storage |
-| Phase 3 (W15–16+) | 8,000–15,000 | 23,000–38,000 | Production load from pilot users |
+| Phase             | Monthly Cost (INR) | Cumulative (INR) | Components                       |
+| ----------------- | ------------------ | ---------------- | -------------------------------- |
+| Phase 0 (W1–3)    | 3,000–4,000        | 3,000–4,000      | Lightsail instance only          |
+| Phase 1 (W4–10)   | 4,000–6,000        | 10,000–15,000    | Lightsail + RDS + S3 + SES       |
+| Phase 2 (W11–14)  | 5,000–8,000        | 15,000–23,000    | Same + increased storage         |
+| Phase 3 (W15–16+) | 8,000–15,000       | 23,000–38,000    | Production load from pilot users |
 
 ---
 
 ## Success Metrics
 
-| Milestone | Metric | Target | Measurement Method |
-|-----------|--------|--------|-------------------|
-| Week 3: Prototype Demo | Client interest | ≥2 of 3 demos → pilot commitment | Verbal/email confirmation |
-| Week 10: MVP Complete | Feature completeness | All 4 modules functional | Internal acceptance testing |
-| Week 14: Pilot Launch | UCBs onboarded | 2–3 UCBs active | Tenant + user login verification |
-| Week 20: Mid-Pilot | Daily active usage | ≥5 users/pilot UCB logging in weekly | Application logs + CloudWatch |
-| Week 24: Pilot Complete | Satisfaction | ≥1 UCB converts to paid; NPS ≥7 | Survey + subscription signed |
-| Month 9–10 | Revenue | 3 paying clients; INR 9–12L ARR | Signed agreements |
+| Milestone               | Metric               | Target                               | Measurement Method               |
+| ----------------------- | -------------------- | ------------------------------------ | -------------------------------- |
+| Week 3: Prototype Demo  | Client interest      | ≥2 of 3 demos → pilot commitment     | Verbal/email confirmation        |
+| Week 10: MVP Complete   | Feature completeness | All 4 modules functional             | Internal acceptance testing      |
+| Week 14: Pilot Launch   | UCBs onboarded       | 2–3 UCBs active                      | Tenant + user login verification |
+| Week 20: Mid-Pilot      | Daily active usage   | ≥5 users/pilot UCB logging in weekly | Application logs + CloudWatch    |
+| Week 24: Pilot Complete | Satisfaction         | ≥1 UCB converts to paid; NPS ≥7      | Survey + subscription signed     |
+| Month 9–10              | Revenue              | 3 paying clients; INR 9–12L ARR      | Signed agreements                |
 
 ---
 
-*Document generated: February 7, 2026*
-*Next review: February 9, 2026 (Sprint 0 kickoff)*
+_Document generated: February 7, 2026_
+_Next review: February 9, 2026 (Sprint 0 kickoff)_

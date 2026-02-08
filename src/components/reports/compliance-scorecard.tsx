@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -23,7 +18,6 @@ function getScoreColor(score: number): string {
   if (score >= 60) return "text-amber-600";
   return "text-red-600";
 }
-
 
 function StackedBar({
   compliant,
@@ -90,8 +84,10 @@ export function ComplianceScorecard() {
             {scorecard.overallScore}%
           </p>
           <div>
-            <p className="text-sm font-medium md:text-base">Overall Compliance Score</p>
-            <p className="text-sm text-muted-foreground md:text-base">
+            <p className="text-sm font-medium md:text-base">
+              Overall Compliance Score
+            </p>
+            <p className="text-muted-foreground text-sm md:text-base">
               {scorecard.totalRequirements} total requirements assessed
             </p>
           </div>
@@ -100,60 +96,58 @@ export function ComplianceScorecard() {
         {/* Category Breakdown Table */}
         <div className="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Compliant</TableHead>
-              <TableHead className="text-right">Partial</TableHead>
-              <TableHead className="text-right">Non-Compliant</TableHead>
-              <TableHead className="text-right">Pending</TableHead>
-              <TableHead className="text-right">Score</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {scorecard.byCategory.map((cat) => (
-              <TableRow key={cat.category}>
-                <TableCell className="font-medium">{cat.category}</TableCell>
-                <TableCell className="text-right">{cat.total}</TableCell>
-                <TableCell className="text-right">{cat.compliant}</TableCell>
-                <TableCell className="text-right">{cat.partial}</TableCell>
-                <TableCell
-                  className={cn(
-                    "text-right",
-                    cat.nonCompliant > 0 && "text-red-600 font-medium",
-                  )}
-                >
-                  {cat.nonCompliant}
-                </TableCell>
-                <TableCell className="text-right">{cat.pending}</TableCell>
-                <TableCell
-                  className={cn(
-                    "text-right font-semibold",
-                    getScoreColor(cat.score),
-                  )}
-                >
-                  {cat.score}%
-                </TableCell>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Compliant</TableHead>
+                <TableHead className="text-right">Partial</TableHead>
+                <TableHead className="text-right">Non-Compliant</TableHead>
+                <TableHead className="text-right">Pending</TableHead>
+                <TableHead className="text-right">Score</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
+            </TableHeader>
+
+            <TableBody>
+              {scorecard.byCategory.map((cat) => (
+                <TableRow key={cat.category}>
+                  <TableCell className="font-medium">{cat.category}</TableCell>
+                  <TableCell className="text-right">{cat.total}</TableCell>
+                  <TableCell className="text-right">{cat.compliant}</TableCell>
+                  <TableCell className="text-right">{cat.partial}</TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right",
+                      cat.nonCompliant > 0 && "font-medium text-red-600",
+                    )}
+                  >
+                    {cat.nonCompliant}
+                  </TableCell>
+                  <TableCell className="text-right">{cat.pending}</TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right font-semibold",
+                      getScoreColor(cat.score),
+                    )}
+                  >
+                    {cat.score}%
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         </div>
 
         {/* Visual Stacked Bars per Category */}
         <div className="space-y-3">
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-muted-foreground text-sm font-medium">
             Status Distribution by Category
           </p>
           {scorecard.byCategory.map((cat) => (
             <div key={cat.category} className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{cat.category}</span>
-                <span
-                  className={cn("font-medium", getScoreColor(cat.score))}
-                >
+                <span className={cn("font-medium", getScoreColor(cat.score))}>
                   {cat.score}%
                 </span>
               </div>
@@ -168,7 +162,7 @@ export function ComplianceScorecard() {
           ))}
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex flex-wrap gap-4 pt-2 text-sm">
             <div className="flex items-center gap-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
               Compliant

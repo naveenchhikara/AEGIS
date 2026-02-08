@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { AuditCalendar } from "@/components/audit/audit-calendar";
 import { EngagementCard } from "@/components/audit/engagement-card";
 import { AuditFilterBar } from "@/components/audit/audit-filter-bar";
@@ -12,41 +13,42 @@ import { ClipboardList, CheckCircle2, Activity, Clock } from "@/lib/icons";
 
 const data = auditPlans as unknown as AuditData;
 
-const summaryCards = [
-  {
-    label: "Total Audits",
-    count: data.summary.total,
-    icon: ClipboardList,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-  },
-  {
-    label: "Completed",
-    count: data.summary.completed,
-    icon: CheckCircle2,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-  },
-  {
-    label: "In Progress",
-    count: data.summary["in-progress"],
-    icon: Activity,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-  },
-  {
-    label: "Planned",
-    count: data.summary.planned,
-    icon: Clock,
-    color: "text-slate-600",
-    bg: "bg-slate-50",
-  },
-];
-
 export default function AuditPlansPage() {
+  const t = useTranslations("AuditPlan");
   const [typeFilter, setTypeFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"calendar" | "cards">("calendar");
   const [selectedAudit, setSelectedAudit] = useState<AuditPlan | null>(null);
+
+  const summaryCards = [
+    {
+      label: t("totalAudits"),
+      count: data.summary.total,
+      icon: ClipboardList,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: t("completed"),
+      count: data.summary.completed,
+      icon: CheckCircle2,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+    {
+      label: t("inProgress"),
+      count: data.summary["in-progress"],
+      icon: Activity,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: t("planned"),
+      count: data.summary.planned,
+      icon: Clock,
+      color: "text-slate-600",
+      bg: "bg-slate-50",
+    },
+  ];
 
   const filteredAudits =
     typeFilter === "all"
@@ -58,10 +60,10 @@ export default function AuditPlansPage() {
       {/* Page header */}
       <div>
         <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          Audit Planning
+          {t("title")}
         </h1>
         <p className="text-muted-foreground text-sm md:text-base">
-          Annual audit plan and engagement tracking
+          {t("subtitle")}
         </p>
       </div>
 
@@ -109,7 +111,7 @@ export default function AuditPlansPage() {
             ))
           ) : (
             <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-6 text-center text-sm md:p-8">
-              No audits match the selected filter
+              {t("noAuditsMatch")}
             </div>
           )}
         </div>

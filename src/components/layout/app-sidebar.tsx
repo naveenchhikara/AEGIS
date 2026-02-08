@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Sidebar,
   SidebarContent,
@@ -42,10 +43,10 @@ function SidebarLogo() {
       />
       {state === "expanded" && (
         <div className="flex flex-col">
-          <span className="text-sm font-bold tracking-wide text-sidebar-foreground">
+          <span className="text-sidebar-foreground text-sm font-bold tracking-wide">
             AEGIS
           </span>
-          <span className="text-[10px] tracking-wider text-sidebar-foreground/60">
+          <span className="text-sidebar-foreground/60 text-[10px] tracking-wider">
             SAPIEX TECHNOLOGY
           </span>
         </div>
@@ -56,6 +57,8 @@ function SidebarLogo() {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const tNav = useTranslations("Navigation");
+  const tTopBar = useTranslations("TopBar");
 
   return (
     <Sidebar collapsible="icon">
@@ -72,16 +75,17 @@ export function AppSidebar() {
                   pathname === item.href ||
                   (item.href !== "/dashboard" &&
                     pathname.startsWith(item.href + "/"));
+                const label = tNav(item.tKey);
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      tooltip={item.title}
+                      tooltip={label}
                     >
                       <Link href={item.href}>
                         <item.icon />
-                        <span>{item.title}</span>
+                        <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -102,7 +106,7 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent"
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-sidebar-primary text-xs text-sidebar-primary-foreground">
+                    <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs">
                       {currentUser.initials}
                     </AvatarFallback>
                   </Avatar>
@@ -110,7 +114,7 @@ export function AppSidebar() {
                     <span className="truncate font-semibold">
                       {currentUser.name}
                     </span>
-                    <span className="truncate text-xs text-sidebar-foreground/60">
+                    <span className="text-sidebar-foreground/60 truncate text-xs">
                       {currentUser.role}
                     </span>
                   </div>
@@ -125,26 +129,26 @@ export function AppSidebar() {
               >
                 <div className="flex items-center gap-2 px-2 py-1.5">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {currentUser.initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid text-sm leading-tight">
                     <span className="font-semibold">{currentUser.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {currentUser.email}
                     </span>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">Settings</Link>
+                  <Link href="/settings">{tNav("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/login">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    {tTopBar("signOut")}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

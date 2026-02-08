@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -40,7 +39,7 @@ export function FindingsFilters({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select value={severityFilter} onValueChange={onSeverityChange}>
-        <SelectTrigger className="w-full bg-muted sm:w-[160px]">
+        <SelectTrigger className="bg-muted w-full sm:w-[160px]">
           <SelectValue placeholder="All Severities" />
         </SelectTrigger>
         <SelectContent>
@@ -53,7 +52,7 @@ export function FindingsFilters({
       </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-full bg-muted sm:w-[160px]">
+        <SelectTrigger className="bg-muted w-full sm:w-[160px]">
           <SelectValue placeholder="All Statuses" />
         </SelectTrigger>
         <SelectContent>
@@ -67,7 +66,7 @@ export function FindingsFilters({
       </Select>
 
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full bg-muted sm:w-[200px]">
+        <SelectTrigger className="bg-muted w-full sm:w-[200px]">
           <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent>

@@ -37,7 +37,9 @@ Progress: [████░░░░░░░░░░░░░░░░] 18% (24
 - v1.0 shipped 2026-02-08 (Phases 1-4 complete)
 - v2.0 roadmap created 2026-02-08
 - 05-01: Infrastructure Foundation completed 2026-02-08
-- Next: Continue Phase 5 planning or execute 05-02
+- 05-02: Prisma Setup completed 2026-02-08
+- 05-03: Authentication Implementation completed 2026-02-08
+- Next: Continue with 05-04
 
 ## Accumulated Context
 
@@ -50,7 +52,11 @@ Recent decisions affecting v2.0 work:
 - **S3 IAM Policy: PutObject + GetObject only (D10, S6):** Evidence files are immutable once uploaded. Soft-delete via database `deleted_at` timestamp if needed. (05-01)
 - **DR Replication Target (DE10):** Must target ap-south-2 (Hyderabad) only. Never replicate to non-India AWS region. (05-01)
 - **PostgreSQL RLS for multi-tenancy:** Tenant isolation enforced at database level; even app bugs can't leak data (Pending)
-- **Better Auth (not NextAuth.js):** Auth.js joined Better Auth in Sept 2025; Better Auth has better Next.js 16 support (Pending)
+- **Better Auth selected for Next.js 16 support:** Better Auth provides better DX and Next.js 16 compatibility vs NextAuth.js (05-03)
+- **Session management:** 30min idle timeout, 8hr absolute, session-only cookie (clears on browser close) (05-03)
+- **Rate limiting:** 10 attempts/15min per email, 30min lockout after 5 failures (05-03)
+- **Concurrent sessions:** Max 2 per user (05-03)
+- **Two-layer auth protection:** proxy.ts (UX) + layout.tsx (security) for zero content flash (05-03)
 - **React-PDF for board reports:** Pure React, no headless browser; works client-side and server-side (Pending)
 - **AWS SES for email:** Mumbai region; reliable for banking clients; Rs 70/1000 emails (Pending)
 - **Bottom-up observation architecture:** Individual observations are atoms; all macro views derived by aggregation (Pending)
@@ -66,6 +72,8 @@ None yet.
 - Docker daemon not running — User must start Docker Desktop before `docker-compose up -d`
 - AWS CLI not configured — User must run `aws configure` and `./scripts/setup-s3.sh dev`
 - PostgreSQL schema not created — Prisma migrations to be added in Phase 6
+- **Better Auth Prisma schema needs to be generated and applied** — Run `npx @better-auth/cli generate` or manually add Better Auth tables to schema.prisma (05-03)
+- **User model needs Better Auth fields** — emailVerified, image, password fields need to be added (05-03)
 - RLS policy testing requires dedicated app role, not superuser (see research/SUMMARY.md)
 - Auth.js + next-intl cookie conflict must be validated (middleware ordering)
 - Data import trap: ~20 client components import JSON; all need server-fetch refactoring
@@ -83,8 +91,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 05-01: Infrastructure Foundation
-Resume file: .planning/phases/05-foundation-and-migration/05-01-SUMMARY.md
+Stopped at: Completed 05-03: Authentication Implementation
+Resume file: .planning/phases/05-foundation-and-migration/05-03-SUMMARY.md
 
 ---
 

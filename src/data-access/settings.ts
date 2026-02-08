@@ -1,6 +1,6 @@
 import "server-only";
 import { getRequiredSession } from "./session";
-import { prismaForTenant } from "@/lib/prisma";
+import { prismaForTenant } from "./prisma";
 import type { Prisma } from "@/generated/prisma/client";
 
 /**
@@ -20,16 +20,35 @@ import type { Prisma } from "@/generated/prisma/client";
 
 /**
  * Tenant settings type returned by getTenantSettings.
- * Matches the Prisma Tenant model select fields.
+ * Matches Prisma Tenant model select fields.
+ *
+ * READ-ONLY fields (set during onboarding, DE11):
+ * - name (legal bank name)
+ * - rbiLicenseNo (RBI License Number)
+ * - state (state of registration)
+ * - tier (UCB Tier)
+ *
+ * EDITABLE fields (can be updated via settings page):
+ * - shortName, address, city, pincode, phone, email, website
+ *
+ * REGULATORY fields (display-only, DE8):
+ * - scheduledBankStatus, nabardRegistrationNo, multiStateLicense
+ * - dakshScore, pcaStatus, lastRbiInspectionDate, rbiRiskRating
  */
 export type TenantSettings = {
   id: string;
-  name: string;
+  name: string; // Legal bank name (read-only, DE11)
   shortName: string;
-  rbiLicenseNo: string;
-  tier: string;
-  state: string;
+  rbiLicenseNo: string; // RBI License Number (read-only, DE11)
+  tier: string; // UCB Tier (read-only)
+  state: string; // State of registration (read-only, DE11)
   city: string;
+  address: string | null; // Editable
+  pincode: string | null; // Editable
+  phone: string | null; // Editable
+  email: string | null; // Editable
+  website: string | null; // Editable
+  incorporationDate: Date | null; // Bank establishment date
   scheduledBankStatus: boolean;
   nabardRegistrationNo: string | null;
   multiStateLicense: boolean;
@@ -66,12 +85,18 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
     where: { id: tenantId },
     select: {
       id: true,
-      name: true,
+      name: true, // Legal bank name (read-only, DE11)
       shortName: true,
-      rbiLicenseNo: true,
-      tier: true,
-      state: true,
+      rbiLicenseNo: true, // RBI License Number (read-only, DE11)
+      tier: true, // UCB Tier (read-only)
+      state: true, // State of registration (read-only, DE11)
       city: true,
+      address: true, // Editable
+      pincode: true, // Editable
+      phone: true, // Editable
+      email: true, // Editable
+      website: true, // Editable
+      incorporationDate: true, // Bank establishment date
       scheduledBankStatus: true,
       nabardRegistrationNo: true,
       multiStateLicense: true,
@@ -103,15 +128,30 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
  * Update editable tenant settings.
  *
  * READ-ONLY fields NOT updatable (DE11):
- * - rbiLicenseNo, name (legal bank name), state (of registration)
- * These are set during onboarding and cannot be changed.
+ * - name (legal bank name) — set during onboarding
+ * - rbiLicenseNo (RBI License Number) — set during onboarding
+ * - state (state of registration) — set during onboarding
+ * - tier (UCB Tier) — set during onboarding
+ * - incorporationDate — set during onboarding
+ * - Fiscal Year — hardcoded April-March (DE7), not configurable
+ *
+ * EDITABLE fields:
+ * - shortName, address, city, pincode, phone, email, website
  *
  * @param data - Validated editable fields only
  */
 export async function updateTenantSettingsDAL(
   data: Pick<
     Prisma.TenantUpdateInput,
-    "shortName" | "city" | "nabardRegistrationNo" | "settings"
+    | "shortName"
+    | "address"
+    | "city"
+    | "pincode"
+    | "phone"
+    | "email"
+    | "website"
+    | "nabardRegistrationNo"
+    | "settings"
   >,
 ) {
   // Step 1: Get authenticated session

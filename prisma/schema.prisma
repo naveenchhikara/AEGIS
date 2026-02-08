@@ -1,0 +1,451 @@
+// AEGIS Multi-Tenant Internal Audit Platform
+// PostgreSQL schema with Row-Level Security support
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgcrypto]
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  AUDITOR
+  AUDIT_MANAGER
+  CAE
+  CCO
+  CEO
+  AUDITEE
+  BOARD_OBSERVER
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ObservationStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+  ISSUED
+  RESPONSE
+  COMPLIANCE
+  CLOSED
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  PARTIAL
+  NON_COMPLIANT
+  PENDING
+}
+
+enum UcbTier {
+  TIER_1
+  TIER_2
+  TIER_3
+  TIER_4
+}
+
+enum PcaStatus {
+  NONE
+  PCA_1
+  PCA_2
+  PCA_3
+}
+
+// Indian Financial Year quarters (D16)
+// Q1 = Apr-Jun, Q2 = Jul-Sep, Q3 = Oct-Dec, Q4 = Jan-Mar
+enum Quarter {
+  Q1_APR_JUN
+  Q2_JUL_SEP
+  Q3_OCT_DEC
+  Q4_JAN_MAR
+}
+
+enum AuditPlanStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum EngagementStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ─── Tenant ──────────────────────────────────────────────────────────────────
+
+model Tenant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   // Legal bank name (read-only after onboarding, DE11)
+  shortName String
+  rbiLicenseNo String @unique // RBI License Number (read-only after onboarding, DE11)
+  tier      UcbTier
+  state     String // State of registration (read-only after onboarding, DE11)
+  city      String
+
+  // Contact information (editable via settings page)
+  address   String?
+  pincode   String?
+  phone     String?
+  email     String?
+  website   String?
+
+  // Bank establishment date
+  incorporationDate DateTime?
+
+  // Scheduled bank status
+  scheduledBankStatus Boolean @default(false)
+
+  // NABARD registration (D17)
+  nabardRegistrationNo String?
+
+  // Multi-state license
+  multiStateLicense Boolean @default(false)
+
+  // DAKSH score fields (D21 — nullable for newly onboarded banks)
+  dakshScore     Decimal?   @db.Decimal(5, 2)
+  dakshScoreDate DateTime?
+
+  // PCA status (D21 — nullable effective date)
+  pcaStatus        PcaStatus @default(NONE)
+  pcaEffectiveDate DateTime?
+
+  // RBI inspection fields (D21 — nullable)
+  lastRbiInspectionDate DateTime?
+  rbiRiskRating         String?
+
+  // Tenant-level settings (JSON blob for flexibility)
+  settings Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users                  User[]
+  observations           Observation[]
+  observationTimelines   ObservationTimeline[]
+  evidence               Evidence[]
+  complianceRequirements ComplianceRequirement[]
+  branches               Branch[]
+  auditAreas             AuditArea[]
+  auditPlans             AuditPlan[]
+  auditEngagements       AuditEngagement[]
+}
+
+// ─── User ────────────────────────────────────────────────────────────────────
+
+model User {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email  String
+  name   String
+
+  // Multi-role support (D13): PostgreSQL array of enum
+  // Permission checks MUST use roles.includes() not role === (D20)
+  roles Role[]
+
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  status      String  @default("active")
+  lastLoginAt DateTime?
+  lastLoginIp String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedObservations Observation[]         @relation("AssignedTo")
+  createdObservations  Observation[]         @relation("CreatedBy")
+  timelineEntries      ObservationTimeline[] @relation("TimelineCreatedBy")
+  uploadedEvidence     Evidence[]            @relation("UploadedBy")
+  ownedCompliance      ComplianceRequirement[] @relation("ComplianceOwner")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+// ─── Observation (Finding) ───────────────────────────────────────────────────
+
+model Observation {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title          String
+  condition      String   @db.Text
+  criteria       String   @db.Text
+  cause          String   @db.Text
+  effect         String   @db.Text
+  recommendation String   @db.Text
+
+  severity Severity
+  status   ObservationStatus @default(DRAFT)
+
+  assignedToId String? @db.Uuid
+  assignedTo   User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  branchId String? @db.Uuid
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  auditAreaId String?    @db.Uuid
+  auditArea   AuditArea? @relation(fields: [auditAreaId], references: [id])
+
+  createdById String @db.Uuid
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  dueDate         DateTime?
+  statusUpdatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  timeline ObservationTimeline[]
+  evidence Evidence[]
+
+  @@index([tenantId])
+  @@index([severity])
+  @@index([status])
+}
+
+// ─── Observation Timeline ────────────────────────────────────────────────────
+
+model ObservationTimeline {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  observationId String @db.Uuid
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  event    String
+  oldValue String?
+  newValue String?
+  comment  String? @db.Text
+
+  createdById String @db.Uuid
+  createdBy   User   @relation("TimelineCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([observationId])
+}
+
+// ─── Evidence ────────────────────────────────────────────────────────────────
+
+model Evidence {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  observationId String @db.Uuid
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  filename    String
+  s3Key       String
+  fileSize    Int
+  contentType String
+
+  uploadedById String @db.Uuid
+  uploadedBy   User   @relation("UploadedBy", fields: [uploadedById], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([observationId])
+}
+
+// ─── Compliance Requirement ──────────────────────────────────────────────────
+
+model ComplianceRequirement {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  requirement String @db.Text
+  category    String
+  status      ComplianceStatus @default(PENDING)
+
+  rbiCircularId String?     @db.Uuid
+  rbiCircular   RbiCircular? @relation(fields: [rbiCircularId], references: [id])
+
+  nextReviewDate      DateTime?
+  notApplicableReason String?
+
+  ownerId String? @db.Uuid
+  owner   User?   @relation("ComplianceOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+// ─── RBI Circular (Global — no tenantId) ─────────────────────────────────────
+
+model RbiCircular {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  circularNumber String @unique
+  title          String
+  issuedDate     DateTime
+  url            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  complianceRequirements ComplianceRequirement[]
+}
+
+// ─── Branch ──────────────────────────────────────────────────────────────────
+
+model Branch {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  code  String
+  name  String
+  city  String
+  state String
+  type  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  observations     Observation[]
+  auditEngagements AuditEngagement[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// ─── Audit Area ──────────────────────────────────────────────────────────────
+
+model AuditArea {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name         String
+  description  String? @db.Text
+  riskCategory String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  observations     Observation[]
+  auditEngagements AuditEngagement[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+// ─── Audit Plan ──────────────────────────────────────────────────────────────
+
+model AuditPlan {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  year    Int
+  quarter Quarter
+  status  AuditPlanStatus @default(PLANNED)
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  engagements AuditEngagement[]
+
+  @@unique([tenantId, year, quarter])
+  @@index([tenantId])
+}
+
+// ─── Audit Engagement ────────────────────────────────────────────────────────
+
+model AuditEngagement {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auditPlanId String @db.Uuid
+  auditPlan   AuditPlan @relation(fields: [auditPlanId], references: [id], onDelete: Cascade)
+
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId String? @db.Uuid
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  auditAreaId String?    @db.Uuid
+  auditArea   AuditArea? @relation(fields: [auditAreaId], references: [id])
+
+  assignedToId String? @db.Uuid
+
+  status             EngagementStatus @default(PLANNED)
+  scheduledStartDate DateTime?
+  completionDate     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([auditPlanId])
+}
+
+// ─── Audit Log (Enriched per Skeptic + Domain Expert) ────────────────────────
+
+model AuditLog {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sequenceNumber BigInt   @default(autoincrement())
+
+  tenantId  String @db.Uuid
+  tableName String
+  recordId  String
+  operation String
+
+  // Business-level action type (DE5): e.g., "observation.approved"
+  actionType String?
+
+  // Data snapshots
+  oldData Json?
+  newData Json?
+
+  // Actor info
+  userId        String?
+  justification String? // Required for sensitive ops (DE6)
+
+  // RBI cyber security framework fields
+  ipAddress String?
+  sessionId String?
+
+  // Retention: computed as createdAt + 10 years (D14, PMLA)
+  retentionExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tableName, recordId])
+  @@index([actionType])
+  @@index([createdAt])
+}

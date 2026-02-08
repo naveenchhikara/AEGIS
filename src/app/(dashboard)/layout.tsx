@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
@@ -22,11 +25,36 @@ function PageLoadingSkeleton() {
   );
 }
 
-export default function DashboardLayout({
+/**
+ * Dashboard layout with two-layer authentication protection
+ *
+ * Layer 1 (proxy.ts): Optimistic cookie check, redirects to /login if no cookie
+ * Layer 2 (this layout): Authoritative session validation, redirects if invalid session
+ *
+ * Session validation occurs BEFORE children render → zero content flash (Decision D12)
+ * This is the TRUE security boundary - proxy.ts is just UX optimization
+ */
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Layer 2: Authoritative session validation
+  // This is the TRUE security boundary
+  // Call auth.api.getSession() to validate session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  // If no valid session → redirect to /login
+  // This happens BEFORE any children render (zero content flash, Decision D12)
+  if (!session) {
+    redirect("/login");
+  }
+
+  // Valid session → render children wrapped in layout
+  // Note: TopBar and AppSidebar currently use currentUser() from current-user.ts
+  // In future, we can pass session.user to these components for better data flow
   return (
     <SidebarProvider>
       {/* Skip-to-content link - visible on keyboard focus */}
@@ -36,9 +64,14 @@ export default function DashboardLayout({
       >
         Skip to main content
       </a>
+
+      {/* App Sidebar */}
       <AppSidebar />
+
       <SidebarInset>
+        {/* Top Bar */}
         <TopBar />
+
         <main
           id="main-content"
           className="min-w-0 flex-1 overflow-auto p-4 md:p-6"

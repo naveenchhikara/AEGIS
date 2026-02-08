@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import type { AuditLogEntry } from "@/types";
+import { headers } from "next/headers";
 
 /**
  * Audit trail filters for the CAE viewer.

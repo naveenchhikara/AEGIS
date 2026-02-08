@@ -243,6 +243,24 @@
     "mfaDigitPlaceholder": "6-digit code",
     "signIn": "Sign In",
     "signingIn": "Signing in...",
-    "selectLanguage": "Select Language"
+    "signingUp": "Signing up...",
+    "signUp": "Sign Up",
+    "selectLanguage": "Select Language",
+    "invalidCredentials": "Invalid email or password",
+    "rateLimited": "Too many login attempts. Please try again in 15 minutes.",
+    "accountLocked": "Account locked due to too many failed attempts. Please try again in 30 minutes.",
+    "loginFailed": "Login failed. Please try again.",
+    "fullName": "Full Name",
+    "namePlaceholder": "Rajesh Deshmukh",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "passwordsDontMatch": "Passwords do not match",
+    "passwordTooWeak": "Password is too weak. Please meet all requirements.",
+    "emailAlreadyExists": "An account with this email already exists.",
+    "invalidEmail": "Invalid email address",
+    "signupFailed": "Signup failed. Please try again.",
+    "min8Chars": "At least 8 characters",
+    "oneUppercase": "One uppercase letter",
+    "oneNumber": "One number"
   }
 }

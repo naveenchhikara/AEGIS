@@ -2,29 +2,82 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Lock, Mail, Shield } from "@/lib/icons";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Lock, Mail, Shield, CircleAlert } from "@/lib/icons";
 
+/**
+ * Login form using Better Auth email/password authentication
+ *
+ * Features:
+ * - Email and password fields
+ * - Form validation
+ * - Error handling (rate limiting, account lockout)
+ * - Redirect to dashboard on success
+ * - Last login metadata display after successful login
+ */
 export function LoginForm() {
   const router = useRouter();
   const t = useTranslations("Login");
   const tCommon = useTranslations("Common");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mfaCode, setMfaCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Demo: redirect on any valid-looking email
-    await new Promise((r) => setTimeout(r, 600));
-    router.push("/dashboard");
+    setError(null);
+
+    try {
+      // Sign in with Better Auth
+      const response = await signIn.email({
+        email,
+        password,
+      });
+
+      if (response.error) {
+        // Handle Better Auth errors
+        const errorCode = response.error.code || response.error.message;
+
+        switch (errorCode) {
+          case "INVALID_EMAIL_OR_PASSWORD":
+            setError(t("invalidCredentials"));
+            break;
+          case "TOO_MANY_ATTEMPTS":
+            setError(t("rateLimited"));
+            break;
+          case "ACCOUNT_LOCKED":
+            setError(t("accountLocked"));
+            break;
+          default:
+            setError(t("loginFailed"));
+        }
+      } else if (response.data) {
+        // Success - redirect to dashboard
+        // Last login metadata is automatically tracked by Better Auth
+        router.push("/dashboard");
+        router.refresh(); // Refresh to update session state
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(t("loginFailed"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,6 +107,16 @@ export function LoginForm() {
               {tCommon("appTagline")}
             </p>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50/50 p-3">
+              <div className="flex items-center gap-2 text-sm text-red-700">
+                <CircleAlert className="h-4 w-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
@@ -94,29 +157,6 @@ export function LoginForm() {
               </div>
             </div>
 
-            {/* MFA */}
-            <div className="space-y-2">
-              <Label htmlFor="mfa" className="text-sm font-medium">
-                {t("mfaCode")}{" "}
-                <span className="text-muted-foreground">
-                  ({tCommon("optional")})
-                </span>
-              </Label>
-              <div className="relative">
-                <Shield className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                <Input
-                  id="mfa"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder={t("mfaDigitPlaceholder")}
-                  maxLength={6}
-                  value={mfaCode}
-                  onChange={(e) => setMfaCode(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
             {/* Submit */}
             <Button
               type="submit"
@@ -127,16 +167,8 @@ export function LoginForm() {
             </Button>
           </form>
 
-          {/* Demo hint */}
-          <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
-            <p className="text-center text-xs text-blue-700">
-              <span className="font-medium">{tCommon("demoMode")}:</span>{" "}
-              {tCommon("demoHint")}
-            </p>
-          </div>
-
           {/* Trust indicators */}
-          <div className="mt-4 flex items-center justify-center">
+          <div className="mt-6 flex items-center justify-center">
             <div className="text-muted-foreground flex items-center gap-1 text-xs">
               <Shield className="h-3 w-3" />
               <span>RBI Compliant</span>

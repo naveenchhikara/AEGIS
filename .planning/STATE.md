@@ -6,31 +6,31 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
 
-**Current focus:** Phase 6 - Observation Lifecycle (v2.0 Working Core MVP)
+**Current focus:** Phase 10 - Onboarding & Compliance (v2.0 Working Core MVP — FINAL PHASE)
 
 ## Current Position
 
-Phase: 5 of 10 (Foundation & Migration)
-Plan: 6 of 6 in current phase
-Status: Complete - All plans executed
-Last activity: 2026-02-09 — Completed 05-06: Settings Page Migration
+Phase: 10 of 10 (Onboarding & Compliance)
+Plan: Starting Phase 10 (8 plans)
+Status: Phase 9 code complete, Phase 10 starting
+Last activity: 2026-02-09 — Completed 06-01 observation schema migration
 
-Progress: [██████░░░░░░░░░░░░░] 25% (34/135+ plans complete across all milestones)
+Progress: [███████████████████░] 75% (58/~95 plans complete across all milestones)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 30 (v1.0 complete)
+- Total plans completed: 59 (v1.0 complete + Phase 5-9, 06-01)
 - Average duration: Not tracked (v1.0 executed rapidly)
-- Total execution time: ~3 days (v1.0 prototype)
+- Total execution time: ~3 days (v1.0 prototype), ~2 days (Phase 5-9)
 
 **By Milestone:**
 
-| Milestone | Phases | Plans | Status      | Completed  |
-| --------- | ------ | ----- | ----------- | ---------- |
-| v1.0      | 1-4    | 23/23 | Complete    | 2026-02-08 |
-| v2.0      | 5-10   | 6/~40 | In progress | 2026-02-09 |
+| Milestone | Phases | Plans  | Status      | Completed  |
+| --------- | ------ | ------ | ----------- | ---------- |
+| v1.0      | 1-4    | 23/23  | Complete    | 2026-02-08 |
+| v2.0      | 5-10   | 35/~40 | In progress | 2026-02-09 |
 
 **Recent Trend:**
 
@@ -43,7 +43,39 @@ Progress: [██████░░░░░░░░░░░░░] 25% (34/13
 - 05-05: Audit Trail System completed 2026-02-09
 - 05-06: DAL Pattern & Settings Migration completed 2026-02-09
 - **Phase 5 COMPLETE** — All 6 plans done (2026-02-09)
-- Phase 6: Ready to execute (7 plans, 4 waves)
+- 06-01: Observation Schema Migration completed 2026-02-09 — Extended Prisma schema with lifecycle fields, ObservationRbiCircular junction table, pg_trgm extension and indexes, observation lifecycle constants
+- 06-02: State Machine + Role Guards completed 2026-02-09
+- 06-03: Observation CRUD Actions + DAL completed 2026-02-09
+- 06-04: Repeat Finding Detection completed 2026-02-09
+- 06-05: Observation Form UI + Findings List Migration completed 2026-02-09
+- 06-06: Observation Detail Page Migration completed 2026-02-09
+- **Phase 6 CODE COMPLETE** — Plans 06-01 through 06-06 done (2026-02-09)
+- 06-07: E2E Verification Checkpoint — pending manual browser testing
+- 07-01: Auditee Portal Schema Additions completed 2026-02-09
+- 07-02: S3 Utility Module completed 2026-02-09
+- 07-03: Auditee Server Actions + DAL completed 2026-02-09
+- 07-04: Auditee Observation List UI completed 2026-02-09
+- 07-05: Evidence Upload + Response Form UI completed 2026-02-09
+- 07-06: Auditee Dashboard Page Migration completed 2026-02-09
+- 07-07: Auditee Observation Detail Page completed 2026-02-09
+- **Phase 7 CODE COMPLETE** — Plans 07-01 through 07-07 done (2026-02-09)
+- 07-08: E2E Verification Checkpoint — pending manual browser testing
+- 08-01: Notification Infrastructure completed 2026-02-09
+- 08-02: Email Templates completed 2026-02-09
+- 08-03: Notification Jobs & Processing completed 2026-02-09
+- 08-04: PDF Board Report Generator completed 2026-02-09
+- 08-05: Excel Export Routes completed 2026-02-09
+- 08-06: Integration & UI (notification prefs, report generation, export buttons, triggers) completed 2026-02-09
+- **Phase 8 CODE COMPLETE** — Plans 08-01 through 08-06 done (2026-02-09)
+- 08-07: E2E Verification Checkpoint — pending manual browser testing
+- 09-01: Dashboard Infrastructure completed 2026-02-09
+- 09-02: Dashboard Data Access Layer completed 2026-02-09
+- 09-03: Shared Dashboard Widgets completed 2026-02-09
+- 09-04: Role-Specific Dashboard Widgets completed 2026-02-09
+- 09-05: Dashboard Page Composition & Integration completed 2026-02-09
+- **Phase 9 CODE COMPLETE** — Plans 09-01 through 09-05 done (2026-02-09)
+- 09-06: E2E Verification Checkpoint — pending manual browser testing
+- Phase 10 starting (Onboarding & Compliance — 8 plans)
 
 ## Accumulated Context
 
@@ -70,6 +102,8 @@ Recent decisions affecting v2.0 work:
 - **UserBranchAssignment in Phase 7 (D22):** Model created in Phase 7 schema, populated during Phase 10 onboarding
 - **Skip next-safe-action (D23):** Manual Zod + auth pattern for consistency across all phases
 - **No JSON fallback (D24):** Phase 6+ assumes DB is running; no try/catch fallback to JSON data
+- **OBSERVATION_STATUS_ORDER as Record (06-01):** Changed from string[] to Record<string, number> for O(1) lookups instead of O(n) indexOf()
+- **RISK_CATEGORIES lowercase kebab-case (06-01):** Changed from uppercase snake_case (CREDIT_RISK) to lowercase kebab-case (credit-risk) for consistency
 
 ### Pending Todos
 
@@ -88,28 +122,31 @@ None yet.
 - Auth.js + next-intl cookie conflict must be validated (middleware ordering)
 - Data import trap: ~20 client components import JSON; all need server-fetch refactoring
 
-**Phase 6 (Observation) complexity:**
+**Phase 6 (Observation) verification:**
 
-- State machine has 7 states × 5 roles = 35+ permission combinations
-- Requires exhaustive testing or property-based testing approach
+- 9 E2E test scenarios require manual browser testing
+- No COMPLIANCE-state observations in seed — tester must manually transition through full lifecycle
+- Plan references Rajesh Deshmukh as "Auditor" but he is CEO — use Suresh Patil for Auditor tests
 
 **Phase 7 (Auditee Portal) infrastructure:**
 
 - AWS SES requires domain verification (3-5 days for DNS propagation)
 - Deliverability testing with Indian email providers needed
 
-### Pre-Phase 6 Setup Required
+### Pre-Phase 9 Setup Required
 
-- Install `vitest` + `@vitest/ui` + `happy-dom` (for 06-02 TDD)
-- Install `server-only` package (for 06-03 DAL)
+- Phase 6 + Phase 7 E2E verification should pass before production deployment
+- See `.planning/phases/06-observation-lifecycle/06-07-SUMMARY.md` for Phase 6 test checklist
+- See `.planning/phases/07-auditee-portal-evidence/07-08-PLAN.md` for Phase 7 test checklist
+- AWS SES domain verification needed (1 week lead time)
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 5 complete, Phase 6 ready to execute
-Resume file: .planning/phases/05-foundation-and-migration/05-06-SUMMARY.md
+Stopped at: Completed 06-01 observation schema migration
+Resume file: .planning/STATE.md
 
 ---
 
 _State initialized: 2026-02-07_
-_Last updated: 2026-02-09 after Phase 5 completion_
+_Last updated: 2026-02-09 after Phase 8 code completion + Phase 9 Wave 1 start_

@@ -1,0 +1,141 @@
+"use client";
+
+/**
+ * Zustand store for onboarding wizard state with localStorage persistence.
+ *
+ * Features:
+ * - Persists wizard progress across browser sessions via localStorage
+ * - Auto-updates lastSavedAt on every mutation (tracks activity)
+ * - 30-day expiry for abandoned drafts
+ * - reset() clears all state after successful onboarding completion
+ * - partialize excludes action functions from serialization
+ */
+
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type {
+  OnboardingState,
+  OnboardingActions,
+  OnboardingStep,
+  BankRegistrationData,
+  TierSelectionData,
+  SelectedDirectionData,
+  NotApplicableItem,
+  OrgStructureData,
+  UserInviteData,
+} from "@/types/onboarding";
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = "aegis-onboarding";
+const EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// ─── Initial State ───────────────────────────────────────────────────────────
+
+function getInitialState(): OnboardingState {
+  return {
+    currentStep: 1,
+    completedSteps: [],
+    bankRegistration: null,
+    tierSelection: null,
+    selectedDirections: [],
+    notApplicableItems: [],
+    orgStructure: null,
+    userInvites: [],
+    startedAt: new Date().toISOString(),
+    lastSavedAt: new Date().toISOString(),
+    onboardingId: undefined,
+  };
+}
+
+// ─── Store ───────────────────────────────────────────────────────────────────
+
+export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
+  persist(
+    (set, get) => ({
+      ...getInitialState(),
+
+      // ─── Navigation ──────────────────────────────────────────────────
+
+      setStep: (step: OnboardingStep) =>
+        set({ currentStep: step, lastSavedAt: new Date().toISOString() }),
+
+      markStepComplete: (step: OnboardingStep) =>
+        set((state) => ({
+          completedSteps: [...new Set([...state.completedSteps, step])].sort(),
+          lastSavedAt: new Date().toISOString(),
+        })),
+
+      unmarkStepComplete: (step: OnboardingStep) =>
+        set((state) => ({
+          completedSteps: state.completedSteps.filter((s) => s !== step),
+          lastSavedAt: new Date().toISOString(),
+        })),
+
+      // ─── Step Data Setters ───────────────────────────────────────────
+
+      setBankRegistration: (data: BankRegistrationData) =>
+        set({ bankRegistration: data, lastSavedAt: new Date().toISOString() }),
+
+      setTierSelection: (data: TierSelectionData) =>
+        set({ tierSelection: data, lastSavedAt: new Date().toISOString() }),
+
+      setSelectedDirections: (data: SelectedDirectionData[]) =>
+        set({
+          selectedDirections: data,
+          lastSavedAt: new Date().toISOString(),
+        }),
+
+      setNotApplicableItems: (items: NotApplicableItem[]) =>
+        set({
+          notApplicableItems: items,
+          lastSavedAt: new Date().toISOString(),
+        }),
+
+      setOrgStructure: (data: OrgStructureData) =>
+        set({ orgStructure: data, lastSavedAt: new Date().toISOString() }),
+
+      setUserInvites: (data: UserInviteData[]) =>
+        set({ userInvites: data, lastSavedAt: new Date().toISOString() }),
+
+      setOnboardingId: (id: string) => set({ onboardingId: id }),
+
+      // ─── Utilities ───────────────────────────────────────────────────
+
+      isExpired: () => {
+        const lastSaved = new Date(get().lastSavedAt).getTime();
+        return Date.now() - lastSaved > EXPIRY_MS;
+      },
+
+      hasProgress: () => {
+        const state = get();
+        return (
+          state.completedSteps.length > 0 ||
+          state.bankRegistration !== null ||
+          state.tierSelection !== null ||
+          state.selectedDirections.length > 0 ||
+          state.orgStructure !== null ||
+          state.userInvites.length > 0
+        );
+      },
+
+      reset: () => set(getInitialState()),
+    }),
+    {
+      name: STORAGE_KEY,
+      partialize: (state) => ({
+        currentStep: state.currentStep,
+        completedSteps: state.completedSteps,
+        bankRegistration: state.bankRegistration,
+        tierSelection: state.tierSelection,
+        selectedDirections: state.selectedDirections,
+        notApplicableItems: state.notApplicableItems,
+        orgStructure: state.orgStructure,
+        userInvites: state.userInvites,
+        startedAt: state.startedAt,
+        lastSavedAt: state.lastSavedAt,
+        onboardingId: state.onboardingId,
+      }),
+    },
+  ),
+);

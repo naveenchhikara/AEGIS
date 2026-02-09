@@ -36,6 +36,41 @@ export const FINDING_STATUS_COLORS = {
   closed: "bg-emerald-100 text-emerald-800 border-emerald-200",
 } as const;
 
+export const OBSERVATION_STATUS_COLORS = {
+  DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
+  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-200",
+  REVIEWED: "bg-purple-100 text-purple-800 border-purple-200",
+  ISSUED: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  RESPONSE: "bg-amber-100 text-amber-800 border-amber-200",
+  COMPLIANCE: "bg-teal-100 text-teal-800 border-teal-200",
+  CLOSED: "bg-emerald-100 text-emerald-800 border-emerald-200",
+} as const;
+
+export const OBSERVATION_STATUS_ORDER: string[] = [
+  "DRAFT",
+  "SUBMITTED",
+  "REVIEWED",
+  "ISSUED",
+  "RESPONSE",
+  "COMPLIANCE",
+  "CLOSED",
+];
+
+export const RISK_CATEGORIES = [
+  { value: "CREDIT_RISK", label: "Credit Risk" },
+  { value: "MARKET_RISK", label: "Market Risk" },
+  { value: "OPERATIONAL_RISK", label: "Operational Risk" },
+  { value: "LIQUIDITY_RISK", label: "Liquidity Risk" },
+  { value: "COMPLIANCE_RISK", label: "Compliance Risk" },
+  { value: "IT_RISK", label: "IT Risk" },
+  { value: "FRAUD_RISK", label: "Fraud Risk" },
+  { value: "REPUTATIONAL_RISK", label: "Reputational Risk" },
+  { value: "STRATEGIC_RISK", label: "Strategic Risk" },
+  { value: "INTEREST_RATE_RISK", label: "Interest Rate Risk" },
+  { value: "KYC_AML_RISK", label: "KYC/AML Risk" },
+  { value: "GOVERNANCE_RISK", label: "Governance Risk" },
+] as const;
+
 export const AUDIT_STATUS_COLORS = {
   completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
   "in-progress": "bg-blue-100 text-blue-800 border-blue-200",

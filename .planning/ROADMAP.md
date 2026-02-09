@@ -211,9 +211,11 @@ Plans:
 3. Concurrent session limit enforced: max 2 active sessions per user
 4. Session cookies explicitly set: httpOnly=true, secure=true, sameSite=lax
 
+**Plans:** 1 plan
+
 Plans:
 
-- [ ] 11-01: TBD (to be planned)
+- [ ] 11-01-PLAN.md — Rate limiting, account lockout, session limits, and cookie hardening
 
 ---
 

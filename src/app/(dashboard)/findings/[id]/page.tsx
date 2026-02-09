@@ -1,5 +1,5 @@
-import { findings } from "@/data";
-import type { FindingsData } from "@/types";
+import { getRequiredSession } from "@/data-access/session";
+import { getObservationById } from "@/data-access/observations";
 import { FindingDetail } from "@/components/findings/finding-detail";
 import { notFound } from "next/navigation";
 
@@ -7,19 +7,14 @@ interface FindingPageProps {
   params: Promise<{ id: string }>;
 }
 
-const data = findings as unknown as FindingsData;
-
-export function generateStaticParams() {
-  return data.findings.map((f) => ({ id: f.id }));
-}
-
 export default async function FindingPage({ params }: FindingPageProps) {
   const { id } = await params;
-  const finding = data.findings.find((f) => f.id === id);
+  const session = await getRequiredSession();
+  const observation = await getObservationById(session, id);
 
-  if (!finding) {
+  if (!observation) {
     notFound();
   }
 
-  return <FindingDetail finding={finding} />;
+  return <FindingDetail observation={observation} session={session} />;
 }

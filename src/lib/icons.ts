@@ -59,4 +59,8 @@ export {
   CalendarRange,
   Download,
   ChevronDown as ChevronDownIcon,
+  Copy,
+  RotateCcw,
+  Tag,
+  MessageSquare,
 } from "lucide-react";

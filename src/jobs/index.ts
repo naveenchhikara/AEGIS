@@ -3,6 +3,7 @@ import { processNotifications } from "./notification-processor";
 import { processDeadlineReminders } from "./deadline-reminder";
 import { processOverdueEscalation } from "./overdue-escalation";
 import { processWeeklyDigest } from "./weekly-digest";
+import { captureMetricsSnapshot } from "./snapshot-metrics";
 
 // Job names (duplicated from job-queue.ts to avoid server-only import)
 const JOBS = {
@@ -10,6 +11,7 @@ const JOBS = {
   SEND_WEEKLY_DIGEST: "send-weekly-digest",
   DEADLINE_CHECK: "deadline-check",
   GENERATE_BOARD_REPORT: "generate-board-report",
+  SNAPSHOT_METRICS: "snapshot-metrics",
 } as const;
 
 /**
@@ -51,6 +53,11 @@ export async function registerJobs(boss: PgBoss): Promise<void> {
       console.log("[jobs] Board report generation requested", job.data);
     }
     // Implementation in 08-04 (PDF Board Report)
+  });
+
+  // Daily metrics snapshot for dashboard trends (01:00 IST)
+  await boss.work(JOBS.SNAPSHOT_METRICS, async () => {
+    await captureMetricsSnapshot();
   });
 
   console.log("[jobs] All job handlers registered");

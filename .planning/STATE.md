@@ -2,11 +2,11 @@
 
 ## Current Position
 
-**Phase:** 11 of 14 — Auth Security Hardening (PLANNED)
-**Status:** Gap closure phases created — ready to plan Phase 11
+**Phase:** 11 of 14 — Auth Security Hardening (IN PROGRESS)
+**Status:** Completed 11-01 (Auth security hardening) — 4 HIGH-severity gaps closed
 **Last activity:** 2026-02-10
 
-Progress: [█████████████████░░░░] 81% (63/63 v2.0 plans + 0/? gap closure plans)
+Progress: [█████████████████░░░░] 82% (63/63 v2.0 plans + 1/4 gap closure plans)
 
 ## Milestone Progress
 
@@ -29,12 +29,12 @@ Progress: [█████████████████░░░░] 81% 
 
 ## v2.0 Gap Closure Detail
 
-| Phase | Name                           | Plans | Done | Status  |
-| ----- | ------------------------------ | ----- | ---- | ------- |
-| 11    | Auth Security Hardening        | TBD   | 0    | Planned |
-| 12    | Dashboard Data Pipeline        | TBD   | 0    | Planned |
-| 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned |
-| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned |
+| Phase | Name                           | Plans | Done | Status      |
+| ----- | ------------------------------ | ----- | ---- | ----------- |
+| 11    | Auth Security Hardening        | 1     | 1    | In Progress |
+| 12    | Dashboard Data Pipeline        | TBD   | 0    | Planned     |
+| 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned     |
+| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned     |
 
 ### Gap → Phase Mapping
 
@@ -65,16 +65,25 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 - **Observations:** Bottom-up atoms; all macro views derived by aggregation; no JSON fallback post-Phase 5
 - **Infrastructure:** S3 PutObject+GetObject only (immutable evidence), SES Mumbai for email, React-PDF for board reports
 - **Data locality:** AWS Mumbai (ap-south-1); DR replication only to ap-south-2 (Hyderabad)
+- **Account lockout (D22):** Track by email (not userId) to prevent user enumeration
+- **Security table scope (D23):** FailedLoginAttempt has no tenantId — system-level, cross-tenant
+- **Plugin implementation (D24):** accountLockout plugin `after` hook deferred to Phase 14 due to Better Auth API gaps
 
 ## Active Blockers
 
 - **AWS SES domain verification:** Required for production email; 3–5 day DNS propagation lead time
 - **Docker daemon:** Must be running for local PostgreSQL (`docker-compose up -d`)
 
+## Phase 11 Concerns (for Phase 14)
+
+- **Failed attempt tracking:** accountLockout plugin `after` hook incomplete — deferred to Phase 14
+- **E2E verification needed:** Rate limiting, lockout, session limits require runtime testing with PostgreSQL
+- **Database migration pending:** FailedLoginAttempt table exists in schema, not yet applied to DB
+
 ## Session Continuity
 
 Last session: 2026-02-10
-v2.0 milestone audit complete (58/59, tech_debt status). Created 4 gap closure phases (11-14) from audit findings. Next step: `/gsd:plan-phase 11` to plan auth security hardening.
+Completed 11-01-PLAN.md: Auth security hardening — rate limiting, account lockout, session limits, cookie security. Next: Plan 11-02 (if exists) or move to Phase 12 planning.
 
 ---
 

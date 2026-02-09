@@ -2,18 +2,19 @@
 
 ## Current Position
 
-**Phase:** 10 of 10 — Onboarding & Compliance (COMPLETE)
-**Status:** 8/8 plans done — Phase 10 COMPLETE
+**Phase:** 11 of 14 — Auth Security Hardening (PLANNED)
+**Status:** Gap closure phases created — ready to plan Phase 11
 **Last activity:** 2026-02-10
 
-Progress: [█████████████████████] 100% (63/63 plans complete)
+Progress: [█████████████████░░░░] 81% (63/63 v2.0 plans + 0/? gap closure plans)
 
 ## Milestone Progress
 
 | Milestone                | Phases | Plans | Status             |
 | ------------------------ | ------ | ----- | ------------------ |
 | v1.0 Clickable Prototype | 1–4    | 23/23 | Shipped 2026-02-08 |
-| v2.0 Working Core MVP    | 5–10   | 40/40 | **COMPLETE**       |
+| v2.0 Working Core MVP    | 5–10   | 40/40 | Complete           |
+| v2.0 Gap Closure         | 11–14  | 0/TBD | **ACTIVE**         |
 
 ## v2.0 Phase Detail
 
@@ -26,22 +27,32 @@ Progress: [█████████████████████] 100%
 | 9     | Dashboards                | 5     | 5    | Complete |
 | 10    | Onboarding & Compliance   | 8     | 8    | Complete |
 
-## Phase 10 Plan Completion
+## v2.0 Gap Closure Detail
 
-| Plan  | Description                                 | Status |
-| ----- | ------------------------------------------- | ------ |
-| 10-01 | Onboarding schema (Prisma models)           | Done   |
-| 10-02 | RBI Master Directions seed data             | Done   |
-| 10-03 | Onboarding Zustand store & validation       | Done   |
-| 10-04 | Wizard shell & layout                       | Done   |
-| 10-05 | Steps 1–3 UI (registration, tier, RBI dirs) | Done   |
-| 10-06 | Steps 4–5 UI (org structure, user invites)  | Done   |
-| 10-07 | Completion actions & invitation system      | Done   |
-| 10-08 | Compliance management settings              | Done   |
+| Phase | Name                           | Plans | Done | Status  |
+| ----- | ------------------------------ | ----- | ---- | ------- |
+| 11    | Auth Security Hardening        | TBD   | 0    | Planned |
+| 12    | Dashboard Data Pipeline        | TBD   | 0    | Planned |
+| 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned |
+| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned |
 
-### Pending E2E Verification
+### Gap → Phase Mapping
 
-07-08 (Auditee Portal) — COMPLETE (16/17 tests pass, 1 skipped). Phases 8 and 9 E2E checkpoints were planned in STATE.md but never formalized into plan files. Should be done before production deployment.
+| Gap Source         | Item                                  | Severity | Phase |
+| ------------------ | ------------------------------------- | -------- | ----- |
+| Phase 5 tech debt  | Rate limiting not configured          | HIGH     | 11    |
+| Phase 5 tech debt  | Account lockout missing               | HIGH     | 11    |
+| Phase 5 tech debt  | Concurrent session limit missing      | HIGH     | 11    |
+| Phase 5 tech debt  | Session cookie settings implicit      | HIGH     | 11    |
+| Phase 9 tech debt  | Trend widgets return null             | MEDIUM   | 12    |
+| Phase 9 tech debt  | Missing engagementId on Observation   | MEDIUM   | 12    |
+| Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    |
+| ONBD-03            | Excel org structure upload not built  | MUST     | 13    |
+| Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    |
+| Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    |
+| Phase 6            | E2E browser tests pending             | MEDIUM   | 14    |
+| Phase 7            | Permission guard test skipped         | LOW      | 14    |
+| Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    |
 
 ## Key Decisions
 
@@ -63,7 +74,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-10
-Completed all Phase 10 plans (10-05 through 10-08). v2.0 Working Core MVP milestone is now 100% complete. Next step: milestone audit and v3.0 planning.
+v2.0 milestone audit complete (58/59, tech_debt status). Created 4 gap closure phases (11-14) from audit findings. Next step: `/gsd:plan-phase 11` to plan auth security hardening.
 
 ---
 

@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 Clickable Prototype** — Phases 1-4 (shipped 2026-02-08) — see archived section below
 - ✅ **v2.0 Working Core MVP** — Phases 5-10 (audit complete 2026-02-10)
+- 🔧 **v2.0 Gap Closure** — Phases 11-14 (closing audit gaps)
 
 ## Phases
 
@@ -189,10 +190,107 @@ Plans:
 
 ---
 
+### 🔧 v2.0 Gap Closure (Phases 11-14)
+
+**Milestone Goal:** Close all gaps identified by v2.0 milestone audit. Fix auth security, wire missing data pipelines, complete ONBD-03, and formalize verification for all phases.
+
+#### Phase 11: Auth Security Hardening
+
+**Goal:** Add rate limiting, account lockout, concurrent session limits, and explicit cookie configuration to Better Auth — closing all 4 HIGH-severity auth security gaps from Phase 5 verification.
+
+**Depends on:** Phase 10
+
+**Requirements:** (tech debt closure — FNDN-02, FNDN-03 hardening)
+
+**Gap Closure:** Phase 5 tech debt (HIGH severity)
+
+**Success Criteria** (what must be TRUE):
+
+1. Rate limiting configured: max 10 login attempts per 15 minutes per IP
+2. Account lockout after 5 consecutive failed attempts with 30-minute lockout period
+3. Concurrent session limit enforced: max 2 active sessions per user
+4. Session cookies explicitly set: httpOnly=true, secure=true, sameSite=lax
+
+Plans:
+
+- [ ] 11-01: TBD (to be planned)
+
+---
+
+#### Phase 12: Dashboard Data Pipeline & Schema Fixes
+
+**Goal:** Build historical data pipeline for trend dashboard widgets, add engagementId to Observation model, and wire repeat findings to board report section.
+
+**Depends on:** Phase 11
+
+**Requirements:** (tech debt closure — DASH-03, DASH-05, RPT-05 hardening)
+
+**Gap Closure:** Phase 8 tech debt (repeat findings), Phase 9 tech debt (trend widgets, engagementId)
+
+**Success Criteria** (what must be TRUE):
+
+1. Trend widgets (high-critical-trend, severity-trend, compliance-trend) render real historical data
+2. Historical data snapshots captured via scheduled job (daily or weekly)
+3. Observation model has engagementId field — getMyEngagementProgress returns real counts
+4. Board report repeat findings section renders actual repeat observation data
+
+Plans:
+
+- [ ] 12-01: TBD (to be planned)
+
+---
+
+#### Phase 13: Onboarding Persistence & Excel Upload
+
+**Goal:** Wire server-side onboarding save to PostgreSQL and build Excel template upload for org structure — closing ONBD-03 (partial → satisfied).
+
+**Depends on:** Phase 12
+
+**Requirements:** ONBD-03 (completing partial → satisfied), ONBD-06 (server-side persistence)
+
+**Gap Closure:** Phase 10 tech debt (server-side save, Excel upload)
+
+**Success Criteria** (what must be TRUE):
+
+1. Onboarding wizard progress saves to PostgreSQL OnboardingProgress table via server action
+2. User can resume onboarding from server-side state (not just localStorage)
+3. Admin can download Excel template for org structure
+4. Admin can upload filled Excel template and system parses branches/departments/units
+
+Plans:
+
+- [ ] 13-01: TBD (to be planned)
+
+---
+
+#### Phase 14: Verification & Production Readiness
+
+**Goal:** Create VERIFICATION.md for phases 6-10, execute pending E2E tests, and confirm AWS SES domain verification — formalizing all phase completions.
+
+**Depends on:** Phase 13
+
+**Requirements:** (quality assurance — no new features)
+
+**Gap Closure:** Missing verification for phases 6-10, pending E2E tests
+
+**Success Criteria** (what must be TRUE):
+
+1. VERIFICATION.md exists for phases 6, 7, 8, 9, and 10
+2. Phase 6 E2E browser tests executed (9 manual test cases from 06-07)
+3. Phase 7 permission guard test completed
+4. AWS SES domain verified and first test email sent successfully
+5. Re-audit passes with 59/59 requirements satisfied and 0 HIGH tech debt
+
+Plans:
+
+- [ ] 14-01: TBD (to be planned)
+
+---
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14
 
 | Phase                           | Milestone | Plans Complete | Status   | Completed  |
 | ------------------------------- | --------- | -------------- | -------- | ---------- |
@@ -206,8 +304,12 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10
 | 8. Notifications & Reports      | v2.0      | 6/6            | Complete | 2026-02-09 |
 | 9. Dashboards                   | v2.0      | 5/5            | Complete | 2026-02-09 |
 | 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
+| 11. Auth Security Hardening     | v2.0 fix  | 0/0            | Planned  | —          |
+| 12. Dashboard Data Pipeline     | v2.0 fix  | 0/0            | Planned  | —          |
+| 13. Onboarding Persistence      | v2.0 fix  | 0/0            | Planned  | —          |
+| 14. Verification & Prod Ready   | v2.0 fix  | 0/0            | Planned  | —          |
 
 ---
 
 _Roadmap created: February 7, 2026_
-_Updated: February 10, 2026 — v2.0 milestone audit complete (58/59 requirements, tech_debt status)_
+_Updated: February 10, 2026 — Added gap closure phases 11-14 from v2.0 milestone audit_

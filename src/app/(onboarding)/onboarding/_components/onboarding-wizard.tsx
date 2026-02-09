@@ -7,6 +7,11 @@ import type { OnboardingStep } from "@/types/onboarding";
 import { STEP_SCHEMAS } from "@/lib/onboarding-validation";
 import { StepIndicator } from "./step-indicator";
 import { StepNavigation } from "./step-navigation";
+import { StepRegistration } from "./step-1-registration";
+import { StepTierSelection } from "./step-2-tier-selection";
+import { StepRbiDirections } from "./step-3-rbi-directions";
+import { StepOrgStructure } from "./step-4-org-structure";
+import { StepUserInvites } from "./step-5-user-invites";
 import {
   Card,
   CardContent,
@@ -46,7 +51,7 @@ function getStepData(
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function OnboardingWizard({
-  tenantId,
+  tenantId: _tenantId,
   userName,
 }: OnboardingWizardProps) {
   const router = useRouter();
@@ -197,28 +202,12 @@ export function OnboardingWizard({
         completedSteps={store.completedSteps}
       />
 
-      {/* Step content placeholder — actual step forms are created in 10-05 and 10-06 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
-            Step {store.currentStep} of 5
-          </CardTitle>
-          <CardDescription>
-            {store.currentStep === 1 &&
-              "Enter your bank's registration details"}
-            {store.currentStep === 2 && "Select your UCB tier classification"}
-            {store.currentStep === 3 &&
-              "Choose applicable RBI Master Directions"}
-            {store.currentStep === 4 && "Set up branches and departments"}
-            {store.currentStep === 5 && "Invite team members"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground py-8 text-center text-sm">
-            Step {store.currentStep} form will be rendered here.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Step content */}
+      {store.currentStep === 1 && <StepRegistration />}
+      {store.currentStep === 2 && <StepTierSelection />}
+      {store.currentStep === 3 && <StepRbiDirections />}
+      {store.currentStep === 4 && <StepOrgStructure />}
+      {store.currentStep === 5 && <StepUserInvites />}
 
       {/* Validation errors */}
       {validationErrors.length > 0 && (

@@ -66,4 +66,11 @@ export {
   RotateCcw,
   Tag,
   MessageSquare,
+  Trash2,
+  Upload,
+  FileSpreadsheet,
+  UserPlus,
+  X,
+  Pencil,
+  BookOpen,
 } from "lucide-react";

@@ -2,11 +2,11 @@
 
 ## Current Position
 
-**Phase:** 12 of 14 — Dashboard Data Pipeline (PLANNED)
-**Status:** Phase 11 complete — all 4 HIGH-severity auth gaps closed. Ready to plan Phase 12.
-**Last activity:** 2026-02-10
+**Phase:** 12 of 14 — Dashboard Data Pipeline (IN PROGRESS)
+**Status:** Plan 12-01 complete — DashboardSnapshot model, engagementId/repeatOfId FKs added.
+**Last activity:** 2026-02-09
 
-Progress: [██████████████████░░░] 85% (63/63 v2.0 plans + 1/? gap closure plans)
+Progress: [███████████████████░░] 87% (63/63 v2.0 plans + 1/? gap closure plans)
 
 ## Milestone Progress
 
@@ -31,28 +31,28 @@ Progress: [██████████████████░░░] 85% 
 
 | Phase | Name                           | Plans | Done | Status      |
 | ----- | ------------------------------ | ----- | ---- | ----------- |
-| 11    | Auth Security Hardening        | 1     | 1    | In Progress |
-| 12    | Dashboard Data Pipeline        | TBD   | 0    | Planned     |
+| 11    | Auth Security Hardening        | 1     | 1    | Complete    |
+| 12    | Dashboard Data Pipeline        | TBD   | 1    | In Progress |
 | 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned     |
 | 14    | Verification & Prod Readiness  | TBD   | 0    | Planned     |
 
 ### Gap → Phase Mapping
 
-| Gap Source         | Item                                  | Severity | Phase |
-| ------------------ | ------------------------------------- | -------- | ----- |
-| Phase 5 tech debt  | Rate limiting not configured          | HIGH     | 11    |
-| Phase 5 tech debt  | Account lockout missing               | HIGH     | 11    |
-| Phase 5 tech debt  | Concurrent session limit missing      | HIGH     | 11    |
-| Phase 5 tech debt  | Session cookie settings implicit      | HIGH     | 11    |
-| Phase 9 tech debt  | Trend widgets return null             | MEDIUM   | 12    |
-| Phase 9 tech debt  | Missing engagementId on Observation   | MEDIUM   | 12    |
-| Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    |
-| ONBD-03            | Excel org structure upload not built  | MUST     | 13    |
-| Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    |
-| Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    |
-| Phase 6            | E2E browser tests pending             | MEDIUM   | 14    |
-| Phase 7            | Permission guard test skipped         | LOW      | 14    |
-| Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    |
+| Gap Source         | Item                                  | Severity | Phase | Status  |
+| ------------------ | ------------------------------------- | -------- | ----- | ------- |
+| Phase 5 tech debt  | Rate limiting not configured          | HIGH     | 11    | ✅ DONE |
+| Phase 5 tech debt  | Account lockout missing               | HIGH     | 11    | ✅ DONE |
+| Phase 5 tech debt  | Concurrent session limit missing      | HIGH     | 11    | ✅ DONE |
+| Phase 5 tech debt  | Session cookie settings implicit      | HIGH     | 11    | ✅ DONE |
+| Phase 9 tech debt  | Trend widgets return null             | MEDIUM   | 12    | PLANNED |
+| Phase 9 tech debt  | Missing engagementId on Observation   | MEDIUM   | 12    | ✅ DONE |
+| Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    | PLANNED |
+| ONBD-03            | Excel org structure upload not built  | MUST     | 13    | PLANNED |
+| Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    | PLANNED |
+| Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    | PLANNED |
+| Phase 6            | E2E browser tests pending             | MEDIUM   | 14    | PLANNED |
+| Phase 7            | Permission guard test skipped         | LOW      | 14    | PLANNED |
+| Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    | PLANNED |
 
 ## Key Decisions
 
@@ -68,6 +68,8 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 - **Account lockout (D22):** Track by email (not userId) to prevent user enumeration
 - **Security table scope (D23):** FailedLoginAttempt has no tenantId — system-level, cross-tenant
 - **Plugin implementation (D24):** accountLockout plugin `after` hook deferred to Phase 14 due to Better Auth API gaps
+- **FK deletion policy (D25):** Use SetNull for engagementId/repeatOfId to prevent deletion cascades and preserve observation history
+- **No backfill (D26):** Existing observations keep NULL engagementId/repeatOfId — engagement tracking starts from Phase 12 onward
 
 ## Active Blockers
 
@@ -82,8 +84,8 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Completed 11-01-PLAN.md: Auth security hardening — rate limiting, account lockout, session limits, cookie security. Next: Plan 11-02 (if exists) or move to Phase 12 planning.
+Last session: 2026-02-09
+Completed 12-01-PLAN.md: Dashboard schema foundation — DashboardSnapshot model, engagementId/repeatOfId FKs, real observation counts. Next: Plan 12-02 (trend pipeline queries).
 
 ---
 

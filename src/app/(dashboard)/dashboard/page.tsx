@@ -1,49 +1,60 @@
-"use client";
+import { requireAnyPermission } from "@/lib/guards";
+import { getDashboardConfig } from "@/lib/dashboard-config";
+import { getDashboardData, type DashboardData } from "@/data-access/dashboard";
+import { DashboardComposer } from "@/components/dashboard/dashboard-composer";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import type { Permission, Role } from "@/lib/permissions";
 
-import { useTranslations } from "next-intl";
-import { HealthScoreCard } from "@/components/dashboard/health-score-card";
-import { AuditCoverageChart } from "@/components/dashboard/audit-coverage-chart";
-import { FindingsCountCards } from "@/components/dashboard/findings-count-cards";
-import { RiskIndicatorPanel } from "@/components/dashboard/risk-indicator-panel";
-import { RegulatoryCalendar } from "@/components/dashboard/regulatory-calendar";
-import { QuickActions } from "@/components/dashboard/quick-actions";
-import { bankProfile } from "@/data";
-import type { BankProfile } from "@/types";
+const DASHBOARD_PERMISSIONS: Permission[] = [
+  "dashboard:auditor",
+  "dashboard:manager",
+  "dashboard:cae",
+  "dashboard:cco",
+  "dashboard:ceo",
+];
 
-const bank = bankProfile as unknown as BankProfile;
+/**
+ * Dashboard Page — Server Component
+ *
+ * 1. Enforces dashboard permission (any role with dashboard access)
+ * 2. Gets user roles, resolves widget config (multi-role dedup via getDashboardConfig)
+ * 3. Pre-fetches all widget data for SSR (zero loading flash)
+ * 4. Passes config + data to DashboardComposer client component
+ */
+export default async function DashboardPage() {
+  const session = await requireAnyPermission(DASHBOARD_PERMISSIONS);
 
-export default function DashboardPage() {
-  const t = useTranslations("Dashboard");
+  const roles = ((session.user as any).roles ?? []) as Role[];
+  const widgetConfig = getDashboardConfig(roles);
+
+  // Edge case: no widgets for user's role(s)
+  if (widgetConfig.length === 0) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <EmptyStateCard
+          title="No dashboard configured"
+          message="Your role does not have a dashboard view configured. Contact your administrator."
+        />
+      </div>
+    );
+  }
+
+  // Pre-fetch dashboard data for SSR (no loading flash on first render)
+  const widgetIds = widgetConfig.map((w) => w.id);
+  let initialData: DashboardData = {};
+
+  try {
+    initialData = await getDashboardData(session, widgetIds);
+  } catch (error) {
+    // If data fetch fails, still render — individual widgets show error states
+    console.error("Dashboard SSR data fetch failed:", error);
+  }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Page header */}
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("subtitle", { bankName: bank.name })}
-        </p>
-      </div>
-
-      {/* Row 1 — Key Metrics (1 col mobile, 2 col tablet, 3 col desktop) */}
-      <div className="animate-fade-in-up grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <HealthScoreCard />
-        <AuditCoverageChart />
-        <FindingsCountCards />
-      </div>
-
-      {/* Row 2 — Risk & Timeline (1 col mobile, 2 col tablet+) */}
-      <div className="animate-fade-in-up grid gap-4 delay-2 md:grid-cols-2">
-        <RiskIndicatorPanel />
-        <RegulatoryCalendar />
-      </div>
-
-      {/* Row 3 — Actions (full width) */}
-      <div className="animate-fade-in-up delay-3">
-        <QuickActions />
-      </div>
-    </div>
+    <DashboardComposer
+      widgetConfig={widgetConfig}
+      initialData={initialData}
+      roles={roles}
+    />
   );
 }

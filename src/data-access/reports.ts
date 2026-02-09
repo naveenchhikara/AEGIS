@@ -222,8 +222,22 @@ export async function aggregateReportData(
   const totalBranches = await db.branch.count({ where: { tenantId } });
 
   // ─── Repeat Findings ───────────────────────────────────────────────
-  // Note: Repeat finding tracking via schema relations is not yet implemented.
-  // For now, return empty array. Future: add repeatOfId to Observation model.
+  const repeatObservations = await db.observation.findMany({
+    where: {
+      tenantId,
+      repeatOfId: { not: null },
+    },
+    include: {
+      repeatOf: {
+        select: {
+          createdAt: true,
+          severity: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   const repeatFindings: {
     title: string;
     originalDate: string;
@@ -231,7 +245,16 @@ export async function aggregateReportData(
     currentSeverity: string;
     previousSeverity: string;
     status: string;
-  }[] = [];
+  }[] = repeatObservations.map((o: any) => ({
+    title: o.title,
+    originalDate: o.repeatOf?.createdAt
+      ? formatDateIndian(o.repeatOf.createdAt)
+      : "Unknown",
+    occurrenceCount: 2, // Current + original (simple 2-level relation)
+    currentSeverity: o.severity,
+    previousSeverity: o.repeatOf?.severity ?? o.severity,
+    status: o.status,
+  }));
 
   // ─── Recommendations ───────────────────────────────────────────────
   const critHighObs = observations.filter(

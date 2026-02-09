@@ -160,7 +160,11 @@ export interface DashboardData {
   myPendingReviews?: PendingReview[];
   myEngagementProgress?: EngagementProgress[];
   severityTrend?: SeverityTrendPoint[];
-  complianceTrend?: { current: number; note?: string };
+  complianceTrend?: {
+    current: number;
+    trend: { date: string; percentage: number }[];
+    note?: string;
+  };
   branchRiskData?: BranchRiskItem[];
   boardReportReadiness?: BoardReportReadinessItem[];
   regulatoryCalendar?: RegulatoryCalendarItem[];
@@ -721,21 +725,31 @@ export async function getSeverityTrend(
   tenantId: string,
   quartersBack: number = 6,
 ): Promise<SeverityTrendPoint[]> {
-  // Group observations by creation quarter to show trend
-  const observations = await db.observation.findMany({
-    where: { tenantId },
-    select: {
-      severity: true,
-      createdAt: true,
+  // Read from DashboardSnapshot instead of computing from Observation.createdAt
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - quartersBack * 3);
+
+  const snapshots = await db.dashboardSnapshot.findMany({
+    where: {
+      tenantId,
+      capturedAt: { gte: sixMonthsAgo },
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: { capturedAt: "asc" },
+    select: {
+      capturedAt: true,
+      metrics: true,
+    },
   });
 
-  // Build quarterly buckets
+  if (snapshots.length === 0) {
+    return []; // Widget shows "available after first quarter" message
+  }
+
+  // Group snapshots by fiscal quarter, take latest snapshot per quarter
   const buckets = new Map<string, SeverityTrendPoint>();
 
-  for (const o of observations as any[]) {
-    const date = new Date(o.createdAt);
+  for (const snap of snapshots) {
+    const date = new Date(snap.capturedAt);
     const month = date.getMonth();
     const calYear = date.getFullYear();
     const fyYear = month < 3 ? calYear - 1 : calYear;
@@ -747,24 +761,19 @@ export async function getSeverityTrend(
     else quarter = "Q4";
 
     const key = `${fyYear}-${quarter}`;
-    const point = buckets.get(key) ?? {
+    const metrics = snap.metrics as any;
+
+    // Latest snapshot per quarter overwrites earlier ones
+    buckets.set(key, {
       quarter,
       year: fyYear,
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 0,
-    };
-
-    if (o.severity === "CRITICAL") point.critical++;
-    else if (o.severity === "HIGH") point.high++;
-    else if (o.severity === "MEDIUM") point.medium++;
-    else if (o.severity === "LOW") point.low++;
-
-    buckets.set(key, point);
+      critical: metrics?.severity?.criticalOpen ?? 0,
+      high: metrics?.severity?.highOpen ?? 0,
+      medium: metrics?.severity?.mediumOpen ?? 0,
+      low: metrics?.severity?.lowOpen ?? 0,
+    });
   }
 
-  // Sort by year then quarter, return last N quarters
   const sorted = Array.from(buckets.values()).sort((a, b) => {
     if (a.year !== b.year) return a.year - b.year;
     const qOrder: Record<string, number> = { Q1: 1, Q2: 2, Q3: 3, Q4: 4 };
@@ -779,16 +788,47 @@ export async function getSeverityTrend(
 export async function getComplianceTrend(
   db: ReturnType<typeof prismaForTenant>,
   tenantId: string,
-): Promise<{ current: number; note?: string }> {
-  // No historical compliance snapshots in schema yet.
-  // Return current compliance percentage with note.
+): Promise<{
+  current: number;
+  trend: { date: string; percentage: number }[];
+  note?: string;
+}> {
+  // Get current compliance
   const summary = await getComplianceSummary(db, tenantId);
+
+  // Get historical snapshots for trend line (last 6 months)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const snapshots = await db.dashboardSnapshot.findMany({
+    where: {
+      tenantId,
+      capturedAt: { gte: sixMonthsAgo },
+    },
+    orderBy: { capturedAt: "asc" },
+    select: {
+      capturedAt: true,
+      metrics: true,
+    },
+  });
+
+  const trend = snapshots.map((snap) => {
+    const metrics = snap.metrics as any;
+    return {
+      date: snap.capturedAt.toISOString().slice(0, 10), // YYYY-MM-DD
+      percentage: metrics?.compliance?.percentage ?? 0,
+    };
+  });
+
   return {
     current: summary.percentage,
+    trend,
     note:
       summary.total === 0
         ? "Set up compliance registry to begin tracking"
-        : "Trend data available after first quarterly review",
+        : trend.length === 0
+          ? "Trend data available after first daily snapshot"
+          : undefined,
   };
 }
 

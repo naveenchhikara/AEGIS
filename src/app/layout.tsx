@@ -7,6 +7,7 @@ import {
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const notoSans = Noto_Sans({
@@ -59,6 +60,7 @@ export default async function RootLayout({
       <body className="min-h-screen font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}
+          <Toaster richColors />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -2,11 +2,11 @@
 
 ## Current Position
 
-**Phase:** 12 of 14 — Dashboard Data Pipeline (IN PROGRESS)
-**Status:** Plan 12-01 complete — DashboardSnapshot model, engagementId/repeatOfId FKs added.
+**Phase:** 12 of 14 — Dashboard Data Pipeline (COMPLETE)
+**Status:** Plan 12-02 complete — Daily snapshot job, trend queries, repeat findings wired.
 **Last activity:** 2026-02-09
 
-Progress: [███████████████████░░] 87% (63/63 v2.0 plans + 1/? gap closure plans)
+Progress: [███████████████████░░] 89% (63/63 v2.0 plans + 2/? gap closure plans)
 
 ## Milestone Progress
 
@@ -29,12 +29,12 @@ Progress: [███████████████████░░] 87% 
 
 ## v2.0 Gap Closure Detail
 
-| Phase | Name                           | Plans | Done | Status      |
-| ----- | ------------------------------ | ----- | ---- | ----------- |
-| 11    | Auth Security Hardening        | 1     | 1    | Complete    |
-| 12    | Dashboard Data Pipeline        | TBD   | 1    | In Progress |
-| 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned     |
-| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned     |
+| Phase | Name                           | Plans | Done | Status   |
+| ----- | ------------------------------ | ----- | ---- | -------- |
+| 11    | Auth Security Hardening        | 1     | 1    | Complete |
+| 12    | Dashboard Data Pipeline        | 2     | 2    | Complete |
+| 13    | Onboarding Persistence & Excel | TBD   | 0    | Planned  |
+| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned  |
 
 ### Gap → Phase Mapping
 
@@ -44,9 +44,9 @@ Progress: [███████████████████░░] 87% 
 | Phase 5 tech debt  | Account lockout missing               | HIGH     | 11    | ✅ DONE |
 | Phase 5 tech debt  | Concurrent session limit missing      | HIGH     | 11    | ✅ DONE |
 | Phase 5 tech debt  | Session cookie settings implicit      | HIGH     | 11    | ✅ DONE |
-| Phase 9 tech debt  | Trend widgets return null             | MEDIUM   | 12    | PLANNED |
+| Phase 9 tech debt  | Trend widgets return null             | MEDIUM   | 12    | ✅ DONE |
 | Phase 9 tech debt  | Missing engagementId on Observation   | MEDIUM   | 12    | ✅ DONE |
-| Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    | PLANNED |
+| Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    | ✅ DONE |
 | ONBD-03            | Excel org structure upload not built  | MUST     | 13    | PLANNED |
 | Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    | PLANNED |
 | Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    | PLANNED |
@@ -70,6 +70,9 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 - **Plugin implementation (D24):** accountLockout plugin `after` hook deferred to Phase 14 due to Better Auth API gaps
 - **FK deletion policy (D25):** Use SetNull for engagementId/repeatOfId to prevent deletion cascades and preserve observation history
 - **No backfill (D26):** Existing observations keep NULL engagementId/repeatOfId — engagement tracking starts from Phase 12 onward
+- **Snapshot schedule (D27):** Daily metrics capture at 01:00 IST (19:30 UTC) via pg-boss cron — off-peak hours before business day
+- **Batch processing (D28):** Process 10 tenants at a time to prevent connection pool exhaustion — scalable to hundreds of tenants
+- **Trend granularity (D29):** Severity trends show quarterly data (6 quarters), compliance trends show daily data (6 months sparkline)
 
 ## Active Blockers
 
@@ -85,7 +88,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-09
-Completed 12-01-PLAN.md: Dashboard schema foundation — DashboardSnapshot model, engagementId/repeatOfId FKs, real observation counts. Next: Plan 12-02 (trend pipeline queries).
+Completed 12-02-PLAN.md: Dashboard data pipeline complete — daily snapshot job, trend queries reading from DashboardSnapshot, repeat findings using repeatOfId FK. Phase 12 complete. Next: Phase 13 (Onboarding Persistence & Excel).
 
 ---
 

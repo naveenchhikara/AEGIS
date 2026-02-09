@@ -92,6 +92,26 @@ enum ResponseType {
   REQUEST_EXTENSION
 }
 
+enum NotificationType {
+  OBSERVATION_ASSIGNED
+  RESPONSE_SUBMITTED
+  DEADLINE_REMINDER_7D
+  DEADLINE_REMINDER_3D
+  DEADLINE_REMINDER_1D
+  OVERDUE_ESCALATION
+  WEEKLY_DIGEST
+  BULK_DIGEST
+  INVITATION
+}
+
+enum NotificationStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  SKIPPED
+}
+
 // ─── Tenant ──────────────────────────────────────────────────────────────────
 
 model Tenant {
@@ -150,23 +170,31 @@ model Tenant {
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
-  userBranchAssignments  UserBranchAssignment[]
-  auditeeResponses       AuditeeResponse[]
+  userBranchAssignments   UserBranchAssignment[]
+  auditeeResponses        AuditeeResponse[]
+  notificationQueues      NotificationQueue[]
+  emailLogs               EmailLog[]
+  notificationPreferences NotificationPreference[]
+  boardReports            BoardReport[]
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
 model User {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email  String
-  name   String
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String
+  name          String
+  emailVerified Boolean @default(false)
+  image         String?
 
   // Multi-role support (D13): PostgreSQL array of enum
   // Permission checks MUST use roles.includes() not role === (D20)
   roles Role[]
 
-  tenantId String @db.Uuid
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // tenantId is optional during signup — Better Auth creates user first,
+  // then tenant assignment happens via onboarding flow
+  tenantId String? @db.Uuid
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   status      String  @default("active")
   lastLoginAt DateTime?
@@ -175,7 +203,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
+  // Better Auth relations
+  sessions Session[]
+  accounts Account[]
+
+  // App relations
   assignedObservations Observation[]         @relation("AssignedTo")
   createdObservations  Observation[]         @relation("CreatedBy")
   timelineEntries      ObservationTimeline[] @relation("TimelineCreatedBy")
@@ -183,9 +215,63 @@ model User {
   ownedCompliance      ComplianceRequirement[] @relation("ComplianceOwner")
   branchAssignments    UserBranchAssignment[]
   auditeeResponses     AuditeeResponse[]     @relation("ResponseSubmittedBy")
+  notifications        NotificationQueue[]   @relation("NotificationRecipient")
+  notificationPreference NotificationPreference? @relation("NotificationPreference")
+  generatedReports     BoardReport[]         @relation("ReportGeneratedBy")
 
-  @@unique([tenantId, email])
+  @@unique([email])
   @@index([tenantId])
+}
+
+// ─── Better Auth: Session ────────────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ─── Better Auth: Account ────────────────────────────────────────────────────
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String    @db.Uuid
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Better Auth: Verification ───────────────────────────────────────────────
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
 
 // ─── Observation (Finding) ───────────────────────────────────────────────────
@@ -518,4 +604,112 @@ model AuditLog {
   @@index([tableName, recordId])
   @@index([actionType])
   @@index([createdAt])
+}
+
+// ─── Notification Queue ──────────────────────────────────────────────────────
+
+model NotificationQueue {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  recipientId String @db.Uuid
+  recipient   User   @relation("NotificationRecipient", fields: [recipientId], references: [id])
+
+  type   NotificationType
+  status NotificationStatus @default(PENDING)
+
+  // Batching support (NOTF-06)
+  batchKey  String?
+  sendAfter DateTime @default(now())
+
+  // Payload: template variables as JSON
+  payload Json
+
+  // Processing metadata
+  retryCount  Int       @default(0)
+  lastError   String?
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status, sendAfter])
+  @@index([batchKey, status])
+}
+
+// ─── Email Log (audit trail for sent emails) ─────────────────────────────────
+
+model EmailLog {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  recipientEmail String
+  recipientName  String?
+  subject        String
+  templateName   String
+
+  // SES response
+  sesMessageId String?
+  status       String // 'sent', 'bounced', 'complained', 'failed'
+
+  // Reference back to notification(s) that triggered this email
+  notificationIds String[]
+
+  sentAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([recipientEmail])
+  @@index([sentAt])
+}
+
+// ─── User Notification Preferences ───────────────────────────────────────────
+
+model NotificationPreference {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId   String @db.Uuid @unique
+  user     User   @relation("NotificationPreference", fields: [userId], references: [id], onDelete: Cascade)
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  emailEnabled     Boolean @default(true)
+  digestPreference String  @default("immediate") // 'immediate' | 'daily' | 'weekly'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+// ─── Generated Board Report (audit trail) ────────────────────────────────────
+
+model BoardReport {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Report metadata
+  year    Int
+  quarter Quarter
+  title   String
+
+  // CAE executive commentary (RPT-03)
+  executiveCommentary String? @db.Text
+
+  // Storage
+  s3Key    String?
+  fileSize Int?
+
+  // Generation context
+  generatedById String   @db.Uuid
+  generatedBy   User     @relation("ReportGeneratedBy", fields: [generatedById], references: [id])
+  generatedAt   DateTime @default(now())
+
+  // Snapshot of key metrics at generation time
+  metricsSnapshot Json?
+
+  @@index([tenantId])
+  @@index([tenantId, year, quarter])
 }

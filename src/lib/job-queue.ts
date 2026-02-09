@@ -71,28 +71,9 @@ export async function startWorkers(): Promise<void> {
   await queue.schedule(JOB_NAMES.DEADLINE_CHECK, "30 0 * * *"); // daily 00:30 UTC = 06:00 IST
   await queue.schedule(JOB_NAMES.SEND_WEEKLY_DIGEST, "30 4 * * 1"); // Monday 04:30 UTC = 10:00 IST
 
-  // Placeholder handlers — 08-03 will implement real processing logic
-  await queue.work(
-    JOB_NAMES.PROCESS_NOTIFICATIONS,
-    { batchSize: 50 },
-    async (jobs) => {
-      console.log(`[pg-boss] Processing ${jobs.length} notification jobs`);
-    },
-  );
-
-  await queue.work(JOB_NAMES.DEADLINE_CHECK, async () => {
-    console.log("[pg-boss] Running deadline check");
-  });
-
-  await queue.work(JOB_NAMES.SEND_WEEKLY_DIGEST, async () => {
-    console.log("[pg-boss] Sending weekly digest");
-  });
-
-  await queue.work(JOB_NAMES.GENERATE_BOARD_REPORT, async (jobs) => {
-    for (const job of jobs) {
-      console.log("[pg-boss] Generating board report", job.data);
-    }
-  });
+  // Register real job handlers from src/jobs/
+  const { registerJobs } = await import("@/jobs/index");
+  await registerJobs(queue);
 }
 
 /**

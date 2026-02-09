@@ -200,14 +200,14 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10
 | 2. Core Screens                 | v1.0      | 6/6            | Complete    | 2026-02-08 |
 | 3. Finding Management & Reports | v1.0      | 5/5            | Complete    | 2026-02-08 |
 | 4. Polish & Deploy              | v1.0      | 8/8            | Complete    | 2026-02-08 |
-| 5. Foundation & Migration       | v2.0      | 0/TBD          | Not started | -          |
-| 6. Observation Lifecycle        | v2.0      | 0/TBD          | Not started | -          |
-| 7. Auditee Portal & Evidence    | v2.0      | 0/TBD          | Not started | -          |
-| 8. Notifications & Reports      | v2.0      | 0/TBD          | Not started | -          |
-| 9. Dashboards                   | v2.0      | 0/TBD          | Not started | -          |
-| 10. Onboarding & Compliance     | v2.0      | 0/TBD          | Not started | -          |
+| 5. Foundation & Migration       | v2.0      | 6/6            | Complete    | 2026-02-09 |
+| 6. Observation Lifecycle        | v2.0      | 7/7            | Complete    | 2026-02-09 |
+| 7. Auditee Portal & Evidence    | v2.0      | 7/8            | E2E pending | 2026-02-09 |
+| 8. Notifications & Reports      | v2.0      | 6/6            | Complete    | 2026-02-09 |
+| 9. Dashboards                   | v2.0      | 5/5            | Complete    | 2026-02-09 |
+| 10. Onboarding & Compliance     | v2.0      | 3/8            | In progress | -          |
 
 ---
 
 _Roadmap created: February 7, 2026_
-_Updated: February 8, 2026 — v1.0 milestone shipped and v2.0 phases added_
+_Updated: February 9, 2026 — v2.0 progress synced with disk state_

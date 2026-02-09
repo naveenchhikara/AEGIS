@@ -215,7 +215,7 @@ Plans:
 
 Plans:
 
-- [ ] 11-01-PLAN.md — Rate limiting, account lockout, session limits, and cookie hardening
+- [x] 11-01-PLAN.md — Rate limiting, account lockout, session limits, and cookie hardening
 
 ---
 
@@ -306,7 +306,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 
 | 8. Notifications & Reports      | v2.0      | 6/6            | Complete | 2026-02-09 |
 | 9. Dashboards                   | v2.0      | 5/5            | Complete | 2026-02-09 |
 | 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
-| 11. Auth Security Hardening     | v2.0 fix  | 0/0            | Planned  | —          |
+| 11. Auth Security Hardening     | v2.0 fix  | 1/1            | Complete | 2026-02-10 |
 | 12. Dashboard Data Pipeline     | v2.0 fix  | 0/0            | Planned  | —          |
 | 13. Onboarding Persistence      | v2.0 fix  | 0/0            | Planned  | —          |
 | 14. Verification & Prod Ready   | v2.0 fix  | 0/0            | Planned  | —          |

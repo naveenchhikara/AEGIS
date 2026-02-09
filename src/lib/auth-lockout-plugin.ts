@@ -16,12 +16,6 @@ export interface AccountLockoutConfig {
   observationWindow: number;
 }
 
-const defaultConfig: AccountLockoutConfig = {
-  maxAttempts: 5,
-  lockoutDuration: 1800, // 30 minutes
-  observationWindow: 900, // 15 minutes
-};
-
 /**
  * Account Lockout Plugin for Better Auth
  *
@@ -51,10 +45,8 @@ const defaultConfig: AccountLockoutConfig = {
  * ```
  */
 export const accountLockout = (
-  config?: Partial<AccountLockoutConfig>,
+  _config?: Partial<AccountLockoutConfig>,
 ): BetterAuthPlugin => {
-  const finalConfig = { ...defaultConfig, ...config };
-
   return {
     id: "account-lockout",
     hooks: {

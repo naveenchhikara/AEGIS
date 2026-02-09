@@ -31,6 +31,7 @@ export {
   Phone,
   Mail,
   Shield,
+  ShieldAlert,
   Lock,
   Languages,
   ChevronsUpDown,

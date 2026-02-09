@@ -19,7 +19,7 @@ import { prismaForTenant } from "./prisma";
  */
 
 type Session = {
-  user: { id: string; tenantId?: string; [key: string]: unknown };
+  user: { id: string; tenantId?: string | null; [key: string]: unknown };
   session: { id: string; [key: string]: unknown };
 };
 

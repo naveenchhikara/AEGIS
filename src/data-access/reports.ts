@@ -4,7 +4,7 @@ import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
 
 type Session = {
-  user: { id: string; tenantId?: string; [key: string]: unknown };
+  user: { id: string; tenantId?: string | null; [key: string]: unknown };
   session: { id: string; [key: string]: unknown };
 };
 

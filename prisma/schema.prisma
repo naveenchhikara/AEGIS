@@ -86,6 +86,12 @@ enum EngagementStatus {
   CANCELLED
 }
 
+enum ResponseType {
+  CLARIFICATION
+  COMPLIANCE_ACTION
+  REQUEST_EXTENSION
+}
+
 // ─── Tenant ──────────────────────────────────────────────────────────────────
 
 model Tenant {
@@ -144,6 +150,8 @@ model Tenant {
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
+  userBranchAssignments  UserBranchAssignment[]
+  auditeeResponses       AuditeeResponse[]
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
@@ -173,6 +181,8 @@ model User {
   timelineEntries      ObservationTimeline[] @relation("TimelineCreatedBy")
   uploadedEvidence     Evidence[]            @relation("UploadedBy")
   ownedCompliance      ComplianceRequirement[] @relation("ComplianceOwner")
+  branchAssignments    UserBranchAssignment[]
+  auditeeResponses     AuditeeResponse[]     @relation("ResponseSubmittedBy")
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -207,8 +217,9 @@ model Observation {
   createdById String @db.Uuid
   createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
 
-  dueDate         DateTime?
-  statusUpdatedAt DateTime?
+  dueDate          DateTime?
+  responseDueDate  DateTime?
+  statusUpdatedAt  DateTime?
 
   // Optimistic locking
   version Int @default(1)
@@ -228,8 +239,9 @@ model Observation {
   updatedAt DateTime @updatedAt
 
   // Relations
-  timeline ObservationTimeline[]
-  evidence Evidence[]
+  timeline          ObservationTimeline[]
+  evidence          Evidence[]
+  auditeeResponses  AuditeeResponse[]
 
   @@index([tenantId])
   @@index([severity])
@@ -274,6 +286,7 @@ model Evidence {
   s3Key       String
   fileSize    Int
   contentType String
+  description String? @db.Text
 
   uploadedById String @db.Uuid
   uploadedBy   User   @relation("UploadedBy", fields: [uploadedById], references: [id])
@@ -347,6 +360,7 @@ model Branch {
   // Relations
   observations     Observation[]
   auditEngagements AuditEngagement[]
+  userAssignments  UserBranchAssignment[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -425,6 +439,48 @@ model AuditEngagement {
 
   @@index([tenantId])
   @@index([auditPlanId])
+}
+
+// ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────
+
+model UserBranchAssignment {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId   String @db.Uuid
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchId String @db.Uuid
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, branchId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([branchId])
+}
+
+// ─── Auditee Response (Phase 7 — immutable response records) ────────────────
+
+model AuditeeResponse {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  observationId String @db.Uuid
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  responseType  ResponseType
+  content       String @db.Text
+
+  submittedById String @db.Uuid
+  submittedBy   User   @relation("ResponseSubmittedBy", fields: [submittedById], references: [id])
+
+  createdAt DateTime @default(now())
+  // No updatedAt — responses are immutable (AUD-04)
+
+  @@index([tenantId])
+  @@index([observationId])
 }
 
 // ─── Audit Log (Enriched per Skeptic + Domain Expert) ────────────────────────

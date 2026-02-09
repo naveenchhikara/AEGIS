@@ -6,25 +6,25 @@
 **Status:** 3/8 plans done, 5 remaining
 **Last activity:** 2026-02-09
 
-Progress: [██████████████████░░░] 90% (57/63 plans complete)
+Progress: [██████████████████░░░] 92% (58/63 plans complete)
 
 ## Milestone Progress
 
 | Milestone                | Phases | Plans | Status             |
 | ------------------------ | ------ | ----- | ------------------ |
 | v1.0 Clickable Prototype | 1–4    | 23/23 | Shipped 2026-02-08 |
-| v2.0 Working Core MVP    | 5–10   | 34/40 | In progress        |
+| v2.0 Working Core MVP    | 5–10   | 35/40 | In progress        |
 
 ## v2.0 Phase Detail
 
-| Phase | Name                      | Plans | Done | Status      |
-| ----- | ------------------------- | ----- | ---- | ----------- |
-| 5     | Foundation & Migration    | 6     | 6    | Complete    |
-| 6     | Observation Lifecycle     | 7     | 7    | Complete    |
-| 7     | Auditee Portal & Evidence | 8     | 7    | E2E pending |
-| 8     | Notifications & Reports   | 6     | 6    | Complete    |
-| 9     | Dashboards                | 5     | 5    | Complete    |
-| 10    | Onboarding & Compliance   | 8     | 3    | **Active**  |
+| Phase | Name                      | Plans | Done | Status     |
+| ----- | ------------------------- | ----- | ---- | ---------- |
+| 5     | Foundation & Migration    | 6     | 6    | Complete   |
+| 6     | Observation Lifecycle     | 7     | 7    | Complete   |
+| 7     | Auditee Portal & Evidence | 8     | 8    | Complete   |
+| 8     | Notifications & Reports   | 6     | 6    | Complete   |
+| 9     | Dashboards                | 5     | 5    | Complete   |
+| 10    | Onboarding & Compliance   | 8     | 3    | **Active** |
 
 ## Remaining Work
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░░] 90% 
 
 ### Pending E2E Verification
 
-07-08 (Auditee Portal) has a formal plan file but was never executed. Phases 8 and 9 E2E checkpoints were planned in STATE.md but never formalized into plan files. All should be done before production deployment.
+07-08 (Auditee Portal) — COMPLETE (16/17 tests pass, 1 skipped). Phases 8 and 9 E2E checkpoints were planned in STATE.md but never formalized into plan files. Should be done before production deployment.
 
 ## Key Decisions
 
@@ -65,7 +65,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-09
-Phase 10 active — next action is plan/execute 10-02 (RBI Master Directions seed data)
+Phase 7 E2E checkpoint complete. Phase 10 active — next action is plan/execute 10-02 (RBI Master Directions seed data)
 
 ---
 

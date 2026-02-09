@@ -9,7 +9,14 @@ import { EngagementDetailSheet } from "@/components/audit/engagement-detail-shee
 import { auditPlans } from "@/data";
 import type { AuditData, AuditPlan } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, CheckCircle2, Activity, Clock } from "@/lib/icons";
+import {
+  ClipboardList,
+  CheckCircle2,
+  Activity,
+  Clock,
+  Download,
+} from "@/lib/icons";
+import { Button } from "@/components/ui/button";
 
 const data = auditPlans as unknown as AuditData;
 
@@ -58,13 +65,21 @@ export default function AuditPlansPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("subtitle")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            {t("subtitle")}
+          </p>
+        </div>
+        <Button variant="outline" asChild>
+          <a href="/api/exports/audit-plans" download>
+            <Download className="mr-1 h-4 w-4" />
+            Export
+          </a>
+        </Button>
       </div>
 
       {/* Summary cards row — 2 cols mobile, 4 cols sm+ */}

@@ -12,6 +12,7 @@ import {
 } from "@/lib/state-machine";
 import { TransitionObservationSchema } from "./schemas";
 import type { TransitionObservationInput } from "./schemas";
+import { createNotification } from "@/data-access/notifications";
 
 /**
  * Generic state transition action for observations (OBS-02 through OBS-06).
@@ -146,6 +147,40 @@ export async function transitionObservation(input: TransitionObservationInput) {
 
     revalidatePath("/findings");
     revalidatePath(`/findings/${validated.observationId}`);
+
+    // Queue notification when observation is issued (NOTF-01)
+    if (targetStatus === "ISSUED") {
+      try {
+        const obs = await db.observation.findFirst({
+          where: { id: validated.observationId, tenantId },
+          select: {
+            title: true,
+            severity: true,
+            assignedToId: true,
+            dueDate: true,
+            condition: true,
+            branch: { select: { name: true } },
+          },
+        });
+        if (obs?.assignedToId) {
+          await createNotification(session, {
+            recipientId: obs.assignedToId,
+            type: "OBSERVATION_ASSIGNED",
+            payload: {
+              observationId: validated.observationId,
+              observationTitle: obs.title,
+              severity: obs.severity,
+              branchName: obs.branch?.name ?? "",
+              dueDate: obs.dueDate?.toISOString() ?? "",
+              conditionExcerpt: (obs.condition ?? "").slice(0, 200),
+            },
+          });
+        }
+      } catch (e) {
+        // Non-blocking: log but don't fail the transition
+        console.error("Failed to queue assignment notification:", e);
+      }
+    }
 
     return {
       success: true as const,

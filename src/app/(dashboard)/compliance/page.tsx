@@ -6,12 +6,14 @@ import { ComplianceTrendChart } from "@/components/compliance/compliance-trend-c
 import { demoComplianceRequirements } from "@/data";
 import type { ComplianceData } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   XCircle,
   Clock,
+  Download,
 } from "@/lib/icons";
 
 const data = demoComplianceRequirements as unknown as ComplianceData;
@@ -61,13 +63,21 @@ export default function CompliancePage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("subtitle")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            {t("subtitle")}
+          </p>
+        </div>
+        <Button variant="outline" asChild>
+          <a href="/api/exports/compliance" download>
+            <Download className="mr-1 h-4 w-4" />
+            Export
+          </a>
+        </Button>
       </div>
 
       {/* Summary cards row — 2 cols mobile, 3 cols sm, 5 cols md+ */}

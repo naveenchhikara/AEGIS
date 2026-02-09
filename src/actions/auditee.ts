@@ -16,6 +16,7 @@ import {
   generateDownloadUrl,
   verifyUpload,
 } from "@/lib/s3";
+import { createNotification } from "@/data-access/notifications";
 
 // ─── Validation schemas ─────────────────────────────────────────────────────
 
@@ -173,6 +174,38 @@ export async function submitAuditeeResponse(
     revalidatePath(`/auditee/${observationId}`);
     revalidatePath("/findings");
     revalidatePath(`/findings/${observationId}`);
+
+    // Queue notification for observation creator (NOTF-02)
+    try {
+      const obs = await db.observation.findFirst({
+        where: { id: observationId, tenantId },
+        select: {
+          title: true,
+          severity: true,
+          createdById: true,
+          branch: { select: { name: true } },
+        },
+      });
+      if (obs?.createdById) {
+        await createNotification(
+          { user: { id: session.user.id, tenantId }, session: session.session },
+          {
+            recipientId: obs.createdById,
+            type: "RESPONSE_SUBMITTED",
+            payload: {
+              observationId,
+              observationTitle: obs.title,
+              severity: obs.severity,
+              branchName: obs.branch?.name ?? "",
+              responseType,
+            },
+          },
+        );
+      }
+    } catch (e) {
+      // Non-blocking: log but don't fail the response submission
+      console.error("Failed to queue response notification:", e);
+    }
 
     return { success: true as const, data: { observationId } };
   } catch (error) {

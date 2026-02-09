@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Clock,
   Plus,
+  Download,
 } from "@/lib/icons";
 import Link from "next/link";
 
@@ -86,12 +87,20 @@ export default async function FindingsPage() {
             {t("subtitle", { count: summary.total })}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/findings/new">
-            <Plus className="mr-1 h-4 w-4" />
-            Create Observation
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <a href="/api/exports/findings" download>
+              <Download className="mr-1 h-4 w-4" />
+              Export
+            </a>
+          </Button>
+          <Button asChild>
+            <Link href="/findings/new">
+              <Plus className="mr-1 h-4 w-4" />
+              Create Observation
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Severity distribution — 2 cols mobile, 4 cols sm+ */}

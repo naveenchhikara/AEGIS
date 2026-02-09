@@ -2,11 +2,11 @@
 
 ## Current Position
 
-**Phase:** 12 of 14 — Dashboard Data Pipeline (COMPLETE)
-**Status:** Plan 12-02 complete — Daily snapshot job, trend queries, repeat findings wired.
-**Last activity:** 2026-02-09
+**Phase:** 13 of 14 — Onboarding Persistence & Excel (PLANNED)
+**Status:** Phase 12 complete — all 3 MEDIUM-severity dashboard/report gaps closed. Ready to plan Phase 13.
+**Last activity:** 2026-02-10
 
-Progress: [███████████████████░░] 89% (63/63 v2.0 plans + 2/? gap closure plans)
+Progress: [███████████████████░░] 90% (63/63 v2.0 plans + 3/? gap closure plans)
 
 ## Milestone Progress
 
@@ -87,8 +87,8 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 
 ## Session Continuity
 
-Last session: 2026-02-09
-Completed 12-02-PLAN.md: Dashboard data pipeline complete — daily snapshot job, trend queries reading from DashboardSnapshot, repeat findings using repeatOfId FK. Phase 12 complete. Next: Phase 13 (Onboarding Persistence & Excel).
+Last session: 2026-02-10
+Completed Phase 12: Dashboard data pipeline — DashboardSnapshot model, engagementId + repeatOfId FKs, daily snapshot job, trend queries from snapshots, repeat findings in board report. All 3 MEDIUM gaps closed. Next: Plan Phase 13 (Onboarding Persistence & Excel).
 
 ---
 

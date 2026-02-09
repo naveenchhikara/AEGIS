@@ -822,3 +822,16 @@ model OnboardingProgress {
 
   @@index([tenantId])
 }
+
+// ─── Failed Login Attempt Tracking (Phase 11 — account lockout) ─────────────
+
+model FailedLoginAttempt {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String    // Track by email, not userId (pre-auth, user may not exist)
+  ipAddress   String
+  attemptedAt DateTime  @default(now())
+  lockedUntil DateTime? // NULL = not locked; non-NULL = account locked until this time
+
+  @@index([email, attemptedAt])
+  @@index([email, lockedUntil])
+}

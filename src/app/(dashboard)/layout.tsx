@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { SessionWarningWrapper } from "@/components/auth/session-warning-wrapper";
+import { QueryProvider } from "@/providers/query-provider";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UnauthorizedToast } from "./unauthorized-toast";
@@ -68,40 +69,42 @@ export default async function DashboardLayout({
   // Valid session → render children wrapped in layout
   // Pass session data to AppSidebar for role-based navigation filtering
   return (
-    <SidebarProvider>
-      {/* Skip-to-content link - visible on keyboard focus */}
-      <a
-        href="#main-content"
-        className="focus:bg-background focus:ring-ring sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:ring-2"
-      >
-        Skip to main content
-      </a>
-
-      {/* App Sidebar with role-based navigation filtering */}
-      <AppSidebar
-        roles={userRoles}
-        userName={userName}
-        userEmail={userEmail}
-        userInitials={userInitials}
-      />
-
-      <SidebarInset>
-        {/* Top Bar */}
-        <TopBar />
-
-        {/* Session timeout warning (client component) */}
-        <SessionWarningWrapper />
-
-        {/* Unauthorized access notification */}
-        <UnauthorizedToast />
-
-        <main
-          id="main-content"
-          className="min-w-0 flex-1 overflow-auto p-4 md:p-6"
+    <QueryProvider>
+      <SidebarProvider>
+        {/* Skip-to-content link - visible on keyboard focus */}
+        <a
+          href="#main-content"
+          className="focus:bg-background focus:ring-ring sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:ring-2"
         >
-          <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+          Skip to main content
+        </a>
+
+        {/* App Sidebar with role-based navigation filtering */}
+        <AppSidebar
+          roles={userRoles}
+          userName={userName}
+          userEmail={userEmail}
+          userInitials={userInitials}
+        />
+
+        <SidebarInset>
+          {/* Top Bar */}
+          <TopBar />
+
+          {/* Session timeout warning (client component) */}
+          <SessionWarningWrapper />
+
+          {/* Unauthorized access notification */}
+          <UnauthorizedToast />
+
+          <main
+            id="main-content"
+            className="min-w-0 flex-1 overflow-auto p-4 md:p-6"
+          >
+            <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </QueryProvider>
   );
 }

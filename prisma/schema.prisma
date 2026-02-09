@@ -92,6 +92,13 @@ enum ResponseType {
   REQUEST_EXTENSION
 }
 
+enum UserStatus {
+  INVITED
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 enum NotificationType {
   OBSERVATION_ASSIGNED
   RESPONSE_SUBMITTED
@@ -154,6 +161,15 @@ model Tenant {
   lastRbiInspectionDate DateTime?
   rbiRiskRating         String?
 
+  // Onboarding fields (Phase 10)
+  established       DateTime?
+  pan               String?
+  cin               String?
+  registrationNo    String?
+  registeredWith    String?
+  onboardingCompleted   Boolean   @default(false)
+  onboardingCompletedAt DateTime?
+
   // Tenant-level settings (JSON blob for flexibility)
   settings Json?
 
@@ -162,6 +178,7 @@ model Tenant {
 
   // Relations
   users                  User[]
+  onboardingProgress     OnboardingProgress?
   observations           Observation[]
   observationTimelines   ObservationTimeline[]
   evidence               Evidence[]
@@ -196,9 +213,15 @@ model User {
   tenantId String? @db.Uuid
   tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  status      String  @default("active")
+  status      UserStatus @default(ACTIVE)
   lastLoginAt DateTime?
   lastLoginIp String?
+
+  // Invitation fields (Phase 10 — ONBD-04)
+  invitedAt       DateTime?
+  invitedBy       String?   @db.Uuid
+  inviteTokenHash String?   @unique
+  inviteExpiry    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -394,6 +417,15 @@ model ComplianceRequirement {
   requirement String @db.Text
   category    String
   status      ComplianceStatus @default(PENDING)
+
+  // Extended fields (Phase 10 — CMPL-01, CMPL-04)
+  title            String?
+  description      String?  @db.Text
+  priority         String?
+  frequency        String?
+  evidenceRequired String[]
+  isCustom         Boolean  @default(false)
+  sourceItemCode   String?  // Reference to RbiChecklistItem.itemCode for traceability
 
   rbiCircularId String?     @db.Uuid
   rbiCircular   RbiCircular? @relation(fields: [rbiCircularId], references: [id])
@@ -712,4 +744,65 @@ model BoardReport {
 
   @@index([tenantId])
   @@index([tenantId, year, quarter])
+}
+
+// ─── RBI Master Direction (Global — no tenantId) ──────────────────────────
+
+model RbiMasterDirection {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shortId     String  @unique // e.g., "MD-CAP", "MD-IRAC"
+  title       String
+  description String? @db.Text
+  rbiRef      String? // Official RBI reference number
+  category    String  // e.g., "Capital Adequacy", "Asset Classification"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  checklistItems RbiChecklistItem[]
+}
+
+// ─── RBI Checklist Item (Global — no tenantId) ────────────────────────────
+
+model RbiChecklistItem {
+  id                 String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  masterDirectionId  String @db.Uuid
+  masterDirection    RbiMasterDirection @relation(fields: [masterDirectionId], references: [id], onDelete: Cascade)
+
+  itemCode          String   @unique // e.g., "MD-CAP-001"
+  title             String
+  description       String   @db.Text
+  category          String
+  tierApplicability UcbTier[] // PostgreSQL array — which UCB tiers this applies to
+  tierEnhancements  Json?     // Tier-specific enhanced requirements
+  frequency         String    // e.g., "quarterly", "annual", "continuous"
+  evidenceRequired  String[]  // Types of evidence needed
+  priority          String    // e.g., "critical", "high", "medium", "low"
+  rbiCircularRef    String?   // Reference circular number
+  rbiCircularUrl    String?   // Link to circular on RBI website
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([masterDirectionId])
+}
+
+// ─── Onboarding Progress (Tenant-scoped, one-to-one) ─────────────────────
+
+model OnboardingProgress {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @unique @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  currentStep    Int    @default(1)
+  completedSteps Int[]  @default([])
+  stepData       Json?  // Per-step form data for save-and-return
+  status         String @default("in_progress") // "in_progress" | "completed" | "expired"
+  expiresAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }

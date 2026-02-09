@@ -1,13 +1,18 @@
 import { createAuthClient } from "better-auth/react";
+import { multiSessionClient } from "better-auth/client/plugins";
 
 /**
  * Better Auth client configuration for use in React components
  *
  * This client is used on the client side to interact with authentication.
+ *
+ * Features:
+ * - Multi-session support (Phase 11 SC-3): client-side session management
  */
 export const authClient = createAuthClient({
   // Base URL of the auth server (same domain, so optional)
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  plugins: [multiSessionClient()],
 });
 
 /**

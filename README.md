@@ -2,184 +2,258 @@
 
 Internal Audit & Compliance Management Platform for Urban Cooperative Banks (UCBs) in India.
 
-AEGIS helps UCB audit teams track RBI compliance requirements, plan and execute audits, manage findings from observation to closure, and generate board-ready reports — all with multi-language support (English, Hindi, Marathi, Gujarati).
+AEGIS helps UCB audit teams track RBI compliance requirements, plan and execute audits, manage findings from observation to closure, and generate board-ready reports — all with multi-language support (English, Hindi, Marathi, Gujarati) and multi-tenant data isolation.
 
-> **Status:** Clickable prototype with demo data for Apex Sahakari Bank. No backend or real authentication yet.
-
-## Screenshots
-
-<!-- TODO: Add screenshots after Phase 2 execution -->
+> **Status:** Working Core MVP (v2.0) — full authentication, PostgreSQL database, multi-tenant RLS, RBAC, email notifications, and PDF/Excel exports. Gap closure phases (11-14) in progress.
 
 ## Quick Start
 
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- PostgreSQL 15+ (with `pgcrypto` and `pg_trgm` extensions)
+
+### Setup
+
 ```bash
-# Prerequisites: Node.js 20+ and pnpm 9+
+# Install dependencies
 pnpm install
+
+# Generate Prisma client
+pnpm db:generate
+
+# Run database migrations
+pnpm db:migrate
+
+# Seed demo data (Apex Sahakari Bank)
+pnpm db:seed
+
+# Start dev server
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Any email/password combination works for demo login.
+Open [http://localhost:3000](http://localhost:3000).
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/aegis"
+
+# Better Auth
+BETTER_AUTH_SECRET="your-secret-key"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# AWS (optional — for S3 uploads & SES email)
+AWS_REGION="ap-south-1"
+AWS_ACCESS_KEY_ID="..."
+AWS_SECRET_ACCESS_KEY="..."
+AWS_S3_BUCKET="..."
+AWS_SES_FROM_EMAIL="..."
+```
 
 ## Tech Stack
 
-| Layer           | Technology                                                                                   |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| Framework       | [Next.js 16](https://nextjs.org/) (App Router + Turbopack)                                   |
-| UI Components   | [shadcn/ui](https://ui.shadcn.com/) (new-york style) + [Radix UI](https://www.radix-ui.com/) |
-| Styling         | [Tailwind CSS v4](https://tailwindcss.com/) with CSS variable theming                        |
-| Language        | TypeScript (strict mode)                                                                     |
-| Data            | JSON files in `src/data/` (demo data, no database)                                           |
-| Charts          | Recharts via shadcn/ui `ChartContainer`                                                      |
-| Tables          | TanStack Table v8 via shadcn/ui Data Table pattern                                           |
-| Icons           | [Lucide React](https://lucide.dev/)                                                          |
-| Package Manager | pnpm                                                                                         |
+| Layer           | Technology                                                   |
+| --------------- | ------------------------------------------------------------ |
+| Framework       | Next.js 16 (App Router + Turbopack)                          |
+| UI Components   | shadcn/ui (new-york style) + Radix UI                        |
+| Styling         | Tailwind CSS v4 with CSS variable theming                    |
+| Language        | TypeScript (strict mode)                                     |
+| Database        | PostgreSQL 15+ with Prisma 7 ORM                             |
+| Auth            | Better Auth (email/password, multi-session, account lockout) |
+| State           | TanStack Query (server), Zustand (client), react-hook-form   |
+| Tables          | TanStack Table v8                                            |
+| Charts          | Recharts 3                                                   |
+| PDF Generation  | @react-pdf/renderer                                          |
+| Excel Export    | ExcelJS                                                      |
+| Email           | React Email + AWS SES v2                                     |
+| Job Queue       | pg-boss (PostgreSQL-backed)                                  |
+| i18n            | next-intl (en, hi, mr, gu)                                   |
+| File Storage    | AWS S3 (presigned URLs)                                      |
+| Icons           | Lucide React                                                 |
+| Package Manager | pnpm                                                         |
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── (auth)/              # Login page with language selector
-│   │   └── login/
-│   ├── (dashboard)/         # All authenticated screens
-│   │   ├── dashboard/       # CEO dashboard with widgets
-│   │   ├── compliance/      # RBI compliance registry
-│   │   ├── audit-plans/     # Annual audit planning
-│   │   ├── findings/        # Audit findings management
-│   │   ├── reports/         # Board report preview
-│   │   ├── auditee/         # Auditee management
-│   │   ├── settings/        # Bank profile & config
-│   │   └── layout.tsx       # Sidebar + top bar layout
-│   ├── globals.css          # Tailwind v4 theme + shadcn vars
-│   └── layout.tsx           # Root layout (Inter font, hydration fix)
+│   ├── (auth)/                 # Login page with language selector
+│   ├── (dashboard)/            # All authenticated screens
+│   │   ├── dashboard/          # CEO/CAE dashboard with widgets
+│   │   ├── compliance/         # RBI compliance registry
+│   │   ├── audit-plans/        # Annual audit planning (FY calendar)
+│   │   ├── findings/           # Audit findings management
+│   │   ├── reports/            # Board report preview & PDF generation
+│   │   ├── auditee/            # Auditee portal (responses, evidence)
+│   │   ├── settings/           # Bank profile, notifications, compliance
+│   │   ├── admin/users/        # User management & role assignment
+│   │   ├── audit-trail/        # Audit log (CAE only)
+│   │   └── layout.tsx          # Sidebar + top bar layout
+│   ├── (onboarding)/           # 5-step bank onboarding wizard
+│   ├── accept-invite/          # Invitation acceptance flow
+│   ├── api/                    # API routes (auth, dashboard, exports, reports)
+│   ├── globals.css             # Tailwind v4 theme + shadcn vars
+│   └── layout.tsx              # Root layout (Inter font)
+├── actions/                    # Server actions (observations, auditee, compliance, etc.)
 ├── components/
-│   ├── auth/                # Login form
-│   ├── dashboard/           # Dashboard widget components
-│   ├── compliance/          # Compliance table, filters, dialog, chart
-│   ├── audit/               # Calendar, engagement cards, filter, sheet
-│   ├── layout/              # App sidebar + top bar
-│   └── ui/                  # shadcn/ui primitives (14 components)
+│   ├── ui/                     # shadcn/ui primitives (30+)
+│   ├── dashboard/              # Dashboard widgets & sections
+│   ├── compliance/             # Compliance table, filters, charts
+│   ├── audit/                  # Calendar, engagement cards, detail sheet
+│   ├── findings/               # Findings table, detail panel, timeline
+│   ├── auditee/                # Evidence uploader, response form
+│   ├── layout/                 # AppSidebar, TopBar
+│   ├── auth/                   # Login/signup forms, session warning
+│   ├── admin/                  # User list, role assignment
+│   ├── reports/                # Board report sections
+│   ├── pdf-report/             # React-PDF report components
+│   └── audit-trail/            # Audit log table & filters
 ├── data/
-│   ├── demo/                # Demo JSON files (Apex Sahakari Bank)
-│   ├── rbi-regulations/     # RBI regulatory knowledge base
-│   └── index.ts             # Barrel export for all demo data
-├── lib/
-│   ├── constants.ts         # Colors, status maps, branding
-│   ├── icons.ts             # Lucide icon barrel export
-│   ├── nav-items.ts         # Sidebar navigation config
-│   ├── current-user.ts      # Mock user context
-│   └── utils.ts             # Shared utilities (cn, formatDate)
-├── hooks/                   # Custom React hooks
-└── types/
-    └── index.ts             # Domain type definitions
+│   ├── demo/                   # Demo JSON (Apex Sahakari Bank + i18n variants)
+│   ├── rbi-regulations/        # RBI regulatory knowledge base
+│   └── index.ts                # Barrel export
+├── data-access/                # Server-only DAL with 5-step security pattern
+├── emails/                     # React Email templates
+├── hooks/                      # useFormAutoSave, useIsMobile
+├── i18n/                       # next-intl locale resolution
+├── jobs/                       # Background job handlers (pg-boss)
+├── lib/                        # Auth, permissions, prisma, utils, AWS clients
+├── providers/                  # TanStack Query provider
+├── stores/                     # Zustand stores (onboarding wizard)
+└── types/                      # Domain type definitions
+prisma/
+├── schema.prisma               # Multi-tenant PostgreSQL schema (30+ models)
+├── migrations/                 # Prisma migrations
+├── seed.ts                     # Database seeding
+└── seed-master-directions.ts   # RBI master direction seeding
 ```
 
 ## Screens
 
-| Screen              | Route          | Description                                                                                                   |
-| ------------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
-| Login               | `/login`       | Email/password + MFA prompt UI, language selector                                                             |
-| Dashboard           | `/dashboard`   | Compliance health score, audit coverage chart, findings count, risk panel, regulatory calendar, quick actions |
-| Compliance Registry | `/compliance`  | Sortable/filterable table of RBI requirements, status badges, detail modal, trend chart                       |
-| Audit Planning      | `/audit-plans` | FY calendar view, engagement cards, type filter, progress bars, detail workspace                              |
-| Findings            | `/findings`    | Findings list with severity badges, status distribution                                                       |
-| Board Reports       | `/reports`     | Executive summary, audit coverage, compliance scorecard                                                       |
-| Auditee Management  | `/auditee`     | Department/branch auditee list                                                                                |
-| Settings            | `/settings`    | Bank profile, staff directory                                                                                 |
+| Screen              | Route          | Description                                                  |
+| ------------------- | -------------- | ------------------------------------------------------------ |
+| Login               | `/login`       | Email/password authentication with language selector         |
+| Dashboard           | `/dashboard`   | Health score, audit coverage, findings, risk panel, calendar |
+| Compliance Registry | `/compliance`  | Sortable/filterable RBI requirements table with trend chart  |
+| Audit Planning      | `/audit-plans` | FY calendar, engagement cards, progress tracking             |
+| Findings            | `/findings`    | Full observation lifecycle with timeline & status machine    |
+| Board Reports       | `/reports`     | Executive summary, scorecard, PDF generation                 |
+| Auditee Portal      | `/auditee`     | Observation responses, evidence upload, deadline tracking    |
+| Settings            | `/settings`    | Bank profile, notification preferences, custom compliance    |
+| User Management     | `/admin/users` | RBAC role assignment, invitations                            |
+| Audit Trail         | `/audit-trail` | Immutable audit log (10-year PMLA retention)                 |
+| Onboarding          | `/onboarding`  | 5-step wizard (registration, tier, RBI, org, invites)        |
 
-## Demo Data
+## Architecture
 
-All data represents **Apex Sahakari Bank Ltd**, a Tier 2 UCB in Pune, Maharashtra:
+### Multi-Tenancy
 
-| File                           | Content                                               |
-| ------------------------------ | ----------------------------------------------------- |
-| `bank-profile.json`            | Bank details, license, business mix (~825 crore)      |
-| `staff.json`                   | 12 staff members (CEO, CAE, auditors, compliance)     |
-| `branches.json`                | 12 branches across Pune district                      |
-| `compliance-requirements.json` | 15 RBI requirements with mixed status                 |
-| `audit-plans.json`             | 8 audits (branch, IS, credit, compliance, revenue)    |
-| `findings.json`                | 10 findings with timelines (CRAR, ALM, cyber, credit) |
-| `rbi-circulars.json`           | 6 RBI circular references                             |
+All data is tenant-isolated using a defense-in-depth approach:
+
+1. **PostgreSQL RLS** — Row-Level Security policies enforce tenant isolation at the database level
+2. **Prisma middleware** — `prismaForTenant(tenantId)` wraps every query in a `SET LOCAL app.current_tenant_id` transaction
+3. **Explicit WHERE** — Every query includes a `WHERE tenantId` clause (belt-and-suspenders)
+4. **Session-only tenantId** — Tenant ID is extracted exclusively from authenticated sessions, never from URLs or request bodies
+5. **Runtime assertions** — Query results are verified against expected tenantId
+
+See [`src/data-access/README.md`](src/data-access/README.md) for the full 5-step DAL security pattern.
+
+### Authentication & Authorization
+
+- **Better Auth** — Email/password with multi-session support (max 2 concurrent)
+- **Rate limiting** — 10 login attempts per 15 minutes per IP
+- **Account lockout** — 5 failed attempts triggers 30-minute lockout
+- **Cookie security** — httpOnly, secure (production), sameSite=lax
+
+### RBAC
+
+7 roles: `AUDITOR`, `AUDIT_MANAGER`, `CAE`, `CCO`, `CEO`, `AUDITEE`, `BOARD_OBSERVER`
+
+- Users can hold multiple roles simultaneously
+- 58 granular permissions across observations, compliance, audit plans, reports, and admin functions
+- Maker-checker enforcement (creator cannot approve own observations)
+
+### Background Jobs
+
+pg-boss processes scheduled jobs:
+
+| Job                     | Schedule         | Purpose                            |
+| ----------------------- | ---------------- | ---------------------------------- |
+| `process-notifications` | On demand        | Dequeue & send email notifications |
+| `deadline-check`        | Daily 06:00 IST  | 7/3/1 day advance reminders        |
+| `send-weekly-digest`    | Monday 10:00 IST | Aggregated weekly email            |
 
 ## Available Scripts
 
 ```bash
-pnpm dev          # Start dev server with Turbopack (http://localhost:3000)
-pnpm build        # Production build
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
+# Development
+pnpm dev              # Start dev server with Turbopack
+pnpm build            # Production build
+pnpm start            # Start production server
+pnpm lint             # Run ESLint
+
+# Database
+pnpm db:generate      # Regenerate Prisma client
+pnpm db:migrate       # Run pending migrations
+pnpm db:push          # Push schema changes (dev only)
+pnpm db:seed          # Seed demo data
+pnpm db:studio        # Open Prisma Studio GUI
+
+# Seeding
+pnpm seed:master-directions   # Seed RBI master directions
 ```
 
 ## Domain Context
 
-**Target users:** Urban Cooperative Banks (UCBs) in India — Tier III/IV banks with limited IT resources.
-
-**Regulator:** Reserve Bank of India (RBI). UCBs must comply with RBI circulars covering capital adequacy (CRAR), asset quality (NPA norms), governance, cyber security, and more.
+**Target users:** Urban Cooperative Banks (UCBs) in India — Tier I-IV banks regulated by RBI.
 
 **Key concepts:**
 
-- **CRAR** — Capital to Risk-weighted Assets Ratio (minimum 9% for UCBs)
-- **DAKSH** — RBI's supervisory scoring system for UCBs
-- **PCA** — Prompt Corrective Action framework for weak banks
-- **ALM** — Asset Liability Management
-- **NPA** — Non-Performing Assets classification and provisioning
-- **DICGC** — Deposit Insurance and Credit Guarantee Corporation
-
-## Architecture Decisions
-
-| Decision                            | Rationale                                                                      |
-| ----------------------------------- | ------------------------------------------------------------------------------ |
-| Next.js App Router                  | File-based routing, React Server Components, Turbopack for fast dev            |
-| shadcn/ui (copy-paste)              | Full customization control, consistent design system, accessible primitives    |
-| Tailwind CSS v4                     | Native CSS variables, faster builds, `@theme inline` for theming               |
-| JSON demo data                      | No backend needed for prototype; data shape matches future PostgreSQL schema   |
-| `@/*` path alias                    | Clean imports: `@/components/ui/card` instead of `../../../components/ui/card` |
-| Lucide icons via barrel             | Single import source (`@/lib/icons`) for tree-shaking and consistency          |
-| Route groups `(auth)`/`(dashboard)` | Separate layouts without affecting URL paths                                   |
+| Term         | Description                                                               |
+| ------------ | ------------------------------------------------------------------------- |
+| **CRAR**     | Capital to Risk-weighted Assets Ratio (min 9% for UCBs)                   |
+| **DAKSH**    | RBI's supervisory scoring system for UCBs                                 |
+| **PCA**      | Prompt Corrective Action framework for weak banks                         |
+| **ALM**      | Asset Liability Management                                                |
+| **NPA**      | Non-Performing Assets classification and provisioning                     |
+| **DICGC**    | Deposit Insurance and Credit Guarantee Corporation                        |
+| **UCB Tier** | Classification by deposit size (Tier 1-4), affects applicable regulations |
 
 ## Configuration
 
 ### Tailwind v4 Theme
 
-Colors are defined as CSS variables in `src/app/globals.css` inside a `@theme inline` block. shadcn/ui components reference these variables for consistent theming.
+Colors are defined as CSS variables in `src/app/globals.css` inside a `@theme inline` block. shadcn/ui components reference these for consistent theming.
 
 **Known gotcha:** Tailwind v4 does NOT auto-wrap bare CSS variables in `var()`. Use `w-[var(--sidebar-width)]` not `w-[--sidebar-width]`.
 
 ### shadcn/ui
 
-Configuration in `components.json`:
-
 - Style: `new-york`
 - Base color: `zinc`
 - CSS variables: enabled
-- Path alias: `@/components/ui`
-
-### Prettier
-
-```json
-{
-  "semi": true,
-  "singleQuote": false,
-  "plugins": ["prettier-plugin-tailwindcss"]
-}
-```
+- Icons: always import from `@/lib/icons` (barrel export), not directly from `lucide-react`
 
 ## Deployment
 
 - **Target:** AWS Mumbai (ap-south-1) for RBI data localization compliance
-- **Current:** Local development only (prototype phase)
-- **Plan:** AWS Lightsail with PM2, Nginx, and SSL
+- **Output:** Standalone build (Docker-ready, no node_modules needed)
+- **Architecture:** Next.js standalone + PostgreSQL + pg-boss
 
 ## Roadmap
 
-| Phase | Name                                             | Status  |
-| ----- | ------------------------------------------------ | ------- |
-| 1     | Project Setup & Demo Data                        | 30%     |
-| 2     | Core Screens (Dashboard, Compliance, Audit Plan) | Planned |
-| 3     | Finding Management & Board Reports               | Planned |
-| 4     | Multi-language, Responsive Polish & Deploy       | Planned |
+| Milestone                | Phases | Status   |
+| ------------------------ | ------ | -------- |
+| v1.0 Clickable Prototype | 1-4    | Shipped  |
+| v2.0 Working Core MVP    | 5-10   | Complete |
+| v2.0 Gap Closure         | 11-14  | Active   |
 
-See `.planning/ROADMAP.md` for detailed phase breakdowns.
+See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for detailed phase breakdowns and [`.planning/STATE.md`](.planning/STATE.md) for current progress.
 
 ## License
 

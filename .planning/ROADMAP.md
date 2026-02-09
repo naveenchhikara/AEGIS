@@ -236,9 +236,12 @@ Plans:
 3. Observation model has engagementId field — getMyEngagementProgress returns real counts
 4. Board report repeat findings section renders actual repeat observation data
 
+**Plans:** 2 plans
+
 Plans:
 
-- [ ] 12-01: TBD (to be planned)
+- [ ] 12-01-PLAN.md — Schema: DashboardSnapshot model + engagementId/repeatOfId on Observation + engagement progress query
+- [ ] 12-02-PLAN.md — Snapshot job + trend queries from DashboardSnapshot + repeat findings board report wiring
 
 ---
 
@@ -307,7 +310,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 
 | 9. Dashboards                   | v2.0      | 5/5            | Complete | 2026-02-09 |
 | 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
 | 11. Auth Security Hardening     | v2.0 fix  | 1/1            | Complete | 2026-02-10 |
-| 12. Dashboard Data Pipeline     | v2.0 fix  | 0/0            | Planned  | —          |
+| 12. Dashboard Data Pipeline     | v2.0 fix  | 0/2            | Planned  | —          |
 | 13. Onboarding Persistence      | v2.0 fix  | 0/0            | Planned  | —          |
 | 14. Verification & Prod Ready   | v2.0 fix  | 0/0            | Planned  | —          |
 

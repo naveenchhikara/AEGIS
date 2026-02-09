@@ -27,6 +27,9 @@ import type {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+// TODO: Scope by authenticated user/tenant ID when auth is implemented (Phase 11).
+// Currently unscoped — if multiple users share a browser (common in bank branches),
+// one user's partial onboarding data is visible to the next.
 const STORAGE_KEY = "aegis-onboarding";
 const EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
@@ -136,6 +139,16 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         lastSavedAt: state.lastSavedAt,
         onboardingId: state.onboardingId,
       }),
+      // Auto-clear expired drafts (30 days) on store hydration.
+      // Prevents stale PII from persisting indefinitely in localStorage.
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const lastSaved = new Date(state.lastSavedAt).getTime();
+          if (Date.now() - lastSaved > EXPIRY_MS) {
+            state.reset();
+          }
+        }
+      },
     },
   ),
 );

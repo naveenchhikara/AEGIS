@@ -12,10 +12,11 @@
  * - Tooltips on banking-specific fields
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useOnboardingStore } from "@/stores/onboarding-store";
+import { useFormAutoSave } from "@/hooks/use-auto-save";
 import {
   bankRegistrationSchema,
   type BankRegistrationFormData,
@@ -111,7 +112,8 @@ const STATE_TO_RCS: Record<string, string> = {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function StepRegistration() {
-  const store = useOnboardingStore();
+  const bankRegistration = useOnboardingStore((s) => s.bankRegistration);
+  const setBankRegistration = useOnboardingStore((s) => s.setBankRegistration);
   const [selectedState, setSelectedState] = useState<string>("");
   const [ucbType, setUcbType] = useState<"SCHEDULED" | "NON_SCHEDULED">(
     "NON_SCHEDULED",
@@ -119,7 +121,7 @@ export function StepRegistration() {
 
   const form = useForm<BankRegistrationFormData>({
     resolver: zodResolver(bankRegistrationSchema),
-    defaultValues: store.bankRegistration ?? {
+    defaultValues: bankRegistration ?? {
       bankName: "",
       shortName: "",
       rbiLicenseNumber: "",
@@ -135,18 +137,8 @@ export function StepRegistration() {
     },
   });
 
-  // Auto-save to store (debounced 500ms)
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      const timer = setTimeout(() => {
-        if (data) {
-          store.setBankRegistration(data as BankRegistrationFormData);
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    });
-    return () => subscription.unsubscribe();
-  }, [form, store]);
+  // Auto-save to store (debounced 500ms) — setter is stable via selector
+  useFormAutoSave(form, setBankRegistration);
 
   // Pre-fill "Registered With" when state changes
   const handleStateChange = (state: string) => {

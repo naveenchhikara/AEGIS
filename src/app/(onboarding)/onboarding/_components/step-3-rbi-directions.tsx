@@ -14,7 +14,7 @@
  * - Auto-saves to Zustand store (debounced 500ms)
  */
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useOnboardingStore } from "@/stores/onboarding-store";
 import {
   masterDirections,
@@ -36,7 +36,6 @@ import { AlertTriangle, CheckCircle2, Info } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type {
   SelectedDirectionData,
-  DirectionItemSelection,
   UcbTier,
   NotApplicableItem,
 } from "@/types/onboarding";
@@ -76,22 +75,37 @@ function getTierBadgeColor(tier: UcbTier) {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function StepRbiDirections() {
-  const store = useOnboardingStore();
-  const userTier: UcbTier = store.tierSelection?.tier ?? "TIER_1";
+  // Extract individual selectors for stable references — prevents infinite
+  // re-render loops caused by the full store object changing on every mutation.
+  const tierSelectionTier = useOnboardingStore((s) => s.tierSelection?.tier);
+  const savedDirections = useOnboardingStore((s) => s.selectedDirections);
+  const savedNaItems = useOnboardingStore((s) => s.notApplicableItems);
+  const setSelectedDirections = useOnboardingStore(
+    (s) => s.setSelectedDirections,
+  );
+  const setNotApplicableItems = useOnboardingStore(
+    (s) => s.setNotApplicableItems,
+  );
+  const userTier: UcbTier = tierSelectionTier ?? "TIER_1";
 
   const [selections, setSelections] = useState<SelectedDirectionData[]>([]);
   const [naItems, setNaItems] = useState<NotApplicableItem[]>([]);
   const [naReasons, setNaReasons] = useState<Record<string, string>>({});
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
-  // Initialize selections on mount based on user's tier
+  // Initialize selections on mount based on user's tier.
+  // Empty deps is intentional: reads hydrated store state once on mount.
+  // Zustand persist hydrates synchronously from localStorage before first render.
   useEffect(() => {
-    if (store.selectedDirections.length > 0) {
+    if (savedDirections.length > 0) {
       // Resume from saved state
-      setSelections(store.selectedDirections);
-      setNaItems(store.notApplicableItems);
+      setSelections(savedDirections);
+      setNaItems(savedNaItems);
       // Populate naReasons for UI
       const reasons: Record<string, string> = {};
-      store.notApplicableItems.forEach((item) => {
+      savedNaItems.forEach((item) => {
         reasons[item.itemCode] = item.reason;
       });
       setNaReasons(reasons);
@@ -116,14 +130,15 @@ export function StepRbiDirections() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-save to store (debounced 500ms)
+  // Auto-save to store (debounced 500ms) — setters are stable via selector
   useEffect(() => {
-    const timer = setTimeout(() => {
-      store.setSelectedDirections(selections);
-      store.setNotApplicableItems(naItems);
+    clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      setSelectedDirections(selections);
+      setNotApplicableItems(naItems);
     }, 500);
-    return () => clearTimeout(timer);
-  }, [selections, naItems, store]);
+    return () => clearTimeout(autoSaveTimer.current);
+  }, [selections, naItems, setSelectedDirections, setNotApplicableItems]);
 
   // ─── Event Handlers ─────────────────────────────────────────────────
 

@@ -12,10 +12,11 @@
  * - Auto-saves to Zustand store (debounced 500ms)
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useOnboardingStore } from "@/stores/onboarding-store";
+import { useFormAutoSave } from "@/hooks/use-auto-save";
 import {
   tierSelectionSchema,
   type TierSelectionFormData,
@@ -115,14 +116,15 @@ function suggestTier(depositAmount: number): UcbTier {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function StepTierSelection() {
-  const store = useOnboardingStore();
+  const tierSelection = useOnboardingStore((s) => s.tierSelection);
+  const setTierSelection = useOnboardingStore((s) => s.setTierSelection);
   const [selectedTier, setSelectedTier] = useState<UcbTier | null>(null);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
   const [suggestedTier, setSuggestedTier] = useState<UcbTier | null>(null);
 
   const form = useForm<TierSelectionFormData>({
     resolver: zodResolver(tierSelectionSchema),
-    defaultValues: store.tierSelection ?? {
+    defaultValues: tierSelection ?? {
       tier: "TIER_1",
       depositAmount: undefined,
       nabardRegistration: "",
@@ -133,18 +135,8 @@ export function StepTierSelection() {
     },
   });
 
-  // Auto-save to store (debounced 500ms)
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      const timer = setTimeout(() => {
-        if (data) {
-          store.setTierSelection(data as TierSelectionFormData);
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    });
-    return () => subscription.unsubscribe();
-  }, [form, store]);
+  // Auto-save to store (debounced 500ms) — setter is stable via selector
+  useFormAutoSave(form, setTierSelection);
 
   // Handle deposit amount change and auto-suggest tier
   const handleDepositChange = (value: string) => {

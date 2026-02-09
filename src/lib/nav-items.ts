@@ -181,6 +181,7 @@ function getPermissionsForRole(role: Role): Permission[] {
       "audit_trail:read",
       "admin:manage_users",
       "admin:manage_roles",
+      "admin:manage_settings",
       "dashboard:cae",
     ],
     CCO: [

@@ -133,12 +133,14 @@ _Completed: 2026-02-09_
 ## Self-Check: PASSED
 
 **Key files:**
+
 - ✓ prisma/schema.prisma exists
 - ✓ prisma/migrations/add_observation_lifecycle_indexes.sql exists
 - ✓ src/lib/constants.ts exists
 - ✓ .planning/phases/06-observation-lifecycle/06-01-SUMMARY.md exists
 
 **Commits:**
+
 - ✓ e6ea7c5 exists
 - ✓ ec60748 exists
 - ✓ cb06fc7 exists

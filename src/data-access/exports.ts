@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
 
 /**
@@ -26,7 +27,7 @@ type Session = {
 function extractTenantId(session: Session): string {
   const tenantId = (session.user as any).tenantId as string;
   if (!tenantId) {
-    throw new Error("tenantId not found in session");
+    redirect("/dashboard?setup=required");
   }
   return tenantId;
 }

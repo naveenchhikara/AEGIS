@@ -1,1 +1,28 @@
+# OS files
 .DS_Store
+Thumbs.db
+
+# Environment files (NEVER commit secrets)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Prisma generated client
+/src/generated/prisma
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# Package manager (use pnpm-lock.yaml)
+package-lock.json

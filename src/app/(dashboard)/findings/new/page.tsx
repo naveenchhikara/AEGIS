@@ -1,11 +1,11 @@
-import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { ObservationForm } from "@/components/findings/observation-form";
 import { ChevronLeft } from "@/lib/icons";
 import Link from "next/link";
+import { requirePermission } from "@/lib/guards";
 
 export default async function CreateObservationPage() {
-  const session = await getRequiredSession();
+  const session = await requirePermission("observation:create");
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 

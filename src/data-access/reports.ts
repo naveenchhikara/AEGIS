@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
 import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
@@ -10,7 +11,7 @@ type Session = {
 
 function extractTenantId(session: Session): string {
   const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) throw new Error("tenantId not found in session");
+  if (!tenantId) redirect("/dashboard?setup=required");
   return tenantId;
 }
 

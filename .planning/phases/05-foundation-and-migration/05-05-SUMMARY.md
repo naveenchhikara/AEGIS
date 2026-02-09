@@ -93,6 +93,7 @@ None - followed plan as specified. Audit trigger design aligned with Prisma Audi
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] PostgreSQL column name case sensitivity**
+
 - **Found during:** Task 1 (PostgreSQL trigger function creation)
 - **Issue:** Migration SQL used "createdAt" (camelCase) but PostgreSQL created "createdat" (lowercase) column
 - **Fix:** Updated migration SQL to use "createdat" (lowercase) to match actual table schema
@@ -101,14 +102,16 @@ None - followed plan as specified. Audit trigger design aligned with Prisma Audi
 - **Committed in:** `17bbb29` (Task 1 commit)
 
 **2. [Rule 3 - Blocking] UUID casting from set_config()**
+
 - **Found during:** Task 1 (Trigger execution)
 - **Issue:** set_config() returns TEXT, but AuditLog tenantId/userId columns are UUID type - trigger failed
-- **Fix:** Added `::UUID` casting in trigger function VALUES clause for _tenant_id and _user_id
+- **Fix:** Added `::UUID` casting in trigger function VALUES clause for \_tenant_id and \_user_id
 - **Files modified:** prisma/migrations/20260209015123_audit_trigger/migration.sql
 - **Verification:** Trigger successfully inserts audit entries with properly cast UUIDs
 - **Committed in:** `17bbb29` (Task 1 commit)
 
 **3. [Rule 3 - Blocking] NULL tenantId in AuditLog during testing**
+
 - **Found during:** Task 1 (Testing without app context)
 - **Issue:** set_config() returns NULL when no application context set, but AuditLog tenantId had NOT NULL constraint
 - **Fix:** Made tenantId nullable in AuditLog table (context set by app code via setAuditContext)
@@ -137,5 +140,6 @@ None - no external service configuration required. Audit trail is database-nativ
 - No blockers or concerns
 
 ---
-*Phase: 05-foundation-and-migration*
-*Completed: 2026-02-09*
+
+_Phase: 05-foundation-and-migration_
+_Completed: 2026-02-09_

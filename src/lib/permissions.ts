@@ -96,6 +96,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_trail:read",
     "admin:manage_users",
     "admin:manage_roles",
+    "admin:manage_settings",
     "dashboard:cae",
   ],
   CCO: [

@@ -37,6 +37,8 @@
     "findings": "Findings",
     "boardReport": "Board Report",
     "auditeePortal": "Auditee Portal",
+    "auditTrail": "Audit Trail",
+    "admin": "Admin",
     "settings": "Settings"
   },
   "TopBar": {

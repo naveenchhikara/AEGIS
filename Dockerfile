@@ -24,10 +24,13 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Generate Prisma client (will be added in later phases)
-# RUN pnpm prisma generate
+# Generate Prisma client (only needs schema, not a live DB)
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm prisma generate
 
-RUN pnpm build
+# Dummy DATABASE_URL for build — Next.js collects page data at build time
+# and the auth route imports Prisma. The proxy in prisma.ts defers connection,
+# but Prisma adapter validation still needs a parseable URL.
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm build
 
 # --- Stage 3: Runner (Production) ---
 FROM node:22-alpine AS runner

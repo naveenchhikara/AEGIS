@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import { getRequiredSession } from "@/data-access/session";
 import {
   getObservationSummary,
   getObservations,
@@ -16,34 +15,17 @@ import {
   Download,
 } from "@/lib/icons";
 import Link from "next/link";
-
-// JSON fallback for when database is unavailable during development
-import { findings } from "@/data";
-import type { FindingsData } from "@/types";
+import { requirePermission } from "@/lib/guards";
 
 export default async function FindingsPage() {
   const t = await getTranslations("Findings");
+  const session = await requirePermission("observation:read");
 
-  let summary: { total: number; bySeverity: Record<string, number> };
-  let observations: any[];
-
-  try {
-    const session = await getRequiredSession();
-    const [summaryData, observationsData] = await Promise.all([
-      getObservationSummary(session),
-      getObservations(session),
-    ]);
-    summary = summaryData;
-    observations = observationsData.observations;
-  } catch {
-    // TODO: Remove JSON fallback once Phase 5 is fully deployed
-    const data = findings as unknown as FindingsData;
-    summary = {
-      total: data.summary.total,
-      bySeverity: data.summary.bySeverity,
-    };
-    observations = data.findings as any[];
-  }
+  const [summary, observationsData] = await Promise.all([
+    getObservationSummary(session),
+    getObservations(session),
+  ]);
+  const observations = observationsData.observations;
 
   const severityCards = [
     {

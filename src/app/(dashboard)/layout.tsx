@@ -65,6 +65,11 @@ export default async function DashboardLayout({
     .toUpperCase()
     .slice(0, 2);
   const userRoles = (user as any).roles || [];
+  const userTenantId = (user as any).tenantId;
+
+  // If user has no tenant or no roles, show setup required message
+  // instead of rendering broken dashboard with empty sidebar (BUG-001/002)
+  const needsSetup = !userTenantId || userRoles.length === 0;
 
   // Valid session → render children wrapped in layout
   // Pass session data to AppSidebar for role-based navigation filtering
@@ -101,7 +106,22 @@ export default async function DashboardLayout({
             id="main-content"
             className="min-w-0 flex-1 overflow-auto p-4 md:p-6"
           >
-            <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
+            {needsSetup ? (
+              <div className="flex min-h-[400px] items-center justify-center">
+                <div className="max-w-md space-y-4 rounded-lg border border-dashed p-8 text-center">
+                  <h2 className="text-lg font-semibold">
+                    Account Setup Required
+                  </h2>
+                  <p className="text-muted-foreground text-sm">
+                    {!userTenantId
+                      ? "Your account has not been assigned to a bank yet. Please contact your administrator to complete setup."
+                      : "Your account has no roles assigned. Please contact your administrator to assign the appropriate role."}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
+            )}
           </main>
         </SidebarInset>
       </SidebarProvider>

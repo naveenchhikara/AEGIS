@@ -19,6 +19,7 @@ Created 4 reusable email components in `src/emails/components/`:
 4. **cta-button.tsx** — Centered call-to-action button (blue, rounded, inline-styled)
 
 Created `src/emails/render.ts` with:
+
 - `renderEmail(template)` — Converts React Email element to `{ html, text }` (plain text for Rediffmail compatibility)
 - `renderEmailTemplate(templateName, payload)` — Dynamic template registry that maps template names to React components, returns `{ subject, html, text }`. Used by notification processor (08-03).
 

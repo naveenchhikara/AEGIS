@@ -1,45 +1,29 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Zap, Calendar } from "@/lib/icons";
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full cursor-pointer"
-        asChild
-      >
+    <div className="flex flex-wrap gap-3">
+      <Button variant="outline" className="h-10 cursor-pointer" asChild>
         <Link href="/findings">
-          <Plus className="mr-2 h-5 w-5" />
+          <Plus />
           New Finding
         </Link>
       </Button>
 
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full cursor-pointer"
-        asChild
-      >
+      <Button variant="outline" className="h-10 cursor-pointer" asChild>
         <Link href="/compliance">
-          <Zap className="mr-2 h-5 w-5" />
+          <Zap />
           New Compliance Task
         </Link>
       </Button>
 
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full cursor-pointer"
-        asChild
-      >
+      <Button variant="outline" className="h-10 cursor-pointer" asChild>
         <Link href="/audit-plans">
-          <Calendar className="mr-2 h-5 w-5" />
+          <Calendar />
           View Audit Plan
         </Link>
       </Button>

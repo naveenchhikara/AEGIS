@@ -296,7 +296,7 @@ export function ObservationForm({
                   </SelectTrigger>
                   <SelectContent>
                     {RISK_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
+                      <SelectItem key={cat.id} value={cat.id}>
                         {cat.label}
                       </SelectItem>
                     ))}

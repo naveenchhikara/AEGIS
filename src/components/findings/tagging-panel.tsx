@@ -21,7 +21,7 @@ interface TaggingPanelProps {
 
 export function TaggingPanel({ observation }: TaggingPanelProps) {
   const riskLabel =
-    RISK_CATEGORIES.find((r) => r.value === observation.riskCategory)?.label ??
+    RISK_CATEGORIES.find((r) => r.id === observation.riskCategory)?.label ??
     null;
 
   return (

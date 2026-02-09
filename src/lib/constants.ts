@@ -37,38 +37,34 @@ export const FINDING_STATUS_COLORS = {
 } as const;
 
 export const OBSERVATION_STATUS_COLORS = {
-  DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
-  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-200",
-  REVIEWED: "bg-purple-100 text-purple-800 border-purple-200",
-  ISSUED: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  RESPONSE: "bg-amber-100 text-amber-800 border-amber-200",
-  COMPLIANCE: "bg-teal-100 text-teal-800 border-teal-200",
-  CLOSED: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  DRAFT: "border-gray-300 bg-gray-50 text-gray-700",
+  SUBMITTED: "border-blue-300 bg-blue-50 text-blue-700",
+  REVIEWED: "border-purple-300 bg-purple-50 text-purple-700",
+  ISSUED: "border-orange-300 bg-orange-50 text-orange-700",
+  RESPONSE: "border-yellow-300 bg-yellow-50 text-yellow-700",
+  COMPLIANCE: "border-teal-300 bg-teal-50 text-teal-700",
+  CLOSED: "border-green-300 bg-green-50 text-green-700",
 } as const;
 
-export const OBSERVATION_STATUS_ORDER: string[] = [
-  "DRAFT",
-  "SUBMITTED",
-  "REVIEWED",
-  "ISSUED",
-  "RESPONSE",
-  "COMPLIANCE",
-  "CLOSED",
-];
+export const OBSERVATION_STATUS_ORDER: Record<string, number> = {
+  DRAFT: 0,
+  SUBMITTED: 1,
+  REVIEWED: 2,
+  ISSUED: 3,
+  RESPONSE: 4,
+  COMPLIANCE: 5,
+  CLOSED: 6,
+};
 
 export const RISK_CATEGORIES = [
-  { value: "CREDIT_RISK", label: "Credit Risk" },
-  { value: "MARKET_RISK", label: "Market Risk" },
-  { value: "OPERATIONAL_RISK", label: "Operational Risk" },
-  { value: "LIQUIDITY_RISK", label: "Liquidity Risk" },
-  { value: "COMPLIANCE_RISK", label: "Compliance Risk" },
-  { value: "IT_RISK", label: "IT Risk" },
-  { value: "FRAUD_RISK", label: "Fraud Risk" },
-  { value: "REPUTATIONAL_RISK", label: "Reputational Risk" },
-  { value: "STRATEGIC_RISK", label: "Strategic Risk" },
-  { value: "INTEREST_RATE_RISK", label: "Interest Rate Risk" },
-  { value: "KYC_AML_RISK", label: "KYC/AML Risk" },
-  { value: "GOVERNANCE_RISK", label: "Governance Risk" },
+  { id: "credit-risk", label: "Credit Risk" },
+  { id: "market-risk", label: "Market Risk" },
+  { id: "operational-risk", label: "Operational Risk" },
+  { id: "liquidity-risk", label: "Liquidity Risk" },
+  { id: "compliance-risk", label: "Compliance Risk" },
+  { id: "it-risk", label: "IT & Cyber Risk" },
+  { id: "governance-risk", label: "Governance Risk" },
+  { id: "aml-cft", label: "AML/CFT" },
 ] as const;
 
 export const AUDIT_STATUS_COLORS = {

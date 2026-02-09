@@ -205,9 +205,9 @@ const columns: ColumnDef<ObservationRow>[] = [
     sortingFn: (rowA, rowB) => {
       const statusA = (rowA.getValue("status") as string).toUpperCase();
       const statusB = (rowB.getValue("status") as string).toUpperCase();
-      const a = OBSERVATION_STATUS_ORDER.indexOf(statusA);
-      const b = OBSERVATION_STATUS_ORDER.indexOf(statusB);
-      return (a === -1 ? 99 : a) - (b === -1 ? 99 : b);
+      const a = OBSERVATION_STATUS_ORDER[statusA] ?? 99;
+      const b = OBSERVATION_STATUS_ORDER[statusB] ?? 99;
+      return a - b;
     },
     filterFn: (row, _id, value) => {
       const status = (row.getValue("status") as string).toUpperCase();

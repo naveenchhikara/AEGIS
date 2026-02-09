@@ -9,7 +9,7 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  extensions = [pgcrypto]
+  extensions = [pgcrypto, pg_trgm]
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -351,10 +351,12 @@ model Observation {
   timeline          ObservationTimeline[]
   evidence          Evidence[]
   auditeeResponses  AuditeeResponse[]
+  rbiCirculars      ObservationRbiCircular[]
 
   @@index([tenantId])
   @@index([severity])
   @@index([status])
+  @@index([tenantId, branchId, auditAreaId, status])
 }
 
 // ─── Observation Timeline ────────────────────────────────────────────────────
@@ -382,6 +384,19 @@ model ObservationTimeline {
 }
 
 // ─── Evidence ────────────────────────────────────────────────────────────────
+
+model ObservationRbiCircular {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  observationId String @db.Uuid
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  rbiCircularId String @db.Uuid
+  rbiCircular   RbiCircular @relation(fields: [rbiCircularId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([observationId, rbiCircularId])
+  @@index([observationId])
+  @@index([rbiCircularId])
+}
 
 model Evidence {
   id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -457,6 +472,7 @@ model RbiCircular {
 
   // Relations
   complianceRequirements ComplianceRequirement[]
+  observations            ObservationRbiCircular[]
 }
 
 // ─── Branch ──────────────────────────────────────────────────────────────────

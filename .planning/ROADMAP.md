@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Clickable Prototype** — Phases 1-4 (shipped 2026-02-08) — see archived section below
-- 🚧 **v2.0 Working Core MVP** — Phases 5-10 (in progress)
+- ✅ **v2.0 Working Core MVP** — Phases 5-10 (audit complete 2026-02-10)
 
 ## Phases
 
@@ -17,7 +17,7 @@
 
 </details>
 
-### 🚧 v2.0 Working Core MVP (In Progress)
+### ✅ v2.0 Working Core MVP (Audit Complete)
 
 **Milestone Goal:** Replace clickable prototype with real PostgreSQL backend, authentication, multi-tenancy, and full observation-to-board-report workflow. A UCB audit team can use AEGIS for an actual audit cycle.
 
@@ -194,20 +194,20 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10
 
-| Phase                           | Milestone | Plans Complete | Status      | Completed  |
-| ------------------------------- | --------- | -------------- | ----------- | ---------- |
-| 1. Project Setup & Demo Data    | v1.0      | 4/4            | Complete    | 2026-02-07 |
-| 2. Core Screens                 | v1.0      | 6/6            | Complete    | 2026-02-08 |
-| 3. Finding Management & Reports | v1.0      | 5/5            | Complete    | 2026-02-08 |
-| 4. Polish & Deploy              | v1.0      | 8/8            | Complete    | 2026-02-08 |
-| 5. Foundation & Migration       | v2.0      | 6/6            | Complete    | 2026-02-09 |
-| 6. Observation Lifecycle        | v2.0      | 7/7            | Complete    | 2026-02-09 |
-| 7. Auditee Portal & Evidence    | v2.0      | 7/8            | E2E pending | 2026-02-09 |
-| 8. Notifications & Reports      | v2.0      | 6/6            | Complete    | 2026-02-09 |
-| 9. Dashboards                   | v2.0      | 5/5            | Complete    | 2026-02-09 |
-| 10. Onboarding & Compliance     | v2.0      | 3/8            | In progress | -          |
+| Phase                           | Milestone | Plans Complete | Status   | Completed  |
+| ------------------------------- | --------- | -------------- | -------- | ---------- |
+| 1. Project Setup & Demo Data    | v1.0      | 4/4            | Complete | 2026-02-07 |
+| 2. Core Screens                 | v1.0      | 6/6            | Complete | 2026-02-08 |
+| 3. Finding Management & Reports | v1.0      | 5/5            | Complete | 2026-02-08 |
+| 4. Polish & Deploy              | v1.0      | 8/8            | Complete | 2026-02-08 |
+| 5. Foundation & Migration       | v2.0      | 6/6            | Complete | 2026-02-09 |
+| 6. Observation Lifecycle        | v2.0      | 7/7            | Complete | 2026-02-09 |
+| 7. Auditee Portal & Evidence    | v2.0      | 8/8            | Complete | 2026-02-09 |
+| 8. Notifications & Reports      | v2.0      | 6/6            | Complete | 2026-02-09 |
+| 9. Dashboards                   | v2.0      | 5/5            | Complete | 2026-02-09 |
+| 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
 
 ---
 
 _Roadmap created: February 7, 2026_
-_Updated: February 9, 2026 — v2.0 progress synced with disk state_
+_Updated: February 10, 2026 — v2.0 milestone audit complete (58/59 requirements, tech_debt status)_

@@ -699,17 +699,18 @@ export async function getMyEngagementProgress(
       status: true,
       branch: { select: { name: true } },
       auditArea: { select: { name: true } },
+      _count: {
+        select: { observations: true },
+      },
     },
   });
 
-  // Count observations per engagement is not directly available
-  // (no engagementId on Observation). Return engagement status only.
   return engagements.map((e: any) => ({
     id: e.id,
     branchName: e.branch?.name ?? null,
     auditAreaName: e.auditArea?.name ?? null,
     status: e.status,
-    observationCount: 0, // Would need engagementId on Observation to count
+    observationCount: e._count?.observations ?? 0,
   }));
 }
 

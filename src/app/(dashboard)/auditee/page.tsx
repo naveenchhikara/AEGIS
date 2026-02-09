@@ -1,130 +1,97 @@
 import { getTranslations } from "next-intl/server";
-import { findings } from "@/data";
-import type { FindingsData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, FileText, Clock, AlertTriangle } from "@/lib/icons";
-import { SEVERITY_COLORS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
-
-const data = findings as unknown as FindingsData;
-
-const pendingResponse = data.findings.filter(
-  (f) => f.status === "submitted" || f.status === "draft",
-).length;
-
-const awaitingReview = data.findings.filter(
-  (f) => f.status === "responded",
-).length;
+import { requirePermission } from "@/lib/guards";
+import { getObservationsForAuditee } from "@/data-access/auditee";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertTriangle, Clock, FileText, CircleAlert } from "@/lib/icons";
+import { OverdueBanner } from "@/components/auditee/overdue-banner";
+import { ObservationList } from "@/components/auditee/observation-list";
 
 export default async function AuditeePage() {
+  const session = await requirePermission("observation:read");
   const t = await getTranslations("Auditee");
-  const tCommon = await getTranslations("Common");
+
+  const { observations, nextCursor } = await getObservationsForAuditee(session);
+
+  // Compute summary counts from fetched data
+  const pendingResponse = observations.filter(
+    (o: any) => o.status === "ISSUED",
+  ).length;
+  const awaitingReview = observations.filter(
+    (o: any) => o.status === "RESPONSE",
+  ).length;
+  const overdueCount = observations.filter((o: any) => {
+    const dueDate = o.responseDueDate ?? o.dueDate;
+    if (!dueDate) return false;
+    const due = typeof dueDate === "string" ? new Date(dueDate) : dueDate;
+    return (
+      due.getTime() < Date.now() && !["CLOSED", "COMPLIANCE"].includes(o.status)
+    );
+  }).length;
+  const total = observations.length;
+
+  const summaryCards = [
+    {
+      label: t("pendingYourResponse"),
+      count: pendingResponse,
+      icon: AlertTriangle,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+    },
+    {
+      label: t("awaitingReview"),
+      count: awaitingReview,
+      icon: Clock,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Overdue",
+      count: overdueCount,
+      icon: CircleAlert,
+      color: "text-red-600",
+      bg: "bg-red-50",
+    },
+    {
+      label: t("totalFindings"),
+      count: total,
+      icon: FileText,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          {t("title")}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {t("subtitle")}
+        </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="flex items-center gap-3 p-5">
-            <div className="rounded-lg bg-amber-50 p-2.5">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{pendingResponse}</p>
-              <p className="text-muted-foreground text-sm">
-                {t("pendingYourResponse")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-5">
-            <div className="rounded-lg bg-blue-50 p-2.5">
-              <Clock className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{awaitingReview}</p>
-              <p className="text-muted-foreground text-sm">
-                {t("awaitingReview")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-5">
-            <div className="rounded-lg bg-emerald-50 p-2.5">
-              <FileText className="h-5 w-5 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{data.summary.total}</p>
-              <p className="text-muted-foreground text-sm">
-                {t("totalFindings")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <OverdueBanner overdueCount={overdueCount} />
+
+      {/* Summary cards — 2 cols mobile, 4 cols sm+ */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {summaryCards.map((s) => (
+          <Card key={s.label}>
+            <CardContent className="flex items-center gap-2 p-3 md:gap-3 md:p-4">
+              <div className={`rounded-lg p-1.5 md:p-2 ${s.bg}`}>
+                <s.icon className={`h-4 w-4 ${s.color}`} />
+              </div>
+              <div>
+                <p className="text-lg font-bold md:text-xl">{s.count}</p>
+                <p className="text-muted-foreground text-sm">{s.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Findings pending response */}
-      {pendingResponse > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {t("findingsPendingResponse")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {data.findings
-                .filter((f) => f.status === "submitted" || f.status === "draft")
-                .map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex items-start justify-between gap-3 rounded-lg border p-4"
-                  >
-                    <div>
-                      <p className="text-base font-medium">{f.title}</p>
-                      <p className="text-muted-foreground mt-1 line-clamp-1 text-sm">
-                        {f.observation}
-                      </p>
-                      <p className="text-muted-foreground mt-1 text-sm">
-                        {tCommon("due")}: {formatDate(f.targetDate)}
-                      </p>
-                    </div>
-                    <span
-                      className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-                        SEVERITY_COLORS[
-                          f.severity as keyof typeof SEVERITY_COLORS
-                        ] ?? ""
-                      }`}
-                    >
-                      {f.severity}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Portal description */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <UserCheck className="text-muted-foreground/30 h-12 w-12" />
-            <div>
-              <p className="font-medium">{t("portalTitle")}</p>
-              <p className="text-muted-foreground mt-1 max-w-md text-sm">
-                {t("portalDescription")}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Observation list with filters and pagination */}
+      <ObservationList observations={observations} nextCursor={nextCursor} />
     </div>
   );
 }

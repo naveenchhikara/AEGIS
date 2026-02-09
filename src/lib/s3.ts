@@ -15,7 +15,7 @@ import crypto from "node:crypto";
 // ---------------------------------------------------------------------------
 const s3Client = new S3Client({ region: "ap-south-1" });
 
-const BUCKET = process.env.S3_EVIDENCE_BUCKET ?? "aegis-evidence-dev";
+const BUCKET = process.env.S3_BUCKET_NAME ?? "aegis-evidence-dev";
 
 // ---------------------------------------------------------------------------
 // Allowed evidence file types (MIME → extension)
@@ -97,8 +97,10 @@ export async function generateUploadUrl(
     Bucket: BUCKET,
     Key: s3Key,
     ContentType: contentType,
-    ContentLength: fileSize,
-    ServerSideEncryption: "AES256",
+    // ContentLength and ServerSideEncryption omitted from presigned URL:
+    // - Bucket has default SSE-S3 encryption (files encrypted automatically)
+    // - Including these in the signed URL requires matching headers in the
+    //   browser XHR PUT, which causes 403 signature mismatch errors
   });
 
   return getSignedUrl(s3Client, command, {

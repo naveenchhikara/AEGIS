@@ -15,7 +15,7 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 const s3Client = new S3Client({ region: "ap-south-1" });
-const BUCKET = process.env.S3_EVIDENCE_BUCKET ?? "aegis-evidence-dev";
+const BUCKET = process.env.S3_BUCKET_NAME ?? "aegis-evidence-dev";
 
 /**
  * POST /api/reports/board-report

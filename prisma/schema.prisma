@@ -193,6 +193,7 @@ model Tenant {
   emailLogs               EmailLog[]
   notificationPreferences NotificationPreference[]
   boardReports            BoardReport[]
+  dashboardSnapshots      DashboardSnapshot[]
 }
 
 // ─── User ────────────────────────────────────────────────────────────────────
@@ -344,6 +345,15 @@ model Observation {
   // Risk categorization
   riskCategory String?
 
+  // Engagement tracking (Phase 12 — links observation to audit engagement)
+  engagementId String?          @db.Uuid
+  engagement   AuditEngagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)
+
+  // Repeat finding relation (Phase 12 — self-referential)
+  repeatOfId      String?       @db.Uuid
+  repeatOf        Observation?  @relation("RepeatHierarchy", fields: [repeatOfId], references: [id], onDelete: SetNull)
+  repeatInstances Observation[] @relation("RepeatHierarchy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -357,6 +367,8 @@ model Observation {
   @@index([severity])
   @@index([status])
   @@index([tenantId, branchId, auditAreaId, status])
+  @@index([engagementId])
+  @@index([repeatOfId])
 }
 
 // ─── Observation Timeline ────────────────────────────────────────────────────
@@ -571,6 +583,9 @@ model AuditEngagement {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  observations Observation[]
+
   @@index([tenantId])
   @@index([auditPlanId])
 }
@@ -760,6 +775,18 @@ model BoardReport {
 
   @@index([tenantId])
   @@index([tenantId, year, quarter])
+}
+
+// ─── Dashboard Snapshot (Phase 12 — time-series metrics) ───────────────────
+
+model DashboardSnapshot {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @db.Uuid
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  capturedAt DateTime @default(now())
+  metrics    Json     // { healthScore, compliance: {total,compliant,percentage}, severity: {total,criticalOpen,highOpen,mediumOpen,lowOpen} }
+
+  @@index([tenantId, capturedAt(sort: Desc)])
 }
 
 // ─── RBI Master Direction (Global — no tenantId) ──────────────────────────

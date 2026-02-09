@@ -210,6 +210,20 @@ model Observation {
   dueDate         DateTime?
   statusUpdatedAt DateTime?
 
+  // Optimistic locking
+  version Int @default(1)
+
+  // Fieldwork resolution (OBS-07)
+  resolvedDuringFieldwork Boolean @default(false)
+  resolutionReason       String? @db.Text
+
+  // Auditee response fields
+  auditeeResponse String? @db.Text
+  actionPlan      String? @db.Text
+
+  // Risk categorization
+  riskCategory String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

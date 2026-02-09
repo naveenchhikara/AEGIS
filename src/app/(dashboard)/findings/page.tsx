@@ -1,40 +1,74 @@
 import { getTranslations } from "next-intl/server";
+import { getRequiredSession } from "@/data-access/session";
+import {
+  getObservationSummary,
+  getObservations,
+} from "@/data-access/observations";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FindingsTable } from "@/components/findings/findings-table";
+import {
+  CircleAlert,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Plus,
+} from "@/lib/icons";
+import Link from "next/link";
+
+// JSON fallback for when database is unavailable during development
 import { findings } from "@/data";
 import type { FindingsData } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { FindingsTable } from "@/components/findings/findings-table";
-import { CircleAlert, AlertTriangle, CheckCircle2, Clock } from "@/lib/icons";
-
-const data = findings as unknown as FindingsData;
 
 export default async function FindingsPage() {
   const t = await getTranslations("Findings");
 
+  let summary: { total: number; bySeverity: Record<string, number> };
+  let observations: any[];
+
+  try {
+    const session = await getRequiredSession();
+    const [summaryData, observationsData] = await Promise.all([
+      getObservationSummary(session),
+      getObservations(session),
+    ]);
+    summary = summaryData;
+    observations = observationsData.observations;
+  } catch {
+    // TODO: Remove JSON fallback once Phase 5 is fully deployed
+    const data = findings as unknown as FindingsData;
+    summary = {
+      total: data.summary.total,
+      bySeverity: data.summary.bySeverity,
+    };
+    observations = data.findings as any[];
+  }
+
   const severityCards = [
     {
       label: t("critical"),
-      count: data.summary.bySeverity.critical ?? 0,
+      count: summary.bySeverity.CRITICAL ?? summary.bySeverity.critical ?? 0,
       icon: CircleAlert,
       color: "text-red-600",
       bg: "bg-red-50",
     },
     {
       label: t("high"),
-      count: data.summary.bySeverity.high ?? 0,
+      count: summary.bySeverity.HIGH ?? summary.bySeverity.high ?? 0,
       icon: AlertTriangle,
       color: "text-orange-600",
       bg: "bg-orange-50",
     },
     {
       label: t("medium"),
-      count: data.summary.bySeverity.medium ?? 0,
+      count: summary.bySeverity.MEDIUM ?? summary.bySeverity.medium ?? 0,
       icon: Clock,
       color: "text-yellow-600",
       bg: "bg-yellow-50",
     },
     {
       label: t("low"),
-      count: data.summary.bySeverity.low ?? 0,
+      count: summary.bySeverity.LOW ?? summary.bySeverity.low ?? 0,
       icon: CheckCircle2,
       color: "text-green-600",
       bg: "bg-green-50",
@@ -43,13 +77,21 @@ export default async function FindingsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {t("subtitle", { count: data.summary.total })}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            {t("title")}
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            {t("subtitle", { count: summary.total })}
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/findings/new">
+            <Plus className="mr-1 h-4 w-4" />
+            Create Observation
+          </Link>
+        </Button>
       </div>
 
       {/* Severity distribution — 2 cols mobile, 4 cols sm+ */}
@@ -70,7 +112,7 @@ export default async function FindingsPage() {
       </div>
 
       {/* Findings table with sorting, filtering, and row navigation */}
-      <FindingsTable />
+      <FindingsTable observations={observations} />
     </div>
   );
 }

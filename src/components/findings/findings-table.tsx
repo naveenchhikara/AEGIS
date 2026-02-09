@@ -23,46 +23,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FindingsFilters } from "./findings-filters";
-import { findings } from "@/data";
-import { SEVERITY_COLORS, FINDING_STATUS_COLORS } from "@/lib/constants";
+import {
+  SEVERITY_COLORS,
+  OBSERVATION_STATUS_COLORS,
+  OBSERVATION_STATUS_ORDER,
+} from "@/lib/constants";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "@/lib/icons";
-import type { Finding, FindingsData } from "@/types";
 
-const data = findings as unknown as FindingsData;
+// Observation row shape matching the DAL return type
+interface ObservationRow {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  resolvedDuringFieldwork?: boolean;
+  dueDate?: Date | string | null;
+  createdAt: Date | string;
+  branch?: { id: string; name: string } | null;
+  auditArea?: { id: string; name: string } | null;
+  createdBy?: { id: string; name: string } | null;
+  // Legacy JSON fields
+  category?: string;
+  assignedAuditor?: string;
+}
 
-// Custom sort orders for severity and status
+interface FindingsTableProps {
+  observations: ObservationRow[];
+}
+
+// Custom sort orders
 const SEVERITY_ORDER: Record<string, number> = {
+  CRITICAL: 0,
   critical: 0,
+  HIGH: 1,
   high: 1,
+  MEDIUM: 2,
   medium: 2,
+  LOW: 3,
   low: 3,
 };
-
-const STATUS_ORDER: Record<string, number> = {
-  draft: 0,
-  submitted: 1,
-  reviewed: 2,
-  responded: 3,
-  closed: 4,
-};
-
-// Derive unique categories from data
-const ALL_CATEGORIES = [
-  ...new Set(data.findings.map((f) => f.category)),
-].sort();
-
-function calculateAge(createdAt: string): number {
-  return Math.floor(
-    (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24),
-  );
-}
-
-function ageColorClass(days: number): string {
-  if (days > 180) return "text-red-600 font-medium";
-  if (days > 120) return "text-amber-600 font-medium";
-  if (days <= 60) return "text-green-600";
-  return "text-muted-foreground";
-}
 
 function SortIcon({
   column,
@@ -75,24 +74,27 @@ function SortIcon({
   return <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-50" />;
 }
 
-const columns: ColumnDef<Finding>[] = [
-  {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        ID
-        <SortIcon column={column} />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <span className="font-mono text-sm">{row.getValue("id")}</span>
-    ),
-  },
+function formatSeverity(severity: string): string {
+  return severity.charAt(0).toUpperCase() + severity.slice(1).toLowerCase();
+}
+
+function formatStatus(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
+
+function calculateAge(createdAt: Date | string): number {
+  const date = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
+  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function ageColorClass(days: number): string {
+  if (days > 180) return "text-red-600 font-medium";
+  if (days > 120) return "text-amber-600 font-medium";
+  if (days <= 60) return "text-green-600";
+  return "text-muted-foreground";
+}
+
+const columns: ColumnDef<ObservationRow>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
@@ -107,13 +109,24 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="line-clamp-2 text-sm font-medium md:text-base">
-        {row.getValue("title")}
-      </span>
+      <div className="space-y-0.5">
+        <span className="line-clamp-2 text-sm font-medium md:text-base">
+          {row.getValue("title")}
+        </span>
+        {row.original.resolvedDuringFieldwork && (
+          <Badge
+            variant="outline"
+            className="border-amber-200 bg-amber-100 text-amber-800"
+          >
+            Resolved
+          </Badge>
+        )}
+      </div>
     ),
   },
   {
-    accessorKey: "category",
+    id: "auditArea",
+    accessorFn: (row) => row.auditArea?.name ?? row.category ?? "—",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -121,18 +134,15 @@ const columns: ColumnDef<Finding>[] = [
         className="-ml-3 hidden md:flex"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Category
+        Audit Area
         <SortIcon column={column} />
       </Button>
     ),
     cell: ({ row }) => (
       <span className="hidden text-sm md:inline">
-        {row.getValue("category")}
+        {row.getValue("auditArea")}
       </span>
     ),
-    filterFn: (row, id, value) => {
-      return row.getValue(id) === value;
-    },
   },
   {
     accessorKey: "severity",
@@ -148,10 +158,11 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const severity = row.getValue("severity") as keyof typeof SEVERITY_COLORS;
+      const severity = row.getValue("severity") as string;
+      const key = severity.toLowerCase() as keyof typeof SEVERITY_COLORS;
       return (
-        <Badge variant="outline" className={SEVERITY_COLORS[severity] ?? ""}>
-          {severity.charAt(0).toUpperCase() + severity.slice(1)}
+        <Badge variant="outline" className={SEVERITY_COLORS[key] ?? ""}>
+          {formatSeverity(severity)}
         </Badge>
       );
     },
@@ -160,8 +171,9 @@ const columns: ColumnDef<Finding>[] = [
       const b = SEVERITY_ORDER[rowB.getValue("severity") as string] ?? 99;
       return a - b;
     },
-    filterFn: (row, id, value) => {
-      return row.getValue(id) === value;
+    filterFn: (row, _id, value) => {
+      const severity = (row.getValue("severity") as string).toUpperCase();
+      return severity === value.toUpperCase();
     },
   },
   {
@@ -178,29 +190,33 @@ const columns: ColumnDef<Finding>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const status = row.getValue(
-        "status",
-      ) as keyof typeof FINDING_STATUS_COLORS;
+      const status = row.getValue("status") as string;
+      const key =
+        status.toUpperCase() as keyof typeof OBSERVATION_STATUS_COLORS;
       return (
         <Badge
           variant="outline"
-          className={FINDING_STATUS_COLORS[status] ?? ""}
+          className={OBSERVATION_STATUS_COLORS[key] ?? ""}
         >
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {formatStatus(status)}
         </Badge>
       );
     },
     sortingFn: (rowA, rowB) => {
-      const a = STATUS_ORDER[rowA.getValue("status") as string] ?? 99;
-      const b = STATUS_ORDER[rowB.getValue("status") as string] ?? 99;
-      return a - b;
+      const statusA = (rowA.getValue("status") as string).toUpperCase();
+      const statusB = (rowB.getValue("status") as string).toUpperCase();
+      const a = OBSERVATION_STATUS_ORDER.indexOf(statusA);
+      const b = OBSERVATION_STATUS_ORDER.indexOf(statusB);
+      return (a === -1 ? 99 : a) - (b === -1 ? 99 : b);
     },
-    filterFn: (row, id, value) => {
-      return row.getValue(id) === value;
+    filterFn: (row, _id, value) => {
+      const status = (row.getValue("status") as string).toUpperCase();
+      return status === value.toUpperCase();
     },
   },
   {
-    accessorKey: "assignedAuditor",
+    id: "branch",
+    accessorFn: (row) => row.branch?.name ?? "—",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -208,14 +224,12 @@ const columns: ColumnDef<Finding>[] = [
         className="-ml-3 hidden md:flex"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Auditor
+        Branch
         <SortIcon column={column} />
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="hidden text-sm md:inline">
-        {row.getValue("assignedAuditor")}
-      </span>
+      <span className="hidden text-sm md:inline">{row.getValue("branch")}</span>
     ),
   },
   {
@@ -244,7 +258,7 @@ const columns: ColumnDef<Finding>[] = [
   },
 ];
 
-export function FindingsTable() {
+export function FindingsTable({ observations }: FindingsTableProps) {
   const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -254,10 +268,9 @@ export function FindingsTable() {
   // Filter state for dropdowns
   const [severityFilter, setSeverityFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
-  const [categoryFilter, setCategoryFilter] = React.useState("all");
 
   const table = useReactTable({
-    data: data.findings,
+    data: observations,
     columns,
     state: { sorting, columnFilters },
     onSortingChange: setSorting,
@@ -291,26 +304,13 @@ export function FindingsTable() {
     }
   };
 
-  const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value);
-    if (value === "all") {
-      setColumnFilters((prev) => prev.filter((f) => f.id !== "category"));
-    } else {
-      setColumnFilters((prev) => {
-        const other = prev.filter((f) => f.id !== "category");
-        return [...other, { id: "category", value }];
-      });
-    }
-  };
-
   const handleReset = () => {
     setSeverityFilter("all");
     setStatusFilter("all");
-    setCategoryFilter("all");
     setColumnFilters([]);
   };
 
-  const totalCount = data.findings.length;
+  const totalCount = observations.length;
   const filteredCount = table.getFilteredRowModel().rows.length;
   const isFiltered = filteredCount !== totalCount;
 
@@ -319,18 +319,15 @@ export function FindingsTable() {
       <FindingsFilters
         severityFilter={severityFilter}
         statusFilter={statusFilter}
-        categoryFilter={categoryFilter}
-        categories={ALL_CATEGORIES}
         onSeverityChange={handleSeverityChange}
         onStatusChange={handleStatusChange}
-        onCategoryChange={handleCategoryChange}
         onReset={handleReset}
       />
 
       <div className="text-muted-foreground text-sm">
         {isFiltered
-          ? `Showing ${filteredCount} of ${totalCount} findings`
-          : `${totalCount} findings`}
+          ? `Showing ${filteredCount} of ${totalCount} observations`
+          : `${totalCount} observations`}
       </div>
 
       <div className="rounded-md border">
@@ -385,7 +382,7 @@ export function FindingsTable() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No findings match the selected filters.
+                    No observations match the selected filters.
                   </TableCell>
                 </TableRow>
               )}

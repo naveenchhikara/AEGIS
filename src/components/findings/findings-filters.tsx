@@ -13,28 +13,19 @@ import { XCircle } from "@/lib/icons";
 export interface FindingsFiltersProps {
   severityFilter: string;
   statusFilter: string;
-  categoryFilter: string;
-  categories: string[];
   onSeverityChange: (value: string) => void;
   onStatusChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
   onReset: () => void;
 }
 
 export function FindingsFilters({
   severityFilter,
   statusFilter,
-  categoryFilter,
-  categories,
   onSeverityChange,
   onStatusChange,
-  onCategoryChange,
   onReset,
 }: FindingsFiltersProps) {
-  const isFiltered =
-    severityFilter !== "all" ||
-    statusFilter !== "all" ||
-    categoryFilter !== "all";
+  const isFiltered = severityFilter !== "all" || statusFilter !== "all";
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -44,10 +35,10 @@ export function FindingsFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Severities</SelectItem>
-          <SelectItem value="critical">Critical</SelectItem>
-          <SelectItem value="high">High</SelectItem>
-          <SelectItem value="medium">Medium</SelectItem>
-          <SelectItem value="low">Low</SelectItem>
+          <SelectItem value="CRITICAL">Critical</SelectItem>
+          <SelectItem value="HIGH">High</SelectItem>
+          <SelectItem value="MEDIUM">Medium</SelectItem>
+          <SelectItem value="LOW">Low</SelectItem>
         </SelectContent>
       </Select>
 
@@ -57,25 +48,13 @@ export function FindingsFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="draft">Draft</SelectItem>
-          <SelectItem value="submitted">Submitted</SelectItem>
-          <SelectItem value="reviewed">Reviewed</SelectItem>
-          <SelectItem value="responded">Responded</SelectItem>
-          <SelectItem value="closed">Closed</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="bg-muted w-full sm:w-[200px]">
-          <SelectValue placeholder="All Categories" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {categories.map((cat) => (
-            <SelectItem key={cat} value={cat}>
-              {cat}
-            </SelectItem>
-          ))}
+          <SelectItem value="DRAFT">Draft</SelectItem>
+          <SelectItem value="SUBMITTED">Submitted</SelectItem>
+          <SelectItem value="REVIEWED">Reviewed</SelectItem>
+          <SelectItem value="ISSUED">Issued</SelectItem>
+          <SelectItem value="RESPONSE">Response</SelectItem>
+          <SelectItem value="COMPLIANCE">Compliance</SelectItem>
+          <SelectItem value="CLOSED">Closed</SelectItem>
         </SelectContent>
       </Select>
 

@@ -16,18 +16,47 @@ export interface AccountLockoutConfig {
   observationWindow: number;
 }
 
+const defaultConfig: AccountLockoutConfig = {
+  maxAttempts: 5,
+  lockoutDuration: 1800, // 30 minutes
+  observationWindow: 900, // 15 minutes
+};
+
+/**
+ * Better Auth hook context shape at runtime.
+ * The published types are narrower than the actual runtime object,
+ * so we define an internal interface for type-safe access.
+ */
+interface HookContext {
+  path?: string;
+  body?: Record<string, unknown>;
+  headers?: Headers;
+  context?: {
+    newSession?: unknown;
+    returned?: unknown;
+  };
+}
+
+/**
+ * Extract client IP from request headers
+ */
+function getClientIp(headers?: Headers): string {
+  if (!headers) return "unknown";
+  return (
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
 /**
  * Account Lockout Plugin for Better Auth
  *
  * Features:
- * - Checks for account lockout before sign-in
- * - Prevents locked accounts from authenticating
- * - Returns LOCKED error when account is locked
- *
- * Implementation notes:
- * - `before` hook checks FailedLoginAttempt table for active lockouts
- * - Failed attempt tracking and lockout application happen via rate limiting config
- * - This plugin enforces the lockout; rate limiting triggers it
+ * - Checks for account lockout before sign-in (before hook)
+ * - Tracks failed login attempts and applies lockout (after hook)
+ * - Clears failed attempts on successful login
+ * - Logs lockout events to AuditLog for security monitoring
  *
  * @example
  * ```typescript
@@ -45,8 +74,10 @@ export interface AccountLockoutConfig {
  * ```
  */
 export const accountLockout = (
-  _config?: Partial<AccountLockoutConfig>,
+  config?: Partial<AccountLockoutConfig>,
 ): BetterAuthPlugin => {
+  const settings = { ...defaultConfig, ...config };
+
   return {
     id: "account-lockout",
     hooks: {
@@ -54,8 +85,8 @@ export const accountLockout = (
         {
           matcher: (ctx) => ctx.path === "/sign-in/email",
           handler: async (ctx) => {
-            const body = ctx.body as { email?: string } | undefined;
-            const email = body?.email?.toLowerCase();
+            const hookCtx = ctx as unknown as HookContext;
+            const email = (hookCtx.body?.email as string)?.toLowerCase();
 
             if (!email) {
               return;
@@ -67,7 +98,7 @@ export const accountLockout = (
               where: {
                 email,
                 lockedUntil: {
-                  gt: now, // lockedUntil is in the future
+                  gt: now,
                 },
               },
               orderBy: {
@@ -76,7 +107,6 @@ export const accountLockout = (
             });
 
             if (lockout) {
-              // Account is locked - throw APIError
               throw new APIError("LOCKED", {
                 message:
                   "Account temporarily locked due to multiple failed login attempts. Please try again later.",
@@ -90,12 +120,97 @@ export const accountLockout = (
           },
         },
       ],
-      // TODO (Phase 14): Implement `after` hook for failed attempt tracking
-      // Better Auth plugin API for accessing response status in after hooks needs
-      // runtime testing/documentation review. For now, lockout enforcement works;
-      // failed attempt recording will be added in Phase 14 verification.
-      // Interim: Manual SQL or separate middleware can populate FailedLoginAttempt
-      // table for testing lockout behavior.
+      after: [
+        {
+          matcher: (ctx) => ctx.path === "/sign-in/email",
+          handler: async (ctx) => {
+            const hookCtx = ctx as unknown as HookContext;
+            const email = (hookCtx.body?.email as string)?.toLowerCase();
+
+            if (!email) return;
+
+            const ip = getClientIp(hookCtx.headers);
+            const now = new Date();
+            const windowStart = new Date(
+              now.getTime() - settings.observationWindow * 1000,
+            );
+
+            // Check if login succeeded (newSession exists on successful auth)
+            if (hookCtx.context?.newSession) {
+              // Login succeeded — clear failed attempts for this email
+              await prisma.failedLoginAttempt.deleteMany({
+                where: {
+                  email,
+                  lockedUntil: null, // Only clear non-lockout records
+                },
+              });
+              return;
+            }
+
+            // Check if response was an error (login failed)
+            const returned = hookCtx.context?.returned;
+            const isFailure = returned instanceof APIError;
+
+            if (!isFailure) return;
+
+            // Record failed attempt
+            await prisma.failedLoginAttempt.create({
+              data: {
+                email,
+                ipAddress: ip,
+                attemptedAt: now,
+              },
+            });
+
+            // Count recent failures within observation window
+            const recentFailures = await prisma.failedLoginAttempt.count({
+              where: {
+                email,
+                attemptedAt: { gte: windowStart },
+                lockedUntil: null, // Don't count previous lockout records
+              },
+            });
+
+            // Lock account if threshold exceeded
+            if (recentFailures >= settings.maxAttempts) {
+              const lockUntil = new Date(
+                now.getTime() + settings.lockoutDuration * 1000,
+              );
+
+              // Mark all recent attempts with the lockout timestamp
+              await prisma.failedLoginAttempt.updateMany({
+                where: {
+                  email,
+                  attemptedAt: { gte: windowStart },
+                  lockedUntil: null,
+                },
+                data: {
+                  lockedUntil: lockUntil,
+                },
+              });
+
+              // Log lockout event to AuditLog for security monitoring
+              await prisma.auditLog.create({
+                data: {
+                  tenantId: "00000000-0000-0000-0000-000000000000", // System event
+                  tableName: "User",
+                  recordId: email,
+                  operation: "LOCKOUT",
+                  actionType: "account.locked",
+                  oldData: { recentFailures },
+                  newData: { lockedUntil: lockUntil.toISOString() },
+                  ipAddress: ip,
+                  retentionExpiresAt: new Date(
+                    now.getTime() + 10 * 365.25 * 24 * 60 * 60 * 1000,
+                  ), // 10 years PMLA
+                },
+              });
+            }
+
+            return;
+          },
+        },
+      ],
     },
   };
 };

@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
+import { randomUUID } from "crypto";
 
 /**
  * Better Auth server configuration
@@ -23,6 +24,29 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+  },
+
+  // Expose custom User columns in session so DAL functions can read tenantId/roles
+  user: {
+    additionalFields: {
+      tenantId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      roles: {
+        type: "string[]",
+        required: false,
+        input: false,
+      },
+    },
+  },
+
+  // Generate UUID-compatible IDs for PostgreSQL UUID columns
+  advanced: {
+    database: {
+      generateId: () => randomUUID(),
+    },
   },
 });
 

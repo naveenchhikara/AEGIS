@@ -100,34 +100,37 @@ export async function setAuditContext(
  */
 export const AUDIT_ACTION_TYPES = {
   OBSERVATION: {
-    CREATED: 'observation.created',
-    UPDATED: 'observation.updated',
-    STATUS_CHANGED: 'observation.status_changed',
-    APPROVED: 'observation.approved',
+    CREATED: "observation.created",
+    UPDATED: "observation.updated",
+    STATUS_CHANGED: "observation.status_changed",
+    APPROVED: "observation.approved",
   },
   USER: {
-    CREATED: 'user.created',
-    ROLE_CHANGED: 'user.role_changed',
-    DEACTIVATED: 'user.deactivated',
+    CREATED: "user.created",
+    ROLE_CHANGED: "user.role_changed",
+    DEACTIVATED: "user.deactivated",
   },
   COMPLIANCE: {
-    STATUS_CHANGED: 'compliance.status_changed',
-    MARKED_NA: 'compliance.marked_na',
+    STATUS_CHANGED: "compliance.status_changed",
+    MARKED_NA: "compliance.marked_na",
   },
   FINDING: {
-    CREATED: 'finding.created',
-    CLOSED: 'finding.closed',
-    SEVERITY_CHANGED: 'finding.severity_changed',
+    CREATED: "finding.created",
+    CLOSED: "finding.closed",
+    SEVERITY_CHANGED: "finding.severity_changed",
   },
   AUDIT_PLAN: {
-    CREATED: 'audit_plan.created',
-    UPDATED: 'audit_plan.updated',
+    CREATED: "audit_plan.created",
+    UPDATED: "audit_plan.updated",
   },
   TENANT: {
-    SETTINGS_UPDATED: 'tenant.settings_updated',
+    SETTINGS_UPDATED: "tenant.settings_updated",
   },
   EVIDENCE: {
-    UPLOADED: 'evidence.uploaded',
+    UPLOADED: "evidence.uploaded",
+  },
+  AUDITEE: {
+    RESPONSE_SUBMITTED: "auditee.response_submitted",
   },
 } as const;
 

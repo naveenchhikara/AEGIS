@@ -2,11 +2,12 @@
 
 ## Current Position
 
-**Phase:** 13 of 14 — Onboarding Persistence & Excel (COMPLETE)
-**Status:** All Phase 13 plans complete. Both tech debt items closed.
+**Phase:** 14 of 14 — Verification & Prod Readiness (IN PROGRESS)
+**Plan:** 3 of TBD
+**Status:** Phase 6-7 verification complete. Playwright E2E infrastructure verified (work pre-completed by 14-02). Phase 8-9-10 verification and AWS SES pending.
 **Last activity:** 2026-02-10
 
-Progress: [███████████████████░░] 92% (63/63 v2.0 plans + 5/? gap closure plans)
+Progress: [███████████████████░░] 95% (63/63 v2.0 plans + 3/? verification plans complete)
 
 ## Milestone Progress
 
@@ -29,12 +30,12 @@ Progress: [███████████████████░░] 92% 
 
 ## v2.0 Gap Closure Detail
 
-| Phase | Name                           | Plans | Done | Status   |
-| ----- | ------------------------------ | ----- | ---- | -------- |
-| 11    | Auth Security Hardening        | 1     | 1    | Complete |
-| 12    | Dashboard Data Pipeline        | 2     | 2    | Complete |
-| 13    | Onboarding Persistence & Excel | 2     | 2    | Complete |
-| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned  |
+| Phase | Name                           | Plans | Done | Status     |
+| ----- | ------------------------------ | ----- | ---- | ---------- |
+| 11    | Auth Security Hardening        | 1     | 1    | Complete   |
+| 12    | Dashboard Data Pipeline        | 2     | 2    | Complete   |
+| 13    | Onboarding Persistence & Excel | 2     | 2    | Complete   |
+| 14    | Verification & Prod Readiness  | TBD   | 1    | **ACTIVE** |
 
 ### Gap → Phase Mapping
 
@@ -49,7 +50,8 @@ Progress: [███████████████████░░] 92% 
 | Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    | ✅ DONE |
 | Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    | ✅ DONE |
 | ONBD-03            | Excel org structure upload not built  | MUST     | 13    | ✅ DONE |
-| Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    | PLANNED |
+| Phases 6-7         | VERIFICATION.md missing (2 phases)    | MEDIUM   | 14    | ✅ DONE |
+| Phases 8-10        | VERIFICATION.md missing (3 phases)    | LOW      | 14    | PLANNED |
 | Phase 6            | E2E browser tests pending             | MEDIUM   | 14    | PLANNED |
 | Phase 7            | Permission guard test skipped         | LOW      | 14    | PLANNED |
 | Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    | PLANNED |
@@ -75,6 +77,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 - **Trend granularity (D29):** Severity trends show quarterly data (6 quarters), compliance trends show daily data (6 months sparkline)
 - **Server-wins merge (D30):** Onboarding state — server wins if server updatedAt > local lastSavedAt; prevents Device A from overwriting Device B's work
 - **Fire-and-forget sync (D31):** Onboarding server saves are non-blocking; errors logged but don't interrupt UX; localStorage as fallback
+- **Verification evidence format (D32):** All verification claims cite file paths with line numbers (e.g., "state-machine.ts lines 63-70") for grep validation; observable truths table format established
 
 ## Active Blockers
 
@@ -90,7 +93,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-10
-Completed 13-02: Excel org structure upload — Excel template generation with styled worksheets + data validation, multi-layer file upload validation (extension, size, MIME, magic bytes, parse), drag-and-drop UI with react-dropzone, integration into Step 4 onboarding. ONBD-03 gap closed. Phase 13 complete — both tech debt items resolved. Next: Phase 14 (Verification & Prod Readiness).
+Completed 14-01: Created evidence-based verification reports for Phase 6 (11 OBS requirements) and Phase 7 (12 AUD/EVID requirements) with observable truths tables, file paths, line numbers, grep citations following Phase 11 template. Phase 6: 11/11 verified, 15 artifacts, build passed with test file warnings. Phase 7: 12/12 verified, 16 artifacts, E2E tested (16/17 passed). Verification methodology established for remaining phases.
 
 ---
 

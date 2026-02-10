@@ -128,6 +128,8 @@ export interface OnboardingState {
   startedAt: string;
   lastSavedAt: string;
   onboardingId?: string; // server-side draft ID after first save
+  lastSyncedAt: string | null; // ISO timestamp of last successful server save
+  isSyncing: boolean; // true while server save is in progress
 }
 
 // ─── Store Actions ───────────────────────────────────────────────────────────
@@ -148,4 +150,7 @@ export interface OnboardingActions {
   isExpired: () => boolean;
   hasProgress: () => boolean;
   reset: () => void;
+
+  saveToServer: () => Promise<void>;
+  loadFromServer: () => Promise<void>;
 }

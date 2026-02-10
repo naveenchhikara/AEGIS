@@ -28,51 +28,51 @@ gaps:
 
 ### Observable Truths
 
-| #   | Truth                                                                                      | Status     | Evidence                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------- |
-| 1   | VERIFICATION.md exists for phases 6, 7, 8, 9, and 10                                       | ✓ VERIFIED | Plan 14-01: 06-VERIFICATION.md (21KB), 07-VERIFICATION.md (21KB); Plan 14-02: 08/09/10-VERIFICATION.md created |
-| 2   | Each VERIFICATION.md cites file paths and line numbers as evidence                         | ✓ VERIFIED | All 5 VERIFICATION.md files follow Phase 11 template: Observable Truths table with "file.ts lines X-Y" format  |
-| 3   | Phase 6 E2E test infrastructure created (9 test groups from 06-07 plan)                    | ✓ VERIFIED | Plan 14-03: tests/e2e/observation-lifecycle.spec.ts (21KB, 9 describe blocks), playwright.config.ts            |
-| 4   | Phase 7 permission guard E2E tests created                                                 | ✓ VERIFIED | Plan 14-04: tests/e2e/permission-guards.spec.ts (6.4KB, role-based access tests)                               |
-| 5   | E2E test infrastructure ready for execution (Playwright installed, auth setup configured)  | ✓ VERIFIED | playwright.config.ts with 4 role projects, tests/auth.setup.ts creates storageState for auditor/manager/CAE    |
-| 6   | AWS SES domain verified and first test email sent successfully                             | ✗ FAILED   | Plan 14-04 checkpoint: user selected ses-skip; identity created but DNS CNAME records NOT added; DKIM NOT_STARTED |
-| 7   | Re-audit confirms 59/59 requirements satisfied with 0 HIGH tech debt                       | ✓ VERIFIED | Plan 14-05: REQUIREMENTS.md updated with 59/59 Satisfied; all Phase 5/9/10 gaps closed in Phases 11/12/13      |
+| #   | Truth                                                                                     | Status     | Evidence                                                                                                          |
+| --- | ----------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | VERIFICATION.md exists for phases 6, 7, 8, 9, and 10                                      | ✓ VERIFIED | Plan 14-01: 06-VERIFICATION.md (21KB), 07-VERIFICATION.md (21KB); Plan 14-02: 08/09/10-VERIFICATION.md created    |
+| 2   | Each VERIFICATION.md cites file paths and line numbers as evidence                        | ✓ VERIFIED | All 5 VERIFICATION.md files follow Phase 11 template: Observable Truths table with "file.ts lines X-Y" format     |
+| 3   | Phase 6 E2E test infrastructure created (9 test groups from 06-07 plan)                   | ✓ VERIFIED | Plan 14-03: tests/e2e/observation-lifecycle.spec.ts (21KB, 9 describe blocks), playwright.config.ts               |
+| 4   | Phase 7 permission guard E2E tests created                                                | ✓ VERIFIED | Plan 14-04: tests/e2e/permission-guards.spec.ts (6.4KB, role-based access tests)                                  |
+| 5   | E2E test infrastructure ready for execution (Playwright installed, auth setup configured) | ✓ VERIFIED | playwright.config.ts with 4 role projects, tests/auth.setup.ts creates storageState for auditor/manager/CAE       |
+| 6   | AWS SES domain verified and first test email sent successfully                            | ✗ FAILED   | Plan 14-04 checkpoint: user selected ses-skip; identity created but DNS CNAME records NOT added; DKIM NOT_STARTED |
+| 7   | Re-audit confirms 59/59 requirements satisfied with 0 HIGH tech debt                      | ✓ VERIFIED | Plan 14-05: REQUIREMENTS.md updated with 59/59 Satisfied; all Phase 5/9/10 gaps closed in Phases 11/12/13         |
 
 **Score:** 6/7 truths verified (Truth #6 failed due to ses-skip)
 
 ### Required Artifacts
 
-| Artifact                                               | Expected                                             | Status     | Details                                                                                 |
-| ------------------------------------------------------ | ---------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------- |
-| `.planning/phases/06-observation-lifecycle/06-VERIFICATION.md` | Phase 6 verification with 11 OBS requirements        | ✓ VERIFIED | 21KB, 254 lines, 11/11 requirements verified, created in Plan 14-01                     |
-| `.planning/phases/07-auditee-portal-evidence/07-VERIFICATION.md` | Phase 7 verification with 12 AUD/EVID requirements   | ✓ VERIFIED | 21KB, 265 lines, 12/12 requirements verified, created in Plan 14-01                     |
-| `.planning/phases/08-notifications-reports/08-VERIFICATION.md` | Phase 8 verification with 16 NOTF/RPT/EXP requirements | ✓ VERIFIED | 28.6KB, 422 lines, 16/16 requirements verified, created in Plan 14-02                   |
-| `.planning/phases/09-dashboards/09-VERIFICATION.md`    | Phase 9 verification with 6 DASH requirements        | ✓ VERIFIED | 24.1KB, 315 lines, 6/6 requirements verified, created in Plan 14-02                     |
-| `.planning/phases/10-onboarding-compliance/10-VERIFICATION.md` | Phase 10 verification with 10 ONBD/CMPL requirements | ✓ VERIFIED | 28.5KB, 316 lines, 10/10 requirements verified, created in Plan 14-02                   |
-| `playwright.config.ts`                                 | Playwright config with auth setup and 4 role projects | ✓ VERIFIED | webServer for Next.js, auth setup project, auditor/manager/CAE/auditee projects with storageState |
-| `tests/auth.setup.ts`                                  | Multi-role authentication setup for E2E tests        | ✓ VERIFIED | Creates 4 storageState files for role-based testing                                    |
-| `tests/e2e/observation-lifecycle.spec.ts`              | 9 test groups covering Phase 6 lifecycle             | ✓ VERIFIED | 21KB, 9 test.describe blocks (OBS-01 through OBS-11), created in Plan 14-03            |
-| `tests/e2e/permission-guards.spec.ts`                  | Role-based access control tests                      | ✓ VERIFIED | 6.4KB, tests for auditee/auditor/manager/CAE access restrictions, created in Plan 14-04 |
-| `.planning/REQUIREMENTS.md` (updated)                  | 59/59 requirements marked Satisfied                  | ✓ VERIFIED | Audit Summary section with 59/59 Satisfied, 0 HIGH tech debt, updated in Plan 14-05    |
-| `.planning/STATE.md` (updated)                         | Phase 14 marked complete                             | ✓ VERIFIED | Progress: 100%, v2.0 Gap Closure milestone COMPLETE, updated in Plan 14-05             |
-| `.planning/ROADMAP.md` (updated)                       | Phase 14 progress table updated                      | ✓ VERIFIED | 5/5 plans complete, milestone complete 2026-02-10, updated in Plan 14-05               |
+| Artifact                                                         | Expected                                               | Status     | Details                                                                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------- |
+| `.planning/phases/06-observation-lifecycle/06-VERIFICATION.md`   | Phase 6 verification with 11 OBS requirements          | ✓ VERIFIED | 21KB, 254 lines, 11/11 requirements verified, created in Plan 14-01                               |
+| `.planning/phases/07-auditee-portal-evidence/07-VERIFICATION.md` | Phase 7 verification with 12 AUD/EVID requirements     | ✓ VERIFIED | 21KB, 265 lines, 12/12 requirements verified, created in Plan 14-01                               |
+| `.planning/phases/08-notifications-reports/08-VERIFICATION.md`   | Phase 8 verification with 16 NOTF/RPT/EXP requirements | ✓ VERIFIED | 28.6KB, 422 lines, 16/16 requirements verified, created in Plan 14-02                             |
+| `.planning/phases/09-dashboards/09-VERIFICATION.md`              | Phase 9 verification with 6 DASH requirements          | ✓ VERIFIED | 24.1KB, 315 lines, 6/6 requirements verified, created in Plan 14-02                               |
+| `.planning/phases/10-onboarding-compliance/10-VERIFICATION.md`   | Phase 10 verification with 10 ONBD/CMPL requirements   | ✓ VERIFIED | 28.5KB, 316 lines, 10/10 requirements verified, created in Plan 14-02                             |
+| `playwright.config.ts`                                           | Playwright config with auth setup and 4 role projects  | ✓ VERIFIED | webServer for Next.js, auth setup project, auditor/manager/CAE/auditee projects with storageState |
+| `tests/auth.setup.ts`                                            | Multi-role authentication setup for E2E tests          | ✓ VERIFIED | Creates 4 storageState files for role-based testing                                               |
+| `tests/e2e/observation-lifecycle.spec.ts`                        | 9 test groups covering Phase 6 lifecycle               | ✓ VERIFIED | 21KB, 9 test.describe blocks (OBS-01 through OBS-11), created in Plan 14-03                       |
+| `tests/e2e/permission-guards.spec.ts`                            | Role-based access control tests                        | ✓ VERIFIED | 6.4KB, tests for auditee/auditor/manager/CAE access restrictions, created in Plan 14-04           |
+| `.planning/REQUIREMENTS.md` (updated)                            | 59/59 requirements marked Satisfied                    | ✓ VERIFIED | Audit Summary section with 59/59 Satisfied, 0 HIGH tech debt, updated in Plan 14-05               |
+| `.planning/STATE.md` (updated)                                   | Phase 14 marked complete                               | ✓ VERIFIED | Progress: 100%, v2.0 Gap Closure milestone COMPLETE, updated in Plan 14-05                        |
+| `.planning/ROADMAP.md` (updated)                                 | Phase 14 progress table updated                        | ✓ VERIFIED | 5/5 plans complete, milestone complete 2026-02-10, updated in Plan 14-05                          |
 
 **Score:** 12/12 artifacts verified
 
 ### Key Link Verification
 
-| From                                      | To                          | Via                                | Status     | Details                                                                                    |
-| ----------------------------------------- | --------------------------- | ---------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
-| 06-VERIFICATION.md                        | 06-*-SUMMARY.md             | Evidence drawn from plan summaries | ✓ WIRED    | Grep results cite implementation files from 7 Phase 6 plans                                |
-| 07-VERIFICATION.md                        | 07-*-SUMMARY.md             | Evidence drawn from plan summaries | ✓ WIRED    | Grep results cite implementation files from 8 Phase 7 plans                                |
-| 08-VERIFICATION.md                        | 08-*-SUMMARY.md             | Evidence drawn from plan summaries | ✓ WIRED    | Grep results cite implementation files from 6 Phase 8 plans                                |
-| 09-VERIFICATION.md                        | 12-VERIFICATION.md          | Cross-reference for gap closure    | ✓ WIRED    | Documents trend widget and engagementId gaps closed in Phase 12                            |
-| 10-VERIFICATION.md                        | 13-VERIFICATION.md          | Cross-reference for gap closure    | ✓ WIRED    | Documents ONBD-03 and ONBD-06 gaps closed in Phase 13                                      |
-| playwright.config.ts                      | tests/auth.setup.ts         | setup project testMatch            | ✓ WIRED    | Line 103: testMatch: /.*\.setup\.ts/                                                       |
-| tests/e2e/observation-lifecycle.spec.ts   | playwright/.auth/*.json     | storageState usage                 | ✓ WIRED    | Lines use storageState for role-based auth (auditor/manager/CAE)                           |
-| tests/e2e/permission-guards.spec.ts       | playwright/.auth/*.json     | storageState usage                 | ✓ WIRED    | Tests switch roles via storageState parameter                                              |
-| playwright.config.ts                      | pnpm dev                    | webServer command                  | ✓ WIRED    | webServer: { command: "pnpm dev", url: "http://127.0.0.1:3000" }                           |
-| REQUIREMENTS.md Audit Summary             | 9 VERIFICATION.md files     | Requirement traceability           | ✓ WIRED    | Phases 5-13 verification cited as evidence for 59/59 requirements satisfied                |
+| From                                    | To                       | Via                                | Status  | Details                                                                     |
+| --------------------------------------- | ------------------------ | ---------------------------------- | ------- | --------------------------------------------------------------------------- |
+| 06-VERIFICATION.md                      | 06-\*-SUMMARY.md         | Evidence drawn from plan summaries | ✓ WIRED | Grep results cite implementation files from 7 Phase 6 plans                 |
+| 07-VERIFICATION.md                      | 07-\*-SUMMARY.md         | Evidence drawn from plan summaries | ✓ WIRED | Grep results cite implementation files from 8 Phase 7 plans                 |
+| 08-VERIFICATION.md                      | 08-\*-SUMMARY.md         | Evidence drawn from plan summaries | ✓ WIRED | Grep results cite implementation files from 6 Phase 8 plans                 |
+| 09-VERIFICATION.md                      | 12-VERIFICATION.md       | Cross-reference for gap closure    | ✓ WIRED | Documents trend widget and engagementId gaps closed in Phase 12             |
+| 10-VERIFICATION.md                      | 13-VERIFICATION.md       | Cross-reference for gap closure    | ✓ WIRED | Documents ONBD-03 and ONBD-06 gaps closed in Phase 13                       |
+| playwright.config.ts                    | tests/auth.setup.ts      | setup project testMatch            | ✓ WIRED | Line 103: testMatch: /.\*\.setup\.ts/                                       |
+| tests/e2e/observation-lifecycle.spec.ts | playwright/.auth/\*.json | storageState usage                 | ✓ WIRED | Lines use storageState for role-based auth (auditor/manager/CAE)            |
+| tests/e2e/permission-guards.spec.ts     | playwright/.auth/\*.json | storageState usage                 | ✓ WIRED | Tests switch roles via storageState parameter                               |
+| playwright.config.ts                    | pnpm dev                 | webServer command                  | ✓ WIRED | webServer: { command: "pnpm dev", url: "http://127.0.0.1:3000" }            |
+| REQUIREMENTS.md Audit Summary           | 9 VERIFICATION.md files  | Requirement traceability           | ✓ WIRED | Phases 5-13 verification cited as evidence for 59/59 requirements satisfied |
 
 **Score:** 10/10 links wired
 
@@ -92,9 +92,9 @@ gaps:
 
 ### Anti-Patterns Found
 
-| File         | Line | Pattern             | Severity   | Impact                                                                                      |
-| ------------ | ---- | ------------------- | ---------- | ------------------------------------------------------------------------------------------- |
-| N/A          | N/A  | ses-skip checkpoint | 🛑 BLOCKER | Phase 14 success criteria #4 NOT satisfied — production email delivery cannot be tested     |
+| File          | Line | Pattern                      | Severity   | Impact                                                                                        |
+| ------------- | ---- | ---------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| N/A           | N/A  | ses-skip checkpoint          | 🛑 BLOCKER | Phase 14 success criteria #4 NOT satisfied — production email delivery cannot be tested       |
 | 14-03-SUMMARY | N/A  | Test accounts not configured | ⚠️ WARNING | E2E tests created but cannot execute until Better Auth accounts created with TestPassword123! |
 
 **Analysis:**
@@ -133,13 +133,13 @@ npx tsc --noEmit tests/e2e/permission-guards.spec.ts
 
 Per ROADMAP.md Phase 14 success criteria:
 
-| #   | Criterion                                                                                   | Status     | Evidence                                                                                                |
-| --- | ------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | VERIFICATION.md exists for phases 6, 7, 8, 9, and 10                                        | ✓ MET      | Plan 14-01: 06/07-VERIFICATION.md; Plan 14-02: 08/09/10-VERIFICATION.md (5 files total)                |
-| 2   | Phase 6 E2E browser tests executed (9 manual test cases from 06-07)                         | ⚠️ PARTIAL | **Infrastructure created** (Plan 14-03), tests NOT executed (require test account passwords configured) |
-| 3   | Phase 7 permission guard test completed                                                     | ⚠️ PARTIAL | **Test created** (Plan 14-04), NOT executed (require test account passwords configured)                |
-| 4   | AWS SES domain verified and first test email sent successfully                              | ✗ NOT MET  | **ses-skip selected in Plan 14-04** — DNS CNAME records NOT added, DKIM status: NOT_STARTED            |
-| 5   | Re-audit passes with 59/59 requirements satisfied and 0 HIGH tech debt                      | ✓ MET      | Plan 14-05: REQUIREMENTS.md Audit Summary shows 59/59 Satisfied, 0 HIGH tech debt                      |
+| #   | Criterion                                                              | Status     | Evidence                                                                                                |
+| --- | ---------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | VERIFICATION.md exists for phases 6, 7, 8, 9, and 10                   | ✓ MET      | Plan 14-01: 06/07-VERIFICATION.md; Plan 14-02: 08/09/10-VERIFICATION.md (5 files total)                 |
+| 2   | Phase 6 E2E browser tests executed (9 manual test cases from 06-07)    | ⚠️ PARTIAL | **Infrastructure created** (Plan 14-03), tests NOT executed (require test account passwords configured) |
+| 3   | Phase 7 permission guard test completed                                | ⚠️ PARTIAL | **Test created** (Plan 14-04), NOT executed (require test account passwords configured)                 |
+| 4   | AWS SES domain verified and first test email sent successfully         | ✗ NOT MET  | **ses-skip selected in Plan 14-04** — DNS CNAME records NOT added, DKIM status: NOT_STARTED             |
+| 5   | Re-audit passes with 59/59 requirements satisfied and 0 HIGH tech debt | ✓ MET      | Plan 14-05: REQUIREMENTS.md Audit Summary shows 59/59 Satisfied, 0 HIGH tech debt                       |
 
 **Overall:** 2/5 fully met, 2/5 partially met (tests created but not executed), 1/5 not met (SES verification skipped)
 

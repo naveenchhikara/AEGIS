@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "@/lib/icons";
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -60,15 +61,25 @@ export function OnboardingWizard({
   const [isValidating, setIsValidating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  // Check for expired or resumable state on mount
+  // Check for expired or resumable state on mount, load from server
   useEffect(() => {
-    if (store.isExpired()) {
-      store.reset();
-      return;
+    let mounted = true;
+    async function init() {
+      if (store.isExpired()) {
+        store.reset();
+        return;
+      }
+      // Try server state first
+      await store.loadFromServer().catch(() => {});
+      if (!mounted) return;
+      if (store.hasProgress() && store.currentStep > 1) {
+        setShowResume(true);
+      }
     }
-    if (store.hasProgress() && store.currentStep > 1) {
-      setShowResume(true);
-    }
+    init();
+    return () => {
+      mounted = false;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Navigation handlers ──────────────────────────────────────────────
@@ -94,6 +105,9 @@ export function OnboardingWizard({
         store.setStep((store.currentStep + 1) as OnboardingStep);
       }
       // Step 5 completion is handled by the completion flow (10-07)
+
+      // Save to server (fire-and-forget, don't block navigation)
+      store.saveToServer().catch(console.error);
     } finally {
       setIsValidating(false);
     }
@@ -106,11 +120,15 @@ export function OnboardingWizard({
     }
   }, [store]);
 
-  const handleSaveAndExit = useCallback(() => {
-    // State is automatically persisted via Zustand localStorage middleware
-    // Future: POST to server to sync OnboardingProgress record
+  const handleSaveAndExit = useCallback(async () => {
+    // Persist to server before exiting
+    try {
+      await store.saveToServer();
+    } catch {
+      // Don't block exit on server save failure
+    }
     router.push("/dashboard");
-  }, [router]);
+  }, [router, store]);
 
   const handleResume = useCallback(() => {
     setShowResume(false);
@@ -201,6 +219,20 @@ export function OnboardingWizard({
         currentStep={store.currentStep}
         completedSteps={store.completedSteps}
       />
+
+      {/* Sync status indicator */}
+      {store.isSyncing && (
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Saving...
+        </div>
+      )}
+      {!store.isSyncing && store.lastSyncedAt && (
+        <div className="text-muted-foreground text-xs">
+          Last saved to cloud:{" "}
+          {new Date(store.lastSyncedAt).toLocaleTimeString("en-IN")}
+        </div>
+      )}
 
       {/* Step content */}
       {store.currentStep === 1 && <StepRegistration />}

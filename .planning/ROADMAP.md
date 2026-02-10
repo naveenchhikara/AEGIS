@@ -262,9 +262,12 @@ Plans:
 3. Admin can download Excel template for org structure
 4. Admin can upload filled Excel template and system parses branches/departments/units
 
+**Plans:** 2 plans
+
 Plans:
 
-- [ ] 13-01: TBD (to be planned)
+- [x] 13-01-PLAN.md — Server-side onboarding persistence (Zustand saveToServer/loadFromServer, auto-save on step advance, Save & Exit to PostgreSQL)
+- [ ] 13-02-PLAN.md — Excel org structure upload (template download, drag-and-drop upload, multi-layer validation, parsed data populates Step 4)
 
 ---
 

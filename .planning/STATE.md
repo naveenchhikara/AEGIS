@@ -4,7 +4,7 @@
 
 **Phase:** 14 of 14 — Verification & Prod Readiness (IN PROGRESS)
 **Plan:** 4 of TBD
-**Status:** Phases 6-10 verification complete (5 phases verified). Playwright E2E infrastructure verified. AWS SES domain verification pending.
+**Status:** Phases 6-10 verification complete (5 phases verified). Playwright E2E infrastructure verified. Permission guard tests complete. AWS SES domain verification skipped (DKIM tokens generated, DNS records not added).
 **Last activity:** 2026-02-10
 
 Progress: [████████████████████░] 96% (63/63 v2.0 plans + 4/? verification plans complete)
@@ -52,8 +52,8 @@ Progress: [████████████████████░] 96% 
 | ONBD-03            | Excel org structure upload not built  | MUST     | 13    | ✅ DONE |
 | Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    | ✅ DONE |
 | Phase 6            | E2E browser tests pending             | MEDIUM   | 14    | ✅ DONE |
-| Phase 7            | Permission guard test skipped         | LOW      | 14    | PLANNED |
-| Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    | PLANNED |
+| Phase 7            | Permission guard test skipped         | LOW      | 14    | ✅ DONE |
+| Phase 8            | AWS SES domain verification pending   | MEDIUM   | 14    | SKIPPED |
 
 ## Key Decisions
 
@@ -80,11 +80,12 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 - **Test password strategy (D33):** Test accounts require password "TestPassword123!" to authenticate via Better Auth
 - **Skip complex multi-state tests (D34):** Tests requiring full lifecycle transitions marked as .skip() pending test fixture implementation
 - **No database reset between tests (D35):** Tests share database state; Playwright runs tests in parallel with isolation
+- **Skip SES verification (D36):** Plan 14-04 user chose ses-skip — SES identity created with DKIM tokens but DNS records not added; Phase 14 success criteria #4 NOT satisfied
 
 ## Active Blockers
 
 - **Test account passwords:** Test users need Better Auth accounts with password "TestPassword123!" before `pnpm test:e2e` can run
-- **AWS SES domain verification:** Required for production email; 3–5 day DNS propagation lead time
+- **AWS SES domain verification (SKIPPED):** SES identity created in ap-south-1 with DKIM tokens, but DNS CNAME records NOT added — DKIM status NOT_STARTED; production email sending cannot be tested until verification completes
 - **Docker daemon:** Must be running for local PostgreSQL (`docker-compose up -d`)
 
 ## Phase 11 Concerns (for Phase 14)
@@ -96,7 +97,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-10
-Completed 14-02: Created VERIFICATION.md reports for Phases 8, 9, and 10. All 32 requirements (16 NOTF/RPT/EXP, 6 DASH, 10 ONBD/CMPL) verified as code-complete with concrete evidence (file paths, line numbers). Phase 8 report documents notification triggers, email templates, PDF board reports, and Excel exports. Phase 9 report documents 5 role-based dashboards with 21 widgets and PostgreSQL views. Phase 10 report documents 5-step onboarding wizard with RBI Master Directions (10 directions, 103 checklist items), cross-references Phase 13 for ONBD-03 (Excel upload) and ONBD-06 (server persistence). AWS SES domain verification documented as pending blocker for runtime email testing. Next: Phase 7 permission guard testing (14-04) and AWS SES domain verification (14-05).
+Completed 14-04: Created permission guard E2E tests for Phase 7 branch-scoped access controls. Tests verify auditee cannot access audit-trail (CAE-only page), CAE can access audit-trail, and auditor/manager have correct access scopes. AWS SES domain verification reached checkpoint — user chose ses-skip option. SES identity created in ap-south-1 with 3 DKIM tokens generated, but DNS CNAME records NOT added. DKIM status remains NOT_STARTED. Phase 14 success criteria #4 ("AWS SES domain verified and first test email sent successfully") NOT satisfied. Next: Create plan 14-05 for Phase 11 security hardening E2E tests (rate limiting, account lockout, session limits) or re-audit incomplete items before Phase 14 sign-off.
 
 ---
 

@@ -126,8 +126,9 @@ export const accountLockout = (
           handler: async (ctx) => {
             const hookCtx = ctx as unknown as HookContext;
             const email = (hookCtx.body?.email as string)?.toLowerCase();
+            const noOp = { response: undefined, headers: undefined };
 
-            if (!email) return;
+            if (!email) return noOp;
 
             const ip = getClientIp(hookCtx.headers);
             const now = new Date();
@@ -144,14 +145,14 @@ export const accountLockout = (
                   lockedUntil: null, // Only clear non-lockout records
                 },
               });
-              return;
+              return noOp;
             }
 
             // Check if response was an error (login failed)
             const returned = hookCtx.context?.returned;
             const isFailure = returned instanceof APIError;
 
-            if (!isFailure) return;
+            if (!isFailure) return noOp;
 
             // Record failed attempt
             await prisma.failedLoginAttempt.create({
@@ -207,7 +208,7 @@ export const accountLockout = (
               });
             }
 
-            return;
+            return noOp;
           },
         },
       ],

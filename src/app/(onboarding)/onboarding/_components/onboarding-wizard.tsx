@@ -58,6 +58,7 @@ export function OnboardingWizard({
   const router = useRouter();
   const store = useOnboardingStore();
   const [showResume, setShowResume] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -74,6 +75,7 @@ export function OnboardingWizard({
       if (!mounted) return;
       if (store.hasProgress() && store.currentStep > 1) {
         setShowResume(true);
+        setShowWelcome(false);
       }
     }
     init();
@@ -169,7 +171,7 @@ export function OnboardingWizard({
 
   // ─── Welcome screen (first visit) ────────────────────────────────────
 
-  if (store.currentStep === 1 && !store.hasProgress()) {
+  if (showWelcome && store.currentStep === 1 && !store.hasProgress()) {
     return (
       <div className="space-y-6">
         <Card className="mx-auto max-w-lg">
@@ -194,15 +196,7 @@ export function OnboardingWizard({
                 any time.
               </p>
             </div>
-            <Button
-              onClick={() => {
-                store.setStep(1);
-                // Force re-render to show step 1 form
-                store.markStepComplete(0 as OnboardingStep); // No-op but triggers re-render
-                store.unmarkStepComplete(0 as OnboardingStep);
-              }}
-              className="w-full"
-            >
+            <Button onClick={() => setShowWelcome(false)} className="w-full">
               Begin Setup
             </Button>
           </CardContent>

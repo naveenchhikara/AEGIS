@@ -267,7 +267,7 @@ Plans:
 Plans:
 
 - [x] 13-01-PLAN.md — Server-side onboarding persistence (Zustand saveToServer/loadFromServer, auto-save on step advance, Save & Exit to PostgreSQL)
-- [ ] 13-02-PLAN.md — Excel org structure upload (template download, drag-and-drop upload, multi-layer validation, parsed data populates Step 4)
+- [x] 13-02-PLAN.md — Excel org structure upload (template download, drag-and-drop upload, multi-layer validation, parsed data populates Step 4)
 
 ---
 
@@ -314,7 +314,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 
 | 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
 | 11. Auth Security Hardening     | v2.0 fix  | 1/1            | Complete | 2026-02-10 |
 | 12. Dashboard Data Pipeline     | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
-| 13. Onboarding Persistence      | v2.0 fix  | 0/0            | Planned  | —          |
+| 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 14. Verification & Prod Ready   | v2.0 fix  | 0/0            | Planned  | —          |
 
 ---

@@ -22,28 +22,11 @@ import {
   UserStatus,
 } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { scrypt, randomBytes, randomUUID } from "crypto";
+import { hashPassword } from "better-auth/crypto";
+import { randomUUID } from "crypto";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
-
-// ─── Password hashing (Better Auth compatible — scrypt) ─────────────────────
-
-function hashPassword(pwd: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const salt = randomBytes(16).toString("hex");
-    scrypt(
-      pwd.normalize("NFKC"),
-      salt,
-      64,
-      { N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2 },
-      (err, key) => {
-        if (err) reject(err);
-        else resolve(salt + ":" + key.toString("hex"));
-      },
-    );
-  });
-}
 
 // ─── Severity / status mappers ───────────────────────────────────────────────
 

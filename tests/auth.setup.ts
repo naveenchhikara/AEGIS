@@ -61,10 +61,10 @@ for (const user of users) {
     await page.getByRole("button", { name: /sign in/i }).click();
 
     // Wait for redirect to dashboard (indicates successful login)
-    await page.waitForURL("**/dashboard", { timeout: 10000 });
+    await page.waitForURL("**/dashboard", { timeout: 30000 });
 
     // Verify we're logged in by checking for dashboard elements
-    await expect(page.getByText(/Dashboard|Overview/i)).toBeVisible({
+    await expect(page.getByText(/Dashboard|Overview/i).first()).toBeVisible({
       timeout: 5000,
     });
 

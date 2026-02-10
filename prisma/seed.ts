@@ -22,9 +22,28 @@ import {
   UserStatus,
 } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { scrypt, randomBytes, randomUUID } from "crypto";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
+
+// ─── Password hashing (Better Auth compatible — scrypt) ─────────────────────
+
+function hashPassword(pwd: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = randomBytes(16).toString("hex");
+    scrypt(
+      pwd.normalize("NFKC"),
+      salt,
+      64,
+      { N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2 },
+      (err, key) => {
+        if (err) reject(err);
+        else resolve(salt + ":" + key.toString("hex"));
+      },
+    );
+  });
+}
 
 // ─── Severity / status mappers ───────────────────────────────────────────────
 
@@ -94,15 +113,30 @@ async function main() {
   // ─── 1. Clean existing data ──────────────────────────────────────────
 
   console.log("  Cleaning existing data...");
+  // Delete in dependency order (children before parents)
+  await prisma.failedLoginAttempt.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.emailLog.deleteMany();
+  await prisma.dashboardSnapshot.deleteMany();
+  await prisma.onboardingProgress.deleteMany();
+  await prisma.notificationQueue.deleteMany();
+  await prisma.notificationPreference.deleteMany();
+  await prisma.boardReport.deleteMany();
   await prisma.observationTimeline.deleteMany();
+  await prisma.observationRbiCircular.deleteMany();
   await prisma.evidence.deleteMany();
+  await prisma.auditeeResponse.deleteMany();
   await prisma.observation.deleteMany();
   await prisma.complianceRequirement.deleteMany();
+  await prisma.userBranchAssignment.deleteMany();
   await prisma.auditEngagement.deleteMany();
   await prisma.auditPlan.deleteMany();
   await prisma.auditArea.deleteMany();
   await prisma.branch.deleteMany();
   await prisma.rbiCircular.deleteMany();
+  await prisma.account.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.verification.deleteMany();
   await prisma.user.deleteMany();
   await prisma.tenant.deleteMany();
 
@@ -229,6 +263,29 @@ async function main() {
   console.log(`    ✓ Created 1 user for Tenant B`);
   console.log(
     `    ✓ Multi-role users: ${userCAE.name} (CAE+AUDIT_MANAGER), ${userAuditee.name} (AUDITEE+AUDITOR), ${userBankB.name} (CEO+CAE)`,
+  );
+
+  // ─── 3b. Create Better Auth Accounts (passwords for login) ─────────
+
+  console.log("  Creating auth accounts...");
+  const TEST_PASSWORD = "TestPassword123!";
+  const allUsers = [...allUsersA, userBankB];
+  for (const user of allUsers) {
+    const hashed = await hashPassword(TEST_PASSWORD);
+    await prisma.account.create({
+      data: {
+        id: randomUUID(),
+        userId: user.id,
+        accountId: user.id,
+        providerId: "credential",
+        password: hashed,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+  }
+  console.log(
+    `    ✓ Created ${allUsers.length} auth accounts (password: ${TEST_PASSWORD})`,
   );
 
   // ─── 4. Create Branches ─────────────────────────────────────────────

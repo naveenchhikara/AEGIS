@@ -6,7 +6,7 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
 });
 const prisma = new PrismaClient({ adapter });
-const password = "Test1234!";
+const password = "TestPassword123!";
 
 function hashPassword(pwd: string): Promise<string> {
   return new Promise((resolve, reject) => {

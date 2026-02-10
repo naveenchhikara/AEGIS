@@ -2,11 +2,11 @@
 
 ## Current Position
 
-**Phase:** 13 of 14 — Onboarding Persistence & Excel (IN PROGRESS)
-**Status:** Plan 13-01 complete (server-side onboarding persistence). 1 of 2 Phase 13 gaps closed.
+**Phase:** 13 of 14 — Onboarding Persistence & Excel (COMPLETE)
+**Status:** All Phase 13 plans complete. Both tech debt items closed.
 **Last activity:** 2026-02-10
 
-Progress: [███████████████████░░] 91% (63/63 v2.0 plans + 4/? gap closure plans)
+Progress: [███████████████████░░] 92% (63/63 v2.0 plans + 5/? gap closure plans)
 
 ## Milestone Progress
 
@@ -29,12 +29,12 @@ Progress: [███████████████████░░] 91% 
 
 ## v2.0 Gap Closure Detail
 
-| Phase | Name                           | Plans | Done | Status      |
-| ----- | ------------------------------ | ----- | ---- | ----------- |
-| 11    | Auth Security Hardening        | 1     | 1    | Complete    |
-| 12    | Dashboard Data Pipeline        | 2     | 2    | Complete    |
-| 13    | Onboarding Persistence & Excel | 2     | 1    | In Progress |
-| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned     |
+| Phase | Name                           | Plans | Done | Status   |
+| ----- | ------------------------------ | ----- | ---- | -------- |
+| 11    | Auth Security Hardening        | 1     | 1    | Complete |
+| 12    | Dashboard Data Pipeline        | 2     | 2    | Complete |
+| 13    | Onboarding Persistence & Excel | 2     | 2    | Complete |
+| 14    | Verification & Prod Readiness  | TBD   | 0    | Planned  |
 
 ### Gap → Phase Mapping
 
@@ -48,7 +48,7 @@ Progress: [███████████████████░░] 91% 
 | Phase 9 tech debt  | Missing engagementId on Observation   | MEDIUM   | 12    | ✅ DONE |
 | Phase 8 tech debt  | Repeat findings board report empty    | MEDIUM   | 12    | ✅ DONE |
 | Phase 10 tech debt | Server-side onboarding save not wired | LOW      | 13    | ✅ DONE |
-| ONBD-03            | Excel org structure upload not built  | MUST     | 13    | PLANNED |
+| ONBD-03            | Excel org structure upload not built  | MUST     | 13    | ✅ DONE |
 | Phases 6-10        | VERIFICATION.md missing (5 phases)    | MEDIUM   | 14    | PLANNED |
 | Phase 6            | E2E browser tests pending             | MEDIUM   | 14    | PLANNED |
 | Phase 7            | Permission guard test skipped         | LOW      | 14    | PLANNED |
@@ -90,7 +90,7 @@ Full decision log in PROJECT.md. Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-10
-Completed 13-01: Server-side onboarding persistence — Zustand store saveToServer/loadFromServer actions, auto-save on step advance, Save & Exit persists to PostgreSQL, cross-device resume support. Phase 10 tech debt item closed. Next: Plan 13-02 (Excel org structure upload).
+Completed 13-02: Excel org structure upload — Excel template generation with styled worksheets + data validation, multi-layer file upload validation (extension, size, MIME, magic bytes, parse), drag-and-drop UI with react-dropzone, integration into Step 4 onboarding. ONBD-03 gap closed. Phase 13 complete — both tech debt items resolved. Next: Phase 14 (Verification & Prod Readiness).
 
 ---
 

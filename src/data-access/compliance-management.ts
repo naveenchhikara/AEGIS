@@ -1,18 +1,20 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { prismaForTenant } from "./prisma";
+import { extractTenantId, type DalSession } from "./helpers";
 
 /**
  * Compliance Management Data Access Layer
  *
- * Handles custom requirements (CMPL-04) and N/A marking (CMPL-03).
- * All functions require tenantId from session for tenant isolation.
+ * Tenant-scoped operations use prismaForTenant() + explicit WHERE tenantId
+ * (belt-and-suspenders). Global reference data (master directions, circulars)
+ * uses bare prisma since these are shared across tenants.
  */
 
 // ─── Custom Requirements (CMPL-04) ─────────────────────────────────────────
 
 export interface CreateCustomRequirementInput {
-  tenantId: string;
   requirement: string;
   category: string;
   priority: string;
@@ -24,11 +26,15 @@ export interface CreateCustomRequirementInput {
 }
 
 export async function createCustomRequirement(
+  session: DalSession,
   input: CreateCustomRequirementInput,
 ) {
-  return prisma.complianceRequirement.create({
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceRequirement.create({
     data: {
-      tenantId: input.tenantId,
+      tenantId,
       requirement: input.requirement,
       category: input.category,
       status: "PENDING",
@@ -47,12 +53,14 @@ export async function createCustomRequirement(
 // ─── N/A Marking (CMPL-03) ──────────────────────────────────────────────────
 
 export async function markRequirementNotApplicable(
-  tenantId: string,
+  session: DalSession,
   requirementId: string,
   reason: string,
 ) {
-  // Verify ownership
-  const requirement = await prisma.complianceRequirement.findFirst({
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  const requirement = await db.complianceRequirement.findFirst({
     where: { id: requirementId, tenantId },
   });
 
@@ -60,17 +68,20 @@ export async function markRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return prisma.complianceRequirement.update({
+  return db.complianceRequirement.update({
     where: { id: requirementId },
     data: { notApplicableReason: reason },
   });
 }
 
 export async function revertRequirementNotApplicable(
-  tenantId: string,
+  session: DalSession,
   requirementId: string,
 ) {
-  const requirement = await prisma.complianceRequirement.findFirst({
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  const requirement = await db.complianceRequirement.findFirst({
     where: { id: requirementId, tenantId },
   });
 
@@ -78,7 +89,7 @@ export async function revertRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return prisma.complianceRequirement.update({
+  return db.complianceRequirement.update({
     where: { id: requirementId },
     data: {
       notApplicableReason: null,
@@ -87,7 +98,19 @@ export async function revertRequirementNotApplicable(
   });
 }
 
-// ─── Master Directions (Read-Only) ──────────────────────────────────────────
+// ─── Get Custom Requirements ────────────────────────────────────────────────
+
+export async function getCustomRequirements(session: DalSession) {
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceRequirement.findMany({
+    where: { tenantId, isCustom: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+// ─── Master Directions (Read-Only, Global Reference Data) ───────────────────
 
 export async function getMasterDirectionsWithCounts() {
   const directions = await prisma.rbiMasterDirection.findMany({
@@ -115,7 +138,7 @@ export async function getMasterDirectionItems(masterDirectionId: string) {
   });
 }
 
-// ─── RBI Circular Autocomplete ──────────────────────────────────────────────
+// ─── RBI Circular Autocomplete (Global Reference Data) ──────────────────────
 
 export async function searchRbiCirculars(query: string) {
   return prisma.rbiCircular.findMany({
@@ -132,14 +155,5 @@ export async function searchRbiCirculars(query: string) {
       circularNumber: true,
       title: true,
     },
-  });
-}
-
-// ─── Get Custom Requirements ────────────────────────────────────────────────
-
-export async function getCustomRequirements(tenantId: string) {
-  return prisma.complianceRequirement.findMany({
-    where: { tenantId, isCustom: true },
-    orderBy: { createdAt: "desc" },
   });
 }

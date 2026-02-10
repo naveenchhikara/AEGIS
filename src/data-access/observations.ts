@@ -1,32 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
-
-/**
- * Data Access Layer for observations.
- *
- * Follows the canonical DAL 5-step pattern (from Phase 5):
- * 1. Accept session object (tenantId source)
- * 2. Use prismaForTenant() for RLS isolation
- * 3. Add explicit WHERE tenantId (belt-and-suspenders)
- * 4. Runtime assertions where applicable
- * 5. Return typed data
- *
- * SECURITY: tenantId MUST come from session only, never from URL/body/query.
- */
-
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
-}
+import { extractTenantId, type DalSession as Session } from "./helpers";
 
 // ─── getObservations ────────────────────────────────────────────────────────
 

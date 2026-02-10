@@ -25,8 +25,10 @@ import { Badge } from "@/components/ui/badge";
 import { FindingsFilters } from "./findings-filters";
 import {
   SEVERITY_COLORS,
+  SEVERITY_SORT_ORDER,
   OBSERVATION_STATUS_COLORS,
   OBSERVATION_STATUS_ORDER,
+  formatEnumLabel,
 } from "@/lib/constants";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "@/lib/icons";
 
@@ -51,18 +53,6 @@ interface FindingsTableProps {
   observations: ObservationRow[];
 }
 
-// Custom sort orders
-const SEVERITY_ORDER: Record<string, number> = {
-  CRITICAL: 0,
-  critical: 0,
-  HIGH: 1,
-  high: 1,
-  MEDIUM: 2,
-  medium: 2,
-  LOW: 3,
-  low: 3,
-};
-
 function SortIcon({
   column,
 }: {
@@ -72,14 +62,6 @@ function SortIcon({
   if (sorted === "asc") return <ArrowUp className="ml-1 h-3.5 w-3.5" />;
   if (sorted === "desc") return <ArrowDown className="ml-1 h-3.5 w-3.5" />;
   return <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-50" />;
-}
-
-function formatSeverity(severity: string): string {
-  return severity.charAt(0).toUpperCase() + severity.slice(1).toLowerCase();
-}
-
-function formatStatus(status: string): string {
-  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
 
 function calculateAge(createdAt: Date | string): number {
@@ -162,13 +144,13 @@ const columns: ColumnDef<ObservationRow>[] = [
       const key = severity.toLowerCase() as keyof typeof SEVERITY_COLORS;
       return (
         <Badge variant="outline" className={SEVERITY_COLORS[key] ?? ""}>
-          {formatSeverity(severity)}
+          {formatEnumLabel(severity)}
         </Badge>
       );
     },
     sortingFn: (rowA, rowB) => {
-      const a = SEVERITY_ORDER[rowA.getValue("severity") as string] ?? 99;
-      const b = SEVERITY_ORDER[rowB.getValue("severity") as string] ?? 99;
+      const a = SEVERITY_SORT_ORDER[rowA.getValue("severity") as string] ?? 99;
+      const b = SEVERITY_SORT_ORDER[rowB.getValue("severity") as string] ?? 99;
       return a - b;
     },
     filterFn: (row, _id, value) => {
@@ -198,7 +180,7 @@ const columns: ColumnDef<ObservationRow>[] = [
           variant="outline"
           className={OBSERVATION_STATUS_COLORS[key] ?? ""}
         >
-          {formatStatus(status)}
+          {formatEnumLabel(status)}
         </Badge>
       );
     },

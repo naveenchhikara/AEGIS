@@ -1,23 +1,12 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import {
+  extractTenantId,
+  extractUserRoles,
+  type DalSession as Session,
+} from "./helpers";
 import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
-
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) redirect("/dashboard?setup=required");
-  return tenantId;
-}
-
-function getUserRoles(session: Session): string[] {
-  return ((session.user as any).roles ?? []) as string[];
-}
 
 const REPORT_ACCESS_ROLES = ["CAE", "CCO", "CEO"];
 
@@ -34,7 +23,7 @@ export async function aggregateReportData(
   executiveCommentary?: string,
 ): Promise<BoardReportData | null> {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
 
   if (!roles.some((r) => REPORT_ACCESS_ROLES.includes(r))) {
     return null;
@@ -334,7 +323,7 @@ export async function createBoardReport(
 
 export async function getBoardReports(session: Session) {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
 
   if (!roles.some((r) => REPORT_ACCESS_ROLES.includes(r))) {
     return null;
@@ -351,7 +340,7 @@ export async function getBoardReports(session: Session) {
 
 export async function getBoardReportById(session: Session, id: string) {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
 
   if (!roles.some((r) => REPORT_ACCESS_ROLES.includes(r))) {
     return null;

@@ -11,6 +11,7 @@ import {
   demoComplianceRequirements,
   bankProfile,
 } from "@/data";
+import { SEVERITY_SORT_ORDER } from "@/lib/constants";
 import type {
   FindingsData,
   AuditData,
@@ -89,17 +90,7 @@ export interface Recommendation {
   targetDate: string;
 }
 
-// ---------------------------------------------------------------------------
-// Helper: Severity sort order (lower = more severe)
-// ---------------------------------------------------------------------------
-
-const SEVERITY_ORDER: Record<string, number> = {
-  critical: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-};
-
+// Status order for legacy demo data (lowercase keys, unlike OBSERVATION_STATUS_ORDER)
 const STATUS_ORDER: Record<string, number> = {
   draft: 0,
   submitted: 1,
@@ -262,7 +253,7 @@ export function getTopFindings(limit: number = 10): TopFinding[] {
   // Sort by severity (critical first), then by status (open before closed)
   const sorted = [...allFindings].sort((a, b) => {
     const sevDiff =
-      (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99);
+      (SEVERITY_SORT_ORDER[a.severity] ?? 99) - (SEVERITY_SORT_ORDER[b.severity] ?? 99);
     if (sevDiff !== 0) return sevDiff;
     return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
   });

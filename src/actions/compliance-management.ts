@@ -38,14 +38,8 @@ export async function addCustomRequirement(input: AddCustomRequirementInput) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) {
-    return { success: false, error: "No tenant found." };
-  }
-
   try {
-    const result = await createCustomRequirement({
-      tenantId,
+    const result = await createCustomRequirement(session, {
       ...input,
       ownerId: session.user.id,
     });
@@ -69,10 +63,8 @@ export async function markAsNotApplicable(
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
-
   try {
-    await markRequirementNotApplicable(tenantId, requirementId, reason);
+    await markRequirementNotApplicable(session, requirementId, reason);
     return { success: true, error: null };
   } catch (error) {
     console.error("Failed to mark as N/A:", error);
@@ -88,10 +80,8 @@ export async function revertNotApplicable(requirementId: string) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
-
   try {
-    await revertRequirementNotApplicable(tenantId, requirementId);
+    await revertRequirementNotApplicable(session, requirementId);
     return { success: true, error: null };
   } catch (error) {
     console.error("Failed to revert N/A:", error);
@@ -143,10 +133,9 @@ export async function searchCirculars(query: string) {
 
 export async function fetchCustomRequirements() {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
 
   try {
-    const requirements = await getCustomRequirements(tenantId);
+    const requirements = await getCustomRequirements(session);
     return { success: true, error: null, data: requirements };
   } catch (error) {
     console.error("Failed to fetch custom requirements:", error);

@@ -20,6 +20,10 @@ export type { TenantSettings } from "@/types";
 // Session module (tenantId source of truth)
 export { getRequiredSession, getOptionalSession } from "./session";
 
+// Shared DAL helpers (tenant/role extraction from session)
+export { extractTenantId, extractUserRoles } from "./helpers";
+export type { DalSession } from "./helpers";
+
 // Prisma module (tenant-scoped client with RLS)
 export { prismaForTenant } from "@/lib/prisma";
 

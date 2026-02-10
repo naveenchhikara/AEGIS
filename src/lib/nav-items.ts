@@ -9,7 +9,7 @@ import {
   Users,
   Clock,
 } from "@/lib/icons";
-import type { Permission, Role } from "./permissions";
+import { getPermissions, type Permission, type Role } from "./permissions";
 
 /**
  * Navigation item structure for sidebar.
@@ -113,16 +113,8 @@ export const navItems: NavItem[] = [
  * @returns Filtered array of nav items user can access
  */
 export function filterNavByRoles(roles: Role[]): NavItem[] {
-  const permissions = new Set<Permission>();
+  const permissions = new Set<Permission>(getPermissions(roles));
 
-  // Collect all permissions from all user's roles
-  for (const role of roles) {
-    for (const perm of getPermissionsForRole(role)) {
-      permissions.add(perm);
-    }
-  }
-
-  // Filter nav items: user needs at least one permission that matches nav item's requirement
   return navItems.filter((item) => {
     // Special case: Dashboard has multiple role-specific permissions
     if (item.title === "Dashboard") {
@@ -137,69 +129,4 @@ export function filterNavByRoles(roles: Role[]): NavItem[] {
 
     return permissions.has(item.requiredPermission);
   });
-}
-
-/**
- * Get all permissions for a specific role.
- * Helper for filterNavByRoles.
- *
- * Note: In production, this should import from permissions.ts's ROLE_PERMISSIONS
- * to avoid duplication. For now, defined inline to avoid circular import.
- */
-function getPermissionsForRole(role: Role): Permission[] {
-  const rolePermissions: Record<Role, Permission[]> = {
-    AUDITOR: [
-      "observation:create",
-      "observation:read",
-      "compliance:read",
-      "audit_plan:read",
-      "dashboard:auditor",
-    ],
-    AUDIT_MANAGER: [
-      "observation:read",
-      "observation:review",
-      "observation:close_low_medium",
-      "audit_plan:create",
-      "audit_plan:manage",
-      "compliance:read",
-      "compliance:update",
-      "report:read",
-      "dashboard:manager",
-    ],
-    CAE: [
-      "observation:read",
-      "observation:approve",
-      "observation:close_high_critical",
-      "audit_plan:read",
-      "audit_plan:manage",
-      "compliance:read",
-      "compliance:update",
-      "compliance:mark_na",
-      "report:read",
-      "report:generate",
-      "report:add_commentary",
-      "audit_trail:read",
-      "admin:manage_users",
-      "admin:manage_roles",
-      "admin:manage_settings",
-      "dashboard:cae",
-    ],
-    CCO: [
-      "compliance:read",
-      "compliance:update",
-      "observation:read",
-      "report:read",
-      "dashboard:cco",
-    ],
-    CEO: [
-      "dashboard:ceo",
-      "report:read",
-      "observation:read",
-      "compliance:read",
-    ],
-    AUDITEE: ["observation:read"],
-    BOARD_OBSERVER: [],
-  };
-
-  return rolePermissions[role] || [];
 }

@@ -289,9 +289,15 @@ Plans:
 4. AWS SES domain verified and first test email sent successfully
 5. Re-audit passes with 59/59 requirements satisfied and 0 HIGH tech debt
 
+**Plans:** 5 plans
+
 Plans:
 
-- [ ] 14-01: TBD (to be planned)
+- [ ] 14-01-PLAN.md — VERIFICATION.md for Phase 6 and Phase 7
+- [ ] 14-02-PLAN.md — VERIFICATION.md for Phase 8, Phase 9, and Phase 10
+- [ ] 14-03-PLAN.md — Playwright E2E setup and observation lifecycle tests
+- [ ] 14-04-PLAN.md — Permission guard tests and AWS SES verification
+- [ ] 14-05-PLAN.md — Final re-audit and project state update
 
 ---
 

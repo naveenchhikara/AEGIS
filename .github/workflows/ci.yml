@@ -193,8 +193,14 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Trigger Coolify deployment
-        if: secrets.COOLIFY_WEBHOOK_URL != ''
+        env:
+          COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
         run: |
-          curl --fail --silent --show-error --location \
-            -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"
+          if [ -n "$COOLIFY_WEBHOOK_URL" ]; then
+            curl --fail --silent --show-error --location \
+              -X GET "$COOLIFY_WEBHOOK_URL" \
+              -H "Authorization: Bearer $COOLIFY_API_TOKEN"
+          else
+            echo "COOLIFY_WEBHOOK_URL not configured, skipping deployment"
+          fi

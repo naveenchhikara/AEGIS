@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 Clickable Prototype** — Phases 1-4 (shipped 2026-02-08)
 - ✅ **v2.0 Working Core MVP** — Phases 5-14 (shipped 2026-02-10)
+- 🚧 **v2.1 Production Readiness** — Phases 15-16 (gap closure)
 
 ## Completed Phases
 
@@ -39,6 +40,42 @@
 
 </details>
 
+## Active Phases
+
+### Phase 15: Production Hardening
+
+**Goal:** Eliminate code-level tech debt items identified in v2.0 milestone audit to improve production reliability and maintainability.
+
+**Gap Closure:** Addresses v2.0-MILESTONE-AUDIT.md tech debt:
+
+- Centralized environment variable validation (prevent misconfiguration)
+- Structured logging framework (enable production debugging)
+- Legacy `currentUser` cleanup (remove demo data dependency)
+- Legacy demo JSON isolation (seed-only, not runtime)
+
+**Tasks:**
+
+1. Add `@t3-oss/env-nextjs` with Zod schema for all env vars
+2. Integrate pino logger with request context
+3. Replace `currentUser` imports with session in 2 files
+4. Move demo JSON to seed-specific directory
+
+### Phase 16: CI/CD Pipeline
+
+**Goal:** Automate testing and deployment to prevent regressions and enable confident production updates.
+
+**Gap Closure:** Addresses v2.0-MILESTONE-AUDIT.md tech debt:
+
+- Manual deployment risk (no automated testing before deploy)
+- No pre-merge validation (lint, type-check, build)
+- Manual Coolify dashboard deploy process
+
+**Tasks:**
+
+1. Create GitHub Actions workflow (lint, type-check, build, E2E tests)
+2. Configure auto-deploy trigger to Coolify on push to main
+3. Add branch protection rules (require CI pass before merge)
+
 ## Progress
 
 | Phase                           | Milestone | Plans Complete | Status   | Completed  |
@@ -57,8 +94,10 @@
 | 12. Dashboard Data Pipeline     | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 14. Verification & Prod Ready   | v2.0 fix  | 5/5            | Complete | 2026-02-10 |
+| 15. Production Hardening        | v2.1      | 0/4            | Pending  | —          |
+| 16. CI/CD Pipeline              | v2.1      | 0/3            | Pending  | —          |
 
 ---
 
 _Roadmap created: February 7, 2026_
-_Updated: February 10, 2026 — v2.0 milestone archived_
+_Updated: February 11, 2026 — v2.1 gap closure phases added_

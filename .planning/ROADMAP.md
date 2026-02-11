@@ -57,10 +57,10 @@
 
 Plans:
 
-- [ ] 15-01-PLAN.md — Environment variable validation with T3 Env + Zod
-- [ ] 15-02-PLAN.md — Pino structured logging framework
-- [ ] 15-03-PLAN.md — Legacy currentUser removal (Better Auth session)
-- [ ] 15-04-PLAN.md — Demo JSON migration to seed directory
+- [x] 15-01-PLAN.md — Environment variable validation with T3 Env + Zod
+- [x] 15-02-PLAN.md — Pino structured logging framework
+- [x] 15-03-PLAN.md — Legacy currentUser removal (Better Auth session)
+- [x] 15-04-PLAN.md — Demo JSON migration to seed directory
 
 ### Phase 16: CI/CD Pipeline
 
@@ -96,10 +96,10 @@ Plans:
 | 12. Dashboard Data Pipeline     | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 14. Verification & Prod Ready   | v2.0 fix  | 5/5            | Complete | 2026-02-10 |
-| 15. Production Hardening        | v2.1      | 0/4            | Planned  | —          |
+| 15. Production Hardening        | v2.1      | 4/4            | Complete | 2026-02-11 |
 | 16. CI/CD Pipeline              | v2.1      | 0/3            | Pending  | —          |
 
 ---
 
 _Roadmap created: February 7, 2026_
-_Updated: February 11, 2026 — v2.1 gap closure phases added_
+_Updated: February 11, 2026 — Phase 15 complete_

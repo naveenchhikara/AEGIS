@@ -1,20 +1,24 @@
 # Coding Conventions
 
 **Analysis Date:** 2026-02-08
+**Updated:** 2026-02-11 (post v2.0 MVP)
 
 ## Naming Patterns
 
 **Files:**
 
-- React components: PascalCase with `.tsx` extension (e.g., `HealthScoreCard.tsx`, `ComplianceTable.tsx`)
-- Utilities/libraries: kebab-case with `.ts` extension (e.g., `utils.ts`, `nav-items.ts`, `report-utils.ts`)
+- React components: kebab-case with `.tsx` extension (e.g., `health-score-card.tsx`, `compliance-table.tsx`)
+- Server actions: kebab-case with `.ts` extension (e.g., `compliance-management.ts`, `onboarding-excel-upload.ts`)
+- Utilities/libraries: kebab-case with `.ts` extension (e.g., `utils.ts`, `auth.ts`, `s3.ts`, `ses-client.ts`)
+- Email templates: kebab-case with `.tsx` extension (e.g., `assignment-email.tsx`, `reminder-email.tsx`)
 - Data files: kebab-case JSON (e.g., `bank-profile.json`, `compliance-requirements.json`)
-- Configuration: kebab-case or conventional names (e.g., `components.json`, `next.config.ts`, `.prettierrc`)
+- Configuration: kebab-case or conventional names (e.g., `components.json`, `next.config.ts`)
 
 **Functions:**
 
 - Exported utilities: camelCase (e.g., `formatDate`, `calculateAge`, `ageColorClass`)
-- React components: PascalCase (e.g., `HealthScoreCard`, `ComplianceTable`, `FindingsTable`)
+- Server actions: camelCase (e.g., `createObservation`, `transitionObservation`, `detectRepeatFindings`)
+- React components: PascalCase (e.g., `HealthScoreCard`, `ComplianceTable`, `ObservationForm`)
 - Hooks: camelCase with `use` prefix (e.g., `useReactTable`, `useSidebar`)
 
 **Variables:**
@@ -27,14 +31,16 @@
 **Types:**
 
 - Interfaces and types: PascalCase (e.g., `ComplianceRequirement`, `Finding`, `BankProfile`)
-- Type exports from `@/types/index.ts`
+- Prisma-generated types: PascalCase (auto-generated from schema model names)
+- Enums: PascalCase values (e.g., `Role.AUDITOR`, `Severity.HIGH`, `ObservationStatus.DRAFT`)
+- Type exports from `@/types/index.ts` and Prisma client
 
 ## Code Style
 
 **Formatting:**
 
 - Tool: Prettier 3.8.1
-- Configuration: `/Users/admin/Developer/AEGIS/.prettierrc`
+- Configuration: `.prettierrc`
 - Key settings:
   - Semicolons: Required (`"semi": true`)
   - Quotes: Double quotes (`"singleQuote": false`)
@@ -43,10 +49,8 @@
 **Linting:**
 
 - Tool: ESLint 10.0.0 with Next.js flat config
-- Configuration: `/Users/admin/Developer/AEGIS/eslint.config.mjs`
-- Key rules:
-  - Extends `next/core-web-vitals` and `next/typescript`
-  - Uses FlatCompat for ESLint 9+ compatibility
+- Configuration: `eslint.config.mjs`
+- Key rules: Extends `next/core-web-vitals` and `next/typescript`
 
 **TypeScript:**
 
@@ -54,6 +58,7 @@
 - Module resolution: `bundler` (Next.js 16 App Router)
 - JSON imports supported (`"resolveJsonModule": true`)
 - Path alias: `@/*` maps to `./src/*`
+- Prisma-generated types preferred for database entities
 
 ## Import Organization
 
@@ -64,26 +69,9 @@
 3. Local UI components (`@/components/ui/*`)
 4. Feature components (`@/components/dashboard/*`, `@/components/compliance/*`)
 5. Libraries and utilities (`@/lib/*`)
-6. Data imports (`@/data`)
-7. Type imports (`@/types`)
-8. CSS imports (last)
-
-**Example from `src/components/compliance/compliance-table.tsx`:**
-
-```typescript
-import * as React from "react";
-import { ArrowUpDown } from "@/lib/icons";
-import { useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { Table, TableBody, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ComplianceDetailDialog } from "./compliance-detail-dialog";
-import { ComplianceFilters } from "./compliance-filters";
-import { demoComplianceRequirements } from "@/data";
-import { STATUS_COLORS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
-import type { ComplianceRequirement } from "@/types";
-```
+6. Server actions (`@/actions/*`)
+7. Data imports (`@/data`) — legacy, used sparingly
+8. Type imports (`@/types`, Prisma types)
 
 **Path Aliases:**
 
@@ -93,80 +81,103 @@ import type { ComplianceRequirement } from "@/types";
 **Icon Imports:**
 
 - ALWAYS import from `@/lib/icons` (barrel export), never directly from `lucide-react`
-- Example: `import { ArrowUpDown, ChevronDown } from "@/lib/icons";`
+
+## Server Action Patterns
+
+**Structure:**
+
+```typescript
+"use server";
+
+import { z } from "zod";
+import { getRequiredSession } from "@/lib/auth";
+import { prismaForTenant } from "@/lib/prisma";
+
+const schema = z.object({
+  // Zod validation schema
+});
+
+export async function actionName(input: z.infer<typeof schema>) {
+  const session = await getRequiredSession();
+  const prisma = prismaForTenant(session.tenantId);
+
+  // Validate input
+  const validated = schema.parse(input);
+
+  // Execute tenant-scoped query
+  const result = await prisma.model.create({ data: validated });
+
+  // Record audit log
+  await prisma.auditLog.create({
+    data: { entity: "Model", action: "CREATE", userId: session.user.id },
+  });
+
+  return result;
+}
+```
+
+**DAL Pattern:**
+
+- `server-only` → `getRequiredSession` → `prismaForTenant` → `WHERE tenantId` → runtime assertion
+- Every server action must verify session before database access
+- Tenant scoping is mandatory — no unscoped queries allowed
 
 ## Error Handling
 
-**Patterns:**
+**Server Actions:**
 
-- No explicit error boundaries in current codebase (prototype phase)
-- Async operations use standard try/catch (not present in demo data flows)
-- Fallback rendering for empty states in tables:
-  ```typescript
-  {table.getRowModel().rows?.length ? (
-    // Render rows
-  ) : (
-    <TableRow>
-      <TableCell colSpan={columns.length} className="h-24 text-center">
-        No findings match the selected filters.
-      </TableCell>
-    </TableRow>
-  )}
-  ```
+- Zod validation: fail-fast with descriptive errors on invalid input
+- Session check: redirect to login if no valid session
+- Prisma errors: caught and returned as structured error responses
+- Audit log: recorded for all successful mutations
+
+**Client Components:**
+
+- Fallback rendering for empty states in tables
+- Optional chaining for nested data access
+- React Query error boundaries for async data
 
 ## Logging
 
-**Framework:** Standard `console` (no structured logging library)
+**Production:**
 
-**Patterns:**
+- Append-only AuditLog table for all data-modifying actions
+- AuditLog entries: entity, action, userId, tenantId, timestamp, metadata (JSON)
+- Immutable: no UPDATE or DELETE on AuditLog
 
-- Minimal logging in production code
-- Debug/development logging not present in reviewed files
-- Future: Consider structured logging for server-side operations
+**Development:**
+
+- Console logging for debugging
+- No structured logging framework yet
 
 ## Comments
 
 **When to Comment:**
 
-- Complex business logic (e.g., custom sort functions, data transformations)
-- Workarounds or Tailwind CSS v4 quirks (mentioned in MEMORY.md)
-- File-level docblocks for data exports (e.g., `src/data/index.ts`)
+- Complex business logic (regulatory thresholds, state machine transitions)
+- Workarounds (Tailwind v4 CSS variable issues, Radix hydration)
+- File-level docblocks for barrel exports and utility modules
 
 **JSDoc/TSDoc:**
 
 - Not consistently used
-- Type annotations via TypeScript interfaces preferred over JSDoc
+- Prisma schema comments serve as model documentation
 - Component props documented via TypeScript interfaces
-
-**Example from `src/data/index.ts`:**
-
-```typescript
-// ============================================================================
-// AEGIS Platform - Data Exports
-// ============================================================================
-// This file exports all regulation and demo data objects for use in the AEGIS platform
-// ============================================================================
-```
 
 ## Function Design
 
 **Size:**
 
 - React components: 50-400 lines (median ~150 lines)
+- Server actions: 20-80 lines
 - Utility functions: 5-20 lines
 - Complex table components (with filters/sorting): 300-400 lines
 
 **Parameters:**
 
+- Server actions: Single object parameter with Zod schema
 - Component props: Destructured with TypeScript interface
-- Event handlers: Passed as props with `on` prefix (e.g., `onCategoryChange`, `onReset`)
-- Use object parameters for >3 parameters
-
-**Return Values:**
-
-- React components: JSX
-- Utilities: Typed return values (e.g., `string`, `number`, `JSX.Element`)
-- Table accessors: Type-safe via `@tanstack/react-table` generics
+- Event handlers: `on` prefix (e.g., `onCategoryChange`, `onReset`)
 
 ## Module Design
 
@@ -174,13 +185,12 @@ import type { ComplianceRequirement } from "@/types";
 
 - Named exports for components (e.g., `export function ComplianceTable()`)
 - Default exports for Next.js pages (e.g., `export default function DashboardPage()`)
-- Named exports for utilities and constants
+- Named exports for server actions, utilities, and constants
 
 **Barrel Files:**
 
 - `src/lib/icons.ts`: Re-exports all icons from `lucide-react`
-- `src/data/index.ts`: Re-exports all demo data and RBI regulations
-- Usage enforced: Import from barrel, not directly from source
+- `src/data/index.ts`: Re-exports legacy demo data (used for seeding)
 
 ## React Patterns
 
@@ -188,133 +198,64 @@ import type { ComplianceRequirement } from "@/types";
 
 - Use `"use client"` directive for interactive components
 - All tables, forms, and stateful widgets are client components
+- React Query for server state management
 
 **Server Components:**
 
 - Next.js pages are async server components by default
-- Use `getLocale()` and `getMessages()` from `next-intl/server`
+- Fetch data via Prisma in server components, pass as props to client components
 
 **State Management:**
 
-- Local state via `React.useState` (no Redux/Zustand in current codebase)
-- Table state managed by `@tanstack/react-table`
-- Form state managed by controlled components
-
-**Props Patterns:**
-
-- Destructure props in function signature
-- Use TypeScript interfaces for prop types
-- Spread remaining props with `{...props}`
-
-**Example from `src/components/ui/badge.tsx`:**
-
-```typescript
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
-}
-```
+- Server state: React Query (TanStack Query v5.90) for client-side caching
+- Local state: React useState for tables, dialogs, filters
+- Auth state: Better Auth session cookie
+- No Redux/Zustand needed
 
 ## shadcn/ui Conventions
 
-**Component Structure:**
+(Unchanged from v1.0)
 
-- Use `class-variance-authority` (cva) for variant management
-- Combine classes with `cn()` utility from `@/lib/utils`
+- `class-variance-authority` (cva) for variant management
+- `cn()` utility for class merging
 - Forward refs for primitive components
 - Radix UI primitives for accessibility
 
-**Styling:**
-
-- Tailwind CSS v4 with CSS variables
-- Use semantic color tokens (e.g., `text-muted-foreground`, `bg-primary`)
-- Custom color maps in `@/lib/constants.ts` (e.g., `SEVERITY_COLORS`, `STATUS_COLORS`)
-
-**Variants:**
-
-- Define with `cva()` at module level
-- Export `*Variants` alongside component (e.g., `buttonVariants`, `badgeVariants`)
-- Use `VariantProps<typeof *Variants>` for prop typing
-
 ## Data Handling
 
-**JSON Imports:**
+**Database Queries (v2.0):**
 
-- Use type casting: `as unknown as Type` due to TypeScript strict mode
-- Example: `const compData = demoComplianceRequirements as unknown as ComplianceData;`
+- All queries via Prisma client, tenant-scoped
+- Prisma-generated types for type safety
+- No raw SQL in application code
+
+**Legacy JSON Imports (v1.0 — deprecated):**
+
+- `as unknown as Type` casting pattern still in seed scripts
+- Not used in runtime application code
 
 **Date Formatting:**
 
 - Use `formatDate()` from `@/lib/utils.ts` (Indian locale: `en-IN`)
-- Never render raw ISO strings in UI
-
-**Summary Objects:**
-
-- Embedded in JSON files (e.g., `compliance-requirements.json`, `findings.json`)
-- Access via `.summary` property
 
 ## Accessibility
 
-**Keyboard Navigation:**
+(Unchanged from v1.0)
 
-- Add `tabIndex={0}` to clickable rows
-- Handle `Enter` and `Space` keys via `onKeyDown`
-- Example from `src/components/compliance/compliance-table.tsx`:
-  ```typescript
-  <TableRow
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        setSelectedRequirement(row.original);
-      }
-    }}
-  />
-  ```
-
-**ARIA Labels:**
-
-- Use `aria-label` for charts (e.g., `aria-label={`Compliance health score: ${score} percent`}`)
-- Radix UI components include ARIA attributes by default
-
-**Reduced Motion:**
-
-- Check `prefers-reduced-motion` for animations
-- Example from `src/components/dashboard/health-score-card.tsx`:
-
-  ```typescript
-  const prefersReducedMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  <RadialBar isAnimationActive={!prefersReducedMotion} />
-  ```
+- `tabIndex={0}` on clickable rows, Enter/Space key handlers
+- `aria-label` on charts
+- Radix UI ARIA attributes by default
+- `prefers-reduced-motion` check for animations
 
 ## Internationalization
 
-**Framework:** `next-intl` 4.8.2
+(Unchanged from v1.0)
 
-**Usage:**
-
-- Call `useTranslations()` hook with namespace (e.g., `"Dashboard"`, `"Navigation"`)
-- Translation keys: camelCase (e.g., `t("title")`, `t("subtitle")`)
-- Example from `src/app/(dashboard)/dashboard/page.tsx`:
-  ```typescript
-  const t = useTranslations("Dashboard");
-  return <h1>{t("title")}</h1>;
-  ```
-
-**Locale Setup:**
-
-- Server components: `await getLocale()` and `await getMessages()`
-- Root layout wraps app in `<NextIntlClientProvider>`
+- `next-intl` 4.8.2 with `useTranslations()` hook
+- Cookie-based locale storage (`NEXT_LOCALE`)
+- 4 locales: en, hi, mr, gu
 
 ---
 
 _Convention analysis: 2026-02-08_
+_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_

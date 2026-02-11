@@ -1,328 +1,288 @@
 # Codebase Structure
 
 **Analysis Date:** 2026-02-08
+**Updated:** 2026-02-11 (post v2.0 MVP)
 
 ## Directory Layout
 
 ```
 AEGIS/
-├── .planning/                # GSD workflow documentation
-│   ├── codebase/            # Codebase analysis docs (this file)
-│   ├── phases/              # Phase implementation plans
-│   ├── quick/               # Quick task documentation
-│   └── milestones/          # Milestone tracking
-├── Project Doc/             # Business requirements, RBI blueprints
-├── messages/                # i18n translation JSON files (en, hi, mr, gu)
-├── public/                  # Static assets
-│   └── logos/               # AEGIS logo assets
-├── scripts/                 # Build/deployment scripts
+├── .planning/                  # GSD workflow documentation
+│   ├── codebase/              # Codebase analysis docs (this file)
+│   ├── phases/                # Phase implementation plans (1-14)
+│   ├── quick/                 # Quick task documentation
+│   └── milestones/            # Milestone tracking (v1.0, v2.0)
+├── infra/                      # AWS CDK infrastructure (excluded from TS compilation)
+├── prisma/                     # Database schema and migrations
+│   ├── schema.prisma          # 23 models, 865 lines
+│   ├── migrations/            # Database migrations
+│   └── seed.ts                # Database seed script
+├── Project Doc/               # Business docs, RBI blueprints
+├── messages/                  # i18n translation JSON files (en, hi, mr, gu)
+├── public/                    # Static assets
+│   └── logos/                 # AEGIS logo assets
+├── scripts/                   # Build/deployment scripts
+├── tests/                     # Test files
+│   └── e2e/                   # Playwright E2E tests
+│       ├── observation-lifecycle.spec.ts
+│       └── permission-guards.spec.ts
+├── playwright/                # Playwright auth storage
+│   └── .auth/                 # Stored sessions per role
 ├── src/
-│   ├── app/                 # Next.js App Router pages and layouts
-│   │   ├── (auth)/          # Auth route group (login)
-│   │   ├── (dashboard)/     # Dashboard route group (all sidebar pages)
-│   │   ├── globals.css      # Global styles with Tailwind v4
-│   │   ├── layout.tsx       # Root layout (fonts, i18n provider)
-│   │   └── page.tsx         # Root redirect to /login
-│   ├── components/          # React components
-│   │   ├── ui/              # shadcn/ui primitives (23 components)
-│   │   ├── layout/          # AppSidebar, TopBar
-│   │   ├── dashboard/       # Dashboard widgets (8 components)
-│   │   ├── compliance/      # Compliance table, filters, charts (6 components)
-│   │   ├── audit/           # Audit calendar, cards, detail (5 components)
-│   │   ├── findings/        # Findings table, filters, detail (5 components)
-│   │   ├── reports/         # Board report sections (7 components)
-│   │   └── auth/            # Login form components
-│   ├── data/                # Demo data and RBI regulations
-│   │   ├── demo/            # JSON files for Apex Sahakari Bank
-│   │   │   ├── en/          # (future: English locale data)
-│   │   │   ├── hi/          # (future: Hindi locale data)
-│   │   │   ├── mr/          # (future: Marathi locale data)
-│   │   │   └── gu/          # (future: Gujarati locale data)
-│   │   ├── rbi-regulations/ # RBI regulation knowledge base
-│   │   └── index.ts         # Barrel export for all data
-│   ├── hooks/               # Custom React hooks
-│   ├── i18n/                # Internationalization config
-│   ├── lib/                 # Utility functions and constants
-│   └── types/               # TypeScript type definitions
-├── .prettierrc              # Code formatting config
-├── CLAUDE.md                # Project instructions for Claude
-├── components.json          # shadcn/ui configuration
-├── eslint.config.mjs        # ESLint configuration
-├── next.config.ts           # Next.js configuration
-├── package.json             # Dependencies and scripts
-├── pnpm-lock.yaml           # pnpm lockfile
-├── postcss.config.js        # PostCSS config for Tailwind
-├── tailwind.config.ts       # Tailwind CSS v4 configuration
-└── tsconfig.json            # TypeScript configuration
+│   ├── app/                   # Next.js App Router pages and layouts
+│   │   ├── (auth)/            # Auth route group (login)
+│   │   ├── (dashboard)/       # Dashboard route group (all sidebar pages)
+│   │   ├── (onboarding)/      # Onboarding wizard route group
+│   │   ├── accept-invite/     # Invitation acceptance page
+│   │   ├── api/               # API routes (reports, health)
+│   │   ├── globals.css        # Global styles with Tailwind v4
+│   │   ├── layout.tsx         # Root layout (fonts, i18n provider)
+│   │   └── page.tsx           # Root redirect to /login
+│   ├── actions/               # Server actions (15 files)
+│   │   ├── observations/      # Create, transition, resolve-fieldwork
+│   │   ├── repeat-findings/   # Detect, confirm, schemas
+│   │   ├── compliance-management.ts
+│   │   ├── auditee.ts
+│   │   ├── onboarding.ts
+│   │   ├── onboarding-excel-upload.ts
+│   │   ├── user-invitations.ts
+│   │   ├── notification-preferences.ts
+│   │   ├── settings.ts
+│   │   └── users.ts
+│   ├── components/            # React components (290 files in src/ total)
+│   │   ├── ui/                # shadcn/ui primitives (23+ components)
+│   │   ├── layout/            # AppSidebar, TopBar
+│   │   ├── dashboard/         # Dashboard widgets
+│   │   ├── compliance/        # Compliance table, filters, charts
+│   │   ├── audit/             # Audit calendar, cards, detail
+│   │   ├── findings/          # Findings table, filters, detail, observation form
+│   │   ├── reports/           # Board report sections, report generator
+│   │   ├── pdf-report/        # React-PDF board report components
+│   │   ├── onboarding/        # Onboarding wizard step components
+│   │   ├── settings/          # Settings page components
+│   │   └── auth/              # Login form components
+│   ├── emails/                # Email templates and rendering
+│   │   ├── templates/         # 6 React email templates
+│   │   ├── render.ts          # Email rendering utility
+│   │   └── email-base-layout.tsx
+│   ├── data/                  # Demo data and RBI regulations (legacy, used for seeding)
+│   │   ├── demo/              # JSON files for Apex Sahakari Bank
+│   │   │   ├── en/hi/mr/gu/  # Locale-specific copies (unused at runtime)
+│   │   ├── rbi-regulations/   # RBI regulation knowledge base
+│   │   └── index.ts           # Barrel export
+│   ├── hooks/                 # Custom React hooks
+│   ├── i18n/                  # Internationalization config
+│   ├── lib/                   # Utility functions, clients, and constants
+│   │   ├── auth.ts            # Better Auth server config
+│   │   ├── auth-client.ts     # Better Auth client hooks
+│   │   ├── s3.ts              # AWS S3 client
+│   │   ├── ses-client.ts      # AWS SES client
+│   │   ├── utils.ts           # cn(), formatDate()
+│   │   ├── constants.ts       # Colors, languages
+│   │   ├── nav-items.ts       # Sidebar navigation
+│   │   ├── icons.ts           # Lucide icons barrel export
+│   │   └── report-utils.ts    # Report calculations
+│   └── types/                 # TypeScript type definitions
+├── .env.example               # 52 environment variables documented
+├── Dockerfile                 # Multi-stage build (63 lines)
+├── docker-compose.yml         # Local PostgreSQL
+├── playwright.config.ts       # Playwright E2E config
+├── .prettierrc                # Code formatting config
+├── CLAUDE.md                  # Project instructions for Claude
+├── components.json            # shadcn/ui configuration
+├── eslint.config.mjs          # ESLint configuration
+├── next.config.ts             # Next.js configuration (standalone output)
+├── package.json               # Dependencies and scripts
+├── pnpm-lock.yaml             # pnpm lockfile
+├── postcss.config.js          # PostCSS config
+├── tailwind.config.ts         # Tailwind CSS v4 configuration
+└── tsconfig.json              # TypeScript configuration
 ```
 
 ## Directory Purposes
 
+**`prisma/`:**
+
+- Purpose: Database schema, migrations, and seed script
+- Contains: `schema.prisma` (23 models, 865 lines), migrations directory, seed script
+- Key models: Tenant, User, Observation, Evidence, ComplianceRequirement, AuditPlan, AuditEngagement, AuditLog, NotificationQueue, BoardReport, DashboardSnapshot, OnboardingProgress
+- Scripts: `pnpm db:generate`, `pnpm db:push`, `pnpm db:migrate`, `pnpm db:seed`
+
+**`tests/e2e/`:**
+
+- Purpose: Playwright end-to-end tests
+- Contains: `observation-lifecycle.spec.ts`, `permission-guards.spec.ts`
+- Config: `playwright.config.ts` with 4 role-based projects + auth setup
+- Run: `pnpm test:e2e`
+
+**`src/actions/`:**
+
+- Purpose: Next.js server actions for all data mutations
+- Contains: 15 files organized by domain (observations, repeat-findings, compliance, auditee, onboarding, etc.)
+- Pattern: Zod validation → session check → tenant-scoped Prisma query → audit log → notification queue
+
+**`src/emails/`:**
+
+- Purpose: Email templates for transactional notifications
+- Contains: 6 React email templates, render utility, base layout
+- Templates: assignment, response, reminder, escalation, weekly-digest, bulk-digest
+
+**`src/app/api/`:**
+
+- Purpose: API routes for non-action endpoints
+- Contains: Board report PDF generation (`reports/board-report/route.ts`), health check (`health/route.ts`)
+
 **`.planning/`:**
 
 - Purpose: GSD workflow state and planning documents
-- Contains: PROJECT.md, ROADMAP.md, STATE.md, REQUIREMENTS.md, phase plans, quick tasks, milestone tracking
-- Key files: `.planning/STATE.md` (current progress), `.planning/ROADMAP.md` (4-phase roadmap)
-- Note: Checked into git for team coordination
+- Contains: PROJECT.md, ROADMAP.md, STATE.md, REQUIREMENTS.md, phase plans (1-14), milestone tracking
+- Checked into git for team coordination
 
 **`Project Doc/`:**
 
 - Purpose: Business documentation and regulatory reference materials
-- Contains: AEGIS blueprint PDFs, RBI circular PDFs, UCB guidelines
-- Key files: `AEGIS_Internal_Audit_Software_Blueprint.pdf`, `UCB Guidelines by RBI.pdf`
-- Note: Not for code, reference only
+- Contains: AEGIS blueprint, RBI circulars, UCB guidelines
 
 **`messages/`:**
 
-- Purpose: i18n translation files for multi-language support
-- Contains: `en.json`, `hi.json`, `mr.json`, `gu.json`
-- Structure: Nested JSON with translation keys organized by feature (Dashboard, Compliance, Findings, etc.)
-- Usage: Loaded dynamically by `src/i18n/request.ts` based on locale cookie
+- Purpose: i18n translation files for multi-language support (en, hi, mr, gu)
+- Structure: Nested JSON organized by feature
+- Loaded by `src/i18n/request.ts` based on locale cookie
 
 **`public/`:**
 
-- Purpose: Static assets served at root URL
-- Contains: Logo images (`aegis-mark.png`, `aegis-wordmark.png`)
-- Structure: `logos/` subdirectory for brand assets
-
-**`src/app/`:**
-
-- Purpose: Next.js App Router file-based routing
-- Contains: Route groups, page components, layout components, global CSS
-- Structure: Route groups use parentheses `(auth)`, `(dashboard)` to organize without affecting URLs
-- Pattern: Each route has `page.tsx`, optional `layout.tsx`, optional `[param]/` for dynamic routes
+- Purpose: Static assets (logos)
 
 **`src/app/(auth)/`:**
 
-- Purpose: Authentication pages (login)
-- Contains: `login/page.tsx`, `layout.tsx`
-- Layout: Simple centered card, no sidebar
+- Purpose: Login page with simple centered layout
 
 **`src/app/(dashboard)/`:**
 
-- Purpose: All authenticated application pages
-- Contains: `dashboard/`, `compliance/`, `audit-plans/`, `findings/`, `reports/`, `settings/`, `auditee/`
-- Layout: Shared `layout.tsx` with `SidebarProvider > AppSidebar + TopBar + main`
-- Dynamic routes: `findings/[id]/page.tsx`
+- Purpose: All authenticated pages with sidebar/topbar layout
+- Contains: dashboard, compliance, audit-plans, findings, reports, settings, auditee
+
+**`src/app/(onboarding)/`:**
+
+- Purpose: Multi-step onboarding wizard (5 steps)
+- Contains: Step components, Excel upload, server persistence
 
 **`src/components/ui/`:**
 
-- Purpose: shadcn/ui primitive components
-- Contains: 23 components (badge, button, card, table, sidebar, dialog, dropdown-menu, etc.)
-- Pattern: Radix UI wrappers with Tailwind styling, composable sub-components
-- Files: All named in kebab-case (e.g., `dropdown-menu.tsx`, `sidebar.tsx`)
+- Purpose: shadcn/ui primitive components (23+)
+- Pattern: Radix UI wrappers with Tailwind styling
 
-**`src/components/layout/`:**
+**`src/components/pdf-report/`:**
 
-- Purpose: Global layout components
-- Contains: `app-sidebar.tsx` (collapsible navigation), `top-bar.tsx` (breadcrumbs, notifications, user menu)
-- Usage: Imported by `src/app/(dashboard)/layout.tsx`
-
-**`src/components/dashboard/`:**
-
-- Purpose: Dashboard page widgets
-- Contains: `health-score-card.tsx`, `audit-coverage-chart.tsx`, `findings-count-cards.tsx`, `risk-indicator-panel.tsx`, `regulatory-calendar.tsx`, `quick-actions.tsx`
-- Pattern: Each component is self-contained, imports data from `@/data`, renders card/chart
-
-**`src/components/compliance/`:**
-
-- Purpose: Compliance registry page components
-- Contains: `compliance-table.tsx`, `compliance-filters.tsx`, `compliance-detail-dialog.tsx`, `compliance-trend-chart.tsx`
-- Pattern: TanStack Table for data grid, Recharts for visualization
-
-**`src/components/audit/`:**
-
-- Purpose: Audit planning page components
-- Contains: `audit-calendar.tsx`, `audit-engagement-cards.tsx`, `audit-detail-sheet.tsx`, `audit-filters.tsx`
-- Pattern: Calendar view + card list, Sheet component for details
-
-**`src/components/findings/`:**
-
-- Purpose: Findings page components
-- Contains: `findings-table.tsx`, `findings-filters.tsx`, `finding-detail.tsx`, `finding-timeline.tsx`
-- Pattern: TanStack Table, detail page with timeline visualization
-
-**`src/components/reports/`:**
-
-- Purpose: Board report page components
-- Contains: `executive-summary.tsx`, `compliance-scorecard.tsx`, `audit-highlights.tsx`, `findings-summary.tsx`, `risk-analysis.tsx`, `recommendations.tsx`
-- Pattern: Read-only display components for PDF-ready report sections
-
-**`src/data/demo/`:**
-
-- Purpose: Demo data for Apex Sahakari Bank prototype
-- Contains: `bank-profile.json`, `staff.json`, `branches.json`, `compliance-requirements.json`, `audit-plans.json`, `findings.json`, `rbi-circulars.json`
-- Pattern: Each JSON file has a `summary` object with aggregates plus array of records
-- Locale subdirectories: `en/`, `hi/`, `mr/`, `gu/` (prepared for future localized data)
-
-**`src/data/rbi-regulations/`:**
-
-- Purpose: RBI regulation knowledge base
-- Contains: TypeScript modules exporting regulation data (`index.ts`, `chapters.ts`, `definitions.ts`, `capital-structure.ts`, `compliance-requirements.ts`)
-- Pattern: Structured data objects with chapter hierarchy, definitions, requirements
-
-**`src/hooks/`:**
-
-- Purpose: Custom React hooks
-- Contains: `use-mobile.tsx` (responsive breakpoint detection)
-- Pattern: Export hook function, used throughout components for responsive behavior
-
-**`src/i18n/`:**
-
-- Purpose: Internationalization configuration
-- Contains: `request.ts` (next-intl config, locale detection from cookie)
-- Pattern: Server-side locale detection, dynamic message loading from `messages/`
+- Purpose: React-PDF components for board report generation
+- Contains: `board-report.tsx`, cover page, sections
 
 **`src/lib/`:**
 
-- Purpose: Shared utilities, constants, helpers
-- Contains: `utils.ts`, `constants.ts`, `nav-items.ts`, `icons.ts`, `report-utils.ts`, `current-user.ts`, `get-locale-data.ts`
-- Pattern: Pure functions, configuration objects, barrel exports
+- Purpose: Shared utilities, AWS clients, auth config, constants
+- Key files: `auth.ts`, `auth-client.ts`, `s3.ts`, `ses-client.ts`, `utils.ts`, `report-utils.ts`
 
-**`src/types/`:**
+**`src/data/`:**
 
-- Purpose: TypeScript type definitions
-- Contains: `index.ts` (all application types)
-- Pattern: Single file with all interfaces, exported for use throughout app
+- Purpose: Legacy demo data (v1.0) and RBI regulations knowledge base
+- Note: Demo data no longer used at runtime (v2.0 reads from PostgreSQL). Kept for seed scripts.
 
 ## Key File Locations
 
 **Entry Points:**
 
-- `src/app/layout.tsx`: Root layout (fonts, i18n provider, HTML setup)
+- `src/app/layout.tsx`: Root layout
 - `src/app/page.tsx`: Root redirect to `/login`
 - `src/app/(auth)/login/page.tsx`: Login page
-- `src/app/(dashboard)/layout.tsx`: Dashboard layout (sidebar, topbar)
+- `src/app/(dashboard)/layout.tsx`: Dashboard layout
+- `src/app/(onboarding)/onboarding/`: Onboarding wizard
+
+**Authentication:**
+
+- `src/lib/auth.ts`: Better Auth server config (rate limiting, lockout, sessions)
+- `src/lib/auth-client.ts`: Client-side auth hooks
+
+**Database:**
+
+- `prisma/schema.prisma`: All 23 models and enums
+
+**Server Actions:**
+
+- `src/actions/observations/`: Create, transition, resolve-fieldwork
+- `src/actions/repeat-findings/`: Detection, confirmation
+- `src/actions/compliance-management.ts`: Compliance CRUD
+- `src/actions/auditee.ts`: Auditee portal actions
+- `src/actions/onboarding.ts`: Onboarding wizard persistence
+
+**AWS Services:**
+
+- `src/lib/s3.ts`: Evidence upload/download
+- `src/lib/ses-client.ts`: Email sending
+- `src/emails/templates/`: 6 email templates
 
 **Configuration:**
 
-- `next.config.ts`: Next.js config with next-intl plugin
-- `tsconfig.json`: TypeScript config with `@/*` path alias
-- `tailwind.config.ts`: Tailwind v4 config with custom variables
-- `eslint.config.mjs`: ESLint flat config
-- `.prettierrc`: Prettier formatting rules
-- `components.json`: shadcn/ui CLI config (new-york style)
-
-**Core Logic:**
-
-- `src/data/index.ts`: Barrel export for all demo data and RBI regulations
-- `src/types/index.ts`: All TypeScript interfaces
-- `src/lib/utils.ts`: `cn()` utility, `formatDate()` for Indian locale
-- `src/lib/constants.ts`: Color mappings, language configs, app metadata
-- `src/lib/nav-items.ts`: Sidebar navigation configuration
-- `src/lib/report-utils.ts`: Report calculation functions
+- `next.config.ts`: Standalone output, next-intl plugin
+- `Dockerfile`: Multi-stage production build
+- `.env.example`: 52 environment variables
 
 **Testing:**
 
-- None (no test files in current prototype phase)
+- `playwright.config.ts`: E2E test config
+- `tests/e2e/`: Test specs
 
 ## Naming Conventions
 
-**Files:**
+(Unchanged from v1.0 — see CONVENTIONS.md)
 
-- Pages: `page.tsx` (Next.js convention)
-- Layouts: `layout.tsx` (Next.js convention)
-- Components: `kebab-case.tsx` (e.g., `health-score-card.tsx`, `compliance-table.tsx`)
-- Utilities: `kebab-case.ts` (e.g., `nav-items.ts`, `report-utils.ts`)
-- JSON data: `kebab-case.json` (e.g., `bank-profile.json`, `compliance-requirements.json`)
-
-**Directories:**
-
-- Route groups: `(kebab-case)` (e.g., `(auth)`, `(dashboard)`)
-- Component groups: `kebab-case` (e.g., `dashboard`, `compliance`, `findings`)
-- Special dirs: `ui` (shadcn primitives), `layout` (global layout components)
-
-**Components:**
-
-- React components: `PascalCase` (e.g., `HealthScoreCard`, `ComplianceTable`)
-- shadcn/ui composables: `PascalCase` with nesting (e.g., `Card`, `CardHeader`, `CardContent`)
-
-**Variables:**
-
-- Camel case for local variables: `compData`, `chartConfig`, `navItems`
-- Constants: `UPPER_SNAKE_CASE` (e.g., `STATUS_COLORS`, `DEFAULT_LANGUAGE`)
-- Types/Interfaces: `PascalCase` (e.g., `BankProfile`, `ComplianceRequirement`)
+- Files: kebab-case (components, utilities, data)
+- Components: PascalCase
+- Variables: camelCase, constants SCREAMING_SNAKE_CASE
+- Types: PascalCase
 
 ## Where to Add New Code
 
+**New Server Action:**
+
+- File: `src/actions/{domain}.ts` or `src/actions/{domain}/action-name.ts`
+- Pattern: Zod schema → session check → Prisma query → audit log
+- Register in relevant page component
+
+**New Email Template:**
+
+- Template: `src/emails/templates/{template-name}.tsx`
+- Register in: `src/emails/render.ts`
+- Trigger from: Server action or pg-boss job
+
+**New Database Model:**
+
+- Schema: `prisma/schema.prisma`
+- Generate: `pnpm db:generate`
+- Migrate: `pnpm db:migrate`
+
 **New Dashboard Widget:**
 
-- Primary code: `src/components/dashboard/{widget-name}.tsx`
-- Import in: `src/app/(dashboard)/dashboard/page.tsx`
-- Data source: `src/data/` (import via `@/data`)
-- Types: Add interface to `src/types/index.ts` if needed
+- Component: `src/components/dashboard/{widget-name}.tsx`
+- Data: Prisma query in server component or server action
 
 **New Page:**
 
-- Primary code: `src/app/(dashboard)/{page-name}/page.tsx`
-- Components: `src/components/{page-name}/` directory
-- Add to sidebar: Update `src/lib/nav-items.ts`
-- Add translations: Update `messages/en.json`, `messages/hi.json`, etc.
+- Route: `src/app/(dashboard)/{page-name}/page.tsx`
+- Components: `src/components/{page-name}/`
+- Sidebar: Update `src/lib/nav-items.ts`
+- Translations: Update `messages/{locale}.json`
 
-**New Component/Module:**
+**New API Route:**
 
-- Feature component: `src/components/{feature-name}/{component-name}.tsx`
-- Shared UI primitive: `src/components/ui/{component-name}.tsx` (use shadcn CLI)
-- Layout component: `src/components/layout/{component-name}.tsx`
+- File: `src/app/api/{route-name}/route.ts`
+- Pattern: Session check → business logic → JSON response
 
-**New Data:**
+**New E2E Test:**
 
-- Demo JSON: `src/data/demo/{data-name}.json`
-- Export from: `src/data/index.ts`
-- Type definition: `src/types/index.ts`
-- Pattern: Include `summary` object at top of JSON for aggregates
-
-**Utilities:**
-
-- Shared helpers: `src/lib/utils.ts` (general) or `src/lib/{feature}-utils.ts` (specific)
-- Constants: `src/lib/constants.ts`
-- Hooks: `src/hooks/use-{hook-name}.tsx`
-
-**i18n:**
-
-- Translation keys: `messages/{locale}.json`
-- Pattern: Organize by feature (Dashboard, Compliance, Findings, etc.)
-- Add new locale: Create `messages/{locale}.json`, update `src/i18n/request.ts` and `src/lib/constants.ts`
-
-## Special Directories
-
-**`node_modules/`:**
-
-- Purpose: Package dependencies
-- Generated: Yes (pnpm install)
-- Committed: No (.gitignore)
-
-**`.next/`:**
-
-- Purpose: Next.js build output and cache
-- Generated: Yes (pnpm dev, pnpm build)
-- Committed: No (.gitignore)
-- Note: Delete if encountering Turbopack cache corruption
-
-**`.git/`:**
-
-- Purpose: Git version control
-- Generated: Yes (git init)
-- Committed: No (special dir)
-
-**`.planning/codebase/`:**
-
-- Purpose: Codebase analysis documents for GSD agents
-- Generated: Yes (by `/gsd:map-codebase` command)
-- Committed: Yes (for team coordination)
-
-**`public/`:**
-
-- Purpose: Static assets served at root
-- Generated: No (manually created)
-- Committed: Yes
-
-**`scripts/`:**
-
-- Purpose: Build and deployment automation
-- Generated: No (manually created)
-- Committed: Yes
+- File: `tests/e2e/{feature-name}.spec.ts`
+- Run: `pnpm test:e2e`
 
 ---
 
 _Structure analysis: 2026-02-08_
+_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_

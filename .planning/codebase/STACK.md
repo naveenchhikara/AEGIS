@@ -1,19 +1,21 @@
 # Technology Stack
 
 **Analysis Date:** 2026-02-08
+**Updated:** 2026-02-11 (post v2.0 MVP)
 
 ## Languages
 
 **Primary:**
 
-- TypeScript 5.9.3 - All application code (77 `.ts`/`.tsx` files in `src/`)
+- TypeScript 5.9.3 - All application code (290 `.ts`/`.tsx` files in `src/`)
 - Strict mode enabled (`tsconfig.json`)
 
 **Secondary:**
 
 - JavaScript (ESM) - Configuration files (`next.config.ts`, `tailwind.config.ts`, `postcss.config.js`)
 - CSS - Tailwind v4 with `@theme inline` directive in `src/app/globals.css`
-- JSON - Demo data files (55+ JSON files in `src/data/demo/` and `src/data/rbi-regulations/`)
+- SQL - Prisma migrations and RLS policies
+- JSON - i18n message files (`messages/`), legacy demo data (`src/data/demo/`)
 
 ## Runtime
 
@@ -25,7 +27,6 @@
 **Package Manager:**
 
 - pnpm 10.28.2
-- Lockfile: `package-lock.json` also present (npm was used previously)
 - Install command: `pnpm install`
 
 ## Frameworks
@@ -33,8 +34,20 @@
 **Core:**
 
 - Next.js 16.1.6 - App Router with React Server Components
-- React 19.2.4 - Latest React with Server Components
+- React 19.2.4 - Server Components + Client Components
 - React DOM 19.2.4
+
+**Database:**
+
+- PostgreSQL - Primary database with Row-Level Security
+- Prisma 7.3.0 - ORM with 23 models, generated types
+- Schema: `prisma/schema.prisma` (865 lines)
+
+**Authentication:**
+
+- Better Auth 1.4.18 - Email/password, session management, RBAC
+- Prisma adapter for PostgreSQL storage
+- Rate limiting, account lockout, concurrent session limits
 
 **Internationalization:**
 
@@ -51,15 +64,17 @@
 
 **Testing:**
 
-- Not detected
+- Playwright - E2E testing with role-based projects (auditor, manager, CAE, auditee)
+- Config: `playwright.config.ts`
+- Tests: `tests/e2e/` (observation-lifecycle, permission-guards)
 
 ## Key Dependencies
 
 **UI Framework:**
 
-- @radix-ui/\* (12 packages) - Headless UI primitives (Avatar, Dialog, Dropdown, Select, Tabs, etc.)
-- shadcn/ui pattern - Component composition via `components.json` (new-york style)
-- lucide-react 0.563.0 - Icon library (imported via `@/lib/icons` barrel export)
+- @radix-ui/\* (12 packages) - Headless UI primitives
+- shadcn/ui pattern - Component composition (`components.json`, new-york style)
+- lucide-react 0.563.0 - Icon library (via `@/lib/icons` barrel export)
 
 **Styling:**
 
@@ -72,7 +87,26 @@
 **Data & Tables:**
 
 - @tanstack/react-table 8.21.3 - Table state management
+- @tanstack/react-query 5.90.20 - Client-side data caching
 - recharts 3.7.0 - Chart library (donut charts, area charts, bar charts)
+
+**Validation:**
+
+- zod 4.3.6 - Schema validation for server actions and forms
+
+**AWS Services:**
+
+- @aws-sdk/client-s3 3.985.0 - Evidence file storage (Mumbai, SSE-S3 encryption)
+- @aws-sdk/client-sesv2 3.985.0 - Email notifications (Mumbai region)
+
+**Reports & Exports:**
+
+- @react-pdf/renderer 4.3.2 - PDF board report generation
+- exceljs 4.4.0 - Formatted XLSX exports
+
+**Background Jobs:**
+
+- pg-boss 12.9.0 - PostgreSQL-based job queue (reminders, digests, snapshots)
 
 **Utilities:**
 
@@ -91,20 +125,25 @@
 
 **Environment:**
 
-- No `.env` files detected
-- No `process.env` or `NEXT_PUBLIC_` variables used
-- Locale stored in cookie (`NEXT_LOCALE`)
-- Pure client-side prototype with JSON data
+- `.env.example` - 52 environment variables documented
+- Key vars: DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, AWS_REGION, S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SES_REGION, SES_FROM_EMAIL, NEXT_PUBLIC_APP_URL
+- No runtime validation schema (recommended: add `@t3-oss/env-nextjs`)
 
 **Build:**
 
-- `next.config.ts` - Next.js config with `next-intl/plugin`
+- `next.config.ts` - Next.js config with `next-intl/plugin`, standalone output
 - `tsconfig.json` - TypeScript config with `@/*` path alias to `./src/*`
 - `tailwind.config.ts` - Tailwind theme with shadcn color tokens
 - `postcss.config.js` - PostCSS with Tailwind and Autoprefixer
-- `components.json` - shadcn/ui CLI config (new-york style, lucide icons, CSS variables)
+- `components.json` - shadcn/ui CLI config (new-york style)
 - `eslint.config.mjs` - ESLint flat config with Next.js presets
 - `.prettierrc` - Prettier config (semi: true, singleQuote: false, Tailwind plugin)
+- `Dockerfile` - Multi-stage build (63 lines, node:22-alpine, standalone mode)
+
+**Database:**
+
+- `prisma/schema.prisma` - 23 models, enums, relations
+- Scripts: `pnpm db:generate`, `pnpm db:push`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm db:studio`
 
 **TypeScript:**
 
@@ -117,18 +156,20 @@
 
 **Development:**
 
-- Node.js 20+ (recommended in README, v25.6.0 in use)
-- pnpm 9+ (README requirement, v10.28.2 in use)
+- Node.js 20+ (v25.6.0 in use)
+- pnpm 9+ (v10.28.2 in use)
+- PostgreSQL (Docker or local)
 - Port 3000 (default Next.js dev server)
 
 **Production:**
 
-- Target deployment: AWS Mumbai (ap-south-1) for RBI data localization
-- Build command: `pnpm build`
-- Start command: `pnpm start`
-- No Docker configuration detected
-- No CI/CD configuration detected (.github/workflows not present)
+- Deployment: AWS Lightsail Mumbai (ap-south-1) via Coolify
+- Dockerfile: Multi-stage build with health check
+- Build: `pnpm build` → standalone Next.js output
+- Start: `node server.js` (standalone mode)
+- AWS services: S3 (evidence), SES (email) — both ap-south-1
 
 ---
 
 _Stack analysis: 2026-02-08_
+_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_

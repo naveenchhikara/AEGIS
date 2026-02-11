@@ -1,242 +1,216 @@
 # Testing Patterns
 
 **Analysis Date:** 2026-02-08
+**Updated:** 2026-02-11 (post v2.0 MVP)
 
 ## Test Framework
 
-**Runner:**
+**E2E Runner:**
 
-- None configured
+- Playwright (configured in `playwright.config.ts`)
+- 4 role-based test projects: auditor, manager, CAE, auditee
+- Auth setup project with persistent session storage (`playwright/.auth/`)
 
-**Assertion Library:**
+**Unit Test Runner:**
 
-- None configured
+- Vitest installed as dependency but no unit test files yet
+- No `vitest.config.ts` configured
 
 **Run Commands:**
 
 ```bash
-# No test commands in package.json
+pnpm test:e2e          # Run Playwright E2E tests
+pnpm test:e2e:ui       # Run with Playwright UI mode
 ```
 
 ## Test File Organization
 
 **Location:**
 
-- No test files present in `src/` directory
+- E2E tests: `tests/e2e/`
+- No unit tests in `src/`
 
 **Naming:**
 
-- Not applicable (no tests)
+- E2E: `*.spec.ts` (e.g., `observation-lifecycle.spec.ts`, `permission-guards.spec.ts`)
 
 **Structure:**
 
 ```
-Not applicable
+tests/
+└── e2e/
+    ├── observation-lifecycle.spec.ts    # Full observation 7-state workflow
+    └── permission-guards.spec.ts        # Role-based access control
+playwright/
+└── .auth/                               # Stored auth sessions per role
+playwright.config.ts                     # Multi-project config
 ```
 
 ## Test Structure
 
 **Suite Organization:**
-Not applicable (no test suite configured)
+
+- E2E tests organized by feature domain
+- Each test project authenticates as a specific role
+- Auth setup runs once, sessions reused across tests
 
 **Patterns:**
-No testing patterns established
+
+- Role-based test isolation (auditor sees different UI than CAE)
+- Shared auth setup project avoids repeated login flows
+- Tests use Playwright locators for element selection
 
 ## Mocking
 
-**Framework:** Not configured
+**Framework:** Not configured for unit tests
 
-**Patterns:**
-Not applicable (no tests)
+**E2E Approach:**
 
-**What to Mock:**
-Future considerations for AEGIS:
+- Tests run against real database (seeded test data)
+- Test accounts with password "TestPassword123!" created via seed script
+- No HTTP mocking — full stack integration
 
-- Demo data JSON imports (`@/data`)
+**What to Mock (for future unit tests):**
+
+- Database calls (Prisma client)
+- AWS services (S3, SES)
+- Better Auth session
 - `next-intl` translation hooks
 - Next.js router hooks (`useRouter`, `usePathname`)
-- `@tanstack/react-table` hooks
 
 **What NOT to Mock:**
 
 - Pure utility functions (`formatDate`, `cn`)
+- Zod validation schemas
 - TypeScript types and constants
 
 ## Fixtures and Factories
 
 **Test Data:**
 
-- Current demo data in `src/data/demo/*.json` could serve as test fixtures
-- Consider extracting to shared test fixtures if testing is added
+- Database seeded with test tenants, users, and observations via `pnpm db:seed`
+- Seed script creates users with known passwords for E2E auth
+- Legacy demo data in `src/data/demo/` available but not used in tests
 
 **Location:**
 
-- Demo data: `src/data/demo/`
-- Future test fixtures: Consider `src/__tests__/fixtures/` or `src/test-utils/`
+- Seed data: `prisma/seed.ts` (or similar)
+- E2E fixtures: Inline in test files
 
 ## Coverage
 
-**Requirements:** None enforced
+**E2E Coverage:**
 
-**View Coverage:**
+- Observation lifecycle: Full 7-state workflow (Draft → Closed)
+- Permission guards: Role-based access control for all roles
+- Not covered: i18n switching, report generation, Excel exports, evidence upload
+
+**Unit Test Coverage:**
+
+- None (no unit tests exist)
+
+**Coverage Reporting:**
 
 ```bash
-# No coverage reporting configured
+# No coverage reporting configured yet
 ```
 
 ## Test Types
 
 **Unit Tests:**
 
-- Not present
+- Not present. Recommended before pilot.
 
 **Integration Tests:**
 
-- Not present
+- Not present (E2E tests serve as integration tests)
 
 **E2E Tests:**
 
-- Not present
-
-## Common Patterns
-
-**Async Testing:**
-Not applicable (no tests)
-
-**Error Testing:**
-Not applicable (no tests)
+- 2 test specs covering core workflows:
+  - `observation-lifecycle.spec.ts` — Create, transition through all 7 states
+  - `permission-guards.spec.ts` — Verify role-based UI filtering and access control
 
 ## Recommendations for Future Testing
 
-### Suggested Framework Setup
+### Priority Test Targets
 
-**For Component Testing:**
+**Critical (add before pilot):**
+
+1. `src/lib/report-utils.ts` — RBI regulatory threshold calculations (unit tests with Vitest)
+2. Server action validation — Zod schema edge cases for observation creation, state transitions
+3. Multi-tenant isolation — Verify tenant A cannot access tenant B data
+
+**High Priority:**
+
+1. Evidence upload flow — S3 integration, file type validation
+2. Email notification rendering — Template output verification
+3. Onboarding wizard — Excel upload parsing, step persistence
+
+**Medium Priority:**
+
+1. Dashboard aggregation queries — Verify counts match actual data
+2. Excel export formatting — Column headers, data accuracy
+3. Repeat finding detection — Branch + audit area + risk category matching
+
+### Suggested Unit Test Setup
 
 ```bash
-# Recommended: Vitest + React Testing Library
+# Add Vitest configuration
 pnpm add -D vitest @vitejs/plugin-react
-pnpm add -D @testing-library/react @testing-library/jest-dom @testing-library/user-event
+pnpm add -D @testing-library/react @testing-library/jest-dom
 pnpm add -D jsdom
 ```
 
-**For E2E Testing:**
-
-```bash
-# Recommended: Playwright (Next.js official recommendation)
-pnpm add -D @playwright/test
-```
-
-### Priority Test Targets
-
-**High Priority (Core Business Logic):**
-
-1. `src/lib/utils.ts` — `formatDate()` function (Indian locale formatting)
-2. `src/lib/report-utils.ts` — Report generation utilities (421 lines)
-3. Table sorting/filtering logic in:
-   - `src/components/compliance/compliance-table.tsx`
-   - `src/components/findings/findings-table.tsx`
-
-**Medium Priority (Component Behavior):**
-
-1. Dashboard widgets (`src/components/dashboard/*`)
-2. Filter components (`*-filters.tsx`)
-3. Detail dialogs/sheets (`*-detail-dialog.tsx`, `*-detail-sheet.tsx`)
-
-**Low Priority (UI Components):**
-
-1. shadcn/ui primitives (`src/components/ui/*`) — Already tested by Radix UI
-2. Layout components (`src/components/layout/*`) — Mostly presentational
-
 ### Testing Patterns to Establish
 
-**For Data Tables:**
+**For Server Actions:**
 
 ```typescript
-// Test sorting behavior
-describe("FindingsTable", () => {
-  it("sorts findings by severity correctly", () => {
-    // Verify critical > high > medium > low order
+describe("createObservation", () => {
+  it("validates required fields with Zod", async () => {
+    // Test missing condition/criteria/cause/effect
   });
 
-  it("filters by status", () => {
-    // Verify filter state updates table rows
-  });
-});
-```
-
-**For Utility Functions:**
-
-```typescript
-describe("formatDate", () => {
-  it("formats dates in Indian locale", () => {
-    expect(formatDate("2024-01-15", "short")).toBe("15 Jan 2024");
+  it("enforces tenant isolation", async () => {
+    // Tenant A user cannot create in tenant B
   });
 
-  it("supports long format", () => {
-    expect(formatDate("2024-01-15", "long")).toBe("15 January 2024");
+  it("records audit log entry", async () => {
+    // Verify AuditLog created after mutation
   });
 });
 ```
 
-**For i18n Components:**
+**For Report Calculations:**
 
 ```typescript
-// Mock next-intl translations
-vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => key,
-}));
+describe("report-utils", () => {
+  it("correctly categorizes CRAR below 9% as critical", () => {
+    // Test RBI regulatory threshold
+  });
+
+  it("calculates compliance score from observation data", () => {
+    // Test aggregation logic
+  });
+});
 ```
 
-**For Next.js Router:**
+**For E2E (extend existing):**
 
 ```typescript
-// Mock useRouter for navigation tests
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-  usePathname: () => "/dashboard",
-}));
+test("auditee can upload evidence and auditor sees it", async ({ page }) => {
+  // Test cross-role workflow
+});
+
+test("observation deadline triggers reminder email", async ({ page }) => {
+  // Test notification pipeline
+});
 ```
-
-### Accessibility Testing
-
-**Recommended Tool:**
-
-```bash
-pnpm add -D @axe-core/react
-# Or for E2E:
-pnpm add -D @axe-core/playwright
-```
-
-**Priority Areas:**
-
-- Keyboard navigation in tables (already implemented, needs verification)
-- ARIA labels on charts
-- Focus management in dialogs
-- Color contrast for status badges
-
-### Visual Regression Testing
-
-**For Design System Components:**
-
-- Consider Chromatic or Percy for shadcn/ui customizations
-- Focus on responsive breakpoints (mobile/tablet/desktop)
-
-### Snapshot Testing
-
-**Avoid for:**
-
-- Large JSON data structures (unstable)
-- Full page snapshots (fragile)
-
-**Use for:**
-
-- Small, stable components (badges, buttons)
-- Formatted output strings
 
 ---
 
 _Testing analysis: 2026-02-08_
+_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_
 
-**Note:** AEGIS is currently in prototype/demo phase with no backend or authentication. Testing infrastructure should be prioritized before Phase 5 (backend integration) to ensure reliability as the system moves toward production.
+**Note:** v2.0 added Playwright E2E tests covering the core observation lifecycle and role-based permissions. Unit tests for business logic (report calculations, regulatory thresholds) are the highest priority gap remaining before pilot deployment.

@@ -1,81 +1,136 @@
 # External Integrations
 
 **Analysis Date:** 2026-02-08
+**Updated:** 2026-02-11 (post v2.0 MVP)
 
 ## APIs & External Services
 
-**None detected.**
+**AWS S3 — Evidence File Storage:**
 
-This is a clickable prototype with no backend integrations. All data is sourced from JSON files in `src/data/demo/` and `src/data/rbi-regulations/`.
+- Service: Amazon S3 (ap-south-1 Mumbai)
+- Usage: Upload, download, and manage audit evidence files (PDF, JPEG, PNG, DOCX, XLSX, CSV, JSON)
+- Client: `src/lib/s3.ts` (PutObject, GetObject, presigned URLs)
+- Bucket: `aegis-evidence-dev` (configurable via `S3_BUCKET_NAME` env var)
+- Encryption: SSE-S3 (server-side encryption)
+- Auth: AWS access key + secret key
+- Env vars: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`
+
+**AWS SES — Email Notifications:**
+
+- Service: Amazon SES v2 (ap-south-1 Mumbai)
+- Usage: Transactional emails for observation assignments, responses, reminders, escalations, weekly digests
+- Client: `src/lib/ses-client.ts` (SESv2Client)
+- Templates: `src/emails/templates/` (6 React email templates)
+  - `assignment-email.tsx` — New observation assigned to auditee
+  - `response-email.tsx` — Auditee response notification
+  - `reminder-email.tsx` — Deadline reminders (7d, 3d, 1d)
+  - `escalation-email.tsx` — Overdue observation escalation
+  - `weekly-digest-email.tsx` — CAE/CCO weekly summary
+  - `bulk-digest-email.tsx` — Batched bulk operation notifications
+- Rendering: `src/emails/render.ts`
+- Layout: `src/emails/email-base-layout.tsx`
+- Status: Code complete. **DNS CNAME records for SES domain verification not yet added** — email sending untested in production.
+- Env vars: `AWS_SES_REGION`, `SES_FROM_EMAIL`
 
 ## Data Storage
 
-**Databases:**
+**PostgreSQL — Primary Database:**
 
-- None - No database connection detected
-- Data source: Local JSON files
+- ORM: Prisma 7.3.0
+- Schema: `prisma/schema.prisma` (865 lines, 23 models)
+- Multi-tenancy: Row-Level Security (tenant isolation at database level)
+- Key models: Tenant, User, Observation, Evidence, ComplianceRequirement, AuditPlan, AuditEngagement, AuditLog, NotificationQueue, EmailLog, BoardReport, DashboardSnapshot, OnboardingProgress
+- Connection: `DATABASE_URL` env var
+- Scripts: `pnpm db:generate`, `pnpm db:push`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm db:studio`
 
-**File Storage:**
+**AWS S3 — Evidence File Storage:**
 
-- Local filesystem only
-- Static assets in `public/logos/` (aegis-logo.png, aegis-mark.png)
-- Demo data in `src/data/demo/` (bank-profile.json, staff.json, branches.json, compliance-requirements.json, audit-plans.json, findings.json, rbi-circulars.json)
-- Localized demo data in `src/data/demo/{hi,mr,gu}/` (Hindi, Marathi, Gujarati)
-- RBI regulations in `src/data/rbi-regulations/` (compliance-requirements.json, chapters.json, definitions.json, capital-structure.json, index.json)
-
-**Caching:**
-
-- Browser-only (Next.js automatic static optimization)
-- Turbopack dev cache in `.next/`
+- See APIs section above
+- Evidence model in Prisma: `s3Key`, `fileSize`, `contentType`, `uploadedBy`
+- Tenant-scoped paths prevent cross-tenant file access
 
 ## Authentication & Identity
 
-**Auth Provider:**
+**Better Auth v1.4.18:**
 
-- Mock authentication only
-- Login form at `src/components/auth/login-form.tsx` accepts any email/password combination
-- No session management or JWT implementation
-- Locale selection stored in `NEXT_LOCALE` cookie via `next-intl`
+- Provider: Email/password authentication
+- Session: Secure cookies (httpOnly, sameSite=lax, secure in production)
+- Storage: Prisma adapter → PostgreSQL (User, Session, Account, Verification models)
+- Security features:
+  - Rate limiting: 10 login attempts per 15min per IP
+  - Account lockout: 5 failures → 30-min lock with auto-unlock
+  - Concurrent sessions: Max 2 per user
+- RBAC: 7 roles (Auditor, Audit Manager, CAE, CCO, CEO, Auditee, Admin)
+- Files: `src/lib/auth.ts` (server), `src/lib/auth-client.ts` (client hooks)
+- Env vars: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
+
+## Background Jobs
+
+**pg-boss v12.9.0:**
+
+- Service: PostgreSQL-based job queue
+- Usage: Deadline reminders, weekly digests, daily dashboard snapshots
+- Scheduling: Cron-based (e.g., daily snapshots at 01:00 IST)
+- Processing: Batch processing 10 tenants at a time to prevent connection pool exhaustion
+- Depends on: PostgreSQL (same database)
 
 ## Monitoring & Observability
 
+**Health Check:**
+
+- Endpoint: `/api/health` (used by Dockerfile health check)
+- Implementation: `src/app/api/health/route.ts`
+
 **Error Tracking:**
 
-- None
+- None configured (recommended: add before pilot)
 
 **Logs:**
 
-- Console only (development)
-- No structured logging framework detected
+- Console logging in development
+- Append-only AuditLog in database for all data-modifying actions
+- No structured logging framework (recommended: add pino or winston)
 
 ## CI/CD & Deployment
 
 **Hosting:**
 
-- Planned: AWS Mumbai (ap-south-1) for RBI data localization requirements
-- Current: Local development only
+- AWS Lightsail Mumbai (ap-south-1) via Coolify self-hosted PaaS
+- PostgreSQL database managed via Coolify
+
+**Container:**
+
+- Dockerfile: Multi-stage build (63 lines)
+  - Stage 1 (deps): Install pnpm dependencies
+  - Stage 2 (builder): Prisma generate + Next.js build (standalone output)
+  - Stage 3 (runner): node:22-alpine, health check via wget
+- Start command: `node server.js`
 
 **CI Pipeline:**
 
-- None - No `.github/workflows/` directory detected
-- No Docker configuration (no Dockerfile or docker-compose.yml)
-
-**Build Process:**
-
-- Local builds via `pnpm build`
-- No automated deployment detected
+- None — no `.github/workflows/` directory
+- Manual deployment via Coolify dashboard
+- Recommended: Add GitHub Actions for lint, type-check, E2E tests, and auto-deploy
 
 ## Environment Configuration
 
-**Required env vars:**
+**Required env vars (52 total in `.env.example`):**
 
-- None - No environment variables used in current prototype
-- No `.env` files detected
-- All configuration is hardcoded or comes from JSON files
+- `DATABASE_URL` — PostgreSQL connection string
+- `BETTER_AUTH_SECRET` — Auth session encryption key
+- `BETTER_AUTH_URL` — Application base URL
+- `NEXT_PUBLIC_APP_URL` — Public-facing URL
+- `AWS_REGION` — S3 region (ap-south-1)
+- `AWS_ACCESS_KEY_ID` — AWS credentials
+- `AWS_SECRET_ACCESS_KEY` — AWS credentials
+- `S3_BUCKET_NAME` — Evidence storage bucket
+- `AWS_SES_REGION` — SES region (ap-south-1)
+- `SES_FROM_EMAIL` — Sender email address
 
 **Secrets location:**
 
-- Not applicable (no external services requiring secrets)
+- Local: `.env` file (gitignored)
+- Production: Coolify environment variables
 
 ## Webhooks & Callbacks
 
@@ -85,7 +140,7 @@ This is a clickable prototype with no backend integrations. All data is sourced 
 
 **Outgoing:**
 
-- None
+- None (email notifications are push-based via SES, not webhook)
 
 ## Third-Party SDKs
 
@@ -93,47 +148,28 @@ This is a clickable prototype with no backend integrations. All data is sourced 
 
 - Service: Google Fonts CDN
 - Usage: Font loading via `next/font/google`
-- Fonts loaded:
-  - Noto Sans (Latin) - variable `--font-noto-sans`
-  - Noto Sans Devanagari (Hindi) - variable `--font-noto-devanagari`
-  - Noto Sans Gujarati (Gujarati) - variable `--font-noto-gujarati`
-  - DM Serif Display (headings) - variable `--font-dm-serif`
-- Implementation: `src/app/layout.tsx`
-- No API key required (public CDN)
+- Fonts: Noto Sans, Noto Sans Devanagari, Noto Sans Gujarati, DM Serif Display
+- No API key required
 
 ## Future Integrations (Planned)
 
-Based on domain context (Urban Cooperative Banks + RBI compliance), future phases may require:
+**TOTP/MFA (before Pilot B):**
 
-**Authentication:**
+- Better Auth supports TOTP plugin
+- Required before banks load real data
 
-- OAuth 2.0 or SAML for enterprise SSO
-- Multi-factor authentication (MFA)
+**DAKSH Export:**
 
-**Database:**
+- Formatted Excel export for manual upload to RBI DAKSH portal
+- No API integration planned (RBI doesn't offer public API)
 
-- PostgreSQL or similar RDBMS
-- Data residency: Must remain in India (AWS Mumbai ap-south-1)
+**CI/CD Pipeline:**
 
-**Email/Notifications:**
-
-- Email service for audit notifications, finding assignments, compliance alerts
-- SMS for critical alerts (Indian telecom providers)
-
-**Document Storage:**
-
-- AWS S3 (ap-south-1) or similar for audit workpapers, evidence uploads
-- Document encryption at rest
-
-**RBI Integration:**
-
-- Potential API for DAKSH score submission
-- RBI circular updates (currently manual JSON updates)
-
-**Reporting:**
-
-- PDF generation for board reports (currently print-to-PDF via browser)
+- GitHub Actions for automated testing and deployment
+- Trigger: Push to main branch
+- Steps: lint → type-check → E2E tests → build → deploy to Coolify
 
 ---
 
 _Integration audit: 2026-02-08_
+_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_

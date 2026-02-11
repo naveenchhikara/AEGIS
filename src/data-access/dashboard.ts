@@ -1,19 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "@/lib/prisma";
-
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) redirect("/dashboard?setup=required");
-  return tenantId;
-}
+import { extractTenantId, type DalSession as Session } from "./helpers";
 
 // ─── Fiscal Year Helpers (inline to avoid dependency on 09-01) ─────────────
 

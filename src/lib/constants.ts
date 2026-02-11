@@ -56,6 +56,31 @@ export const OBSERVATION_STATUS_ORDER: Record<string, number> = {
   CLOSED: 6,
 };
 
+/**
+ * Severity sort order (lower = more severe). Case-insensitive — includes
+ * both upper and lower variants so callers don't need to normalize.
+ * Previously duplicated in findings-table.tsx, observation-list.tsx, report-utils.ts.
+ */
+export const SEVERITY_SORT_ORDER: Record<string, number> = {
+  CRITICAL: 0,
+  critical: 0,
+  HIGH: 1,
+  high: 1,
+  MEDIUM: 2,
+  medium: 2,
+  LOW: 3,
+  low: 3,
+};
+
+/**
+ * Capitalize first letter, lowercase the rest.
+ * Used for displaying severity/status values from the database.
+ * Previously duplicated in findings-table.tsx.
+ */
+export function formatEnumLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
 export const RISK_CATEGORIES = [
   { id: "credit-risk", label: "Credit Risk" },
   { id: "market-risk", label: "Market Risk" },

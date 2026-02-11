@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "@/lib/icons";
+import { SEVERITY_SORT_ORDER } from "@/lib/constants";
 import { ObservationCard, type AuditeeObservation } from "./observation-card";
 
 interface ObservationListProps {
@@ -23,17 +24,6 @@ interface ObservationListProps {
 }
 
 type SortOption = "deadline" | "severity" | "created";
-
-const SEVERITY_ORDER: Record<string, number> = {
-  CRITICAL: 0,
-  critical: 0,
-  HIGH: 1,
-  high: 1,
-  MEDIUM: 2,
-  medium: 2,
-  LOW: 3,
-  low: 3,
-};
 
 function sortObservations(
   observations: AuditeeObservation[],
@@ -58,8 +48,8 @@ function sortObservations(
         return tA - tB;
       }
       case "severity": {
-        const sA = SEVERITY_ORDER[a.severity] ?? 99;
-        const sB = SEVERITY_ORDER[b.severity] ?? 99;
+        const sA = SEVERITY_SORT_ORDER[a.severity] ?? 99;
+        const sB = SEVERITY_SORT_ORDER[b.severity] ?? 99;
         return sA - sB;
       }
       case "created": {

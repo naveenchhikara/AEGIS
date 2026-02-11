@@ -1,6 +1,10 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import {
+  extractTenantId,
+  extractUserRoles,
+  type DalSession as Session,
+} from "./helpers";
 
 /**
  * Data Access Layer for Excel exports.
@@ -19,30 +23,13 @@ import { prismaForTenant } from "./prisma";
  * | AUDITEE       | Only assigned       | No         | No                       |
  */
 
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
-}
-
-function getUserRoles(session: Session): string[] {
-  return ((session.user as any).roles ?? []) as string[];
-}
-
 const FULL_ACCESS_ROLES = ["CEO", "CAE", "CCO"];
 
 // ─── Findings Export (EXP-01) ───────────────────────────────────────────────
 
 export async function getExportFindings(session: Session) {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
   const db = prismaForTenant(tenantId);
 
   // Build WHERE clause based on role
@@ -91,7 +78,7 @@ export async function getExportFindings(session: Session) {
 
 export async function getExportCompliance(session: Session) {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
 
   // Only CEO, CAE, CCO can export compliance
   if (!roles.some((r) => FULL_ACCESS_ROLES.includes(r))) {
@@ -127,7 +114,7 @@ export async function getExportCompliance(session: Session) {
 
 export async function getExportAuditPlans(session: Session) {
   const tenantId = extractTenantId(session);
-  const roles = getUserRoles(session);
+  const roles = extractUserRoles(session);
   const db = prismaForTenant(tenantId);
 
   // Build engagement-level WHERE based on role

@@ -1,32 +1,11 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import { extractTenantId, type DalSession as Session } from "./helpers";
 
 /**
  * Data Access Layer for notification queue operations and preferences.
- *
- * Follows the canonical DAL 5-step pattern:
- * 1. Accept session object (tenantId source)
- * 2. Use prismaForTenant() for RLS isolation
- * 3. Add explicit WHERE tenantId (belt-and-suspenders)
- * 4. Runtime assertions where applicable
- * 5. Return typed data
- *
  * Cross-tenant functions (for cron jobs) import base prisma directly.
  */
-
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
-}
 
 // ─── Batch window for NOTF-06 ─────────────────────────────────────────────
 

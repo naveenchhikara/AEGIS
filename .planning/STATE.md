@@ -3,19 +3,19 @@
 ## Current Position
 
 **Phase:** 15 of 16 (Production Hardening)
-**Plan:** 3 of 4 in phase — COMPLETE
-**Status:** In progress
-**Last activity:** 2026-02-11 - Completed 15-03-PLAN.md
+**Plan:** 4 of 4 in phase — PHASE COMPLETE
+**Status:** Phase complete
+**Last activity:** 2026-02-11 - Completed 15-04-PLAN.md
 
-Progress: ███████████████████████████████████████████████████████░ 53/54 (98.1%)
+Progress: ████████████████████████████████████████████████████████ 54/54 (100%)
 
 ## Milestone History
 
-| Milestone                | Phases | Plans | Status              |
-| ------------------------ | ------ | ----- | ------------------- |
-| v1.0 Clickable Prototype | 1–4    | 23/23 | Shipped 2026-02-08  |
-| v2.0 Working Core MVP    | 5–14   | 50/50 | Shipped 2026-02-10  |
-| v2.1 Gap Closure         | 15–16  | 3/4   | In Progress (15-03) |
+| Milestone                | Phases | Plans | Status             |
+| ------------------------ | ------ | ----- | ------------------ |
+| v1.0 Clickable Prototype | 1–4    | 23/23 | Shipped 2026-02-08 |
+| v2.0 Working Core MVP    | 5–14   | 50/50 | Shipped 2026-02-10 |
+| v2.1 Gap Closure         | 15–16  | 4/4   | Phase 15 Complete  |
 
 ## Outstanding Items
 
@@ -25,8 +25,10 @@ Progress: ███████████████████████�
 
 ## Key Decisions
 
-Full decision log in PROJECT.md (D1–D39). Most recent:
+Full decision log in PROJECT.md (D1–D41). Most recent:
 
+- **D41 (15-04):** Delete locale infrastructure entirely — Locale demo data (hi/, mr/, gu/) and get-locale-data.ts were dead code; v2.0 uses database for all data, no runtime locale support needed
+- **D40 (15-04):** Keep barrel export with deprecation warnings — 11 prototype views still import demo data from @/data barrel; updated to point to seed/ paths with clear deprecation comments for future cleanup
 - **D39 (15-02):** AWS SES env vars optional in development — Made AWS_SES_REGION and SES_FROM_EMAIL optional to unblock local builds; required in production only
 - **D38 (15-02):** Explicit child logger creation over AsyncLocalStorage — AsyncLocalStorage incompatible with Edge runtime; explicit createRequestLogger pattern works with App Router
 - **D37 (15-02):** Pino over winston/bunyan for structured logging — Fastest Node.js logger with zero dependencies and native CloudWatch JSON format
@@ -43,7 +45,7 @@ Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-11
-Completed Phase 15 Plan 02 (Structured Logging Integration). Integrated pino logger with dev/prod formatting, sensitive data redaction, and request-scoped child logger helper. Added logging to health check API route as usage example. Fixed pre-existing TypeScript errors blocking build (state-machine tests, SES env vars). Three commits (9db1616, e783df5, 61bb249). Logger available at @/lib/logger for incremental adoption. Ready for 15-04.
+Completed Phase 15 Plan 04 (Seed Data Migration). Moved all demo JSON files from src/data/demo/ to src/data/seed/ for physical isolation from runtime code. Deleted locale-specific demo data directories (hi/, mr/, gu/) and dead locale infrastructure code. Updated barrel export (src/data/index.ts) with deprecation warnings and seed/ paths. Updated seed script imports. Two commits (5553b9b, e9800ff). Phase 15 complete — all 4 production hardening plans shipped.
 
 ---
 

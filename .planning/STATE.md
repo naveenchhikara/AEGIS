@@ -25,10 +25,11 @@ Progress: ███████████████████████�
 
 ## Key Decisions
 
-Full decision log in PROJECT.md (D1–D38). Most recent:
+Full decision log in PROJECT.md (D1–D39). Most recent:
 
-- **D38 (15-03):** TopBar displays email instead of role — Better Auth user.roles is string[] (technical), email more user-friendly for identity confirmation
-- **D37 (15-01):** Flexible AWS region validation — Use z.string().min(1) instead of regex for AWS_REGION to allow dev/test flexibility while production enforces ap-south-1 via IaC
+- **D39 (15-02):** AWS SES env vars optional in development — Made AWS_SES_REGION and SES_FROM_EMAIL optional to unblock local builds; required in production only
+- **D38 (15-02):** Explicit child logger creation over AsyncLocalStorage — AsyncLocalStorage incompatible with Edge runtime; explicit createRequestLogger pattern works with App Router
+- **D37 (15-02):** Pino over winston/bunyan for structured logging — Fastest Node.js logger with zero dependencies and native CloudWatch JSON format
 
 Architecture-critical ones:
 
@@ -42,7 +43,7 @@ Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-11
-Completed Phase 15 Plan 03 (TopBar Session Integration). Replaced hardcoded currentUser with Better Auth session in top-bar.tsx. Deleted src/lib/current-user.ts. TopBar now shows real authenticated user with working sign-out. One task commit (82c935f). Ready for 15-04.
+Completed Phase 15 Plan 02 (Structured Logging Integration). Integrated pino logger with dev/prod formatting, sensitive data redaction, and request-scoped child logger helper. Added logging to health check API route as usage example. Fixed pre-existing TypeScript errors blocking build (state-machine tests, SES env vars). Three commits (9db1616, e783df5, 61bb249). Logger available at @/lib/logger for incremental adoption. Ready for 15-04.
 
 ---
 

@@ -53,12 +53,13 @@
 - Legacy `currentUser` cleanup (remove demo data dependency)
 - Legacy demo JSON isolation (seed-only, not runtime)
 
-**Tasks:**
+**Plans:** 3 plans (1 wave, all parallel)
 
-1. Add `@t3-oss/env-nextjs` with Zod schema for all env vars
-2. Integrate pino logger with request context
-3. Replace `currentUser` imports with session in 2 files
-4. Move demo JSON to seed-specific directory
+Plans:
+
+- [ ] 15-01-PLAN.md — Environment variable validation with T3 Env + Zod
+- [ ] 15-02-PLAN.md — Pino structured logging framework
+- [ ] 15-03-PLAN.md — Legacy currentUser removal and demo data isolation
 
 ### Phase 16: CI/CD Pipeline
 
@@ -94,7 +95,7 @@
 | 12. Dashboard Data Pipeline     | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 14. Verification & Prod Ready   | v2.0 fix  | 5/5            | Complete | 2026-02-10 |
-| 15. Production Hardening        | v2.1      | 0/4            | Pending  | —          |
+| 15. Production Hardening        | v2.1      | 0/3            | Planned  | —          |
 | 16. CI/CD Pipeline              | v2.1      | 0/3            | Pending  | —          |
 
 ---

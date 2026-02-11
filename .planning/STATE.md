@@ -3,11 +3,11 @@
 ## Current Position
 
 **Phase:** 15 of 16 (Production Hardening)
-**Plan:** 1 of 4 in phase — COMPLETE
+**Plan:** 3 of 4 in phase — COMPLETE
 **Status:** In progress
-**Last activity:** 2026-02-11 - Completed 15-01-PLAN.md
+**Last activity:** 2026-02-11 - Completed 15-03-PLAN.md
 
-Progress: ████████████████████████████████████████████████████████░░ 51/54 (94.4%)
+Progress: ███████████████████████████████████████████████████████░ 53/54 (98.1%)
 
 ## Milestone History
 
@@ -15,7 +15,7 @@ Progress: ███████████████████████�
 | ------------------------ | ------ | ----- | ------------------- |
 | v1.0 Clickable Prototype | 1–4    | 23/23 | Shipped 2026-02-08  |
 | v2.0 Working Core MVP    | 5–14   | 50/50 | Shipped 2026-02-10  |
-| v2.1 Gap Closure         | 15–16  | 1/4   | In Progress (15-01) |
+| v2.1 Gap Closure         | 15–16  | 3/4   | In Progress (15-03) |
 
 ## Outstanding Items
 
@@ -25,8 +25,9 @@ Progress: ███████████████████████�
 
 ## Key Decisions
 
-Full decision log in PROJECT.md (D1–D37). Most recent:
+Full decision log in PROJECT.md (D1–D38). Most recent:
 
+- **D38 (15-03):** TopBar displays email instead of role — Better Auth user.roles is string[] (technical), email more user-friendly for identity confirmation
 - **D37 (15-01):** Flexible AWS region validation — Use z.string().min(1) instead of regex for AWS_REGION to allow dev/test flexibility while production enforces ap-south-1 via IaC
 
 Architecture-critical ones:
@@ -41,7 +42,7 @@ Architecture-critical ones:
 ## Session Continuity
 
 Last session: 2026-02-11
-Completed Phase 15 Plan 01 (Environment Variable Validation). Added T3 Env with Zod schemas for all 15 env vars, wired build-time validation into next.config.ts, added SKIP_ENV_VALIDATION for Docker builds. Two task commits (ecb5c8e, 6d62c94). Ready for 15-02.
+Completed Phase 15 Plan 03 (TopBar Session Integration). Replaced hardcoded currentUser with Better Auth session in top-bar.tsx. Deleted src/lib/current-user.ts. TopBar now shows real authenticated user with working sign-out. One task commit (82c935f). Ready for 15-04.
 
 ---
 

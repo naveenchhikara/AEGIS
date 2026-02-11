@@ -12,7 +12,7 @@ Run ALL checks below and report pass/fail for each with a summary table at the e
 - Verify the password segment does NOT contain unescaped special characters (`/`, `@`, `#`, `%`, `?`, `=`)
 - Verify `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` are all set
 - Verify `DATABASE_URL` matches the individual POSTGRES\_\* values (user, password, host, port, db)
-- Test actual database connectivity: `npx prisma db execute --stdin <<< "SELECT 1"` (if Docker is running)
+- Test actual database connectivity via docker: `docker exec aegis-postgres psql -U aegis -d aegis -t -c "SELECT 1;"` (if Docker is running)
 
 ### 2. Auth Configuration
 
@@ -23,20 +23,21 @@ Run ALL checks below and report pass/fail for each with a summary table at the e
 ### 3. Database Schema State
 
 - Run `npx prisma migrate status` to check for pending migrations
-- Verify critical tables exist: `user`, `session`, `account`, `verification`
-- Check if the `account_lockout` table exists (needed for Phase 11 lockout plugin)
-- If rate_limit table is expected, verify it exists
+- Verify critical tables exist (Prisma uses PascalCase): `User`, `Session`, `Account`, `Verification`
+- Check if the `FailedLoginAttempt` table exists (Phase 11 lockout plugin — NOT `account_lockout`)
+- Note: Better Auth rate limiting uses `FailedLoginAttempt`, there is no separate `rate_limit` table
 
 ### 4. Seed Data Integrity
 
-- Check if users exist in the database: `npx prisma db execute --stdin <<< "SELECT id, email, name FROM \"user\" LIMIT 5"`
-- Verify seeded users have password hashes in the `account` table: `npx prisma db execute --stdin <<< "SELECT a.\"userId\", a.\"providerId\", LENGTH(a.password) as hash_len FROM account a WHERE a.\"providerId\" = 'credential' LIMIT 5"`
+- Check if users exist in the database: `docker exec aegis-postgres psql -U aegis -d aegis -t -c 'SELECT id, email, name FROM "User" LIMIT 5;'`
+- Verify seeded users have password hashes in the `Account` table: `docker exec aegis-postgres psql -U aegis -d aegis -t -c 'SELECT a."userId", a."providerId", LENGTH(a.password) as hash_len FROM "Account" a WHERE a."providerId" = '"'"'credential'"'"' LIMIT 5;'`
 - Flag any credential accounts with NULL or empty password hashes
 
 ### 5. Account Lockout Check
 
-- Query for locked accounts: `npx prisma db execute --stdin <<< "SELECT email, \"lockUntil\" FROM account_lockout WHERE \"lockUntil\" > NOW()"`
+- Query for locked accounts: `docker exec aegis-postgres psql -U aegis -d aegis -t -c 'SELECT email, "lockedUntil" FROM "FailedLoginAttempt" WHERE "lockedUntil" > NOW();'`
 - If any accounts are locked, report them and offer to clear lockouts
+- To clear all lockouts: `docker exec aegis-postgres psql -U aegis -d aegis -c 'DELETE FROM "FailedLoginAttempt";'`
 
 ### 6. Port Conflicts
 

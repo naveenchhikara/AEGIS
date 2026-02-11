@@ -126,7 +126,8 @@ Before running E2E tests or deploying, run `/preflight` to validate:
 - When seeding test users, always generate proper bcrypt password hashes compatible with Better Auth
 - Never seed users without password hashes — auth will silently fail
 - Default test password: `Test@12345` with pre-computed bcrypt hash
-- After seeding, verify with: `SELECT a."userId", LENGTH(a.password) FROM account a WHERE a."providerId" = 'credential'`
+- After seeding, verify with: `SELECT a."userId", LENGTH(a.password) FROM "Account" a WHERE a."providerId" = 'credential'`
+- Prisma uses PascalCase table names: `User`, `Account`, `Session`, `FailedLoginAttempt` (not snake_case)
 
 ## Gotchas
 

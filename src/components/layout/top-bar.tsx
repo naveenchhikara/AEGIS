@@ -14,13 +14,9 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Globe, LogOut, Settings } from "@/lib/icons";
 import { LANGUAGES } from "@/lib/constants";
-import { currentUser } from "@/lib/current-user";
-import { bankProfile } from "@/data";
-import type { BankProfile } from "@/types";
+import { authClient, signOut } from "@/lib/auth-client";
 import Link from "next/link";
 import { navItems } from "@/lib/nav-items";
-
-const bank = bankProfile as unknown as BankProfile;
 
 function switchLocale(newLocale: string) {
   document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365}`;
@@ -34,6 +30,17 @@ export function TopBar() {
   const currentLang = LANGUAGES.find((l) => l.code === locale)!;
   const pathname = usePathname();
 
+  // Get Better Auth session
+  const { data: session } = authClient.useSession();
+
+  // Derive user initials from session
+  const userInitials = session?.user?.name
+    ? session.user.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+    : "?";
+
   // Derive page name from pathname using navItems
   const currentNav = navItems.find((item) => pathname.startsWith(item.href));
   const currentPage = currentNav ? tNav(currentNav.tKey) : undefined;
@@ -43,18 +50,12 @@ export function TopBar() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
 
-      {/* Bank name + breadcrumb - hidden on mobile to save space */}
-      <div className="hidden items-center gap-2 md:flex">
-        <h2 className="text-foreground text-base font-bold tracking-tight">
-          {bank.name}
-        </h2>
-        {currentPage && (
-          <>
-            <span className="text-muted-foreground/50">/</span>
-            <span className="text-muted-foreground text-sm">{currentPage}</span>
-          </>
-        )}
-      </div>
+      {/* Page breadcrumb - hidden on mobile to save space */}
+      {currentPage && (
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="text-muted-foreground text-sm">{currentPage}</span>
+        </div>
+      )}
 
       <div className="ml-auto flex items-center gap-1">
         {/* Language switcher */}
@@ -109,16 +110,18 @@ export function TopBar() {
             >
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
-                  {currentUser.initials}
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{currentUser.name}</p>
+              <p className="text-sm font-medium">
+                {session?.user?.name ?? "User"}
+              </p>
               <p className="text-muted-foreground text-xs">
-                {currentUser.role}
+                {session?.user?.email ?? ""}
               </p>
             </div>
             <DropdownMenuItem asChild>
@@ -127,11 +130,14 @@ export function TopBar() {
                 {tNav("settings")}
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/login">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t("signOut")}
-              </Link>
+            <DropdownMenuItem
+              onClick={async () => {
+                await signOut();
+                window.location.href = "/login";
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              {t("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

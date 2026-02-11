@@ -667,7 +667,7 @@ async function main() {
 
   // Load compliance data
   const complianceJson =
-    await import("../src/data/demo/compliance-requirements.json");
+    await import("../src/data/seed/compliance-requirements.json");
   const complianceReqs = complianceJson.complianceRequirements;
 
   // Assign owner based on category
@@ -724,7 +724,7 @@ async function main() {
 
   console.log("  Creating observations...");
 
-  const findingsJson = await import("../src/data/demo/findings.json");
+  const findingsJson = await import("../src/data/seed/findings.json");
   const findings = findingsJson.findings;
 
   // Map finding categories to audit area names

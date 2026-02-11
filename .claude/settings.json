@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROGRESS_FILE=\"$HOME/.claude/projects/-Users-admin-Developer-AEGIS/memory/session-progress.md\" && TIMESTAMP=$(date '+%Y-%m-%d %H:%M') && echo \"- [$TIMESTAMP] $CLAUDE_NOTIFICATION\" >> \"$PROGRESS_FILE\""
+          }
+        ]
+      }
     ]
   }
 }

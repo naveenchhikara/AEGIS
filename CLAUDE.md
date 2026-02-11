@@ -92,6 +92,42 @@ src/
 - Roadmap in `.planning/ROADMAP.md` (4 phases)
 - Requirements in `.planning/REQUIREMENTS.md` (49 v1 requirements)
 
+## Preflight Check
+
+Before running E2E tests or deploying, run `/preflight` to validate:
+
+1. `DATABASE_URL` has no special characters in password (`/`, `@`, `#`, `%`)
+2. `BETTER_AUTH_URL` port matches `NEXT_PUBLIC_APP_URL` port
+3. All required tables exist (including `account_lockout`)
+4. Seed users have password hashes (use bcrypt compatible with Better Auth)
+5. No locked accounts from previous failed login attempts
+6. Port 3000 is available
+
+## Session Management
+
+- **Checkpoint every ~30 messages:** Commit progress and summarize what's done/pending before context fills up
+- **Never let compaction fail:** If a session is getting long, proactively commit and start fresh
+- **Progress is auto-captured:** Hooks log notifications to `memory/session-progress.md` — no need for manual observer agents
+
+## Sub-Agent / Observer Rules
+
+- **Observer agents are READ-ONLY.** They must NEVER use Edit, Write, or NotebookEdit tools. They observe and record only.
+- **Do not spawn observer agents.** Progress capture is handled automatically by hooks. Manual observer sessions are deprecated.
+- Sub-agents spawned via Task tool should have a clear, scoped objective — not open-ended exploration
+
+## Database / Environment Configuration
+
+- Database passwords must not contain special characters (`/`, `@`, `#`, `%`, `?`, `=`). Use only alphanumeric passwords.
+- When setting `DATABASE_URL`, verify it matches the individual `POSTGRES_*` env vars
+- Always test DB connectivity before running migrations or seeds
+
+## Testing / Seed Data
+
+- When seeding test users, always generate proper bcrypt password hashes compatible with Better Auth
+- Never seed users without password hashes — auth will silently fail
+- Default test password: `Test@12345` with pre-computed bcrypt hash
+- After seeding, verify with: `SELECT a."userId", LENGTH(a.password) FROM account a WHERE a."providerId" = 'credential'`
+
 ## Gotchas
 
 - Demo data is hardcoded — no real authentication or database

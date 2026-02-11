@@ -193,6 +193,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Trigger Coolify deployment
+        if: secrets.COOLIFY_WEBHOOK_URL != ''
         run: |
           curl --fail --silent --show-error --location \
             -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \

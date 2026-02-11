@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -27,8 +28,10 @@ export async function GET() {
   try {
     await getPool().query("SELECT 1");
     health.db = "connected";
-  } catch {
+    logger.info({ status: health.status, db: health.db }, "health check");
+  } catch (error) {
     health.db = "error";
+    logger.error({ error, status: health.status }, "health check failed");
   }
 
   const statusCode = health.db === "error" ? 503 : 200;

@@ -1,3 +1,4 @@
+import "./src/env"; // Validate environment variables at build time
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 

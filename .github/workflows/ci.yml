@@ -186,3 +186,14 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, build, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.COOLIFY_WEBHOOK_URL != ''
+    steps:
+      - name: Trigger Coolify deployment
+        run: |
+          curl --fail --silent --show-error --location \
+            -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}"

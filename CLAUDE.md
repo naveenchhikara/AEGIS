@@ -98,7 +98,7 @@ Before running E2E tests or deploying, run `/preflight` to validate:
 
 1. `DATABASE_URL` has no special characters in password (`/`, `@`, `#`, `%`)
 2. `BETTER_AUTH_URL` port matches `NEXT_PUBLIC_APP_URL` port
-3. All required tables exist (including `account_lockout`)
+3. All required tables exist (including `FailedLoginAttempt`)
 4. Seed users have password hashes (use bcrypt compatible with Better Auth)
 5. No locked accounts from previous failed login attempts
 6. Port 3000 is available

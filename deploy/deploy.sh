@@ -2,12 +2,15 @@
 # ==============================================================================
 # AEGIS - Deployment Script
 # Run on the server to pull latest changes and restart the app
-# Usage: bash deploy/deploy.sh
+# Usage: bash deploy/deploy.sh [branch]
 # ==============================================================================
 
 set -euo pipefail
 
-APP_DIR="/home/ubuntu/aegis"
+DEPLOY_USER="${AEGIS_DEPLOY_USER:-$(whoami)}"
+DEPLOY_HOME=$(eval echo "~$DEPLOY_USER")
+APP_DIR="${AEGIS_APP_DIR:-$DEPLOY_HOME/aegis}"
+BRANCH="${1:-main}"
 cd "$APP_DIR"
 
 echo "========================================"
@@ -17,8 +20,8 @@ echo "========================================"
 echo ""
 
 # ---------- Pull Latest Code ----------
-echo "[1/4] Pulling latest code..."
-git pull origin main
+echo "[1/4] Pulling latest code (branch: $BRANCH)..."
+git pull origin "$BRANCH"
 
 # ---------- Install Dependencies ----------
 echo "[2/4] Installing dependencies..."

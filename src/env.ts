@@ -36,8 +36,9 @@ export const env = createEnv({
     S3_BUCKET_NAME: z.string().min(1),
 
     // AWS SES Email (Mumbai region for RBI data localization)
-    AWS_SES_REGION: z.string().min(1),
-    SES_FROM_EMAIL: z.string().email(),
+    // Optional in development - required in production for email notifications
+    AWS_SES_REGION: z.string().min(1).optional(),
+    SES_FROM_EMAIL: z.string().email().optional(),
 
     // Application
     NODE_ENV: z

@@ -108,7 +108,9 @@ describe("canTransition", () => {
     it("COMPLIANCE -> CLOSED: requires severity parameter", () => {
       const result = canTransition("COMPLIANCE", "CLOSED", ["AUDIT_MANAGER"]);
       expect(result.allowed).toBe(false);
-      expect(result.reason).toBeDefined();
+      if (!result.allowed) {
+        expect(result.reason).toBeDefined();
+      }
     });
   });
 
@@ -157,19 +159,25 @@ describe("canTransition", () => {
     it("DRAFT -> SUBMITTED: AUDIT_MANAGER rejected (not AUDITOR)", () => {
       const result = canTransition("DRAFT", "SUBMITTED", ["AUDIT_MANAGER"]);
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("AUDITOR");
+      if (!result.allowed) {
+        expect(result.reason).toContain("AUDITOR");
+      }
     });
 
     it("ISSUED -> RESPONSE: AUDITOR rejected (not AUDITEE)", () => {
       const result = canTransition("ISSUED", "RESPONSE", ["AUDITOR"]);
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("AUDITEE");
+      if (!result.allowed) {
+        expect(result.reason).toContain("AUDITEE");
+      }
     });
 
     it("SUBMITTED -> REVIEWED: AUDITOR rejected (not AUDIT_MANAGER)", () => {
       const result = canTransition("SUBMITTED", "REVIEWED", ["AUDITOR"]);
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("AUDIT_MANAGER");
+      if (!result.allowed) {
+        expect(result.reason).toContain("AUDIT_MANAGER");
+      }
     });
   });
 

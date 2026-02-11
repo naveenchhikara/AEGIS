@@ -72,11 +72,12 @@ Plans:
 - No pre-merge validation (lint, type-check, build)
 - Manual Coolify dashboard deploy process
 
-**Tasks:**
+**Plans:** 2 plans (2 waves)
 
-1. Create GitHub Actions workflow (lint, type-check, build, E2E tests)
-2. Configure auto-deploy trigger to Coolify on push to main
-3. Add branch protection rules (require CI pass before merge)
+Plans:
+
+- [ ] 16-01-PLAN.md -- GitHub Actions CI/CD workflow (lint, typecheck, build, E2E, Coolify deploy)
+- [ ] 16-02-PLAN.md -- Branch protection rules (require CI pass before merge)
 
 ## Progress
 
@@ -97,7 +98,7 @@ Plans:
 | 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
 | 14. Verification & Prod Ready   | v2.0 fix  | 5/5            | Complete | 2026-02-10 |
 | 15. Production Hardening        | v2.1      | 4/4            | Complete | 2026-02-11 |
-| 16. CI/CD Pipeline              | v2.1      | 0/3            | Pending  | —          |
+| 16. CI/CD Pipeline              | v2.1      | 0/2            | Pending  | —          |
 
 ---
 

@@ -199,6 +199,36 @@ function getPermissionsForRole(role: Role): Permission[] {
     ],
     AUDITEE: ["observation:read"],
     BOARD_OBSERVER: [],
+    LEAD_AUDITOR: [
+      "observation:create",
+      "observation:read",
+      "compliance:read",
+      "audit_plan:read",
+      "audit_execution:read",
+      "audit_execution:manage_team",
+      "audit_execution:manage_sections",
+      "examination:respond",
+      "examination:read",
+      "ram:read",
+      "dashboard:auditor",
+    ],
+    FIELD_AUDITOR: [
+      "observation:create",
+      "observation:read",
+      "compliance:read",
+      "audit_plan:read",
+      "audit_execution:read",
+      "examination:respond",
+      "examination:read",
+      "ram:read",
+      "dashboard:auditor",
+    ],
+    BRANCH_HEAD: [
+      "observation:read",
+      "compliance:read",
+      "examination:read",
+      "bh_certificate:sign",
+    ],
   };
 
   return rolePermissions[role] || [];

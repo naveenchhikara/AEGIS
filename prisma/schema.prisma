@@ -22,6 +22,9 @@ enum Role {
   CEO
   AUDITEE
   BOARD_OBSERVER
+  LEAD_AUDITOR
+  FIELD_AUDITOR
+  BRANCH_HEAD
 }
 
 enum Severity {
@@ -184,6 +187,8 @@ model Tenant {
   evidence               Evidence[]
   complianceRequirements ComplianceRequirement[]
   branches               Branch[]
+  zones                  Zone[]
+  auditTeamMembers       AuditTeamMember[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -242,6 +247,7 @@ model User {
   notifications        NotificationQueue[]   @relation("NotificationRecipient")
   notificationPreference NotificationPreference? @relation("NotificationPreference")
   generatedReports     BoardReport[]         @relation("ReportGeneratedBy")
+  auditTeamMemberships AuditTeamMember[]
 
   @@unique([email])
   @@index([tenantId])
@@ -500,6 +506,17 @@ model Branch {
   state String
   type  String?
 
+  // Phase 1 extensions (R3: RAM-relevant branch metadata)
+  zoneId          String?   @db.Uuid
+  zone            Zone?     @relation(fields: [zoneId], references: [id])
+  category        String?   // "LARGE", "MEDIUM", "SMALL", "VERY_SMALL"
+  businessSize    Decimal?  @db.Decimal(15, 2) // Total business in lakhs
+  staffStrength   Int?
+  ramScore        Decimal?  @db.Decimal(5, 2) // Latest RAM composite score (cached)
+  auditFrequency  Int?      // Derived audit frequency in months
+  lastAuditDate   DateTime?
+  lastAuditRating String?   // "VERY_GOOD", "GOOD", "SATISFACTORY", "MODERATE", "POOR"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -507,6 +524,26 @@ model Branch {
   observations     Observation[]
   auditEngagements AuditEngagement[]
   userAssignments  UserBranchAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// ─── Zone (Phase 1 — R2: ZAC workflow foundation) ──────────────────────────
+
+model Zone {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  code     String  // e.g., "ZONE-01", "WEST"
+  name     String  // e.g., "Western Zone"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  branches Branch[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -580,14 +617,55 @@ model AuditEngagement {
   scheduledStartDate DateTime?
   completionDate     DateTime?
 
+  // Phase 1 extensions (R11: full audit engagement metadata)
+  auditNumber       String?             // Unique audit reference e.g. "RBIA/2025-26/BR-001/V1"
+  auditType         String?  @default("RBIA") // "RBIA", "CONCURRENT", "IS_EDP", "STATUTORY"
+  visitNumber       Int?     @default(1)
+  periodFrom        DateTime?
+  periodTo          DateTime?
+  actualStartDate   DateTime?
+  actualEndDate     DateTime?
+  overallRiskRating String?             // Computed after audit: "VERY_GOOD"..."POOR"
+
+  // BH Certificate fields (R26)
+  bhCertSignedById  String?   @db.Uuid
+  bhCertSignedAt    DateTime?
+  bhCertComments    String?   @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   observations Observation[]
+  teamMembers  AuditTeamMember[]
 
   @@index([tenantId])
   @@index([auditPlanId])
+}
+
+// ─── Audit Team Member (Phase 1 — R10: team assignment join model) ─────────
+
+model AuditTeamMember {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String @db.Uuid
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  userId       String @db.Uuid
+  user         User   @relation(fields: [userId], references: [id])
+
+  roleInEngagement String  // "LEAD_AUDITOR" or "FIELD_AUDITOR"
+  assignedSections String[] // Array of section codes e.g., ["CASH", "ATM", "CLEARING"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, userId])
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([userId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

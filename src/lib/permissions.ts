@@ -54,7 +54,17 @@ export type Permission =
   | "dashboard:manager"
   | "dashboard:cae"
   | "dashboard:cco"
-  | "dashboard:ceo";
+  | "dashboard:ceo"
+  // RAM & Audit Execution (Phase 1)
+  | "ram:read"
+  | "ram:create"
+  | "ram:approve"
+  | "audit_execution:read"
+  | "audit_execution:manage_team"
+  | "audit_execution:manage_sections"
+  | "examination:respond"
+  | "examination:read"
+  | "bh_certificate:sign";
 
 /**
  * Role-to-permission mapping.
@@ -79,6 +89,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "compliance:read",
     "compliance:update",
     "report:read",
+    "ram:read",
+    "ram:create",
     "dashboard:manager",
   ],
   CAE: [
@@ -97,6 +109,13 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "admin:manage_users",
     "admin:manage_roles",
     "admin:manage_settings",
+    "ram:read",
+    "ram:create",
+    "ram:approve",
+    "audit_execution:read",
+    "audit_execution:manage_team",
+    "audit_execution:manage_sections",
+    "examination:read",
     "dashboard:cae",
   ],
   CCO: [
@@ -109,6 +128,36 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   CEO: ["dashboard:ceo", "report:read", "observation:read", "compliance:read"],
   AUDITEE: ["observation:read"], // Limited to assigned observations only
   BOARD_OBSERVER: [], // Reserved — no permissions yet (DE9)
+  LEAD_AUDITOR: [
+    "observation:create",
+    "observation:read",
+    "compliance:read",
+    "audit_plan:read",
+    "audit_execution:read",
+    "audit_execution:manage_team",
+    "audit_execution:manage_sections",
+    "examination:respond",
+    "examination:read",
+    "ram:read",
+    "dashboard:auditor",
+  ],
+  FIELD_AUDITOR: [
+    "observation:create",
+    "observation:read",
+    "compliance:read",
+    "audit_plan:read",
+    "audit_execution:read",
+    "examination:respond",
+    "examination:read",
+    "ram:read",
+    "dashboard:auditor",
+  ],
+  BRANCH_HEAD: [
+    "observation:read",
+    "compliance:read",
+    "examination:read",
+    "bh_certificate:sign",
+  ],
 };
 
 /**
@@ -182,6 +231,9 @@ export function getAssignableRoles(): Role[] {
     Role.CCO,
     Role.CEO,
     Role.AUDITEE,
+    Role.LEAD_AUDITOR,
+    Role.FIELD_AUDITOR,
+    Role.BRANCH_HEAD,
   ];
 }
 
@@ -198,6 +250,9 @@ export function getRoleDisplayName(role: Role): string {
     CEO: "Chief Executive Officer",
     AUDITEE: "Auditee",
     BOARD_OBSERVER: "Board Observer",
+    LEAD_AUDITOR: "Lead Auditor",
+    FIELD_AUDITOR: "Field Auditor",
+    BRANCH_HEAD: "Branch Head",
   };
   return displayNames[role] || role;
 }

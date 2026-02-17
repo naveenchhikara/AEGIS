@@ -1,34 +1,8 @@
-# AEGIS - Production Docker Compose with Traefik
-# Auto-SSL via Let's Encrypt, zero cost
-# Usage: docker compose -f docker-compose.prod.yml up -d
+# AEGIS - Production Docker Compose
+# Nginx handles SSL + reverse proxy (already on VPS)
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 services:
-  traefik:
-    image: traefik:v3.3
-    container_name: aegis-traefik
-    restart: unless-stopped
-    command:
-      - "--api.dashboard=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      # HTTP → HTTPS redirect
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # Let's Encrypt auto-SSL
-      - "--certificatesresolvers.letsencrypt.acme.email=naveenchhikara@gmail.com"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt_data:/letsencrypt
-    networks:
-      - aegis-network
-
   postgres:
     image: postgres:16-alpine
     container_name: aegis-postgres
@@ -45,15 +19,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    networks:
-      - aegis-network
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - SKIP_ENV_VALIDATION=1
     container_name: aegis-app
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"  # Only localhost — nginx proxies externally
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       NODE_ENV: production
@@ -75,30 +51,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    labels:
-      - "traefik.enable=true"
-      # HTTPS route
-      - "traefik.http.routers.aegis.rule=Host(`aegis.nexlyadvisory.com`)"
-      - "traefik.http.routers.aegis.entrypoints=websecure"
-      - "traefik.http.routers.aegis.tls.certresolver=letsencrypt"
-      # Service port
-      - "traefik.http.services.aegis.loadbalancer.server.port=3000"
-      # Security headers
-      - "traefik.http.middlewares.aegis-headers.headers.stsSeconds=31536000"
-      - "traefik.http.middlewares.aegis-headers.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.aegis-headers.headers.frameDeny=true"
-      - "traefik.http.middlewares.aegis-headers.headers.contentTypeNosniff=true"
-      - "traefik.http.middlewares.aegis-headers.headers.browserXssFilter=true"
-      - "traefik.http.routers.aegis.middlewares=aegis-headers"
-    networks:
-      - aegis-network
 
 volumes:
   postgres_data:
     driver: local
-  letsencrypt_data:
-    driver: local
-
-networks:
-  aegis-network:
-    driver: bridge

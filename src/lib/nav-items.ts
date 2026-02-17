@@ -8,6 +8,8 @@ import {
   Settings,
   Users,
   Clock,
+  Gauge,
+  Activity,
 } from "@/lib/icons";
 import type { Permission, Role } from "./permissions";
 
@@ -74,6 +76,20 @@ export const navItems: NavItem[] = [
     icon: UserCheck,
     tKey: "auditeePortal",
     requiredPermission: "observation:read", // Auditees can read their assigned observations
+  },
+  {
+    title: "RAM Assessments",
+    href: "/ram",
+    icon: Gauge,
+    tKey: "ramAssessments",
+    requiredPermission: "ram:read",
+  },
+  {
+    title: "Audit Execution",
+    href: "/audit-execution",
+    icon: Activity,
+    tKey: "auditExecution",
+    requiredPermission: "audit_execution:read",
   },
   {
     title: "Audit Trail",

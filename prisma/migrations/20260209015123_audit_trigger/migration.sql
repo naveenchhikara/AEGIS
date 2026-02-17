@@ -44,7 +44,7 @@ BEGIN
     "ipAddress",
     "sessionId",
     "retentionExpiresAt",
-    createdat  -- lowercase to match PostgreSQL default
+    "createdAt"  -- camelCase to match Prisma schema
   ) VALUES (
     gen_random_uuid(),
     _tenant_id::UUID,  -- Cast TEXT to UUID (from current_setting)

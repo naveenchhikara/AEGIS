@@ -145,7 +145,7 @@ export async function acceptInvitation(
       },
     });
 
-    if (!user) {
+    if (!user || !user.inviteTokenHash) {
       return { success: false, error: "Invalid or expired invitation." };
     }
 

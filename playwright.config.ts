@@ -3,30 +3,30 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Playwright configuration for AEGIS E2E tests
  *
- * Features:
- * - Auth setup project runs once before all tests
- * - 4 role-based test projects (auditor, manager, CAE, auditee)
- * - Automatically starts Next.js dev server
- * - Uses storageState for authenticated sessions
+ * Runs against the Docker container on localhost:3000.
+ * Auth setup creates storageState files for 4 roles.
  */
 export default defineConfig({
   testDir: "./tests",
-  fullyParallel: true,
+  fullyParallel: false, // Serial for state-dependent tests
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  workers: 1,
+  reporter: [["list"], ["html", { open: "never" }]],
+  timeout: 30000,
 
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: process.env.BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    headless: true,
   },
 
   projects: [
-    // Auth setup runs once before all tests
+    // Auth setup runs first
     { name: "setup", testMatch: /.*\.setup\.ts/ },
 
-    // Auditor tests (default role)
+    // Auditor tests
     {
       name: "auditor",
       use: {
@@ -67,10 +67,5 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // No webServer — we test against the running Docker container
 });

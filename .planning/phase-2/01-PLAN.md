@@ -10,172 +10,48 @@ files_modified:
 autonomous: true
 must_haves:
   truths:
-    - "ComplianceItem model exists with observation_id, status, due_date, escalation_level, days_open"
-    - "ZONAL_AUDITOR role exists in Role enum"
-    - "ReportTemplate model supports versioning with version_number, is_active, template_data JSONB"
-    - "AuditCalendar model supports event scheduling with recurrence rules"
-    - "ComplianceStatus enum includes all lifecycle stages"
-    - "ZONAL_AUDITOR has appropriate permissions in ROLE_PERMISSIONS"
+    - "ComplianceItem model exists with 1:1 observationId, status, dueDate, escalationLevel, daysOpen, branchResponseSubmittedAt fields"
+    - "ZONAL_AUDITOR role added to Role enum"
+    - "ReportMetadata model tracks generated reports with status workflow"
+    - "TemplateVersion model supports versioning with isActive flag"
+    - "ComplianceStatus enum includes OPEN, PENDING_BRANCH_RESPONSE, PENDING_ZAC_REVIEW, PENDING_ACE, PENDING_ACB, COMPLIED, ACCEPTED_RISK, CLOSED"
+    - "EscalationLevel enum includes NONE, L1_EMAIL, L2_ZAC, L3_ACE, L4_ACB"
+    - "ReportStatus enum includes DRAFT, UNDER_REVIEW, APPROVED, ISSUED"
   artifacts:
     - path: "prisma/schema.prisma"
-      provides: "ComplianceItem, ReportTemplate, AuditCalendar models, ComplianceStatus enum extensions, ZONAL_AUDITOR role"
+      provides: "ComplianceItem, ReportMetadata, TemplateVersion models + enums + ZONAL_AUDITOR role"
     - path: "src/lib/permissions.ts"
-      provides: "Updated permissions for compliance lifecycle and ZONAL_AUDITOR role"
+      provides: "ZONAL_AUDITOR permissions + compliance lifecycle permissions"
   key_links:
     - from: "ComplianceItem"
       to: "Observation"
-      via: "ComplianceItem.observationId → Observation.id (1:1 relationship)"
-    - from: "ComplianceItem"
-      to: "Branch"
-      via: "ComplianceItem.branchId → Branch.id"
+      via: "ComplianceItem.observationId → Observation.id (1:1)"
+    - from: "ReportMetadata"
+      to: "AuditEngagement"
+      via: "ReportMetadata.engagementId → AuditEngagement.id"
 ---
 
 ## Objective
 
-Establish Phase 2 schema foundation: ComplianceItem model for tracking observation remediation lifecycle, ZONAL_AUDITOR role for zone-level compliance review, ReportTemplate model for versioned report templates, and AuditCalendar for event scheduling. These are the core data models that all Phase 2 features depend on.
+Establish the foundational schema for Phase 2: ComplianceItem model for tracking observation compliance through the full lifecycle (Branch → ZAC → ACE → ACB), ZONAL_AUDITOR role for zone-level compliance review, ReportMetadata model for tracking generated reports with approval workflow, and TemplateVersion model for template management with versioning.
+
+This plan covers R34 (ComplianceItem), R41 (ZONAL_AUDITOR), R33 (report routing), and R48 (template versioning).
 
 ## Context
 
-@AEGIS/prisma/schema.prisma — current 39-model schema (modify)
+@AEGIS/prisma/schema.prisma — current 39-model schema from Phase 1 (modify)
 @AEGIS/src/lib/permissions.ts — current RBAC system (modify)
-@AEGIS/.planning/REQUIREMENTS.md — R34, R41, R47, R48
-@AEGIS/.planning/codebase/CONVENTIONS.md — schema patterns
+@AEGIS/.planning/REQUIREMENTS.md — R29-R48
+@AEGIS/.planning/ROADMAP.md — Phase 2 description
+@AEGIS/.planning/codebase/CONVENTIONS.md — coding patterns
 
 ## Tasks
 
 <task type="auto">
-  <name>Task 1: Schema — ComplianceItem model + ComplianceStatus extensions</name>
+  <name>Task 1: Schema — Add enums for compliance lifecycle</name>
   <files>prisma/schema.prisma</files>
   <action>
-  **1a. Extend ComplianceStatus enum to include all lifecycle stages (after existing values):**
-
-  Find the existing ComplianceStatus enum and ADD these values (do not remove existing ones):
-
-  ```prisma
-  enum ComplianceStatus {
-    COMPLIANT
-    PARTIAL
-    NON_COMPLIANT
-    PENDING
-    OPEN
-    BRANCH_RESPONSE_DUE
-    BRANCH_RESPONSE_SUBMITTED
-    ZAC_REVIEW
-    ZAC_APPROVED
-    ZAC_REJECTED
-    ACE_REVIEW
-    ACB_REVIEW
-    CLOSED
-    OVERDUE
-  }
-  ```
-
-  **1b. Add ComplianceItem model (after SmaNpaEntry model):**
-
-  ```prisma
-  // ─── Compliance Item (Phase 2 — R34: observation remediation lifecycle) ────
-
-  model ComplianceItem {
-    id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    tenantId String @db.Uuid
-    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-    // Link to observation (1:1 relationship)
-    observationId String      @unique @db.Uuid
-    observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
-
-    // Denormalized for query performance
-    auditId   String?          @db.Uuid
-    audit     AuditEngagement? @relation(fields: [auditId], references: [id])
-    branchId  String?          @db.Uuid
-    branch    Branch?          @relation(fields: [branchId], references: [id])
-
-    status          ComplianceStatus @default(OPEN)
-    dueDate         DateTime
-    escalationLevel Int              @default(0) // 0=none, 1=L1 (+15d), 2=L2 (+30d), 3=L3 (+90d), 4=L4 (+180d)
-    daysOpen        Int              @default(0) // Computed field, updated by cron
-
-    // Branch response
-    branchResponseText      String?   @db.Text
-    branchResponseDate      DateTime?
-    branchResponseEvidence  String[]  // S3 keys
-
-    // ZAC review
-    zacReviewedById         String?   @db.Uuid
-    zacReviewedAt           DateTime?
-    zacReviewComments       String?   @db.Text
-    zacReviewDecision       String?   // "APPROVED", "REJECTED", "REQUEST_INFO"
-
-    // ACE processing
-    aceReviewedById         String?   @db.Uuid
-    aceReviewedAt           DateTime?
-    aceQuarter              String?   // "2025-Q1"
-
-    // ACB reporting
-    acbReportedAt           DateTime?
-    acbMeetingRef           String?
-
-    closedAt                DateTime?
-    closedById              String?   @db.Uuid
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([tenantId])
-    @@index([status])
-    @@index([branchId, status])
-    @@index([dueDate])
-    @@index([escalationLevel])
-  }
-  ```
-
-  **1c. Add ComplianceItem relation to Tenant model (after smaNpaEntries):**
-
-  ```prisma
-    complianceItems            ComplianceItem[]
-  ```
-
-  **1d. Add ComplianceItem relation to Branch model (after ramAssessments):**
-
-  ```prisma
-    complianceItems  ComplianceItem[]
-  ```
-
-  **1e. Add ComplianceItem relation to AuditEngagement model (after smaNpaEntries):**
-
-  ```prisma
-    complianceItems          ComplianceItem[]
-  ```
-
-  **1f. Add ComplianceItem relation to Observation model (after examinationResponses):**
-
-  ```prisma
-    complianceItem           ComplianceItem?
-  ```
-
-  **IMPORTANT:** Do NOT remove or change any existing fields. Only ADD new content.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate
-  ```
-  Must exit 0 with no errors.
-  </verify>
-  <done>
-  - ComplianceStatus enum has 14 values (including OPEN, BRANCH_RESPONSE_DUE, ZAC_REVIEW, ACE_REVIEW, ACB_REVIEW, CLOSED, OVERDUE)
-  - ComplianceItem model exists with observationId @unique
-  - ComplianceItem has escalationLevel (0-4), daysOpen, status, dueDate
-  - ComplianceItem has branch/ZAC/ACE/ACB workflow fields
-  - Tenant, Branch, AuditEngagement, Observation have ComplianceItem relations
-  - `pnpm prisma validate` passes
-  </done>
-</task>
-
-<task type="auto">
-  <name>Task 2: Schema — ZONAL_AUDITOR role + ReportTemplate + AuditCalendar models</name>
-  <files>prisma/schema.prisma, src/lib/permissions.ts</files>
-  <action>
-  **2a. Add ZONAL_AUDITOR to Role enum (after BRANCH_HEAD):**
+  **1a. Add ZONAL_AUDITOR to the existing `Role` enum (after BRANCH_HEAD):**
 
   ```prisma
   enum Role {
@@ -193,105 +69,441 @@ Establish Phase 2 schema foundation: ComplianceItem model for tracking observati
   }
   ```
 
-  **2b. Add ReportTemplate model (after ComplianceItem):**
+  **1b. Add new enums BEFORE the Tenant model (after existing enums):**
 
   ```prisma
-  // ─── Report Template (Phase 2 — R48: versioned templates) ──────────────────
+  enum ComplianceStatus {
+    OPEN
+    PENDING_BRANCH_RESPONSE
+    PENDING_ZAC_REVIEW
+    PENDING_ACE
+    PENDING_ACB
+    COMPLIED
+    ACCEPTED_RISK
+    CLOSED
+  }
 
-  model ReportTemplate {
-    id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    tenantId String @db.Uuid
-    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enum EscalationLevel {
+    NONE
+    L1_EMAIL
+    L2_ZAC
+    L3_ACE
+    L4_ACB
+  }
 
-    name           String
-    category       String // "AUDIT_SECTION", "CHECKLIST", "REPORT_HEADER"
-    versionNumber  Int    @default(1)
-    isActive       Boolean @default(true)
-    templateData   Json   // JSONB: flexible template structure
+  enum ReportStatus {
+    DRAFT
+    UNDER_REVIEW
+    APPROVED
+    ISSUED
+  }
 
-    createdById    String   @db.Uuid
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
+  enum ReportFormat {
+    XLSX
+    PDF
+  }
 
-    @@unique([tenantId, name, versionNumber])
-    @@index([tenantId])
-    @@index([tenantId, category, isActive])
+  enum TemplateCategory {
+    REPORT_SECTION
+    EXAMINATION_CHECKLIST
+    COMPLIANCE_FORM
+    CUSTOM
   }
   ```
 
-  **2c. Add AuditCalendar model (after ReportTemplate):**
+  **IMPORTANT:** Place these enums in the enums section, NOT inside any model.
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate
+  ```
+  Must exit 0 with no errors.
+  </verify>
+  <done>
+  - Role enum has ZONAL_AUDITOR (11 total values)
+  - ComplianceStatus enum exists with 8 values
+  - EscalationLevel enum exists with 5 values  
+  - ReportStatus enum exists with 4 values
+  - ReportFormat enum exists with 2 values
+  - TemplateCategory enum exists with 4 values
+  - `pnpm prisma validate` passes
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 2: Schema — ComplianceItem model</name>
+  <files>prisma/schema.prisma</files>
+  <action>
+  **2a. Add ComplianceItem model (after the Observation model, before ObservationTimeline):**
 
   ```prisma
-  // ─── Audit Calendar (Phase 2 — R47: audit event scheduling) ────────────────
+  // ─── Compliance Item (Phase 2 — R34: observation compliance tracking) ──────
 
-  model AuditCalendar {
-    id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    tenantId String @db.Uuid
-    tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  model ComplianceItem {
+    id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    tenantId      String @db.Uuid
+    tenant        Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-    title          String
-    eventType      String   // "RBIA", "CONCURRENT", "IS_EDP", "STATUTORY", "MEETING"
-    startDate      DateTime
-    endDate        DateTime?
-    allDay         Boolean  @default(false)
+    // 1:1 relationship with Observation
+    observationId String      @unique @db.Uuid
+    observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
 
-    branchId       String?  @db.Uuid
-    branch         Branch?  @relation(fields: [branchId], references: [id])
+    // Denormalized for query efficiency
+    auditId       String          @db.Uuid
+    audit         AuditEngagement @relation(fields: [auditId], references: [id])
+    branchId      String?         @db.Uuid
+    branch        Branch?         @relation(fields: [branchId], references: [id])
 
-    engagementId   String?  @db.Uuid
-    engagement     AuditEngagement? @relation(fields: [engagementId], references: [id])
-
-    recurrenceRule String?  // iCalendar RRULE format
-    description    String?  @db.Text
-    assignedToId   String?  @db.Uuid
+    status            ComplianceStatus  @default(OPEN)
+    escalationLevel   EscalationLevel   @default(NONE)
+    daysOpen          Int               @default(0) // Computed daily by cron
+    
+    dueDate           DateTime?
+    branchResponseDue DateTime?         // 30-day SLA from observation issued date
+    
+    branchResponseSubmittedAt DateTime?
+    branchResponseSubmittedBy String?   @db.Uuid
+    
+    zacReviewedAt     DateTime?
+    zacReviewedBy     String?   @db.Uuid
+    zacDecision       String?   // "ACCEPTED", "REJECTED", "REQUEST_INFO"
+    zacComments       String?   @db.Text
+    
+    aceProcessedAt    DateTime?
+    aceProcessedBy    String?   @db.Uuid
+    aceQuarter        Quarter?
+    aceYear           Int?
+    
+    acbReportedAt     DateTime?
+    acbReportedBy     String?   @db.Uuid
+    acbMeetingDate    DateTime?
+    
+    closedAt          DateTime?
+    closedBy          String?   @db.Uuid
+    closureReason     String?   @db.Text
+    
+    acceptedRisk      Boolean   @default(false)
+    acceptedRiskBy    String?   @db.Uuid
+    acceptedRiskAt    DateTime?
+    acceptedRiskReason String?  @db.Text
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    // Relations
+    escalations     ComplianceEscalation[]
+    statusHistory   ComplianceStatusHistory[]
+
     @@index([tenantId])
-    @@index([tenantId, startDate])
-    @@index([eventType])
+    @@index([status])
+    @@index([escalationLevel])
+    @@index([tenantId, status, daysOpen])
+    @@index([auditId])
+    @@index([branchId])
   }
   ```
 
-  **2d. Add relations to Tenant model (after complianceItems):**
+  **2b. Add relation to Tenant model (after `dashboardSnapshots`):**
 
   ```prisma
-    reportTemplates            ReportTemplate[]
-    auditCalendarEvents        AuditCalendar[]
+    complianceItems            ComplianceItem[]
   ```
 
-  **2e. Add relations to Branch model (after complianceItems):**
+  **2c. Add relation to Observation model (after `examinationResponses`):**
 
   ```prisma
-    calendarEvents   AuditCalendar[]
+    complianceItem             ComplianceItem?
   ```
 
-  **2f. Add relation to AuditEngagement model (after complianceItems):**
+  **2d. Add relation to AuditEngagement model (after `smaNpaEntries`):**
 
   ```prisma
-    calendarEvents           AuditCalendar[]
+    complianceItems            ComplianceItem[]
   ```
 
-  **2g. Update `src/lib/permissions.ts`:**
+  **2e. Add relation to Branch model (after `ramAssessments`):**
 
-  Add new permissions to the Permission type union:
+  ```prisma
+    complianceItems            ComplianceItem[]
+  ```
+
+  **IMPORTANT:** Do NOT remove any existing fields. Only ADD new content.
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate
+  ```
+  Must exit 0 with no errors.
+  </verify>
+  <done>
+  - ComplianceItem model exists with observationId @unique (1:1 relation)
+  - ComplianceItem has status, escalationLevel, daysOpen, dueDate fields
+  - ComplianceItem has all lifecycle stage fields (branch response, ZAC, ACE, ACB)
+  - ComplianceItem has acceptedRisk tracking fields
+  - Tenant, Observation, AuditEngagement, Branch have complianceItems relations
+  - `pnpm prisma validate` passes
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 3: Schema — ComplianceEscalation and StatusHistory tracking</name>
+  <files>prisma/schema.prisma</files>
+  <action>
+  **3a. Add ComplianceEscalation model (after ComplianceItem):**
+
+  ```prisma
+  // ─── Compliance Escalation (Phase 2 — escalation event tracking) ───────────
+
+  model ComplianceEscalation {
+    id               String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    tenantId         String @db.Uuid
+    tenant           Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+    complianceItemId String         @db.Uuid
+    complianceItem   ComplianceItem @relation(fields: [complianceItemId], references: [id], onDelete: Cascade)
+
+    level            EscalationLevel
+    triggeredAt      DateTime        @default(now())
+    notifiedUserIds  String[]        // Array of user IDs notified
+    emailsSent       Int             @default(0)
+    
+    resolvedAt       DateTime?
+    resolvedBy       String?         @db.Uuid
+
+    createdAt DateTime @default(now())
+
+    @@index([tenantId])
+    @@index([complianceItemId])
+    @@index([level, triggeredAt])
+  }
+  ```
+
+  **3b. Add ComplianceStatusHistory model (after ComplianceEscalation):**
+
+  ```prisma
+  // ─── Compliance Status History (Phase 2 — audit trail) ─────────────────────
+
+  model ComplianceStatusHistory {
+    id               String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    tenantId         String @db.Uuid
+    tenant           Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+    complianceItemId String         @db.Uuid
+    complianceItem   ComplianceItem @relation(fields: [complianceItemId], references: [id], onDelete: Cascade)
+
+    fromStatus       ComplianceStatus?
+    toStatus         ComplianceStatus
+    changedById      String           @db.Uuid
+    changedBy        User             @relation(fields: [changedById], references: [id])
+    comments         String?          @db.Text
+
+    createdAt DateTime @default(now())
+
+    @@index([tenantId])
+    @@index([complianceItemId])
+    @@index([createdAt])
+  }
+  ```
+
+  **3c. Add relations to Tenant model (after `complianceItems`):**
+
+  ```prisma
+    complianceEscalations      ComplianceEscalation[]
+    complianceStatusHistory    ComplianceStatusHistory[]
+  ```
+
+  **3d. Add relation to User model (after `auditTeamMemberships`):**
+
+  ```prisma
+    complianceStatusChanges    ComplianceStatusHistory[]
+  ```
+
+  **IMPORTANT:** Only ADD new models and relations.
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate
+  ```
+  Must exit 0 with no errors.
+  </verify>
+  <done>
+  - ComplianceEscalation model exists with level, triggeredAt, notifiedUserIds
+  - ComplianceStatusHistory model exists with fromStatus, toStatus, changedById
+  - Tenant has complianceEscalations and complianceStatusHistory relations
+  - User has complianceStatusChanges relation
+  - `pnpm prisma validate` passes
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 4: Schema — ReportMetadata and TemplateVersion models</name>
+  <files>prisma/schema.prisma</files>
+  <action>
+  **4a. Add ReportMetadata model (after BoardReport, before DashboardSnapshot):**
+
+  ```prisma
+  // ─── Report Metadata (Phase 2 — R33: report tracking + routing workflow) ───
+
+  model ReportMetadata {
+    id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    tenantId     String @db.Uuid
+    tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+    engagementId String          @db.Uuid
+    engagement   AuditEngagement @relation(fields: [engagementId], references: [id])
+
+    format       ReportFormat
+    status       ReportStatus    @default(DRAFT)
+    
+    // Risk rating (R31, R32)
+    riskScore    Decimal?        @db.Decimal(5, 2) // Weighted average
+    ratingBand   String?         // "VERY_GOOD", "GOOD", "SATISFACTORY", "MODERATE", "POOR"
+    
+    // File storage
+    s3Key        String?
+    fileSize     Int?
+    filename     String?
+    
+    // Workflow
+    generatedById  String   @db.Uuid
+    generatedBy    User     @relation("ReportGeneratedBy", fields: [generatedById], references: [id])
+    generatedAt    DateTime @default(now())
+    
+    reviewedById   String?  @db.Uuid
+    reviewedBy     User?    @relation("ReportReviewedBy", fields: [reviewedById], references: [id])
+    reviewedAt     DateTime?
+    reviewComments String?  @db.Text
+    
+    approvedById   String?  @db.Uuid
+    approvedBy     User?    @relation("ReportApprovedBy", fields: [approvedById], references: [id])
+    approvedAt     DateTime?
+    approvalComments String? @db.Text
+    
+    issuedAt       DateTime?
+    
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+    @@index([engagementId])
+    @@index([status])
+  }
+  ```
+
+  **4b. Add TemplateVersion model (after ReportMetadata):**
+
+  ```prisma
+  // ─── Template Version (Phase 2 — R48: template management with versioning) ─
+
+  model TemplateVersion {
+    id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    tenantId     String @db.Uuid
+    tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+    templateCode String   // e.g., "RBIA_REPORT", "CASH_CHECK_FORM"
+    category     TemplateCategory
+    name         String
+    description  String?  @db.Text
+    
+    versionNumber Int
+    isActive      Boolean @default(false)
+    
+    // Template content (JSON structure or HTML template string)
+    contentJson   Json?
+    contentHtml   String?  @db.Text
+    
+    // Template configuration (field mappings, section order, etc.)
+    config        Json?
+    
+    createdById   String   @db.Uuid
+    createdBy     User     @relation(fields: [createdById], references: [id])
+    createdAt     DateTime @default(now())
+    
+    activatedById String?  @db.Uuid
+    activatedBy   User?    @relation("TemplateActivatedBy", fields: [activatedById], references: [id])
+    activatedAt   DateTime?
+
+    @@unique([tenantId, templateCode, versionNumber])
+    @@index([tenantId])
+    @@index([tenantId, templateCode, isActive])
+  }
+  ```
+
+  **4c. Add relations to Tenant model (after `complianceStatusHistory`):**
+
+  ```prisma
+    reportMetadata             ReportMetadata[]
+    templateVersions           TemplateVersion[]
+  ```
+
+  **4d. Add relations to AuditEngagement model (after `complianceItems`):**
+
+  ```prisma
+    reportMetadata             ReportMetadata[]
+  ```
+
+  **4e. Add relations to User model (after `complianceStatusChanges`):**
+
+  ```prisma
+    generatedReportMetadata    ReportMetadata[]  @relation("ReportGeneratedBy")
+    reviewedReportMetadata     ReportMetadata[]  @relation("ReportReviewedBy")
+    approvedReportMetadata     ReportMetadata[]  @relation("ReportApprovedBy")
+    createdTemplates           TemplateVersion[]
+    activatedTemplates         TemplateVersion[] @relation("TemplateActivatedBy")
+  ```
+
+  **IMPORTANT:** Only ADD new models and relations.
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate
+  ```
+  Must exit 0 with no errors.
+  </verify>
+  <done>
+  - ReportMetadata model exists with format, status, riskScore, ratingBand
+  - ReportMetadata has workflow fields (generated, reviewed, approved, issued)
+  - TemplateVersion model exists with templateCode, versionNumber, isActive
+  - TemplateVersion has @@unique([tenantId, templateCode, versionNumber])
+  - Tenant has reportMetadata and templateVersions relations
+  - AuditEngagement has reportMetadata relation
+  - User has 5 new report/template relations
+  - `pnpm prisma validate` passes
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 5: RBAC — ZONAL_AUDITOR permissions</name>
+  <files>src/lib/permissions.ts</files>
+  <action>
+  **5a. Add new permissions to the `Permission` type union (after existing permissions):**
 
   ```typescript
     // Compliance Lifecycle (Phase 2)
-    | "compliance:read"
-    | "compliance:create"
+    | "compliance:manage"
     | "compliance:branch_response"
     | "compliance:zac_review"
     | "compliance:ace_process"
     | "compliance:acb_report"
+    | "compliance:accept_risk"
+    // Reports (Phase 2)
     | "report:generate"
+    | "report:review"
     | "report:approve"
-    | "template:manage"
-    | "calendar:manage"
+    | "report:issue"
+    // Templates (Phase 2)
+    | "template:read"
+    | "template:create"
+    | "template:activate"
+    // Analytics (Phase 2)
+    | "analytics:branch_heatmap"
+    | "analytics:audit_progress"
+    | "analytics:compliance_aging"
+    | "analytics:findings_trend"
+    | "analytics:npa_movement"
   ```
 
-  Add ZONAL_AUDITOR role to ROLE_PERMISSIONS:
+  **5b. Add ZONAL_AUDITOR entry to `ROLE_PERMISSIONS` (after BRANCH_HEAD):**
 
   ```typescript
     ZONAL_AUDITOR: [
@@ -301,18 +513,58 @@ Establish Phase 2 schema foundation: ComplianceItem model for tracking observati
       "audit_plan:read",
       "audit_execution:read",
       "examination:read",
+      "report:generate",
+      "analytics:branch_heatmap",
+      "analytics:compliance_aging",
       "dashboard:auditor",
     ],
   ```
 
-  Also add compliance:read to existing roles:
-  - Add `"compliance:read"` to AUDITOR, LEAD_AUDITOR, FIELD_AUDITOR, AUDIT_MANAGER
-  - Add `"compliance:read"`, `"compliance:create"`, `"compliance:ace_process"` to CAE
-  - Add `"compliance:read"`, `"compliance:acb_report"`, `"report:generate"`, `"report:approve"` to CEO
-  - Add `"compliance:branch_response"` to BRANCH_HEAD and AUDITEE
-  - Add `"template:manage"`, `"calendar:manage"` to CAE and AUDIT_MANAGER
+  **5c. Update existing role permissions:**
 
-  Update getAssignableRoles() to include ZONAL_AUDITOR:
+  Add to AUDIT_MANAGER:
+  ```typescript
+      "compliance:manage",
+      "report:generate",
+      "report:review",
+      "analytics:audit_progress",
+      "analytics:findings_trend",
+  ```
+
+  Add to CAE:
+  ```typescript
+      "compliance:manage",
+      "compliance:ace_process",
+      "report:generate",
+      "report:review",
+      "report:approve",
+      "template:read",
+      "template:create",
+      "template:activate",
+      "analytics:branch_heatmap",
+      "analytics:audit_progress",
+      "analytics:compliance_aging",
+      "analytics:findings_trend",
+      "analytics:npa_movement",
+  ```
+
+  Add to CEO:
+  ```typescript
+      "compliance:acb_report",
+      "report:issue",
+      "analytics:branch_heatmap",
+      "analytics:audit_progress",
+      "analytics:compliance_aging",
+      "analytics:findings_trend",
+      "analytics:npa_movement",
+  ```
+
+  Add to AUDITEE:
+  ```typescript
+      "compliance:branch_response",
+  ```
+
+  **5d. Update `getAssignableRoles()` to include ZONAL_AUDITOR:**
 
   ```typescript
   export function getAssignableRoles(): Role[] {
@@ -331,40 +583,39 @@ Establish Phase 2 schema foundation: ComplianceItem model for tracking observati
   }
   ```
 
-  Update getRoleDisplayName() to include:
+  **5e. Update `getRoleDisplayName()` to include:**
 
   ```typescript
     ZONAL_AUDITOR: "Zonal Auditor",
   ```
+
+  **IMPORTANT:** Only ADD permissions to existing arrays, don't remove any.
   </action>
   <verify>
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm prisma validate && pnpm exec tsc --noEmit --pretty 2>&1 | head -30
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/lib/permissions.ts 2>&1 | head -20
   ```
-  Both prisma validate and typecheck must pass.
+  Must compile without errors.
   </verify>
   <done>
-  - Role enum has 11 values (includes ZONAL_AUDITOR)
-  - ReportTemplate model exists with versionNumber, isActive, templateData JSONB
-  - ReportTemplate has @@unique([tenantId, name, versionNumber])
-  - AuditCalendar model exists with eventType, startDate, recurrenceRule
-  - Tenant, Branch, AuditEngagement have appropriate relations
-  - Permission type includes 10 new Phase 2 permissions
-  - ZONAL_AUDITOR role has zac_review permission
-  - All relevant roles have compliance:read permission
-  - `pnpm prisma validate` and TypeScript compilation pass
+  - Permission type includes 16 new Phase 2 permissions
+  - ZONAL_AUDITOR has appropriate permissions in ROLE_PERMISSIONS
+  - AUDIT_MANAGER, CAE, CEO, AUDITEE have compliance/report/analytics permissions
+  - getAssignableRoles() includes ZONAL_AUDITOR
+  - getRoleDisplayName() includes "Zonal Auditor"
+  - TypeScript compiles successfully
   </done>
 </task>
 
 ## Success Criteria
 
-1. `pnpm prisma validate` passes with all schema additions
-2. `pnpm exec tsc --noEmit` passes (or only pre-existing errors)
-3. Role enum has exactly 11 values (includes ZONAL_AUDITOR)
-4. ComplianceItem model has 1:1 relationship with Observation via @unique observationId
-5. ComplianceItem has escalationLevel (0-4), daysOpen, status, dueDate fields
-6. ComplianceStatus enum includes lifecycle stages (OPEN, ZAC_REVIEW, ACE_REVIEW, ACB_REVIEW, CLOSED)
-7. ReportTemplate supports versioning with @@unique([tenantId, name, versionNumber])
-8. AuditCalendar supports recurrence with recurrenceRule field
-9. permissions.ts includes 10 new Phase 2 permissions
-10. ZONAL_AUDITOR has compliance:zac_review permission
+1. `pnpm prisma validate` passes with all Phase 2 schema additions
+2. `pnpm exec tsc --noEmit` passes
+3. Role enum has 11 values (including ZONAL_AUDITOR)
+4. 5 new enums exist (ComplianceStatus, EscalationLevel, ReportStatus, ReportFormat, TemplateCategory)
+5. ComplianceItem model has 1:1 relation with Observation via @unique observationId
+6. ComplianceEscalation and ComplianceStatusHistory tracking models exist
+7. ReportMetadata model has workflow fields and risk rating fields
+8. TemplateVersion model has @@unique([tenantId, templateCode, versionNumber])
+9. permissions.ts compiles with 16 new permissions and ZONAL_AUDITOR role mapping
+10. All existing models retain their fields (no deletions)

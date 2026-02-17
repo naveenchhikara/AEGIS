@@ -244,6 +244,16 @@ function getPermissionsForRole(role: Role): Permission[] {
       "compliance:read",
       "examination:read",
       "bh_certificate:sign",
+      "compliance:branch_response",
+    ],
+    ZONAL_AUDITOR: [
+      "observation:read",
+      "compliance:read",
+      "compliance:zac_review",
+      "audit_plan:read",
+      "audit_execution:read",
+      "examination:read",
+      "dashboard:auditor",
     ],
   };
 

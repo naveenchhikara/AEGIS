@@ -25,6 +25,7 @@ enum Role {
   LEAD_AUDITOR
   FIELD_AUDITOR
   BRANCH_HEAD
+  ZONAL_AUDITOR
 }
 
 enum Severity {
@@ -49,6 +50,16 @@ enum ComplianceStatus {
   PARTIAL
   NON_COMPLIANT
   PENDING
+  OPEN
+  BRANCH_RESPONSE_DUE
+  BRANCH_RESPONSE_SUBMITTED
+  ZAC_REVIEW
+  ZAC_APPROVED
+  ZAC_REJECTED
+  ACE_REVIEW
+  ACB_REVIEW
+  CLOSED
+  OVERDUE
 }
 
 enum UcbTier {
@@ -219,6 +230,9 @@ model Tenant {
   cashChecks                 CashCheck[]
   loanReviews                LoanReview[]
   smaNpaEntries              SmaNpaEntry[]
+  complianceItems            ComplianceItem[]
+  reportTemplates            ReportTemplate[]
+  auditCalendarEvents        AuditCalendar[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -399,6 +413,7 @@ model Observation {
   auditeeResponses  AuditeeResponse[]
   rbiCirculars           ObservationRbiCircular[]
   examinationResponses   AuditExaminationResponse[]
+  complianceItem         ComplianceItem?
 
   @@index([tenantId])
   @@index([severity])
@@ -563,6 +578,8 @@ model Branch {
   auditEngagements AuditEngagement[]
   userAssignments  UserBranchAssignment[]
   ramAssessments   RamAssessment[]
+  complianceItems  ComplianceItem[]
+  calendarEvents   AuditCalendar[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -682,6 +699,8 @@ model AuditEngagement {
   cashChecks           CashCheck[]
   loanReviews          LoanReview[]
   smaNpaEntries        SmaNpaEntry[]
+  complianceItems      ComplianceItem[]
+  calendarEvents       AuditCalendar[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -984,6 +1003,108 @@ model SmaNpaEntry {
 
   @@unique([engagementId, category])
   @@index([tenantId])
+}
+
+// ─── Compliance Item (Phase 2 — R34: observation remediation lifecycle) ────
+
+model ComplianceItem {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  observationId String      @unique @db.Uuid
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  auditId   String?          @db.Uuid
+  audit     AuditEngagement? @relation(fields: [auditId], references: [id])
+  branchId  String?          @db.Uuid
+  branch    Branch?          @relation(fields: [branchId], references: [id])
+
+  status          ComplianceStatus @default(OPEN)
+  dueDate         DateTime
+  escalationLevel Int              @default(0)
+  daysOpen        Int              @default(0)
+
+  branchResponseText      String?   @db.Text
+  branchResponseDate      DateTime?
+  branchResponseEvidence  String[]
+
+  zacReviewedById         String?   @db.Uuid
+  zacReviewedAt           DateTime?
+  zacReviewComments       String?   @db.Text
+  zacReviewDecision       String?
+
+  aceReviewedById         String?   @db.Uuid
+  aceReviewedAt           DateTime?
+  aceQuarter              String?
+
+  acbReportedAt           DateTime?
+  acbMeetingRef           String?
+
+  closedAt                DateTime?
+  closedById              String?   @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([branchId, status])
+  @@index([dueDate])
+  @@index([escalationLevel])
+}
+
+// ─── Report Template (Phase 2 — R48: versioned templates) ──────────────────
+
+model ReportTemplate {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name           String
+  category       String
+  versionNumber  Int    @default(1)
+  isActive       Boolean @default(true)
+  templateData   Json
+
+  createdById    String   @db.Uuid
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, name, versionNumber])
+  @@index([tenantId])
+  @@index([tenantId, category, isActive])
+}
+
+// ─── Audit Calendar (Phase 2 — R47: audit event scheduling) ────────────────
+
+model AuditCalendar {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title          String
+  eventType      String
+  startDate      DateTime
+  endDate        DateTime?
+  allDay         Boolean  @default(false)
+
+  branchId       String?  @db.Uuid
+  branch         Branch?  @relation(fields: [branchId], references: [id])
+
+  engagementId   String?  @db.Uuid
+  engagement     AuditEngagement? @relation(fields: [engagementId], references: [id])
+
+  recurrenceRule String?
+  description    String?  @db.Text
+  assignedToId   String?  @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, startDate])
+  @@index([eventType])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

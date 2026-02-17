@@ -64,7 +64,15 @@ export type Permission =
   | "audit_execution:manage_sections"
   | "examination:respond"
   | "examination:read"
-  | "bh_certificate:sign";
+  | "bh_certificate:sign"
+  // Compliance Lifecycle (Phase 2)
+  | "compliance:branch_response"
+  | "compliance:zac_review"
+  | "compliance:ace_process"
+  | "compliance:acb_report"
+  | "report:approve"
+  | "template:manage"
+  | "calendar:manage";
 
 /**
  * Role-to-permission mapping.
@@ -91,6 +99,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "report:read",
     "ram:read",
     "ram:create",
+    "template:manage",
+    "calendar:manage",
     "dashboard:manager",
   ],
   CAE: [
@@ -116,6 +126,10 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_execution:manage_team",
     "audit_execution:manage_sections",
     "examination:read",
+    "compliance:ace_process",
+    "report:approve",
+    "template:manage",
+    "calendar:manage",
     "dashboard:cae",
   ],
   CCO: [
@@ -125,7 +139,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "report:read",
     "dashboard:cco",
   ],
-  CEO: ["dashboard:ceo", "report:read", "observation:read", "compliance:read"],
+  CEO: ["dashboard:ceo", "report:read", "report:approve", "observation:read", "compliance:read", "compliance:acb_report"],
   AUDITEE: ["observation:read"], // Limited to assigned observations only
   BOARD_OBSERVER: [], // Reserved — no permissions yet (DE9)
   LEAD_AUDITOR: [
@@ -157,6 +171,16 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "compliance:read",
     "examination:read",
     "bh_certificate:sign",
+    "compliance:branch_response",
+  ],
+  ZONAL_AUDITOR: [
+    "observation:read",
+    "compliance:read",
+    "compliance:zac_review",
+    "audit_plan:read",
+    "audit_execution:read",
+    "examination:read",
+    "dashboard:auditor",
   ],
 };
 
@@ -234,6 +258,7 @@ export function getAssignableRoles(): Role[] {
     Role.LEAD_AUDITOR,
     Role.FIELD_AUDITOR,
     Role.BRANCH_HEAD,
+    Role.ZONAL_AUDITOR,
   ];
 }
 
@@ -253,6 +278,7 @@ export function getRoleDisplayName(role: Role): string {
     LEAD_AUDITOR: "Lead Auditor",
     FIELD_AUDITOR: "Field Auditor",
     BRANCH_HEAD: "Branch Head",
+    ZONAL_AUDITOR: "Zonal Auditor",
   };
   return displayNames[role] || role;
 }

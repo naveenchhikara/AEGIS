@@ -20,7 +20,7 @@ import { accountLockout } from "./auth-lockout-plugin";
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  trustedOrigins: ["http://127.0.0.1:3000"],
+  trustedOrigins: ["http://127.0.0.1:3000", "https://aegis.nexlyadvisory.com"],
 
   // Prisma adapter
   database: prismaAdapter(prisma, {
@@ -54,7 +54,7 @@ export const auth = betterAuth({
     enabled: true,
     window: 900, // 15 minutes in seconds
     max: 100, // Global: 100 requests per 15 min per IP (generous for general use)
-    storage: "database", // Persistent rate limiting — survives restarts
+    storage: "memory", // In-memory rate limiting (no rateLimit table needed)
     customRules: {
       "/sign-in/email": {
         window: 900, // 15 minutes

@@ -7,7 +7,10 @@ const prismaClientSingleton = () => {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  // Increase pool size to handle concurrent RLS transactions
+  // Default pg.Pool max is 10; dashboard SSR fires 10-15 parallel queries
+  // each wrapped in a transaction for tenant isolation
+  const adapter = new PrismaPg({ connectionString, max: 20 });
   return new PrismaClient({
     adapter,
     log:
@@ -63,11 +66,19 @@ export function prismaForTenant(tenantId: string) {
         query: (args: Record<string, unknown>) => Promise<unknown>;
       }) => {
         // Wrap ALL queries in transaction with tenant context
-        return prisma.$transaction(async (tx) => {
-          // SET LOCAL parameter (transaction-scoped only — safe for connection pooling)
-          await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, TRUE)`;
-          return query(args);
-        });
+        // Extended timeouts to handle concurrent SSR data fetches
+        // (dashboard fires 10-15 parallel queries, each needing a transaction)
+        return prisma.$transaction(
+          async (tx) => {
+            // SET LOCAL parameter (transaction-scoped only — safe for connection pooling)
+            await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, TRUE)`;
+            return query(args);
+          },
+          {
+            maxWait: 10000,  // 10s to acquire a pool connection
+            timeout: 15000,  // 15s transaction execution timeout
+          },
+        );
       },
     },
   });

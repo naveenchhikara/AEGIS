@@ -1121,7 +1121,11 @@ export async function getDashboardData(
     );
   }
 
-  await Promise.all(fetches);
+  // Execute in batches of 4 to avoid pool exhaustion
+  // (each fetch creates 1-3 RLS transactions via prismaForTenant)
+  for (let i = 0; i < fetches.length; i += 4) {
+    await Promise.all(fetches.slice(i, i + 4));
+  }
 
   return data;
 }

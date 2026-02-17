@@ -86,7 +86,23 @@ export type Permission =
   | "qa_assessment:read"
   | "qa_assessment:manage"
   | "audit_universe:read"
-  | "audit_universe:manage";
+  | "audit_universe:manage"
+  // UCB Regulatory & Governance (Phase 4)
+  | "concurrent_audit:read"
+  | "concurrent_audit:execute"
+  | "regulatory:read"
+  | "regulatory:manage"
+  | "regulatory:atr_submit"
+  | "policy:read"
+  | "policy:manage"
+  | "committee:read"
+  | "committee:manage"
+  | "housekeeping:read"
+  | "housekeeping:manage"
+  | "board:workspace"
+  | "board:agenda"
+  | "risk_mis:read"
+  | "admin:system";
 
 /**
  * Role-to-permission mapping.
@@ -244,6 +260,74 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_universe:read",
     "dashboard:cae",
   ],
+  CONCURRENT_AUDITOR: [
+    "observation:create",
+    "observation:read",
+    "concurrent_audit:read",
+    "concurrent_audit:execute",
+    "compliance:read",
+    "examination:respond",
+    "examination:read",
+    "dashboard:auditor",
+  ],
+  IS_AUDITOR: [
+    "observation:create",
+    "observation:read",
+    "compliance:read",
+    "audit_plan:read",
+    "audit_execution:read",
+    "examination:respond",
+    "examination:read",
+    "control_library:read",
+    "work_program:read",
+    "work_program:execute",
+    "issue:read",
+    "issue:manage",
+    "dashboard:auditor",
+  ],
+  RISK_HEAD: [
+    "risk_register:read",
+    "risk_register:manage",
+    "risk_mis:read",
+    "control_library:read",
+    "control_library:manage",
+    "issue:read",
+    "issue:manage",
+    "issue:accept_risk",
+    "audit_universe:read",
+    "compliance:read",
+    "observation:read",
+    "policy:read",
+    "housekeeping:read",
+    "dashboard:cae",
+  ],
+  ACB_MEMBER: [
+    "board:workspace",
+    "board:agenda",
+    "observation:read",
+    "compliance:read",
+    "compliance:acb_report",
+    "risk_register:read",
+    "risk_mis:read",
+    "issue:read",
+    "report:read",
+    "policy:read",
+    "committee:read",
+    "regulatory:read",
+    "dashboard:ceo",
+  ],
+  SYSTEM_ADMIN: [
+    "admin:system",
+    "admin:manage_users",
+    "admin:manage_roles",
+    "admin:manage_settings",
+    "template:manage",
+    "calendar:manage",
+    "audit_universe:read",
+    "audit_universe:manage",
+    "policy:manage",
+    "committee:manage",
+  ],
 };
 
 /**
@@ -322,6 +406,11 @@ export function getAssignableRoles(): Role[] {
     Role.BRANCH_HEAD,
     Role.ZONAL_AUDITOR,
     Role.ACE_OFFICER,
+    Role.CONCURRENT_AUDITOR,
+    Role.IS_AUDITOR,
+    Role.RISK_HEAD,
+    Role.ACB_MEMBER,
+    Role.SYSTEM_ADMIN,
   ];
 }
 
@@ -343,6 +432,11 @@ export function getRoleDisplayName(role: Role): string {
     BRANCH_HEAD: "Branch Head",
     ZONAL_AUDITOR: "Zonal Auditor",
     ACE_OFFICER: "ACE Officer",
+    CONCURRENT_AUDITOR: "Concurrent Auditor",
+    IS_AUDITOR: "IS/EDP Auditor",
+    RISK_HEAD: "Risk Head",
+    ACB_MEMBER: "ACB Member",
+    SYSTEM_ADMIN: "System Admin",
   };
   return displayNames[role] || role;
 }

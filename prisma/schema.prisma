@@ -27,6 +27,11 @@ enum Role {
   BRANCH_HEAD
   ZONAL_AUDITOR
   ACE_OFFICER
+  CONCURRENT_AUDITOR
+  IS_AUDITOR
+  RISK_HEAD
+  ACB_MEMBER
+  SYSTEM_ADMIN
 }
 
 enum Severity {
@@ -245,6 +250,13 @@ model Tenant {
   issues                     Issue[]
   actionPlans                ActionPlan[]
   qaSelfAssessments          QaSelfAssessment[]
+  // Phase 4
+  concurrentAuditTemplates   ConcurrentAuditTemplate[]
+  regulatoryObservations     RegulatoryObservation[]
+  policyDocuments            PolicyDocument[]
+  committees                 Committee[]
+  committeeMeetings          CommitteeMeeting[]
+  housekeepingMetrics        HousekeepingMetric[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -304,6 +316,7 @@ model User {
   notificationPreference NotificationPreference? @relation("NotificationPreference")
   generatedReports     BoardReport[]         @relation("ReportGeneratedBy")
   auditTeamMemberships AuditTeamMember[]
+  committeeMemberships CommitteeMember[]
 
   @@unique([email])
   @@index([tenantId])
@@ -594,6 +607,7 @@ model Branch {
   complianceItems  ComplianceItem[]
   calendarEvents          AuditCalendar[]
   auditUniverseEntities   AuditUniverseEntity[]
+  housekeepingMetrics     HousekeepingMetric[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -1355,7 +1369,8 @@ model Issue {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  actionPlans     ActionPlan[]
+  actionPlans              ActionPlan[]
+  regulatoryObservations   RegulatoryObservation[]
 
   @@index([tenantId])
   @@index([source])
@@ -1414,6 +1429,165 @@ model QaSelfAssessment {
   @@index([tenantId])
   @@index([assessmentYear])
   @@index([gapIdentified])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 4: UCB Regulatory & Governance (R69-R92)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── M15: Concurrent Audit Scope Template (R73) ─────────────────────────────
+
+model ConcurrentAuditTemplate {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  scopeArea    String  // "CASH", "INVESTMENTS", "ADVANCES", "OFF_BS", "DEPOSITS", "KYC", "EDP"
+  name         String
+  description  String? @db.Text
+  checklistItems Json  // Array of checklist items
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, scopeArea, name])
+  @@index([tenantId])
+}
+
+// ─── M19: Regulatory Observation (R77) ──────────────────────────────────────
+
+model RegulatoryObservation {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  source        String  // "RBI_INSPECTION", "NABARD", "STATUTORY_AUDITOR", "EXTERNAL"
+  referenceNo   String
+  paraNo        String?
+  description   String  @db.Text
+  severity      String  // "CRITICAL", "HIGH", "MEDIUM", "LOW"
+  atrStatus     String  @default("DRAFT") // "DRAFT", "SUBMITTED", "ACCEPTED", "FURTHER_INFO", "CLOSED"
+  atrText       String? @db.Text
+  submittedAt   DateTime?
+  acceptedAt    DateTime?
+
+  // Link to internal issue tracking
+  issueId       String? @db.Uuid
+  issue         Issue?  @relation(fields: [issueId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, referenceNo])
+  @@index([tenantId])
+  @@index([atrStatus])
+  @@index([source])
+}
+
+// ─── M20: Policy Document (R84) ─────────────────────────────────────────────
+
+model PolicyDocument {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name          String
+  category      String  // "LENDING", "INVESTMENT", "KYC_AML", "IT_SECURITY", "HR", "AUDIT", "RISK_MANAGEMENT"
+  approvalDate  DateTime?
+  reviewDueDate DateTime?
+  version       String  @default("1.0")
+  status        String  @default("DRAFT") // "DRAFT", "APPROVED", "UNDER_REVIEW", "SUPERSEDED"
+  documentUrl   String? // S3 key
+  summary       String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([reviewDueDate])
+}
+
+// ─── M20: Committee Governance (R85) ────────────────────────────────────────
+
+model Committee {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String  // "ACB", "RISK_MANAGEMENT", "ALCO", "IT_STRATEGY", "CREDIT", "HR"
+  description String? @db.Text
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   CommitteeMember[]
+  meetings  CommitteeMeeting[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model CommitteeMember {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  committeeId String    @db.Uuid
+  committee   Committee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    // "CHAIRMAN", "MEMBER", "SECRETARY", "INVITEE"
+
+  createdAt DateTime @default(now())
+
+  @@unique([committeeId, userId])
+}
+
+model CommitteeMeeting {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  committeeId String    @db.Uuid
+  committee   Committee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  tenantId    String    @db.Uuid
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  meetingDate   DateTime
+  agendaItems   Json?    // Array of agenda items
+  minutesRef    String?  // S3 key for uploaded minutes
+  status        String   @default("SCHEDULED") // "SCHEDULED", "COMPLETED", "CANCELLED"
+  attendees     String[] // user IDs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([committeeId])
+  @@index([tenantId])
+  @@index([meetingDate])
+}
+
+// ─── M20: Housekeeping Risk Metrics (R80) ───────────────────────────────────
+
+model HousekeepingMetric {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId     String   @db.Uuid
+  branch       Branch   @relation(fields: [branchId], references: [id])
+
+  metricType   String   // "INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"
+  period       String   // "2025-Q4"
+  openingBalance  Decimal @db.Decimal(15, 2)
+  closingBalance  Decimal @db.Decimal(15, 2)
+  entriesCount    Int     @default(0)
+  agingDays       Int?
+  remarks         String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, branchId, metricType, period])
+  @@index([tenantId])
+  @@index([branchId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

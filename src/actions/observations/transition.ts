@@ -13,6 +13,7 @@ import {
 import { TransitionObservationSchema } from "./schemas";
 import type { TransitionObservationInput } from "./schemas";
 import { createNotification } from "@/data-access/notifications";
+import { logger } from "@/lib/logger";
 
 /**
  * Generic state transition action for observations (OBS-02 through OBS-06).
@@ -178,7 +179,7 @@ export async function transitionObservation(input: TransitionObservationInput) {
         }
       } catch (e) {
         // Non-blocking: log but don't fail the transition
-        console.error("Failed to queue assignment notification:", e);
+        logger.error({ error: e, action: "queue_assignment_notification", observationId: validated.observationId }, "Failed to queue assignment notification");
       }
     }
 
@@ -187,7 +188,7 @@ export async function transitionObservation(input: TransitionObservationInput) {
       data: { id: validated.observationId, newStatus: targetStatus },
     };
   } catch (error) {
-    console.error("Failed to transition observation:", error);
+    logger.error({ error, action: "transition_observation", tenantId, observationId: validated.observationId }, "Failed to transition observation");
     return {
       success: false as const,
       error: "Failed to update observation status. Please try again.",

@@ -150,7 +150,7 @@ export async function fetchCustomRequirements() {
     const requirements = await getCustomRequirements(tenantId);
     return { success: true, error: null, data: requirements };
   } catch (error) {
-    console.error("Failed to fetch custom requirements:", error);
+    logger.error({ error, action: "fetch_custom_requirements", tenantId }, "Failed to fetch custom requirements");
     return { success: false, error: "Failed to load requirements." };
   }
 }

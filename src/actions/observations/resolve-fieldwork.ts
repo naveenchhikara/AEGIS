@@ -7,6 +7,7 @@ import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { ResolveFieldworkSchema } from "./schemas";
 import type { ResolveFieldworkInput } from "./schemas";
+import { logger } from "@/lib/logger";
 
 /**
  * Mark an observation as resolved during fieldwork (OBS-07).
@@ -121,7 +122,7 @@ export async function resolveFieldwork(input: ResolveFieldworkInput) {
       data: { id: validated.observationId },
     };
   } catch (error) {
-    console.error("Failed to resolve observation:", error);
+    logger.error({ error, action: "resolve_fieldwork", tenantId, observationId: validated.observationId }, "Failed to resolve observation");
     return {
       success: false as const,
       error: "Failed to resolve observation. Please try again.",

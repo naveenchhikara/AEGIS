@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { headers } from "next/headers";
+import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 
 /**
@@ -123,7 +124,7 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
 
     return { success: true, error: null, data: createdUsers };
   } catch (error) {
-    console.error("Failed to send invitations:", error);
+    logger.error({ error, action: "send_user_invitations", tenantId }, "Failed to send user invitations");
     return { success: false, error: "Failed to send invitations." };
   }
 }
@@ -190,7 +191,7 @@ export async function acceptInvitation(
 
     return { success: true, error: null };
   } catch (error) {
-    console.error("Failed to accept invitation:", error);
+    logger.error({ error, action: "accept_invitation", email }, "Failed to accept invitation");
     return { success: false, error: "Failed to activate account." };
   }
 }
@@ -235,7 +236,7 @@ export async function resendInvitation(userId: string) {
 
     return { success: true, error: null };
   } catch (error) {
-    console.error("Failed to resend invitation:", error);
+    logger.error({ error, action: "resend_invitation", tenantId, userId }, "Failed to resend invitation");
     return { success: false, error: "Failed to resend invitation." };
   }
 }
@@ -279,7 +280,7 @@ export async function revokeInvitation(userId: string) {
 
     return { success: true, error: null };
   } catch (error) {
-    console.error("Failed to revoke invitation:", error);
+    logger.error({ error, action: "revoke_invitation", tenantId, userId }, "Failed to revoke invitation");
     return { success: false, error: "Failed to revoke invitation." };
   }
 }

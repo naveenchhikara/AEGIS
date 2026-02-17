@@ -7,6 +7,7 @@ import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { CreateObservationSchema } from "./schemas";
 import type { CreateObservationInput } from "./schemas";
+import { logger } from "@/lib/logger";
 
 /**
  * Create a new observation in DRAFT state with 5C fields (OBS-01).
@@ -104,7 +105,7 @@ export async function createObservation(input: CreateObservationInput) {
       data: { id: result.id },
     };
   } catch (error) {
-    console.error("Failed to create observation:", error);
+    logger.error({ error, action: "create_observation", tenantId }, "Failed to create observation");
     return {
       success: false as const,
       error: "Failed to create observation. Please try again.",

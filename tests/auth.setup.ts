@@ -1,10 +1,7 @@
 import { test as setup, expect } from "@playwright/test";
 
 /**
- * Authentication setup for Playwright E2E tests
- *
- * Creates authenticated browser states for 4 roles using production test accounts.
- * Runs once before all test projects.
+ * Authentication setup — creates storageState for 4 roles.
  */
 
 const users = [
@@ -38,23 +35,21 @@ for (const user of users) {
   setup(`authenticate as ${user.role}`, async ({ page }) => {
     await page.goto("/login");
 
-    // Fill credentials — try common label patterns
-    const emailInput = page.getByLabel(/email/i).first();
-    await emailInput.waitFor({ timeout: 10000 });
-    await emailInput.fill(user.email);
+    // Wait for the form to hydrate (client component)
+    await page.waitForSelector('input#email', { timeout: 15000 });
 
-    const passwordInput = page.getByLabel(/password/i).first();
-    await passwordInput.fill(user.password);
+    // Fill by ID (reliable, matches the JSX id= attributes)
+    await page.fill('input#email', user.email);
+    await page.fill('input#password', user.password);
 
-    // Submit
-    await page.getByRole("button", { name: /sign in|log in|login/i }).click();
+    // Click Sign In button
+    await page.click('button[type="submit"]');
 
-    // Wait for redirect to dashboard
+    // Wait for navigation to dashboard
     await page.waitForURL("**/dashboard**", { timeout: 15000 });
 
-    // Save authenticated state
+    // Save state
     await page.context().storageState({ path: user.file });
-
-    console.log(`✓ Authenticated as ${user.role} (${user.email})`);
+    console.log(`✓ ${user.role} (${user.email})`);
   });
 }

@@ -31,8 +31,11 @@ const PUBLIC_ROUTE_PATTERNS = [
   /^\/api\/health/,
 ];
 
-/** Better Auth session cookie name */
-const SESSION_COOKIE = "better-auth.session_token";
+/** Better Auth session cookie names (with and without __Secure- prefix) */
+const SESSION_COOKIES = [
+  "__Secure-better-auth.session_token",  // Production (useSecureCookies: true)
+  "better-auth.session_token",           // Development (useSecureCookies: false)
+];
 
 function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) return true;
@@ -49,8 +52,8 @@ export async function middleware(request: NextRequest) {
 
   // Check for session cookie (lightweight Edge-safe check)
   // Full session validation happens server-side in pages/API routes
-  const sessionCookie = request.cookies.get(SESSION_COOKIE);
-  if (!sessionCookie?.value) {
+  const hasSession = SESSION_COOKIES.some(name => request.cookies.get(name)?.value);
+  if (!hasSession) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

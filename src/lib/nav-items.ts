@@ -280,7 +280,23 @@ function getPermissionsForRole(role: Role): Permission[] {
       "audit_plan:read",
       "audit_execution:read",
       "examination:read",
+      "risk_register:read",
+      "issue:read",
       "dashboard:auditor",
+    ],
+    ACE_OFFICER: [
+      "observation:read",
+      "compliance:read",
+      "compliance:ace_process",
+      "issue:read",
+      "issue:manage",
+      "issue:accept_risk",
+      "risk_register:read",
+      "control_library:read",
+      "qa_assessment:read",
+      "qa_assessment:manage",
+      "audit_universe:read",
+      "dashboard:cae",
     ],
   };
 

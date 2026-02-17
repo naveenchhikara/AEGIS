@@ -26,6 +26,7 @@ enum Role {
   FIELD_AUDITOR
   BRANCH_HEAD
   ZONAL_AUDITOR
+  ACE_OFFICER
 }
 
 enum Severity {
@@ -233,6 +234,17 @@ model Tenant {
   complianceItems            ComplianceItem[]
   reportTemplates            ReportTemplate[]
   auditCalendarEvents        AuditCalendar[]
+  // Phase 3
+  auditUniverseEntities      AuditUniverseEntity[]
+  riskRegisters              RiskRegister[]
+  keyRiskIndicators          KeyRiskIndicator[]
+  riskAuditLinkages          RiskAuditLinkage[]
+  controlLibrary             ControlLibrary[]
+  testProcedures             TestProcedure[]
+  workProgramItems           WorkProgramItem[]
+  issues                     Issue[]
+  actionPlans                ActionPlan[]
+  qaSelfAssessments          QaSelfAssessment[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -414,6 +426,7 @@ model Observation {
   rbiCirculars           ObservationRbiCircular[]
   examinationResponses   AuditExaminationResponse[]
   complianceItem         ComplianceItem?
+  issues                 Issue[]
 
   @@index([tenantId])
   @@index([severity])
@@ -579,7 +592,8 @@ model Branch {
   userAssignments  UserBranchAssignment[]
   ramAssessments   RamAssessment[]
   complianceItems  ComplianceItem[]
-  calendarEvents   AuditCalendar[]
+  calendarEvents          AuditCalendar[]
+  auditUniverseEntities   AuditUniverseEntity[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -701,6 +715,8 @@ model AuditEngagement {
   smaNpaEntries        SmaNpaEntry[]
   complianceItems      ComplianceItem[]
   calendarEvents       AuditCalendar[]
+  workProgramItems     WorkProgramItem[]
+  riskAuditLinkages    RiskAuditLinkage[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -1105,6 +1121,299 @@ model AuditCalendar {
   @@index([tenantId])
   @@index([tenantId, startDate])
   @@index([eventType])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 3: GRC & Issue Management (R49-R68)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── M8: Audit Universe Entity (R49) ──────────────────────────────────────────
+
+model AuditUniverseEntity {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  entityType        String  // "BRANCH", "DEPARTMENT", "PROCESS", "CHANNEL", "VENDOR"
+  name              String
+  description       String?  @db.Text
+  branchId          String?  @db.Uuid
+  branch            Branch?  @relation(fields: [branchId], references: [id])
+  riskScore         Decimal? @db.Decimal(5, 2)
+  lastAuditDate     DateTime?
+  lastAuditRating   String?
+  requiredFrequency Int?     // months between audits
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  riskRegisters      RiskRegister[]
+  riskAuditLinkages  RiskAuditLinkage[]
+
+  @@unique([tenantId, entityType, name])
+  @@index([tenantId])
+  @@index([entityType])
+}
+
+// ─── M8: Risk Register (R50) ─────────────────────────────────────────────────
+
+model RiskRegister {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  entityId       String              @db.Uuid
+  entity         AuditUniverseEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  riskStatement   String  @db.Text
+  riskCategory    String  // "CREDIT", "OPERATIONAL", "MARKET", "LIQUIDITY", "COMPLIANCE", "IT"
+  inherentScore   Decimal @db.Decimal(5, 2)
+  controlScore    Decimal @db.Decimal(5, 2)
+  residualScore   Decimal @db.Decimal(5, 2)
+  riskOwner       String?
+  mitigationPlan  String? @db.Text
+  status          String  @default("OPEN") // "OPEN", "MITIGATED", "ACCEPTED", "CLOSED"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  kris              KeyRiskIndicator[]
+  riskAuditLinkages RiskAuditLinkage[]
+  linkedControls    ControlLibrary[]
+
+  @@index([tenantId])
+  @@index([entityId])
+  @@index([riskCategory])
+}
+
+// ─── M8: Key Risk Indicator (R51) ────────────────────────────────────────────
+
+model KeyRiskIndicator {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  riskRegisterId String       @db.Uuid
+  riskRegister   RiskRegister @relation(fields: [riskRegisterId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?  @db.Text
+  currentValue  Decimal? @db.Decimal(15, 4)
+  thresholdLow  Decimal? @db.Decimal(15, 4)
+  thresholdHigh Decimal? @db.Decimal(15, 4)
+  breachStatus  String   @default("NORMAL") // "NORMAL", "WARNING", "BREACH"
+  frequency     String   @default("MONTHLY") // "DAILY", "WEEKLY", "MONTHLY", "QUARTERLY"
+  lastUpdated   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([riskRegisterId])
+  @@index([breachStatus])
+}
+
+// ─── M8: Risk-to-Audit Linkage (R52) ────────────────────────────────────────
+
+model RiskAuditLinkage {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  entityId       String              @db.Uuid
+  entity         AuditUniverseEntity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  riskRegisterId String              @db.Uuid
+  riskRegister   RiskRegister        @relation(fields: [riskRegisterId], references: [id], onDelete: Cascade)
+  engagementId   String?             @db.Uuid
+  engagement     AuditEngagement?    @relation(fields: [engagementId], references: [id])
+
+  thematicArea   String   // "CREDIT", "OPERATIONS", "COMPLIANCE", "IT", "GOVERNANCE"
+  linkageType    String   @default("DIRECT") // "DIRECT", "THEMATIC", "COVERAGE"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([riskRegisterId, engagementId])
+  @@index([tenantId])
+  @@index([thematicArea])
+}
+
+// ─── M9: Control Library (R54) ──────────────────────────────────────────────
+
+model ControlLibrary {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  controlCode      String
+  processArea      String  // "LENDING", "DEPOSITS", "TREASURY", "KYC_AML", "IT_OPERATIONS"
+  controlType      String  // "PREVENTIVE", "DETECTIVE", "CORRECTIVE"
+  frequency        String  // "TRANSACTION", "DAILY", "WEEKLY", "MONTHLY", "QUARTERLY", "ANNUAL"
+  owner            String?
+  isKeyControl     Boolean @default(false)
+  description      String  @db.Text
+  frameworkMapping Json?   // { "COSO": "CC1.1", "RBI": "DoS.1", "IIA": "2120.A1" }
+  effectivenessScore Decimal? @db.Decimal(5, 2)
+  lastTestedDate   DateTime?
+
+  riskRegisterId   String?       @db.Uuid
+  riskRegister     RiskRegister? @relation(fields: [riskRegisterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  testProcedures   TestProcedure[]
+  issues           Issue[]
+
+  @@unique([tenantId, controlCode])
+  @@index([tenantId])
+  @@index([processArea])
+  @@index([isKeyControl])
+}
+
+// ─── M9: Test Procedure (R55) ───────────────────────────────────────────────
+
+model TestProcedure {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  controlId        String         @db.Uuid
+  control          ControlLibrary @relation(fields: [controlId], references: [id], onDelete: Cascade)
+
+  name             String
+  description      String         @db.Text
+  sampleMethodology String?       // "RANDOM", "JUDGMENTAL", "SYSTEMATIC", "MONETARY_UNIT"
+  sampleSize       Int?
+  expectedEvidence String?        @db.Text
+  passCriteria     String?        @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workProgramItems WorkProgramItem[]
+
+  @@index([tenantId])
+  @@index([controlId])
+}
+
+// ─── M9: Work Program Item (R56) ────────────────────────────────────────────
+
+model WorkProgramItem {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId    String           @db.Uuid
+  engagement      AuditEngagement  @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  testProcedureId String           @db.Uuid
+  testProcedure   TestProcedure    @relation(fields: [testProcedureId], references: [id], onDelete: Cascade)
+
+  assignedToId    String?          @db.Uuid
+  status          String           @default("PENDING") // "PENDING", "IN_PROGRESS", "COMPLETED", "NOT_APPLICABLE"
+  result          String?          // "EFFECTIVE", "PARTIALLY_EFFECTIVE", "INEFFECTIVE"
+  findings        String?          @db.Text
+  evidence        String[]         // S3 keys
+  completedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([status])
+}
+
+// ─── M12: Issue (R59-R60) ───────────────────────────────────────────────────
+
+model Issue {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String          @db.Text
+  source          String          // "INTERNAL_AUDIT", "REGULATORY", "EXTERNAL_AUDIT", "SELF_ASSESSMENT", "CONCURRENT"
+  issueType       String          // "FINDING", "OBSERVATION", "EXCEPTION", "DEFICIENCY"
+  severity        String          // "CRITICAL", "HIGH", "MEDIUM", "LOW"
+  rootCause       String?         @db.Text
+  riskTheme       String?         // "CREDIT", "OPERATIONAL", "COMPLIANCE", "IT", "GOVERNANCE"
+
+  observationId   String?         @db.Uuid
+  observation     Observation?    @relation(fields: [observationId], references: [id])
+  controlId       String?         @db.Uuid
+  control         ControlLibrary? @relation(fields: [controlId], references: [id])
+  complianceItemId String?        @db.Uuid
+
+  status          String          @default("OPEN") // "OPEN", "IN_PROGRESS", "CLOSED", "ACCEPTED_RISK"
+  ownerId         String?         @db.Uuid
+  acceptedById    String?         @db.Uuid
+  acceptedAt      DateTime?
+  acceptanceReason String?        @db.Text
+  closedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  actionPlans     ActionPlan[]
+
+  @@index([tenantId])
+  @@index([source])
+  @@index([severity])
+  @@index([status])
+}
+
+// ─── M12: Action Plan (R61) ─────────────────────────────────────────────────
+
+model ActionPlan {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  issueId        String @db.Uuid
+  issue          Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String   @db.Text
+  milestone      String?
+  dueDate        DateTime
+  assignedToId   String?  @db.Uuid
+  status         String   @default("PENDING") // "PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE"
+  evidence       String[] // S3 keys
+  verifiedById   String?  @db.Uuid
+  verifiedAt     DateTime?
+  completionPct  Int      @default(0) // 0-100
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([issueId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+// ─── M13: QA Self-Assessment (R64-R65) ──────────────────────────────────────
+
+model QaSelfAssessment {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  assessmentYear Int
+  iiaStandard    String  // "1000", "1100", "1200", "2000", "2100", "2200", "2300", "2400", "2500", "2600"
+  question       String  @db.Text
+  response       String? // "CONFORMS", "PARTIALLY_CONFORMS", "DOES_NOT_CONFORM", "NOT_APPLICABLE"
+  evidence       String? @db.Text
+  gapIdentified  Boolean @default(false)
+  issueCreated   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([assessmentYear])
+  @@index([gapIdentified])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

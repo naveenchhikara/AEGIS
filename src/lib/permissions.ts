@@ -72,7 +72,21 @@ export type Permission =
   | "compliance:acb_report"
   | "report:approve"
   | "template:manage"
-  | "calendar:manage";
+  | "calendar:manage"
+  // GRC & Issue Management (Phase 3)
+  | "risk_register:read"
+  | "risk_register:manage"
+  | "control_library:read"
+  | "control_library:manage"
+  | "issue:read"
+  | "issue:manage"
+  | "issue:accept_risk"
+  | "work_program:read"
+  | "work_program:execute"
+  | "qa_assessment:read"
+  | "qa_assessment:manage"
+  | "audit_universe:read"
+  | "audit_universe:manage";
 
 /**
  * Role-to-permission mapping.
@@ -101,6 +115,17 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ram:create",
     "template:manage",
     "calendar:manage",
+    "risk_register:read",
+    "risk_register:manage",
+    "control_library:read",
+    "control_library:manage",
+    "issue:read",
+    "issue:manage",
+    "work_program:read",
+    "work_program:execute",
+    "qa_assessment:read",
+    "audit_universe:read",
+    "audit_universe:manage",
     "dashboard:manager",
   ],
   CAE: [
@@ -130,6 +155,18 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "report:approve",
     "template:manage",
     "calendar:manage",
+    "risk_register:read",
+    "risk_register:manage",
+    "control_library:read",
+    "control_library:manage",
+    "issue:read",
+    "issue:manage",
+    "issue:accept_risk",
+    "work_program:read",
+    "qa_assessment:read",
+    "qa_assessment:manage",
+    "audit_universe:read",
+    "audit_universe:manage",
     "dashboard:cae",
   ],
   CCO: [
@@ -153,6 +190,11 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "examination:respond",
     "examination:read",
     "ram:read",
+    "work_program:read",
+    "work_program:execute",
+    "control_library:read",
+    "issue:read",
+    "issue:manage",
     "dashboard:auditor",
   ],
   FIELD_AUDITOR: [
@@ -164,6 +206,10 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "examination:respond",
     "examination:read",
     "ram:read",
+    "work_program:read",
+    "work_program:execute",
+    "control_library:read",
+    "issue:read",
     "dashboard:auditor",
   ],
   BRANCH_HEAD: [
@@ -180,7 +226,23 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_plan:read",
     "audit_execution:read",
     "examination:read",
+    "risk_register:read",
+    "issue:read",
     "dashboard:auditor",
+  ],
+  ACE_OFFICER: [
+    "observation:read",
+    "compliance:read",
+    "compliance:ace_process",
+    "issue:read",
+    "issue:manage",
+    "issue:accept_risk",
+    "risk_register:read",
+    "control_library:read",
+    "qa_assessment:read",
+    "qa_assessment:manage",
+    "audit_universe:read",
+    "dashboard:cae",
   ],
 };
 
@@ -259,6 +321,7 @@ export function getAssignableRoles(): Role[] {
     Role.FIELD_AUDITOR,
     Role.BRANCH_HEAD,
     Role.ZONAL_AUDITOR,
+    Role.ACE_OFFICER,
   ];
 }
 
@@ -279,6 +342,7 @@ export function getRoleDisplayName(role: Role): string {
     FIELD_AUDITOR: "Field Auditor",
     BRANCH_HEAD: "Branch Head",
     ZONAL_AUDITOR: "Zonal Auditor",
+    ACE_OFFICER: "ACE Officer",
   };
   return displayNames[role] || role;
 }

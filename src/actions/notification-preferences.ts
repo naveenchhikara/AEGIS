@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { updateNotificationPreferences } from "@/data-access/notifications";
+import { logger } from "@/lib/logger";
 
 const UpdatePreferencesSchema = z.object({
   emailEnabled: z.boolean(),
@@ -38,7 +39,7 @@ export async function updatePreferences(
     ) {
       return { success: false as const, error: error.message };
     }
-    console.error("Failed to update notification preferences:", error);
+    logger.error({ error, action: "update_notification_preferences", userId: session.user.id }, "Failed to update notification preferences");
     return {
       success: false as const,
       error: "Failed to update preferences. Please try again.",

@@ -35,6 +35,8 @@ export const prisma = new Proxy(
   },
 );
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Tenant-scoped Prisma client with transaction-scoped RLS.
  *
@@ -46,6 +48,9 @@ export const prisma = new Proxy(
  *   add explicit WHERE tenantId clauses (belt-and-suspenders, Skeptic S1)
  */
 export function prismaForTenant(tenantId: string) {
+  if (!UUID_REGEX.test(tenantId)) {
+    throw new Error(`Invalid tenantId format: ${tenantId}`);
+  }
   return prisma.$extends({
     query: {
       $allOperations: async ({

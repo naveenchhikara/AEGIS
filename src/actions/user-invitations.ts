@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { headers } from "next/headers";
+import bcrypt from "bcryptjs";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -48,9 +49,8 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
         const crypto = await import("crypto");
         const rawToken = crypto.randomBytes(32).toString("hex");
 
-        // In production: bcrypt hash. For prototype: store raw for simplicity
-        // TODO: Replace with bcrypt.hash(rawToken, 12) before production
-        const tokenHash = rawToken;
+        // Hash the token with bcrypt before storing (security best practice)
+        const tokenHash = await bcrypt.hash(rawToken, 12);
 
         const user = await tx.user.create({
           data: {
@@ -149,9 +149,9 @@ export async function acceptInvitation(
       return { success: false, error: "Invalid or expired invitation." };
     }
 
-    // Check token match (prototype: direct comparison)
-    // TODO: In production, use bcrypt.compare(token, user.inviteTokenHash)
-    if (user.inviteTokenHash !== token) {
+    // Check token match using bcrypt
+    const isValidToken = await bcrypt.compare(token, user.inviteTokenHash);
+    if (!isValidToken) {
       return { success: false, error: "Invalid invitation token." };
     }
 
@@ -164,7 +164,7 @@ export async function acceptInvitation(
     }
 
     // Activate user: clear token, update status
-    // TODO: Password hashing via Better Auth in production
+    // Note: Better Auth's signUp.email handles password hashing internally with bcrypt
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -216,14 +216,15 @@ export async function resendInvitation(userId: string) {
       return { success: false, error: "User not found or already active." };
     }
 
-    // Generate new token
+    // Generate new token and hash it
     const crypto = await import("crypto");
     const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = await bcrypt.hash(rawToken, 12);
 
     await prisma.user.update({
       where: { id: userId },
       data: {
-        inviteTokenHash: rawToken,
+        inviteTokenHash: tokenHash,
         inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });

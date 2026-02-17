@@ -9,6 +9,7 @@ import {
 import { BoardReport } from "@/components/pdf-report/board-report";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { generateDownloadUrl } from "@/lib/s3";
+import { verifyCsrf } from "@/lib/csrf";
 import crypto from "node:crypto";
 import React from "react";
 
@@ -24,6 +25,12 @@ const BUCKET = process.env.S3_BUCKET_NAME ?? "aegis-evidence-dev";
  * Body: { year: number, quarter: string, executiveCommentary?: string }
  */
 export async function POST(request: NextRequest) {
+  try {
+    await verifyCsrf();
+  } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const session = await getRequiredSession();
     const roles = ((session.user as any).roles ?? []) as string[];

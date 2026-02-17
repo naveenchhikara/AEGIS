@@ -7,6 +7,7 @@ import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
+import { logger } from "@/lib/logger";
 
 /**
  * Zod validation schema for editable settings.
@@ -87,7 +88,7 @@ export async function updateTenantSettings(formData: SettingsInput) {
     revalidatePath("/settings");
     return { success: true, error: null };
   } catch (error) {
-    console.error("Failed to update tenant settings:", error);
+    logger.error({ error, action: "update_tenant_settings", tenantId }, "Failed to update tenant settings");
     return {
       success: false,
       error: "Failed to update settings. Please try again.",

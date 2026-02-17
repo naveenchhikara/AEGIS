@@ -54,7 +54,7 @@ export const auth = betterAuth({
     enabled: true,
     window: 900, // 15 minutes in seconds
     max: 100, // Global: 100 requests per 15 min per IP (generous for general use)
-    storage: "memory", // Use memory for dev; switch to "database" after adding rateLimit model
+    storage: "database", // Persistent rate limiting — survives restarts
     customRules: {
       "/sign-in/email": {
         window: 900, // 15 minutes

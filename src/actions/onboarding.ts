@@ -10,6 +10,7 @@ import {
   type OnboardingCompletionData,
 } from "@/data-access/onboarding";
 import { checklistItems } from "@/data/rbi-master-directions";
+import { logger } from "@/lib/logger";
 
 /**
  * Server Actions for the Onboarding Wizard
@@ -37,7 +38,7 @@ export async function saveWizardStep(
     await saveOnboardingProgress(tenantId, step, data);
     return { success: true, error: null };
   } catch (error) {
-    console.error("Failed to save onboarding step:", error);
+    logger.error({ error, action: "save_onboarding_step", tenantId, step }, "Failed to save onboarding step");
     return { success: false, error: "Failed to save progress." };
   }
 }
@@ -56,7 +57,7 @@ export async function getWizardProgress() {
     const progress = await getOnboardingProgressFromDb(tenantId);
     return { success: true, data: progress, error: null };
   } catch (error) {
-    console.error("Failed to get onboarding progress:", error);
+    logger.error({ error, action: "get_onboarding_progress", tenantId }, "Failed to get onboarding progress");
     return { success: false, data: null, error: "Failed to load progress." };
   }
 }
@@ -140,7 +141,7 @@ export async function completeOnboarding(input: CompleteOnboardingInput) {
       data: result,
     };
   } catch (error) {
-    console.error("Failed to complete onboarding:", error);
+    logger.error({ error, action: "complete_onboarding", tenantId }, "Failed to complete onboarding");
     return {
       success: false,
       error: "Failed to complete onboarding. Please try again.",

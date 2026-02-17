@@ -18,6 +18,7 @@
 import { generateOrgStructureTemplate } from "@/lib/excel-templates/org-structure-template";
 import { parseOrgStructureExcel } from "@/lib/excel-parsers/org-structure-parser";
 import type { BranchEntry, DepartmentEntry } from "@/types/onboarding";
+import { logger } from "@/lib/logger";
 
 type DownloadResult =
   | {
@@ -56,7 +57,7 @@ export async function downloadOrgStructureTemplate(): Promise<DownloadResult> {
       filename: "aegis-org-structure-template.xlsx",
     };
   } catch (error) {
-    console.error("downloadOrgStructureTemplate error:", error);
+    logger.error({ error, action: "download_org_structure_template" }, "Failed to generate org structure template");
     return {
       success: false,
       error:
@@ -142,7 +143,7 @@ export async function uploadOrgStructureExcel(
     // Return parse result directly (it already has success/error shape)
     return parseResult;
   } catch (error) {
-    console.error("uploadOrgStructureExcel error:", error);
+    logger.error({ error, action: "upload_org_structure_excel" }, "Failed to upload and parse org structure Excel");
     return {
       success: false,
       error:

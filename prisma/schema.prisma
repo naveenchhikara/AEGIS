@@ -80,6 +80,21 @@ enum RamAssessmentStatus {
   APPROVED
 }
 
+enum ExaminationStatus {
+  PENDING
+  COMPLIANT
+  NON_COMPLIANT
+  PARTIAL
+  NOT_APPLICABLE
+}
+
+enum AuditSectionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  REVIEWED
+}
+
 enum AuditPlanStatus {
   PLANNED
   IN_PROGRESS
@@ -197,6 +212,10 @@ model Tenant {
   auditTeamMembers       AuditTeamMember[]
   ramParameterConfigs    RamParameterConfig[]
   ramAssessments         RamAssessment[]
+  examinationAreas           ExaminationArea[]
+  examinationItems           ExaminationItem[]
+  auditExaminationResponses  AuditExaminationResponse[]
+  auditSectionInstances      AuditSectionInstance[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -375,7 +394,8 @@ model Observation {
   timeline          ObservationTimeline[]
   evidence          Evidence[]
   auditeeResponses  AuditeeResponse[]
-  rbiCirculars      ObservationRbiCircular[]
+  rbiCirculars           ObservationRbiCircular[]
+  examinationResponses   AuditExaminationResponse[]
 
   @@index([tenantId])
   @@index([severity])
@@ -646,7 +666,9 @@ model AuditEngagement {
 
   // Relations
   observations Observation[]
-  teamMembers  AuditTeamMember[]
+  teamMembers          AuditTeamMember[]
+  examinationResponses AuditExaminationResponse[]
+  sectionInstances     AuditSectionInstance[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -755,6 +777,119 @@ model RamAssessmentScore {
 
   @@unique([assessmentId, paramConfigId])
   @@index([assessmentId])
+}
+
+// ─── Examination Area (Phase 1 — R14: functional audit areas) ────────────
+
+model ExaminationArea {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  code         String   // e.g., "CASH", "ATM", "CLEARING"
+  name         String   // e.g., "Cash", "ATM"
+  description  String?  @db.Text
+  riskWeight   Decimal  @db.Decimal(5, 2) @default(1.0)
+  displayOrder Int
+  isActive     Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items ExaminationItem[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// ─── Examination Item (Phase 1 — R15: value statement items) ─────────────
+
+model ExaminationItem {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  areaId        String @db.Uuid
+  area          ExaminationArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  itemNumber    String   // e.g., "1.1.1", "5.3.2"
+  particulars   String   @db.Text // The examination statement/question
+  riskCategory  String?  // e.g., "Operational Risk", "Credit Risk"
+  regulatoryRef String?  // RBI circular reference if applicable
+  displayOrder  Int
+  isActive      Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  responses AuditExaminationResponse[]
+
+  @@unique([tenantId, areaId, itemNumber])
+  @@index([tenantId])
+  @@index([areaId])
+}
+
+// ─── Audit Examination Response (Phase 1 — R16: per-item audit response) ───
+
+model AuditExaminationResponse {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId  String @db.Uuid
+  engagement    AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  itemId        String @db.Uuid
+  item          ExaminationItem @relation(fields: [itemId], references: [id])
+
+  status        ExaminationStatus @default(PENDING)
+  observation   String?  @db.Text  // Auditor's observation text
+  riskRating    String?            // Severity: "LOW", "MEDIUM", "HIGH", "CRITICAL"
+
+  respondedById String?  @db.Uuid
+  respondedAt   DateTime?
+
+  // Auto-created observation reference (R17)
+  observationId       String?      @db.Uuid
+  linkedObservation   Observation? @relation(fields: [observationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, itemId])
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([observationId])
+}
+
+// ─── Audit Section Instance (Phase 1 — R18: per-engagement section tracking) ─
+
+model AuditSectionInstance {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  sectionCode  String  // Matches ExaminationArea.code
+  sectionName  String  // Denormalized for display
+  status       AuditSectionStatus @default(NOT_STARTED)
+
+  sectionData  Json?   // Flexible JSONB for section-specific structured data
+
+  assignedToId String?  @db.Uuid
+  completedAt  DateTime?
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, sectionCode])
+  @@index([tenantId])
+  @@index([engagementId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

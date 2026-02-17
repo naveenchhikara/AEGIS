@@ -1,0 +1,58 @@
+import { getRequiredSession } from "@/data-access/session";
+import { getEngagementWithTeam } from "@/data-access/audit-execution";
+import { EngagementHeader } from "@/components/audit-execution/engagement-header";
+import { SectionTabs } from "@/components/audit-execution/section-tabs";
+import { TeamPanel } from "@/components/audit-execution/team-panel";
+import { hasPermission, type Role } from "@/lib/permissions";
+import { redirect, notFound } from "next/navigation";
+
+interface PageProps {
+  params: Promise<{ engagementId: string }>;
+}
+
+export default async function AuditExecutionPage({ params }: PageProps) {
+  const { engagementId } = await params;
+  const session = await getRequiredSession();
+  const userRoles = ((session.user as any).roles ?? []) as Role[];
+
+  if (!hasPermission(userRoles, "audit_execution:read")) {
+    redirect("/dashboard");
+  }
+
+  const engagement = await getEngagementWithTeam(session, engagementId);
+  if (!engagement) {
+    notFound();
+  }
+
+  const canManageTeam = hasPermission(userRoles, "audit_execution:manage_team");
+  const canManageSections = hasPermission(
+    userRoles,
+    "audit_execution:manage_sections",
+  );
+
+  return (
+    <div className="space-y-6">
+      <EngagementHeader engagement={engagement} />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        {/* Main content: Section tabs (3/4 width on desktop) */}
+        <div className="lg:col-span-3">
+          <SectionTabs
+            engagementId={engagementId}
+            sections={engagement.sectionInstances}
+            canManageSections={canManageSections}
+          />
+        </div>
+
+        {/* Sidebar: Team panel (1/4 width on desktop) */}
+        <div className="lg:col-span-1">
+          <TeamPanel
+            engagementId={engagementId}
+            teamMembers={engagement.teamMembers}
+            canManageTeam={canManageTeam}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

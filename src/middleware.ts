@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 
 /**
- * Route Protection Middleware
+ * Route Protection Middleware (Edge Runtime)
  *
- * Protects all routes except public ones with Better Auth session checks.
+ * Cookie-based auth gating. Does NOT import @/lib/auth because
+ * Better Auth + Prisma pull in Node.js built-ins (node:path, crypto)
+ * which are unavailable in the Edge Runtime.
+ *
+ * Strategy:
+ * - Public routes → pass through
+ * - Protected routes → check for session cookie
+ * - Full session validation happens in server components / API routes
  *
  * Public routes:
- * - /login
- * - /accept-invite
- * - /api/health
- * - /api/auth/(.*)
- * - / (landing page only)
- *
- * All other routes require authentication.
- * Unauthenticated requests redirect to /login?redirect={original_path}
+ * - /login, /accept-invite, /api/health, / (landing)
+ * - /api/auth/(.*) (Better Auth endpoints)
+ * - Static assets (_next/static, _next/image, favicon.ico)
  */
 
 const PUBLIC_ROUTES = [
@@ -27,15 +28,14 @@ const PUBLIC_ROUTES = [
 
 const PUBLIC_ROUTE_PATTERNS = [
   /^\/api\/auth\/.*/,
+  /^\/api\/health/,
 ];
 
-function isPublicRoute(pathname: string): boolean {
-  // Exact match for public routes
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return true;
-  }
+/** Better Auth session cookie name */
+const SESSION_COOKIE = "better-auth.session_token";
 
-  // Pattern match for public route patterns
+function isPublicRoute(pathname: string): boolean {
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
   return PUBLIC_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
 }
 
@@ -47,29 +47,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check authentication
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      // Not authenticated - redirect to login with return URL
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Authenticated - allow request
-    return NextResponse.next();
-  } catch (error) {
-    // Session check failed - redirect to login
-    // Note: can't use pino logger here — middleware runs in Edge Runtime
-    console.error("Middleware session check failed:", pathname, error);
+  // Check for session cookie (lightweight Edge-safe check)
+  // Full session validation happens server-side in pages/API routes
+  const sessionCookie = request.cookies.get(SESSION_COOKIE);
+  if (!sessionCookie?.value) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
+
+  return NextResponse.next();
 }
 
 /**

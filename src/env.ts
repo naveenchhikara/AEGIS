@@ -20,10 +20,12 @@ export const env = createEnv({
   server: {
     // Database (PostgreSQL 16)
     DATABASE_URL: z.string().url(),
-    POSTGRES_USER: z.string().min(1),
-    POSTGRES_PASSWORD: z.string().min(1), // Alphanumeric only per CLAUDE.md
-    POSTGRES_DB: z.string().min(1),
-    POSTGRES_PORT: z.coerce.number().int().positive(),
+    // Individual Postgres vars are used by docker-compose for the DB container.
+    // The app only needs DATABASE_URL, so these are optional here.
+    POSTGRES_USER: z.string().min(1).optional(),
+    POSTGRES_PASSWORD: z.string().min(1).optional(),
+    POSTGRES_DB: z.string().min(1).optional(),
+    POSTGRES_PORT: z.coerce.number().int().positive().optional(),
 
     // Authentication (Better Auth)
     BETTER_AUTH_SECRET: z.string().min(32),

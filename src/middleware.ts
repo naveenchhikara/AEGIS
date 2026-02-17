@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { logger } from "@/lib/logger";
 
 /**
  * Route Protection Middleware
@@ -65,7 +64,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     // Session check failed - redirect to login
-    logger.error({ error, path: pathname }, "Middleware session check failed");
+    // Note: can't use pino logger here — middleware runs in Edge Runtime
+    console.error("Middleware session check failed:", pathname, error);
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

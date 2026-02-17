@@ -23,6 +23,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV SKIP_ENV_VALIDATION=1
 
 # Generate Prisma client (only needs schema, not a live DB)
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm prisma generate
@@ -30,6 +31,7 @@ RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm prisma gen
 # Dummy DATABASE_URL for build — Next.js collects page data at build time
 # and the auth route imports Prisma. The proxy in prisma.ts defers connection,
 # but Prisma adapter validation still needs a parseable URL.
+# SKIP_ENV_VALIDATION=1 bypasses @t3-oss/env-nextjs validation at build time.
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm build
 
 # --- Stage 3: Runner (Production) ---

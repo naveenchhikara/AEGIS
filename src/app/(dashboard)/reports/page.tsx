@@ -1,95 +1,83 @@
-import { getTranslations } from "next-intl/server";
-import { bankProfile } from "@/data";
-import type { BankProfile } from "@/types";
-import { ExecutiveSummary } from "@/components/reports/executive-summary";
-import { AuditCoverageTable } from "@/components/reports/audit-coverage-table";
-import { KeyFindingsSummary } from "@/components/reports/key-findings-summary";
-import { ComplianceScorecard } from "@/components/reports/compliance-scorecard";
-import { RecommendationsSection } from "@/components/reports/recommendations-section";
-import { PrintButton } from "@/components/reports/print-button";
+import { getRequiredSession } from "@/data-access/session";
+import { getReportTemplates } from "@/data-access/analytics";
 import { ReportGenerator } from "@/components/reports/report-generator";
-import { Separator } from "@/components/ui/separator";
-import { requireAnyPermission } from "@/lib/guards";
 import { hasPermission, type Role } from "@/lib/permissions";
-import { getBoardReports } from "@/data-access/reports";
-
-const bank = bankProfile as unknown as BankProfile;
+import { redirect } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { FileText, FileSpreadsheet, Download } from "@/lib/icons";
 
 export default async function ReportsPage() {
-  const session = await requireAnyPermission([
-    "report:read",
-    "report:generate",
-  ]);
-  const t = await getTranslations("Reports");
+  const session = await getRequiredSession();
+  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const tenantId = (session.user as any).tenantId as string;
 
-  const userRoles = (session.user as any).roles as Role[];
+  const canRead = hasPermission(userRoles, "report:read");
   const canGenerate = hasPermission(userRoles, "report:generate");
 
-  // Fetch previously generated board reports
-  const reports = (await getBoardReports(session)) ?? [];
-  const serializedReports = reports.map((r) => ({
-    id: r.id,
-    title: r.title,
-    quarter: r.quarter,
-    year: r.year,
-    generatedAt: r.generatedAt.toISOString(),
-    generatedBy: r.generatedBy,
-    fileSize: r.fileSize,
-  }));
+  if (!canRead) {
+    redirect("/dashboard");
+  }
+
+  const templates = await getReportTemplates(tenantId);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Report Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground text-xs md:text-sm">
-            {t("subtitle", { bankName: bank.name })} &mdash; Q3 FY 2025-26
+          <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
+          <p className="text-muted-foreground">
+            Generate audit reports, compliance summaries, and board reports
           </p>
         </div>
-        <PrintButton />
       </div>
 
-      {/* Board Report Generator */}
-      <ReportGenerator
-        canGenerate={canGenerate}
-        previousReports={serializedReports}
-      />
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg p-2 bg-blue-50">
+              <FileSpreadsheet className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="font-semibold">XLSX Reports</p>
+              <p className="text-sm text-muted-foreground">
+                Detailed audit data export
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Separator />
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg p-2 bg-red-50">
+              <FileText className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="font-semibold">PDF Summaries</p>
+              <p className="text-sm text-muted-foreground">
+                Executive summary reports
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Report Preview / Dashboard */}
-      <div className="print-report space-y-4 md:space-y-6">
-        <ExecutiveSummary />
-
-        <Separator />
-
-        <AuditCoverageTable />
-
-        <Separator />
-
-        <KeyFindingsSummary />
-
-        <Separator />
-
-        <ComplianceScorecard />
-
-        <Separator />
-
-        <RecommendationsSection />
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg p-2 bg-green-50">
+              <Download className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="font-semibold">Templates</p>
+              <p className="text-sm text-muted-foreground">
+                {templates.length} available
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Report Footer (print only) */}
-      <div className="text-muted-foreground mt-8 hidden border-t pt-4 text-center text-xs print:block">
-        <p>
-          {t("confidential")} &mdash; {t("preparedBy", { bankName: bank.name })}
-        </p>
-        <p>
-          {t("generated", { date: new Date().toLocaleDateString("en-IN") })}
-        </p>
-      </div>
+      {/* Report generation UI */}
+      <ReportGenerator canGenerate={canGenerate} templates={templates} />
     </div>
   );
 }

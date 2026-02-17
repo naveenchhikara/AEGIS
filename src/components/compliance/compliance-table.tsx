@@ -1,17 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpDown } from "@/lib/icons";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-} from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -22,274 +12,276 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ComplianceDetailDialog } from "./compliance-detail-dialog";
-import { ComplianceFilters } from "./compliance-filters";
-import { demoComplianceRequirements } from "@/data";
-import { STATUS_COLORS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
-import type { ComplianceRequirement } from "@/types";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Filter, ArrowUpDown } from "@/lib/icons";
+import { BranchResponseForm } from "./branch-response-form";
+import { ZacReviewPanel } from "./zac-review-panel";
 
-const CATEGORY_MAP: Record<string, string> = {
-  "risk-management": "Risk Management",
-  governance: "Governance",
-  operations: "Operations",
-  it: "IT",
-  credit: "Credit",
-  "market-risk": "Market Risk",
+interface ComplianceTableProps {
+  items: Array<{
+    id: string;
+    status: string;
+    dueDate: Date | null;
+    daysOpen: number;
+    escalationLevel: number;
+    branchResponseText: string | null;
+    branchResponseDate: Date | null;
+    zacReviewDecision: string | null;
+    observation: {
+      id: string;
+      title: string;
+      severity: string;
+      status: string;
+    } | null;
+    branch: {
+      id: string;
+      code: string;
+      name: string;
+      city: string;
+    } | null;
+    audit: {
+      id: string;
+      auditNumber: string | null;
+      auditType: string | null;
+    } | null;
+  }>;
+  canUpdate: boolean;
+  canBranchResponse: boolean;
+  canZacReview: boolean;
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  OPEN: "bg-blue-100 text-blue-800 border-blue-300",
+  BRANCH_RESPONSE_DUE: "bg-orange-100 text-orange-800 border-orange-300",
+  BRANCH_RESPONSE_SUBMITTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  ZAC_REVIEW: "bg-purple-100 text-purple-800 border-purple-300",
+  ZAC_APPROVED: "bg-green-100 text-green-800 border-green-300",
+  ZAC_REJECTED: "bg-red-100 text-red-800 border-red-300",
+  CLOSED: "bg-gray-100 text-gray-800 border-gray-300",
 };
 
-export function ComplianceTable() {
-  const compData = demoComplianceRequirements as any;
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [selectedRequirement, setSelectedRequirement] =
-    React.useState<ComplianceRequirement | null>(null);
+const SEVERITY_COLORS: Record<string, string> = {
+  CRITICAL: "bg-red-100 text-red-800 border-red-300",
+  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
+  MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  LOW: "bg-green-100 text-green-800 border-green-300",
+};
 
-  // Filter state for dropdowns
-  const [categoryFilter, setCategoryFilter] = React.useState("all");
-  const [statusFilter, setStatusFilter] = React.useState("all");
+export function ComplianceTable({
+  items,
+  canUpdate,
+  canBranchResponse,
+  canZacReview,
+}: ComplianceTableProps) {
+  const router = useRouter();
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [sortField, setSortField] = React.useState<"dueDate" | "daysOpen">("daysOpen");
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("desc");
 
-  const columns: ColumnDef<ComplianceRequirement>[] = [
-    {
-      accessorKey: "id",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="font-mono text-sm">{row.getValue("id")}</span>
-      ),
-    },
-    {
-      accessorKey: "categoryId",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Category
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const categoryId = row.getValue("categoryId") as string;
-        return CATEGORY_MAP[categoryId] || categoryId;
-      },
-    },
-    {
-      accessorKey: "title",
-      header: "Description",
-      cell: ({ row }) => (
-        <div className="max-w-[200px] md:max-w-[300px]">
-          <div className="truncate text-sm font-medium md:text-base">
-            {row.getValue("title")}
-          </div>
-          <div className="text-muted-foreground line-clamp-1 text-sm md:text-base">
-            {row.original.description}
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("status") as keyof typeof STATUS_COLORS;
-        return (
-          <Badge className={STATUS_COLORS[status]}>
-            {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "dueDate",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Due Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => formatDate(row.getValue("dueDate")),
-    },
-    {
-      accessorKey: "evidenceCount",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hidden md:flex"
-        >
-          Evidence
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="hidden md:inline">
-          {row.getValue("evidenceCount")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "assignedToName",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hidden md:flex"
-        >
-          Assigned To
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="hidden md:inline">
-          {row.getValue("assignedToName")}
-        </span>
-      ),
-    },
-  ];
+  // Branch response dialog
+  const [branchResponseItem, setBranchResponseItem] = React.useState<string | null>(null);
+  // ZAC review dialog
+  const [zacReviewItem, setZacReviewItem] = React.useState<string | null>(null);
 
-  const table = useReactTable({
-    data: compData.complianceRequirements,
-    columns,
-    state: { sorting, columnFilters },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-  });
+  // Filter and sort
+  const filteredItems = React.useMemo(() => {
+    let result = items;
 
-  // Handle filter changes
-  const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value);
-    if (value === "all") {
-      setColumnFilters((prev) => prev.filter((f) => f.id !== "categoryId"));
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter((item) => item.status === statusFilter);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.observation?.title.toLowerCase().includes(query) ||
+          item.branch?.name.toLowerCase().includes(query) ||
+          item.branch?.code.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort
+    result = [...result].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      if (sortField === "dueDate") {
+        aVal = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+        bVal = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+      } else {
+        aVal = a.daysOpen;
+        bVal = b.daysOpen;
+      }
+
+      return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+    });
+
+    return result;
+  }, [items, statusFilter, searchQuery, sortField, sortDirection]);
+
+  const toggleSort = (field: "dueDate" | "daysOpen") => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setColumnFilters((prev) => {
-        const otherFilters = prev.filter((f) => f.id !== "categoryId");
-        return [...otherFilters, { id: "categoryId", value }];
-      });
+      setSortField(field);
+      setSortDirection("desc");
     }
   };
-
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-    if (value === "all") {
-      setColumnFilters((prev) => prev.filter((f) => f.id !== "status"));
-    } else {
-      setColumnFilters((prev) => {
-        const otherFilters = prev.filter((f) => f.id !== "status");
-        return [...otherFilters, { id: "status", value }];
-      });
-    }
-  };
-
-  const handleReset = () => {
-    setCategoryFilter("all");
-    setStatusFilter("all");
-    setColumnFilters([]);
-  };
-
-  const totalRequirements = compData.complianceRequirements.length;
-  const filteredRows = table.getFilteredRowModel().rows;
-  const isFiltered = filteredRows.length !== totalRequirements;
 
   return (
     <div className="space-y-4">
-      <ComplianceFilters
-        categoryFilter={categoryFilter}
-        statusFilter={statusFilter}
-        onCategoryChange={handleCategoryChange}
-        onStatusChange={handleStatusChange}
-        onReset={handleReset}
-      />
-
-      <div className="text-muted-foreground text-sm">
-        {isFiltered
-          ? `Showing ${filteredRows.length} of ${totalRequirements} requirements`
-          : `${totalRequirements} requirements`}
-      </div>
-
-      <div className="rounded-md border">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="hover:bg-muted/50 cursor-pointer transition-colors duration-150"
-                    onClick={() => setSelectedRequirement(row.original)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelectedRequirement(row.original);
-                      }
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No compliance requirements found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+      {/* Filters */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          placeholder="Search by title, branch..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="OPEN">Open</SelectItem>
+              <SelectItem value="BRANCH_RESPONSE_DUE">Response Due</SelectItem>
+              <SelectItem value="BRANCH_RESPONSE_SUBMITTED">Submitted</SelectItem>
+              <SelectItem value="ZAC_REVIEW">ZAC Review</SelectItem>
+              <SelectItem value="ZAC_APPROVED">Approved</SelectItem>
+              <SelectItem value="CLOSED">Closed</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {selectedRequirement && (
-        <ComplianceDetailDialog
-          requirement={selectedRequirement}
-          open={!!selectedRequirement}
-          onOpenChange={(open) => !open && setSelectedRequirement(null)}
+      {/* Table */}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Branch</TableHead>
+              <TableHead>Observation</TableHead>
+              <TableHead>Severity</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSort("daysOpen")}
+                  className="h-8 px-2"
+                >
+                  Days Open
+                  <ArrowUpDown className="ml-1 h-3 w-3" />
+                </Button>
+              </TableHead>
+              <TableHead>Escalation</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  No compliance items found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">
+                    {item.branch?.code ?? "—"}
+                    <div className="text-xs text-muted-foreground">
+                      {item.branch?.name}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="max-w-xs truncate" title={item.observation?.title}>
+                      {item.observation?.title ?? "—"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {item.observation?.severity ? (
+                      <Badge
+                        variant="outline"
+                        className={SEVERITY_COLORS[item.observation.severity] ?? ""}
+                      >
+                        {item.observation.severity}
+                      </Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={STATUS_COLORS[item.status] ?? ""}
+                    >
+                      {item.status.replace(/_/g, " ")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{item.daysOpen}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">L{item.escalationLevel}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {canBranchResponse &&
+                        (item.status === "OPEN" || item.status === "BRANCH_RESPONSE_DUE") && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setBranchResponseItem(item.id)}
+                          >
+                            Respond
+                          </Button>
+                        )}
+                      {canZacReview && item.status === "BRANCH_RESPONSE_SUBMITTED" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setZacReviewItem(item.id)}
+                        >
+                          Review
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Branch Response Dialog */}
+      {branchResponseItem && (
+        <BranchResponseForm
+          complianceItemId={branchResponseItem}
+          open={!!branchResponseItem}
+          onOpenChange={(open) => !open && setBranchResponseItem(null)}
+        />
+      )}
+
+      {/* ZAC Review Dialog */}
+      {zacReviewItem && (
+        <ZacReviewPanel
+          complianceItemId={zacReviewItem}
+          open={!!zacReviewItem}
+          onOpenChange={(open) => !open && setZacReviewItem(null)}
         />
       )}
     </div>

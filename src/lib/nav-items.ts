@@ -1,15 +1,19 @@
 import {
   LayoutDashboard,
   ShieldCheck,
+  Shield,
   ClipboardList,
   Search,
   FileBarChart,
+  FileText,
   UserCheck,
   Settings,
   Users,
   Clock,
   Gauge,
   Activity,
+  BarChart3,
+  Calendar,
 } from "@/lib/icons";
 import type { Permission, Role } from "./permissions";
 
@@ -43,10 +47,10 @@ export const navItems: NavItem[] = [
     requiredPermission: "dashboard:auditor", // Fallback, will be dynamically replaced
   },
   {
-    title: "Compliance Registry",
+    title: "Compliance",
     href: "/compliance",
-    icon: ShieldCheck,
-    tKey: "complianceRegistry",
+    icon: Shield,
+    tKey: "compliance",
     requiredPermission: "compliance:read",
   },
   {
@@ -64,10 +68,24 @@ export const navItems: NavItem[] = [
     requiredPermission: "observation:read",
   },
   {
-    title: "Board Report",
+    title: "Analytics",
+    href: "/analytics",
+    icon: BarChart3,
+    tKey: "analytics",
+    requiredPermission: "dashboard:cae", // CAE or CEO
+  },
+  {
+    title: "Calendar",
+    href: "/calendar",
+    icon: Calendar,
+    tKey: "calendar",
+    requiredPermission: "calendar:manage",
+  },
+  {
+    title: "Reports",
     href: "/reports",
-    icon: FileBarChart,
-    tKey: "boardReport",
+    icon: FileText,
+    tKey: "reports",
     requiredPermission: "report:read",
   },
   {
@@ -151,6 +169,14 @@ export function filterNavByRoles(roles: Role[]): NavItem[] {
       );
     }
 
+    // Special case: Analytics accessible by CAE or CEO
+    if (item.title === "Analytics") {
+      return (
+        permissions.has("dashboard:cae") ||
+        permissions.has("dashboard:ceo")
+      );
+    }
+
     return permissions.has(item.requiredPermission);
   });
 }
@@ -198,6 +224,7 @@ function getPermissionsForRole(role: Role): Permission[] {
       "admin:manage_users",
       "admin:manage_roles",
       "admin:manage_settings",
+      "calendar:manage",
       "dashboard:cae",
     ],
     CCO: [

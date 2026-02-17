@@ -17,6 +17,7 @@ import {
   verifyUpload,
 } from "@/lib/s3";
 import { createNotification } from "@/data-access/notifications";
+import { logger } from "@/lib/logger";
 
 // ─── Validation schemas ─────────────────────────────────────────────────────
 
@@ -204,12 +205,12 @@ export async function submitAuditeeResponse(
       }
     } catch (e) {
       // Non-blocking: log but don't fail the response submission
-      console.error("Failed to queue response notification:", e);
+      logger.error({ error: e, action: "queue_response_notification", observationId }, "Failed to queue response notification");
     }
 
     return { success: true as const, data: { observationId } };
   } catch (error) {
-    console.error("Failed to submit auditee response:", error);
+    logger.error({ error, action: "submit_auditee_response", observationId }, "Failed to submit auditee response");
     return {
       success: false as const,
       error: "Failed to submit response. Please try again.",
@@ -311,7 +312,7 @@ export async function requestEvidenceUpload(
       },
     };
   } catch (error) {
-    console.error("Failed to request evidence upload:", error);
+    logger.error({ error, action: "request_evidence_upload", observationId }, "Failed to request evidence upload");
     return {
       success: false as const,
       error: "Failed to prepare upload. Please try again.",
@@ -436,7 +437,7 @@ export async function confirmEvidenceUpload(
         error: "Maximum 20 evidence files per observation reached.",
       };
     }
-    console.error("Failed to confirm evidence upload:", error);
+    logger.error({ error, action: "confirm_evidence_upload", observationId }, "Failed to confirm evidence upload");
     return {
       success: false as const,
       error: "Failed to save evidence record. Please try again.",
@@ -494,7 +495,7 @@ export async function getEvidenceDownloadUrl(evidenceId: string) {
 
     return { success: true as const, data: { downloadUrl } };
   } catch (error) {
-    console.error("Failed to generate download URL:", error);
+    logger.error({ error, action: "get_evidence_download_url", evidenceId }, "Failed to generate download URL");
     return {
       success: false as const,
       error: "Failed to generate download link. Please try again.",

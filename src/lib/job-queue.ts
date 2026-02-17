@@ -1,5 +1,6 @@
 import "server-only";
 import { PgBoss } from "pg-boss";
+import { logger } from "@/lib/logger";
 
 // ─── pg-boss Singleton ──────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ export function getJobQueue(): PgBoss {
     });
 
     boss.on("error", (error: Error) => {
-      console.error("[pg-boss] Error:", error.message);
+      logger.error({ error, action: "pg_boss_error" }, "pg-boss error");
     });
   }
 

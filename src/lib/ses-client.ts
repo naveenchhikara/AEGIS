@@ -4,6 +4,7 @@ import {
   SendEmailCommand,
   type SendEmailCommandInput,
 } from "@aws-sdk/client-sesv2";
+import { logger } from "@/lib/logger";
 
 // ─── SES Client Singleton ───────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ export async function sendEmail(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown SES error";
-    console.error("SES send email failed:", message);
+    logger.error({ error, action: "send_email_ses", to: params.to }, "SES send email failed");
     return {
       success: false,
       error: message,

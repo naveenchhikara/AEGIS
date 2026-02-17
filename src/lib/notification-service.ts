@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * Application-level notification service.
@@ -35,7 +36,7 @@ export async function queueNotification(
 ): Promise<void> {
   const tenantId = (session.user as Record<string, unknown>).tenantId as string;
   if (!tenantId) {
-    console.error("[notification-service] No tenantId in session, skipping");
+    logger.error({ action: "queue_notification", recipientId, type }, "No tenantId in session, skipping notification");
     return;
   }
 

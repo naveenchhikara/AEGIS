@@ -161,3 +161,24 @@ export async function verifyUpload(
 
 // Re-export constants for use in server actions
 export { ALLOWED_FILE_TYPES, MAX_FILE_SIZE };
+
+// ---------------------------------------------------------------------------
+// uploadToS3 — Direct buffer upload for report generation
+// ---------------------------------------------------------------------------
+interface UploadOptions {
+  key: string;
+  body: Buffer;
+  contentType: string;
+}
+
+export async function uploadToS3(options: UploadOptions): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: options.key,
+    Body: options.body,
+    ContentType: options.contentType,
+  });
+
+  await s3Client.send(command);
+  return options.key;
+}

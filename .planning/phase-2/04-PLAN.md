@@ -3,415 +3,432 @@ phase: 2
 plan: 4
 type: standard
 wave: 2
-depends_on: [2]
+depends_on: [1, 2, 3]
 files_modified:
-  - src/components/pdf-report/audit-summary-document.tsx
-  - src/actions/reports/generate-pdf.ts
-  - package.json
+  - src/services/reports/pdf-generator.ts (new)
+  - src/actions/reports/generate-pdf.ts (new)
+  - src/actions/reports/transition-report.ts (new)
+  - package.json (add puppeteer)
 autonomous: true
 must_haves:
   truths:
-    - "PDF summary report includes executive summary, key findings, risk rating, BH certificate"
-    - "Uses @react-pdf/renderer for declarative PDF generation"
-    - "PDF is styled to match professional audit report format"
-    - "Generated PDF is uploaded to S3 and linked to engagement"
-    - "PDF includes branch profile, audit team, severity breakdown"
+    - "PDF summary report with executive summary, key findings, risk rating, BH certificate"
+    - "Uses puppeteer for PDF generation from HTML template"
+    - "Report workflow: DRAFT → UNDER_REVIEW → APPROVED → ISSUED"
+    - "Transition actions check permissions: review requires report:review, approve requires report:approve, issue requires report:issue"
+    - "Status history tracked in ReportMetadata (reviewedBy/At, approvedBy/At, issuedAt)"
   artifacts:
-    - path: "src/components/pdf-report/audit-summary-document.tsx"
-      provides: "React-PDF Document component for audit summary"
+    - path: "src/services/reports/pdf-generator.ts"
+      provides: "PDFReportGenerator class with generateSummaryReport()"
     - path: "src/actions/reports/generate-pdf.ts"
-      provides: "Server action to render PDF and upload to S3"
-  key_links:
-    - from: "AuditSummaryDocument"
-      to: "getAuditReportData"
-      via: "Accepts audit data as props for rendering"
-    - from: "generate-pdf action"
-      to: "ReactPDF.renderToBuffer"
-      via: "Renders component to PDF buffer for S3 upload"
+      provides: "Server action to generate PDF summary report"
+    - path: "src/actions/reports/transition-report.ts"
+      provides: "Server action for report workflow transitions"
 ---
 
 ## Objective
 
-Build PDF summary report generator for audit engagements. Uses @react-pdf/renderer to create professional-looking summary reports with executive summary, key findings by severity, risk rating, branch profile, and BH certificate. Generated PDFs are uploaded to S3 for download and archival.
+Implement PDF summary report generation with executive summary, key findings, risk rating, and BH certificate. Implement report routing workflow (draft → reviewed → approved → issued) with permission checks and status tracking.
+
+This plan covers R30 (PDF report) and R33 (report routing workflow).
 
 ## Context
 
-@AEGIS/src/components/pdf-report/audit-summary-document.tsx — NEW: React-PDF component
-@AEGIS/src/actions/reports/generate-pdf.ts — NEW: server action
-@AEGIS/src/data-access/reports.ts — getAuditReportData (from Plan 2)
-@AEGIS/.planning/REQUIREMENTS.md — R30
-@AEGIS/.planning/codebase/CONVENTIONS.md — component patterns, server action patterns
+@AEGIS/prisma/schema.prisma — ReportMetadata model with workflow fields
+@AEGIS/src/services/reports/report-data-fetcher.ts — Report data fetcher from Plan 03
+@AEGIS/.planning/REQUIREMENTS.md — R30, R33
+@AEGIS/.planning/codebase/CONVENTIONS.md — server action patterns
 
 ## Tasks
 
 <task type="auto">
-  <name>Task 1: Install @react-pdf/renderer + create PDF document component</name>
-  <files>package.json, src/components/pdf-report/audit-summary-document.tsx</files>
+  <name>Task 1: Add puppeteer dependency</name>
+  <files>package.json</files>
   <action>
-  **1a. Install @react-pdf/renderer:**
+  Add puppeteer to dependencies:
 
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm add @react-pdf/renderer
+  cd /root/.openclaw/workspace/AEGIS && pnpm add puppeteer
   ```
 
-  **1b. Create `src/components/pdf-report/audit-summary-document.tsx`:**
-
-  ```typescript
-  /**
-   * Audit Summary PDF Document (Phase 2 — R30)
-   *
-   * React-PDF component for generating professional audit summary reports.
-   */
-
-  import React from "react";
-  import {
-    Document,
-    Page,
-    Text,
-    View,
-    StyleSheet,
-    Font,
-  } from "@react-pdf/renderer";
-  import type { Prisma } from "@/generated/prisma";
-
-  // Type for audit data
-  type AuditReportData = NonNullable<
-    Prisma.PromiseReturnType<typeof import("@/data-access/reports").getAuditReportData>
-  >;
-
-  interface AuditSummaryDocumentProps {
-    auditData: AuditReportData;
-  }
-
-  // PDF Styles
-  const styles = StyleSheet.create({
-    page: {
-      padding: 40,
-      fontSize: 10,
-      fontFamily: "Helvetica",
-    },
-    header: {
-      fontSize: 18,
-      fontWeight: "bold",
-      marginBottom: 20,
-      textAlign: "center",
-      borderBottom: "2 solid #000",
-      paddingBottom: 10,
-    },
-    section: {
-      marginBottom: 15,
-    },
-    sectionTitle: {
-      fontSize: 14,
-      fontWeight: "bold",
-      marginBottom: 8,
-      color: "#1e3a8a",
-      borderBottom: "1 solid #cbd5e1",
-      paddingBottom: 4,
-    },
-    row: {
-      flexDirection: "row",
-      marginBottom: 4,
-    },
-    label: {
-      width: "40%",
-      fontWeight: "bold",
-    },
-    value: {
-      width: "60%",
-    },
-    table: {
-      marginTop: 10,
-    },
-    tableHeader: {
-      flexDirection: "row",
-      backgroundColor: "#e2e8f0",
-      padding: 8,
-      fontWeight: "bold",
-      borderBottom: "1 solid #000",
-    },
-    tableRow: {
-      flexDirection: "row",
-      padding: 8,
-      borderBottom: "1 solid #cbd5e1",
-    },
-    col1: { width: "10%" },
-    col2: { width: "50%" },
-    col3: { width: "20%" },
-    col4: { width: "20%" },
-    ratingBox: {
-      marginTop: 10,
-      padding: 15,
-      backgroundColor: "#f0f9ff",
-      border: "2 solid #3b82f6",
-      borderRadius: 4,
-    },
-    ratingText: {
-      fontSize: 16,
-      fontWeight: "bold",
-      textAlign: "center",
-      color: "#1e3a8a",
-    },
-    footer: {
-      position: "absolute",
-      bottom: 30,
-      left: 40,
-      right: 40,
-      textAlign: "center",
-      fontSize: 8,
-      color: "#64748b",
-      borderTop: "1 solid #cbd5e1",
-      paddingTop: 10,
-    },
-  });
-
-  export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
-    auditData,
-  }) => {
-    const criticalObs = auditData.observations?.filter((o) => o.severity === "CRITICAL") || [];
-    const highObs = auditData.observations?.filter((o) => o.severity === "HIGH") || [];
-    const mediumObs = auditData.observations?.filter((o) => o.severity === "MEDIUM") || [];
-    const lowObs = auditData.observations?.filter((o) => o.severity === "LOW") || [];
-
-    return (
-      <Document>
-        <Page size="A4" style={styles.page}>
-          {/* Header */}
-          <Text style={styles.header}>Internal Audit Report - Summary</Text>
-
-          {/* Audit Metadata */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Audit Details</Text>
-            <View style={styles.row}>
-              <Text style={styles.label}>Audit Number:</Text>
-              <Text style={styles.value}>{auditData.auditNumber || "N/A"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Branch:</Text>
-              <Text style={styles.value}>{auditData.branch?.name || "N/A"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Branch Code:</Text>
-              <Text style={styles.value}>{auditData.branch?.code || "N/A"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>City:</Text>
-              <Text style={styles.value}>{auditData.branch?.city || "N/A"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Audit Type:</Text>
-              <Text style={styles.value}>{auditData.auditType || "RBIA"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Period:</Text>
-              <Text style={styles.value}>
-                {auditData.periodFrom
-                  ? new Date(auditData.periodFrom).toLocaleDateString()
-                  : "N/A"}{" "}
-                to{" "}
-                {auditData.periodTo
-                  ? new Date(auditData.periodTo).toLocaleDateString()
-                  : "N/A"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Risk Rating */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Overall Risk Rating</Text>
-            <View style={styles.ratingBox}>
-              <Text style={styles.ratingText}>
-                {auditData.overallRiskRating || "Not Computed"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Executive Summary */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Executive Summary</Text>
-            <Text style={{ marginTop: 5, lineHeight: 1.5 }}>
-              This audit was conducted at {auditData.branch?.name || "the branch"} covering the
-              period from {auditData.periodFrom ? new Date(auditData.periodFrom).toLocaleDateString() : "N/A"} to{" "}
-              {auditData.periodTo ? new Date(auditData.periodTo).toLocaleDateString() : "N/A"}. A total of{" "}
-              {auditData.observations?.length || 0} observations were identified during the audit,
-              comprising {criticalObs.length} critical, {highObs.length} high, {mediumObs.length} medium,
-              and {lowObs.length} low severity findings.
-            </Text>
-          </View>
-
-          {/* Severity Breakdown */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Observations by Severity</Text>
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={{ width: "30%" }}>Severity</Text>
-                <Text style={{ width: "20%" }}>Count</Text>
-                <Text style={{ width: "50%" }}>Percentage</Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={{ width: "30%" }}>Critical</Text>
-                <Text style={{ width: "20%" }}>{criticalObs.length}</Text>
-                <Text style={{ width: "50%" }}>
-                  {auditData.observations?.length
-                    ? ((criticalObs.length / auditData.observations.length) * 100).toFixed(1)
-                    : 0}
-                  %
-                </Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={{ width: "30%" }}>High</Text>
-                <Text style={{ width: "20%" }}>{highObs.length}</Text>
-                <Text style={{ width: "50%" }}>
-                  {auditData.observations?.length
-                    ? ((highObs.length / auditData.observations.length) * 100).toFixed(1)
-                    : 0}
-                  %
-                </Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={{ width: "30%" }}>Medium</Text>
-                <Text style={{ width: "20%" }}>{mediumObs.length}</Text>
-                <Text style={{ width: "50%" }}>
-                  {auditData.observations?.length
-                    ? ((mediumObs.length / auditData.observations.length) * 100).toFixed(1)
-                    : 0}
-                  %
-                </Text>
-              </View>
-              <View style={styles.tableRow}>
-                <Text style={{ width: "30%" }}>Low</Text>
-                <Text style={{ width: "20%" }}>{lowObs.length}</Text>
-                <Text style={{ width: "50%" }}>
-                  {auditData.observations?.length
-                    ? ((lowObs.length / auditData.observations.length) * 100).toFixed(1)
-                    : 0}
-                  %
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Footer */}
-          <Text style={styles.footer}>
-            Generated by AEGIS Audit System on {new Date().toLocaleString()}
-          </Text>
-        </Page>
-
-        {/* Page 2: Key Findings */}
-        <Page size="A4" style={styles.page}>
-          <Text style={styles.header}>Key Findings</Text>
-
-          {/* Critical Findings */}
-          {criticalObs.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Critical Severity Observations</Text>
-              {criticalObs.slice(0, 5).map((obs, idx) => (
-                <View key={obs.id} style={{ marginBottom: 10 }}>
-                  <Text style={{ fontWeight: "bold" }}>
-                    {idx + 1}. {obs.title}
-                  </Text>
-                  <Text style={{ marginTop: 3, fontSize: 9 }}>
-                    Condition: {obs.condition.substring(0, 200)}
-                    {obs.condition.length > 200 ? "..." : ""}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* High Findings */}
-          {highObs.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>High Severity Observations</Text>
-              {highObs.slice(0, 3).map((obs, idx) => (
-                <View key={obs.id} style={{ marginBottom: 10 }}>
-                  <Text style={{ fontWeight: "bold" }}>
-                    {idx + 1}. {obs.title}
-                  </Text>
-                  <Text style={{ marginTop: 3, fontSize: 9 }}>
-                    Condition: {obs.condition.substring(0, 150)}
-                    {obs.condition.length > 150 ? "..." : ""}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* BH Certificate Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Branch Head Certificate</Text>
-            {auditData.bhCertSignedAt ? (
-              <>
-                <View style={styles.row}>
-                  <Text style={styles.label}>Signed At:</Text>
-                  <Text style={styles.value}>
-                    {new Date(auditData.bhCertSignedAt).toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.row}>
-                  <Text style={styles.label}>Comments:</Text>
-                  <Text style={styles.value}>
-                    {auditData.bhCertComments || "No comments provided"}
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <Text>Branch Head certificate pending</Text>
-            )}
-          </View>
-
-          <Text style={styles.footer}>
-            Generated by AEGIS Audit System on {new Date().toLocaleString()} | Page 2 of 2
-          </Text>
-        </Page>
-      </Document>
-    );
-  };
-  ```
+  **Note:** Puppeteer includes Chrome binary, ~300MB download.
   </action>
   <verify>
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit --pretty 2>&1 | grep "audit-summary-document" | head -10
+  cd /root/.openclaw/workspace/AEGIS && pnpm list puppeteer
   ```
-  No TypeScript errors.
   </verify>
   <done>
-  - @react-pdf/renderer added to package.json
-  - src/components/pdf-report/audit-summary-document.tsx exists
-  - AuditSummaryDocument is a React-PDF Document component
-  - PDF has 2 pages: Summary page + Key Findings page
-  - Page 1 includes: audit metadata, risk rating box, executive summary, severity breakdown table
-  - Page 2 includes: critical/high findings (top 5/3), BH certificate section
-  - Professional styling with borders, colors, proper spacing
-  - Footer with generation timestamp on both pages
+  - puppeteer added to package.json dependencies
+  - pnpm-lock.yaml updated
   </done>
 </task>
 
 <task type="auto">
-  <name>Task 2: Server action to generate and upload PDF</name>
-  <files>src/actions/reports/generate-pdf.ts</files>
+  <name>Task 2: PDF generator service</name>
+  <files>src/services/reports/pdf-generator.ts (new)</files>
   <action>
-  **Create `src/actions/reports/generate-pdf.ts`:**
+  Create `src/services/reports/pdf-generator.ts`:
+
+  ```typescript
+  import puppeteer from "puppeteer";
+  import type { AuditReportData } from "./report-data-fetcher";
+  import { logger } from "@/lib/logger";
+
+  export class PDFReportGenerator {
+    private data: AuditReportData;
+
+    constructor(data: AuditReportData) {
+      this.data = data;
+    }
+
+    async generateSummaryReport(): Promise<Buffer> {
+      let browser;
+      try {
+        browser = await puppeteer.launch({
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
+
+        const page = await browser.newPage();
+        
+        const html = this.buildHTML();
+        await page.setContent(html, { waitUntil: "networkidle0" });
+
+        const pdfBuffer = await page.pdf({
+          format: "A4",
+          printBackground: true,
+          margin: {
+            top: "20mm",
+            right: "15mm",
+            bottom: "20mm",
+            left: "15mm",
+          },
+        });
+
+        return Buffer.from(pdfBuffer);
+      } catch (error) {
+        logger.error({ error }, "Failed to generate PDF report");
+        throw error;
+      } finally {
+        if (browser) {
+          await browser.close();
+        }
+      }
+    }
+
+    private buildHTML(): string {
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .cover {
+              text-align: center;
+              padding: 50px 0;
+              page-break-after: always;
+            }
+            .cover h1 {
+              font-size: 32px;
+              margin-bottom: 40px;
+            }
+            .cover .details {
+              text-align: left;
+              margin: 0 auto;
+              width: 80%;
+              font-size: 16px;
+            }
+            .cover .details p {
+              margin: 10px 0;
+            }
+            .section {
+              margin: 30px 0;
+              page-break-inside: avoid;
+            }
+            .section h2 {
+              color: #0066cc;
+              border-bottom: 2px solid #0066cc;
+              padding-bottom: 5px;
+              margin-bottom: 15px;
+            }
+            .rating-badge {
+              display: inline-block;
+              padding: 10px 20px;
+              border-radius: 5px;
+              font-weight: bold;
+              font-size: 18px;
+              color: white;
+            }
+            .rating-VERY_GOOD { background-color: #28a745; }
+            .rating-GOOD { background-color: #5cb85c; }
+            .rating-SATISFACTORY { background-color: #ffc107; }
+            .rating-MODERATE { background-color: #fd7e14; }
+            .rating-POOR { background-color: #dc3545; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+            }
+            table th, table td {
+              border: 1px solid #ddd;
+              padding: 10px;
+              text-align: left;
+            }
+            table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            .observation {
+              margin: 15px 0;
+              padding: 15px;
+              border-left: 4px solid #dc3545;
+              background-color: #f8f9fa;
+            }
+            .observation.CRITICAL { border-left-color: #dc3545; }
+            .observation.HIGH { border-left-color: #fd7e14; }
+            .observation.MEDIUM { border-left-color: #ffc107; }
+            .observation.LOW { border-left-color: #17a2b8; }
+            .observation h4 {
+              margin: 0 0 10px 0;
+              color: #333;
+            }
+            .observation p {
+              margin: 5px 0;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          ${this.buildCoverPage()}
+          ${this.buildExecutiveSummary()}
+          ${this.buildBranchProfile()}
+          ${this.buildRiskRating()}
+          ${this.buildObservations()}
+          ${this.buildBHCertificate()}
+          ${this.buildFooter()}
+        </body>
+        </html>
+      `;
+    }
+
+    private buildCoverPage(): string {
+      return `
+        <div class="cover">
+          <h1>INTERNAL AUDIT REPORT</h1>
+          <div class="details">
+            <p><strong>Audit Number:</strong> ${this.data.engagement.auditNumber ?? "N/A"}</p>
+            <p><strong>Branch:</strong> ${this.data.branch.name} (${this.data.branch.code})</p>
+            <p><strong>City:</strong> ${this.data.branch.city}, ${this.data.branch.state}</p>
+            <p><strong>Audit Period:</strong> ${this.formatDateRange(this.data.engagement.periodFrom, this.data.engagement.periodTo)}</p>
+            <p><strong>Audit Type:</strong> ${this.data.engagement.auditType ?? "RBIA"}</p>
+            <p><strong>Overall Rating:</strong> 
+              <span class="rating-badge rating-${this.data.riskRating.ratingBand}">
+                ${this.data.riskRating.ratingBand.replace(/_/g, " ")}
+              </span>
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    private buildExecutiveSummary(): string {
+      return `
+        <div class="section">
+          <h2>Executive Summary</h2>
+          <p>
+            This report presents the findings of the ${this.data.engagement.auditType ?? "Risk-Based Internal Audit"} 
+            conducted at ${this.data.branch.name} branch for the period 
+            ${this.formatDateRange(this.data.engagement.periodFrom, this.data.engagement.periodTo)}.
+          </p>
+          
+          <h3>Key Highlights</h3>
+          <table>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>Total Observations</td>
+              <td>${this.data.riskRating.observationCount}</td>
+            </tr>
+            <tr>
+              <td>Critical Findings</td>
+              <td>${this.data.riskRating.criticalCount}</td>
+            </tr>
+            <tr>
+              <td>High Severity</td>
+              <td>${this.data.riskRating.highCount}</td>
+            </tr>
+            <tr>
+              <td>Medium Severity</td>
+              <td>${this.data.riskRating.mediumCount}</td>
+            </tr>
+            <tr>
+              <td>Low Severity</td>
+              <td>${this.data.riskRating.lowCount}</td>
+            </tr>
+            <tr>
+              <td>Repeat Findings</td>
+              <td>${this.data.riskRating.repeatFindingCount}</td>
+            </tr>
+            <tr>
+              <td><strong>Overall Rating</strong></td>
+              <td><strong>${this.data.riskRating.ratingBand.replace(/_/g, " ")} (${this.data.riskRating.percentageScore}%)</strong></td>
+            </tr>
+          </table>
+        </div>
+      `;
+    }
+
+    private buildBranchProfile(): string {
+      return `
+        <div class="section">
+          <h2>Branch Profile</h2>
+          <table>
+            <tr><td><strong>Branch Code</strong></td><td>${this.data.branch.code}</td></tr>
+            <tr><td><strong>Branch Name</strong></td><td>${this.data.branch.name}</td></tr>
+            <tr><td><strong>Location</strong></td><td>${this.data.branch.city}, ${this.data.branch.state}</td></tr>
+            <tr><td><strong>Zone</strong></td><td>${this.data.branch.zone?.name ?? "N/A"}</td></tr>
+            <tr><td><strong>Category</strong></td><td>${this.data.branch.category ?? "N/A"}</td></tr>
+            <tr><td><strong>Business Size</strong></td><td>₹ ${this.data.branch.businessSize ?? "N/A"} Lakh</td></tr>
+            <tr><td><strong>Staff Strength</strong></td><td>${this.data.branch.staffStrength ?? "N/A"}</td></tr>
+            <tr><td><strong>RAM Score</strong></td><td>${this.data.branch.ramScore ?? "N/A"}</td></tr>
+            <tr><td><strong>Last Audit Date</strong></td><td>${this.data.branch.lastAuditDate ? this.formatDate(this.data.branch.lastAuditDate) : "N/A"}</td></tr>
+            <tr><td><strong>Last Audit Rating</strong></td><td>${this.data.branch.lastAuditRating ?? "N/A"}</td></tr>
+          </table>
+        </div>
+      `;
+    }
+
+    private buildRiskRating(): string {
+      return `
+        <div class="section">
+          <h2>Risk Rating Analysis</h2>
+          <p>
+            The overall risk rating is calculated based on the severity and frequency of observations, 
+            with repeat findings weighted at 1.5×. The rating scale ranges from Poor (≤40%) to Very Good (&gt;80%).
+          </p>
+          <table>
+            <tr><th>Parameter</th><th>Value</th></tr>
+            <tr><td>Percentage Score</td><td><strong>${this.data.riskRating.percentageScore}%</strong></td></tr>
+            <tr><td>Rating Band</td><td><strong class="rating-badge rating-${this.data.riskRating.ratingBand}">${this.data.riskRating.ratingBand.replace(/_/g, " ")}</strong></td></tr>
+          </table>
+        </div>
+      `;
+    }
+
+    private buildObservations(): string {
+      let html = `
+        <div class="section">
+          <h2>Detailed Observations</h2>
+      `;
+
+      if (this.data.observations.length === 0) {
+        html += `<p>No observations recorded.</p>`;
+      } else {
+        this.data.observations.forEach((obs, index) => {
+          html += `
+            <div class="observation ${obs.severity}">
+              <h4>${index + 1}. ${obs.title} ${obs.isRepeatFinding ? '(REPEAT)' : ''}</h4>
+              <p><strong>Area:</strong> ${obs.areaName ?? "N/A"}</p>
+              <p><strong>Severity:</strong> ${obs.severity}</p>
+              <p><strong>Condition:</strong> ${obs.condition}</p>
+              <p><strong>Cause:</strong> ${obs.cause}</p>
+              <p><strong>Effect:</strong> ${obs.effect}</p>
+              <p><strong>Recommendation:</strong> ${obs.recommendation}</p>
+            </div>
+          `;
+        });
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    private buildBHCertificate(): string {
+      return `
+        <div class="section">
+          <h2>Branch Head Certificate</h2>
+          <p><strong>Status:</strong> ${this.data.bhCertificate.signedAt ? "Signed" : "Pending"}</p>
+          ${this.data.bhCertificate.signedAt ? `
+            <p><strong>Signed At:</strong> ${this.formatDate(this.data.bhCertificate.signedAt)}</p>
+            ${this.data.bhCertificate.comments ? `<p><strong>Comments:</strong> ${this.data.bhCertificate.comments}</p>` : ''}
+          ` : ''}
+        </div>
+      `;
+    }
+
+    private buildFooter(): string {
+      return `
+        <div class="footer">
+          <p>Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</p>
+          <p>Internal Audit Department</p>
+        </div>
+      `;
+    }
+
+    private formatDate(date: Date | null): string {
+      if (!date) return "N/A";
+      return new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    private formatDateRange(from: Date | null, to: Date | null): string {
+      if (!from || !to) return "N/A";
+      return `${this.formatDate(from)} to ${this.formatDate(to)}`;
+    }
+  }
+  ```
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/services/reports/pdf-generator.ts
+  ```
+  </verify>
+  <done>
+  - pdf-generator.ts exists with PDFReportGenerator class
+  - generateSummaryReport() uses puppeteer to render HTML to PDF
+  - Includes cover, executive summary, branch profile, risk rating, observations, BH certificate
+  - Professional styling with rating colors
+  - TypeScript compiles successfully
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 3: Server action — generate PDF</name>
+  <files>src/actions/reports/generate-pdf.ts (new)</files>
+  <action>
+  Create `src/actions/reports/generate-pdf.ts`:
 
   ```typescript
   "use server";
 
-  import { revalidatePath } from "next/cache";
-  import { renderToBuffer } from "@react-pdf/renderer";
   import { getRequiredSession } from "@/data-access/session";
+  import { prismaForTenant } from "@/data-access/prisma";
   import { hasPermission, type Role } from "@/lib/permissions";
   import { logger } from "@/lib/logger";
-  import { getAuditReportData } from "@/data-access/reports";
-  import { AuditSummaryDocument } from "@/components/pdf-report/audit-summary-document";
+  import { ReportDataFetcher } from "@/services/reports/report-data-fetcher";
+  import { PDFReportGenerator } from "@/services/reports/pdf-generator";
   import { uploadToS3 } from "@/lib/s3";
-  import { ComputeRiskRatingSchema } from "./schemas";
+  import { computeRiskRating } from "./compute-risk-rating";
 
-  /**
-   * Generate PDF summary report and upload to S3.
-   * Security: Requires report:generate permission.
-   * Side effects: Uploads PDF to S3.
-   */
-  export async function generatePdfReport(input: { engagementId: string }) {
+  export async function generatePDFReport(engagementId: string) {
     const session = await getRequiredSession();
     const userRoles = ((session.user as any).roles ?? []) as Role[];
     const tenantId = (session.user as any).tenantId as string;
@@ -423,7 +440,123 @@ Build PDF summary report generator for audit engagements. Uses @react-pdf/render
       };
     }
 
-    const parsed = ComputeRiskRatingSchema.safeParse(input);
+    const db = prismaForTenant(tenantId);
+
+    try {
+      const ratingResult = await computeRiskRating(engagementId);
+      if (!ratingResult.success) {
+        return ratingResult;
+      }
+
+      const dataFetcher = new ReportDataFetcher(tenantId);
+      const reportData = await dataFetcher.fetchAuditReportData(engagementId);
+
+      const generator = new PDFReportGenerator(reportData);
+      const pdfBuffer = await generator.generateSummaryReport();
+
+      const filename = `audit-summary-${reportData.engagement.auditNumber ?? engagementId}.pdf`;
+      const s3Key = `reports/${tenantId}/${engagementId}/${filename}`;
+      
+      await uploadToS3(s3Key, pdfBuffer, "application/pdf");
+
+      const reportMetadata = await db.reportMetadata.create({
+        data: {
+          tenantId,
+          engagementId,
+          format: "PDF",
+          status: "DRAFT",
+          riskScore: ratingResult.data!.percentageScore,
+          ratingBand: ratingResult.data!.ratingBand,
+          s3Key,
+          fileSize: pdfBuffer.length,
+          filename,
+          generatedById: session.user.id,
+        },
+      });
+
+      logger.info(
+        { reportId: reportMetadata.id, engagementId, tenantId, s3Key },
+        "PDF report generated"
+      );
+
+      return {
+        success: true as const,
+        data: {
+          reportId: reportMetadata.id,
+          s3Key,
+          filename,
+        },
+      };
+    } catch (error) {
+      logger.error({ error, engagementId, tenantId }, "Failed to generate PDF report");
+      return {
+        success: false as const,
+        error: "Failed to generate report. Please try again.",
+      };
+    }
+  }
+  ```
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/reports/generate-pdf.ts
+  ```
+  </verify>
+  <done>
+  - generate-pdf.ts exists with generatePDFReport() action
+  - Similar flow to XLSX generation
+  - Creates ReportMetadata with PDF format and DRAFT status
+  - TypeScript compiles successfully
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 4: Server action — report workflow transitions</name>
+  <files>src/actions/reports/transition-report.ts (new)</files>
+  <action>
+  Create `src/actions/reports/transition-report.ts`:
+
+  ```typescript
+  "use server";
+
+  import { getRequiredSession } from "@/data-access/session";
+  import { prismaForTenant } from "@/data-access/prisma";
+  import { hasPermission, type Role } from "@/lib/permissions";
+  import { logger } from "@/lib/logger";
+  import { z } from "zod";
+  import type { ReportStatus } from "@/generated/prisma/enums";
+
+  const ReviewReportSchema = z.object({
+    reportId: z.string().uuid(),
+    comments: z.string().optional(),
+  });
+
+  const ApproveReportSchema = z.object({
+    reportId: z.string().uuid(),
+    comments: z.string().optional(),
+  });
+
+  const IssueReportSchema = z.object({
+    reportId: z.string().uuid(),
+  });
+
+  /**
+   * Transition report to UNDER_REVIEW status.
+   * Security: Requires report:review permission
+   */
+  export async function reviewReport(input: z.infer<typeof ReviewReportSchema>) {
+    const session = await getRequiredSession();
+    const userRoles = ((session.user as any).roles ?? []) as Role[];
+    const tenantId = (session.user as any).tenantId as string;
+
+    if (!hasPermission(userRoles, "report:review")) {
+      return {
+        success: false as const,
+        error: "You do not have permission to review reports.",
+      };
+    }
+
+    const parsed = ReviewReportSchema.safeParse(input);
     if (!parsed.success) {
       return {
         success: false as const,
@@ -431,95 +564,212 @@ Build PDF summary report generator for audit engagements. Uses @react-pdf/render
       };
     }
 
+    const db = prismaForTenant(tenantId);
+
     try {
-      // Fetch audit data
-      const auditData = await getAuditReportData(session, parsed.data.engagementId);
-
-      if (!auditData) {
-        return {
-          success: false as const,
-          error: "Audit engagement not found.",
-        };
-      }
-
-      if (auditData.status !== "COMPLETED") {
-        return {
-          success: false as const,
-          error: "Can only generate reports for completed audits.",
-        };
-      }
-
-      // Render PDF
-      logger.info(
-        { engagementId: parsed.data.engagementId },
-        "Generating PDF audit summary"
-      );
-
-      const buffer = await renderToBuffer(
-        AuditSummaryDocument({ auditData })
-      );
-
-      // Upload to S3
-      const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}_summary.pdf`;
-      const s3Key = await uploadToS3({
-        key: filename,
-        body: Buffer.from(buffer),
-        contentType: "application/pdf",
+      const report = await db.reportMetadata.findFirst({
+        where: { id: parsed.data.reportId, tenantId },
       });
 
-      logger.info(
-        { engagementId: parsed.data.engagementId, s3Key },
-        "PDF summary uploaded to S3"
-      );
+      if (!report) {
+        return {
+          success: false as const,
+          error: "Report not found.",
+        };
+      }
 
-      revalidatePath(`/audit-plans/${parsed.data.engagementId}`);
-      revalidatePath("/reports");
+      if (report.status !== "DRAFT") {
+        return {
+          success: false as const,
+          error: `Cannot review report in ${report.status} status.`,
+        };
+      }
+
+      const updated = await db.reportMetadata.update({
+        where: { id: parsed.data.reportId },
+        data: {
+          status: "UNDER_REVIEW",
+          reviewedById: session.user.id,
+          reviewedAt: new Date(),
+          reviewComments: parsed.data.comments,
+        },
+      });
+
+      logger.info({ reportId: updated.id, tenantId }, "Report reviewed");
 
       return {
         success: true as const,
-        data: {
-          engagementId: parsed.data.engagementId,
-          s3Key,
-          filename: `${auditData.auditNumber || auditData.id}_summary.pdf`,
-        },
+        data: { reportId: updated.id },
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to generate PDF report.";
-      logger.error({ error, action: "generate_pdf_report", tenantId }, message);
-      return { success: false as const, error: message };
+      logger.error({ error, reportId: input.reportId, tenantId }, "Failed to review report");
+      return {
+        success: false as const,
+        error: "Failed to review report. Please try again.",
+      };
+    }
+  }
+
+  /**
+   * Transition report to APPROVED status.
+   * Security: Requires report:approve permission
+   */
+  export async function approveReport(input: z.infer<typeof ApproveReportSchema>) {
+    const session = await getRequiredSession();
+    const userRoles = ((session.user as any).roles ?? []) as Role[];
+    const tenantId = (session.user as any).tenantId as string;
+
+    if (!hasPermission(userRoles, "report:approve")) {
+      return {
+        success: false as const,
+        error: "You do not have permission to approve reports.",
+      };
+    }
+
+    const parsed = ApproveReportSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false as const,
+        error: parsed.error.issues[0].message,
+      };
+    }
+
+    const db = prismaForTenant(tenantId);
+
+    try {
+      const report = await db.reportMetadata.findFirst({
+        where: { id: parsed.data.reportId, tenantId },
+      });
+
+      if (!report) {
+        return {
+          success: false as const,
+          error: "Report not found.",
+        };
+      }
+
+      if (report.status !== "UNDER_REVIEW") {
+        return {
+          success: false as const,
+          error: `Cannot approve report in ${report.status} status.`,
+        };
+      }
+
+      const updated = await db.reportMetadata.update({
+        where: { id: parsed.data.reportId },
+        data: {
+          status: "APPROVED",
+          approvedById: session.user.id,
+          approvedAt: new Date(),
+          approvalComments: parsed.data.comments,
+        },
+      });
+
+      logger.info({ reportId: updated.id, tenantId }, "Report approved");
+
+      return {
+        success: true as const,
+        data: { reportId: updated.id },
+      };
+    } catch (error) {
+      logger.error({ error, reportId: input.reportId, tenantId }, "Failed to approve report");
+      return {
+        success: false as const,
+        error: "Failed to approve report. Please try again.",
+      };
+    }
+  }
+
+  /**
+   * Transition report to ISSUED status.
+   * Security: Requires report:issue permission
+   */
+  export async function issueReport(input: z.infer<typeof IssueReportSchema>) {
+    const session = await getRequiredSession();
+    const userRoles = ((session.user as any).roles ?? []) as Role[];
+    const tenantId = (session.user as any).tenantId as string;
+
+    if (!hasPermission(userRoles, "report:issue")) {
+      return {
+        success: false as const,
+        error: "You do not have permission to issue reports.",
+      };
+    }
+
+    const parsed = IssueReportSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false as const,
+        error: parsed.error.issues[0].message,
+      };
+    }
+
+    const db = prismaForTenant(tenantId);
+
+    try {
+      const report = await db.reportMetadata.findFirst({
+        where: { id: parsed.data.reportId, tenantId },
+      });
+
+      if (!report) {
+        return {
+          success: false as const,
+          error: "Report not found.",
+        };
+      }
+
+      if (report.status !== "APPROVED") {
+        return {
+          success: false as const,
+          error: `Cannot issue report in ${report.status} status. Must be APPROVED first.`,
+        };
+      }
+
+      const updated = await db.reportMetadata.update({
+        where: { id: parsed.data.reportId },
+        data: {
+          status: "ISSUED",
+          issuedAt: new Date(),
+        },
+      });
+
+      logger.info({ reportId: updated.id, tenantId }, "Report issued");
+
+      return {
+        success: true as const,
+        data: { reportId: updated.id },
+      };
+    } catch (error) {
+      logger.error({ error, reportId: input.reportId, tenantId }, "Failed to issue report");
+      return {
+        success: false as const,
+        error: "Failed to issue report. Please try again.",
+      };
     }
   }
   ```
   </action>
   <verify>
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit --pretty 2>&1 | grep "generate-pdf" | head -10
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/reports/transition-report.ts
   ```
-  No TypeScript errors.
   </verify>
   <done>
-  - src/actions/reports/generate-pdf.ts exists
-  - generatePdfReport action follows AEGIS conventions
-  - Action requires report:generate permission
-  - Action only processes COMPLETED engagements
-  - Action calls getAuditReportData() to fetch full data
-  - Action uses renderToBuffer() to convert React-PDF component to buffer
-  - Action uploads PDF buffer to S3 with application/pdf content type
-  - Action returns S3 key + filename
-  - Action logs generation + upload events
+  - transition-report.ts exists with 3 workflow actions
+  - reviewReport() transitions DRAFT → UNDER_REVIEW (requires report:review)
+  - approveReport() transitions UNDER_REVIEW → APPROVED (requires report:approve)
+  - issueReport() transitions APPROVED → ISSUED (requires report:issue)
+  - Each action validates current status and permission
+  - TypeScript compiles successfully
   </done>
 </task>
 
 ## Success Criteria
 
-1. `pnpm exec tsc --noEmit` has no errors in PDF generation files
-2. @react-pdf/renderer dependency added to package.json
-3. AuditSummaryDocument is a valid React-PDF Document component with 2 pages
-4. Page 1 includes audit metadata, risk rating, executive summary, severity breakdown
-5. Page 2 includes top critical/high findings and BH certificate section
-6. PDF styling includes proper headers, tables, borders, colors
-7. generatePdfReport action validates COMPLETED status
-8. Action renders PDF using renderToBuffer()
-9. Generated PDF uploaded to S3 with correct content type
-10. Action returns S3 key and filename for download
+1. `pnpm exec tsc --noEmit` passes for all new files
+2. puppeteer dependency installed
+3. PDFReportGenerator creates professional PDF with executive summary, findings, risk rating
+4. generatePDFReport() action uploads to S3 and creates ReportMetadata
+5. Report workflow actions enforce status transitions: DRAFT → UNDER_REVIEW → APPROVED → ISSUED
+6. Permission checks: report:review, report:approve, report:issue
+7. Workflow history tracked in ReportMetadata (reviewedBy/At, approvedBy/At, issuedAt)

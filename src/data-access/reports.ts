@@ -387,3 +387,89 @@ export async function getBoardReportById(session: Session, id: string) {
     include: { generatedBy: { select: { name: true } } },
   });
 }
+
+/**
+ * Get complete audit report data for XLSX and PDF generation.
+ * Fetches all nested data for a single audit engagement.
+ */
+export async function getAuditReportData(
+  session: Session,
+  engagementId: string
+) {
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  const engagement = await db.auditEngagement.findFirst({
+    where: { id: engagementId, tenantId },
+    include: {
+      branch: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          city: true,
+          state: true,
+          category: true,
+          businessSize: true,
+          ramScore: true,
+        },
+      },
+      observations: {
+        where: { tenantId },
+        include: {
+          auditArea: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: [
+          { severity: "desc" },
+          { createdAt: "desc" },
+        ],
+      },
+      teamMembers: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+      cashChecks: {
+        where: { tenantId },
+        orderBy: { verifiedAt: "desc" },
+      },
+      loanReviews: {
+        where: { tenantId },
+        orderBy: { createdAt: "desc" },
+      },
+      smaNpaEntries: {
+        where: { tenantId },
+        orderBy: { category: "asc" },
+      },
+      examinationResponses: {
+        where: { tenantId },
+        include: {
+          item: {
+            include: {
+              area: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+
+  return engagement;
+}

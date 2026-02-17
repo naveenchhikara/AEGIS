@@ -2,419 +2,642 @@
 phase: 2
 plan: 6
 type: standard
-wave: 3
-depends_on: [5]
+wave: 4
+depends_on: [1, 2, 5]
 files_modified:
-  - src/lib/escalation-engine.ts
-  - src/actions/compliance/compute-escalation.ts
-  - src/data-access/compliance.ts
+  - src/data-access/analytics/branch-heatmap.ts (new)
+  - src/data-access/analytics/audit-progress.ts (new)
+  - src/data-access/analytics/compliance-aging.ts (new)
+  - src/data-access/analytics/findings-trend.ts (new)
+  - src/data-access/analytics/npa-movement.ts (new)
 autonomous: true
 must_haves:
   truths:
-    - "Escalation engine computes daysOpen from dueDate to current date"
-    - "Escalation levels trigger at correct thresholds: L1=+15d, L2=+30d, L3=+90d, L4=+180d"
-    - "computeEscalation() is a pure function (no DB access)"
-    - "Cron job (or manual trigger) runs escalation computation for all open items"
-    - "ComplianceItem.escalationLevel updated correctly (0-4)"
+    - "Branch risk heatmap aggregates RAM scores and audit ratings by zone/category"
+    - "Audit plan progress shows completed/in-progress/planned engagements per quarter"
+    - "Compliance aging analysis groups items by status and days-open buckets (0-30, 31-60, 61-90, 90+)"
+    - "Finding trends show observation count and severity distribution over time (monthly/quarterly)"
+    - "NPA movement waterfall shows opening balance, additions, upgrades, recoveries, write-offs, closing balance"
+    - "All queries respect tenantId isolation and use prismaForTenant()"
   artifacts:
-    - path: "src/lib/escalation-engine.ts"
-      provides: "Pure escalation computation function"
-      exports: ["computeEscalation", "EscalationLevel"]
-    - path: "src/actions/compliance/compute-escalation.ts"
-      provides: "Server action to run escalation for all open compliance items"
-    - path: "src/data-access/compliance.ts"
-      provides: "Updated DAL with getOverdueComplianceItems query"
-  key_links:
-    - from: "computeEscalation"
-      to: "ComplianceItem.daysOpen"
-      via: "Calculates days between dueDate and now"
-    - from: "compute-escalation action"
-      to: "ComplianceItem.escalationLevel"
-      via: "Updates escalation level for overdue items"
+    - path: "src/data-access/analytics/branch-heatmap.ts"
+      provides: "getBranchRiskHeatmap() query for R42"
+    - path: "src/data-access/analytics/audit-progress.ts"
+      provides: "getAuditPlanProgress() query for R43"
+    - path: "src/data-access/analytics/compliance-aging.ts"
+      provides: "getComplianceAgingAnalysis() query for R44"
+    - path: "src/data-access/analytics/findings-trend.ts"
+      provides: "getFindingsTrendAnalysis() query for R45"
+    - path: "src/data-access/analytics/npa-movement.ts"
+      provides: "getNpaMovementWaterfall() query for R46"
 ---
 
 ## Objective
 
-Build the compliance escalation engine that automatically computes escalation levels based on days overdue. Per RBIA Policy and R39, escalation levels trigger email notifications and management reviews at: L1 (+15 days), L2 (+30 days), L3 (+90 days ACE), L4 (+180 days ACB). This plan implements the computation logic; notification triggers will be handled separately.
+Implement analytics query functions for Phase 2 dashboards: branch risk heatmap (R42), audit plan progress (R43), compliance aging analysis (R44), finding trend analysis (R45), and NPA movement waterfall (R46).
+
+This plan covers R42-R46 (analytics queries).
 
 ## Context
 
-@AEGIS/src/lib/escalation-engine.ts — NEW: escalation computation
-@AEGIS/src/actions/compliance/compute-escalation.ts — NEW: batch escalation action
-@AEGIS/src/data-access/compliance.ts — extend with overdue query
-@AEGIS/.planning/REQUIREMENTS.md — R39
-@AEGIS/.planning/codebase/CONVENTIONS.md — pure function patterns, batch processing
+@AEGIS/prisma/schema.prisma — Phase 2 schema with ComplianceItem, RamAssessment, AuditEngagement
+@AEGIS/src/data-access/prisma.ts — prismaForTenant() for tenant isolation
+@AEGIS/.planning/REQUIREMENTS.md — R42-R46
+@AEGIS/.planning/codebase/CONVENTIONS.md — DAL patterns
 
 ## Tasks
 
 <task type="auto">
-  <name>Task 1: Escalation computation engine (pure functions)</name>
-  <files>src/lib/escalation-engine.ts</files>
+  <name>Task 1: Branch risk heatmap query (R42)</name>
+  <files>src/data-access/analytics/branch-heatmap.ts (new)</files>
   <action>
-  **Create `src/lib/escalation-engine.ts`:**
+  Create `src/data-access/analytics/branch-heatmap.ts`:
 
   ```typescript
-  /**
-   * Compliance Escalation Engine (Phase 2 — R39)
-   *
-   * Computes escalation levels for compliance items based on days overdue.
-   * Per RBIA Policy:
-   * - L0: Within SLA (0-15 days overdue)
-   * - L1: +15 days (email to Branch + IAD)
-   * - L2: +30 days (ZAC review)
-   * - L3: +90 days (ACE quarterly processing)
-   * - L4: +180 days (ACB board reporting)
-   *
-   * Pure functions - no side effects, no database access.
-   */
+  import { prismaForTenant } from "@/data-access/prisma";
+  import type { Session } from "@/lib/auth";
+  import { logger } from "@/lib/logger";
 
-  export type EscalationLevel = 0 | 1 | 2 | 3 | 4;
-
-  export interface EscalationResult {
-    daysOpen: number;
-    daysOverdue: number;
-    escalationLevel: EscalationLevel;
-    shouldNotify: boolean; // True if escalation level just changed
+  export interface BranchRiskHeatmapItem {
+    branchId: string;
+    branchCode: string;
+    branchName: string;
+    city: string;
+    state: string;
+    zoneName: string | null;
+    category: string | null;
+    ramScore: number | null;
+    riskCategory: string | null;
+    lastAuditDate: Date | null;
+    lastAuditRating: string | null;
+    observationCount: number;
+    criticalCount: number;
+    highCount: number;
+    complianceOpenCount: number;
+    complianceOverdueCount: number;
   }
 
   /**
-   * Compute days between two dates (always positive).
+   * Get branch risk heatmap data (R42).
+   * Aggregates RAM scores, audit ratings, and compliance status per branch.
+   * Used for geographic/category-based risk visualization.
    */
-  function daysBetween(startDate: Date, endDate: Date): number {
-    const msPerDay = 1000 * 60 * 60 * 24;
-    const diffMs = endDate.getTime() - startDate.getTime();
-    return Math.floor(Math.abs(diffMs) / msPerDay);
-  }
+  export async function getBranchRiskHeatmap(
+    session: Session
+  ): Promise<BranchRiskHeatmapItem[]> {
+    const tenantId = (session.user as any).tenantId as string;
+    const db = prismaForTenant(tenantId);
 
-  /**
-   * Determine escalation level from days overdue.
-   */
-  function getEscalationLevelFromDays(daysOverdue: number): EscalationLevel {
-    if (daysOverdue >= 180) return 4; // L4: ACB
-    if (daysOverdue >= 90) return 3;  // L3: ACE
-    if (daysOverdue >= 30) return 2;  // L2: ZAC
-    if (daysOverdue >= 15) return 1;  // L1: Email
-    return 0;                         // L0: Within grace period
-  }
+    try {
+      // Fetch all branches with related data
+      const branches = await db.branch.findMany({
+        where: { tenantId },
+        include: {
+          zone: true,
+          observations: {
+            where: { status: "ISSUED" },
+            select: {
+              severity: true,
+            },
+          },
+          complianceItems: {
+            where: {
+              status: {
+                notIn: ["COMPLIED", "ACCEPTED_RISK", "CLOSED"],
+              },
+            },
+            select: {
+              daysOpen: true,
+            },
+          },
+        },
+        orderBy: [{ state: "asc" }, { city: "asc" }, { name: "asc" }],
+      });
 
-  /**
-   * Compute escalation status for a compliance item.
-   *
-   * @param createdAt - When the compliance item was created
-   * @param dueDate - Original due date (typically createdAt + 30 days)
-   * @param currentEscalationLevel - Current escalation level (to detect transitions)
-   * @param now - Current timestamp (default: new Date())
-   * @returns Escalation result with daysOpen, daysOverdue, level, and shouldNotify flag
-   */
-  export function computeEscalation(
-    createdAt: Date,
-    dueDate: Date,
-    currentEscalationLevel: EscalationLevel,
-    now: Date = new Date()
-  ): EscalationResult {
-    // Days since item was created
-    const daysOpen = daysBetween(createdAt, now);
+      const heatmapData: BranchRiskHeatmapItem[] = branches.map((branch) => {
+        const criticalCount = branch.observations.filter(
+          (obs) => obs.severity === "CRITICAL"
+        ).length;
+        const highCount = branch.observations.filter(
+          (obs) => obs.severity === "HIGH"
+        ).length;
 
-    // Days overdue (negative if still within SLA)
-    const daysOverdue = Math.max(0, daysBetween(dueDate, now));
+        const complianceOverdueCount = branch.complianceItems.filter(
+          (item) => item.daysOpen > 30
+        ).length;
 
-    // New escalation level
-    const escalationLevel = getEscalationLevelFromDays(daysOverdue);
+        return {
+          branchId: branch.id,
+          branchCode: branch.code,
+          branchName: branch.name,
+          city: branch.city,
+          state: branch.state,
+          zoneName: branch.zone?.name ?? null,
+          category: branch.category,
+          ramScore: branch.ramScore ? parseFloat(branch.ramScore.toString()) : null,
+          riskCategory: null, // TODO: Derive from latest RAM assessment
+          lastAuditDate: branch.lastAuditDate,
+          lastAuditRating: branch.lastAuditRating,
+          observationCount: branch.observations.length,
+          criticalCount,
+          highCount,
+          complianceOpenCount: branch.complianceItems.length,
+          complianceOverdueCount,
+        };
+      });
 
-    // Should notify if level increased
-    const shouldNotify = escalationLevel > currentEscalationLevel;
-
-    return {
-      daysOpen,
-      daysOverdue,
-      escalationLevel,
-      shouldNotify,
-    };
-  }
-
-  /**
-   * Batch compute escalation for multiple items.
-   * Returns only items where escalation level changed.
-   */
-  export interface ComplianceItemForEscalation {
-    id: string;
-    createdAt: Date;
-    dueDate: Date;
-    escalationLevel: EscalationLevel;
-  }
-
-  export interface EscalationUpdate {
-    id: string;
-    newEscalationLevel: EscalationLevel;
-    daysOpen: number;
-    daysOverdue: number;
-    shouldNotify: boolean;
-  }
-
-  export function computeBatchEscalation(
-    items: ComplianceItemForEscalation[],
-    now: Date = new Date()
-  ): EscalationUpdate[] {
-    const updates: EscalationUpdate[] = [];
-
-    for (const item of items) {
-      const result = computeEscalation(
-        item.createdAt,
-        item.dueDate,
-        item.escalationLevel,
-        now
-      );
-
-      // Only include if escalation level changed or daysOpen changed
-      if (result.escalationLevel !== item.escalationLevel) {
-        updates.push({
-          id: item.id,
-          newEscalationLevel: result.escalationLevel,
-          daysOpen: result.daysOpen,
-          daysOverdue: result.daysOverdue,
-          shouldNotify: result.shouldNotify,
-        });
-      }
+      return heatmapData;
+    } catch (error) {
+      logger.error({ error, tenantId }, "Failed to fetch branch risk heatmap");
+      throw error;
     }
-
-    return updates;
   }
   ```
   </action>
   <verify>
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit --pretty 2>&1 | grep "escalation-engine" | head -10
-  ```
-  No TypeScript errors.
-
-  Manual verification:
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && node -e "
-    const createdAt = new Date('2025-01-01');
-    const dueDate = new Date('2025-01-31'); // 30 days SLA
-    const now = new Date('2025-03-01'); // 60 days after creation, 30 days overdue
-
-    const daysOpen = Math.floor((now - createdAt) / (1000*60*60*24)); // 59
-    const daysOverdue = Math.floor((now - dueDate) / (1000*60*60*24)); // 29
-
-    const level = daysOverdue >= 180 ? 4 : daysOverdue >= 90 ? 3 : daysOverdue >= 30 ? 2 : daysOverdue >= 15 ? 1 : 0;
-
-    console.log('Days open:', daysOpen, '(expected: ~59)');
-    console.log('Days overdue:', daysOverdue, '(expected: ~29)');
-    console.log('Escalation level:', level, '(expected: 1, just under L2 threshold)');
-  "
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/analytics/branch-heatmap.ts
   ```
   </verify>
   <done>
-  - src/lib/escalation-engine.ts exists with 2 exported functions
-  - computeEscalation calculates daysOpen and daysOverdue from dates
-  - Escalation thresholds: L1=15d, L2=30d, L3=90d, L4=180d
-  - shouldNotify flag is true when escalation level increases
-  - computeBatchEscalation processes multiple items and returns only changed ones
-  - All functions are pure (no side effects, deterministic)
+  - branch-heatmap.ts exists with getBranchRiskHeatmap()
+  - Aggregates RAM score, audit rating, observation counts, compliance status per branch
+  - Returns BranchRiskHeatmapItem[] for visualization
+  - TypeScript compiles successfully
   </done>
 </task>
 
 <task type="auto">
-  <name>Task 2: Batch escalation computation action + DAL query</name>
-  <files>src/data-access/compliance.ts, src/actions/compliance/compute-escalation.ts</files>
+  <name>Task 2: Audit plan progress query (R43)</name>
+  <files>src/data-access/analytics/audit-progress.ts (new)</files>
   <action>
-  **2a. Extend `src/data-access/compliance.ts` with overdue query:**
-
-  Add this function to the existing file:
+  Create `src/data-access/analytics/audit-progress.ts`:
 
   ```typescript
-  /**
-   * Get all open compliance items for escalation processing.
-   * Returns minimal data needed by escalation engine.
-   */
-  export async function getOpenComplianceItemsForEscalation(session: Session) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
-
-    return db.complianceItem.findMany({
-      where: {
-        tenantId,
-        status: {
-          in: [
-            "OPEN",
-            "BRANCH_RESPONSE_DUE",
-            "BRANCH_RESPONSE_SUBMITTED",
-            "ZAC_REVIEW",
-          ],
-        },
-      },
-      select: {
-        id: true,
-        createdAt: true,
-        dueDate: true,
-        escalationLevel: true,
-      },
-    });
-  }
-  ```
-
-  **2b. Create `src/actions/compliance/compute-escalation.ts`:**
-
-  ```typescript
-  "use server";
-
-  import { revalidatePath } from "next/cache";
-  import { getRequiredSession } from "@/data-access/session";
   import { prismaForTenant } from "@/data-access/prisma";
-  import { setAuditContext } from "@/data-access/audit-context";
-  import { hasPermission, type Role } from "@/lib/permissions";
+  import type { Session } from "@/lib/auth";
+  import type { Quarter } from "@/generated/prisma/enums";
   import { logger } from "@/lib/logger";
-  import { getOpenComplianceItemsForEscalation } from "@/data-access/compliance";
-  import {
-    computeBatchEscalation,
-    type ComplianceItemForEscalation,
-    type EscalationLevel,
-  } from "@/lib/escalation-engine";
+
+  export interface AuditPlanProgressSummary {
+    year: number;
+    quarter: Quarter;
+    totalEngagements: number;
+    plannedCount: number;
+    inProgressCount: number;
+    completedCount: number;
+    cancelledCount: number;
+    completionPercentage: number;
+  }
 
   /**
-   * Compute and update escalation levels for all open compliance items.
-   * Security: Requires compliance:read permission (intended for cron/admin).
-   * Atomicity: Updates all items in a single transaction.
-   * Side effects: Updates ComplianceItem.escalationLevel and daysOpen.
-   *
-   * This action is designed to be called by:
-   * 1. Daily cron job (automated)
-   * 2. Manual trigger from admin panel
+   * Get audit plan progress (R43).
+   * Shows engagement status distribution per quarter.
    */
-  export async function computeEscalationForAllItems() {
-    const session = await getRequiredSession();
-    const userRoles = ((session.user as any).roles ?? []) as Role[];
+  export async function getAuditPlanProgress(
+    session: Session,
+    year?: number
+  ): Promise<AuditPlanProgressSummary[]> {
     const tenantId = (session.user as any).tenantId as string;
-
-    // Require at least compliance:read (typically CAE, AUDIT_MANAGER)
-    if (!hasPermission(userRoles, "compliance:read")) {
-      return {
-        success: false as const,
-        error: "You do not have permission to compute escalations.",
-      };
-    }
-
     const db = prismaForTenant(tenantId);
 
     try {
-      // Fetch all open compliance items
-      const items = await getOpenComplianceItemsForEscalation(session);
+      const currentYear = year ?? new Date().getFullYear();
 
-      if (items.length === 0) {
-        return {
-          success: true as const,
-          data: { processed: 0, updated: 0 },
-        };
-      }
-
-      // Compute escalation updates
-      const now = new Date();
-      const updates = computeBatchEscalation(
-        items as ComplianceItemForEscalation[],
-        now
-      );
-
-      if (updates.length === 0) {
-        logger.info(
-          { tenantId, itemCount: items.length },
-          "Escalation computation: no changes"
-        );
-        return {
-          success: true as const,
-          data: { processed: items.length, updated: 0 },
-        };
-      }
-
-      // Apply updates in transaction
-      await db.$transaction(async (tx: any) => {
-        await setAuditContext(tx, {
-          actionType: "compliance.escalation_computed",
-          userId: session.user.id,
+      const auditPlans = await db.auditPlan.findMany({
+        where: {
           tenantId,
-          sessionId: session.session.id,
-        });
-
-        for (const update of updates) {
-          await tx.complianceItem.update({
-            where: { id: update.id },
-            data: {
-              escalationLevel: update.newEscalationLevel,
-              daysOpen: update.daysOpen,
-              // If escalated to OVERDUE status
-              ...(update.daysOverdue > 0 && {
-                status: "OVERDUE",
-              }),
+          year: currentYear,
+        },
+        include: {
+          engagements: {
+            select: {
+              status: true,
             },
-          });
-        }
+          },
+        },
+        orderBy: { quarter: "asc" },
       });
 
-      logger.info(
-        {
-          tenantId,
-          processed: items.length,
-          updated: updates.length,
-          escalations: updates.map((u) => ({
-            id: u.id.substring(0, 8),
-            level: u.newEscalationLevel,
-          })),
-        },
-        "Escalation computation completed"
-      );
+      const progressData: AuditPlanProgressSummary[] = auditPlans.map((plan) => {
+        const totalEngagements = plan.engagements.length;
+        const plannedCount = plan.engagements.filter(
+          (e) => e.status === "PLANNED"
+        ).length;
+        const inProgressCount = plan.engagements.filter(
+          (e) => e.status === "IN_PROGRESS"
+        ).length;
+        const completedCount = plan.engagements.filter(
+          (e) => e.status === "COMPLETED"
+        ).length;
+        const cancelledCount = plan.engagements.filter(
+          (e) => e.status === "CANCELLED"
+        ).length;
 
-      revalidatePath("/compliance");
+        const completionPercentage =
+          totalEngagements > 0
+            ? Math.round((completedCount / totalEngagements) * 100)
+            : 0;
 
-      return {
-        success: true as const,
-        data: {
-          processed: items.length,
-          updated: updates.length,
-          escalations: updates.map((u) => ({
-            id: u.id,
-            level: u.newEscalationLevel,
-            daysOverdue: u.daysOverdue,
-          })),
-        },
-      };
+        return {
+          year: plan.year,
+          quarter: plan.quarter,
+          totalEngagements,
+          plannedCount,
+          inProgressCount,
+          completedCount,
+          cancelledCount,
+          completionPercentage,
+        };
+      });
+
+      return progressData;
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to compute escalations.";
-      logger.error({ error, action: "compute_escalation", tenantId }, message);
-      return { success: false as const, error: message };
+      logger.error({ error, tenantId }, "Failed to fetch audit plan progress");
+      throw error;
     }
   }
   ```
   </action>
   <verify>
   ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit --pretty 2>&1 | grep -E "(escalation|compliance)" | head -20
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/analytics/audit-progress.ts
   ```
-  No TypeScript errors.
   </verify>
   <done>
-  - src/data-access/compliance.ts has getOpenComplianceItemsForEscalation query
-  - Query returns only open/in-progress items with minimal fields (id, createdAt, dueDate, escalationLevel)
-  - src/actions/compliance/compute-escalation.ts exists
-  - computeEscalationForAllItems fetches all open items, runs batch computation, updates changed items
-  - Action updates escalationLevel and daysOpen fields
-  - Action sets status to OVERDUE if daysOverdue > 0
-  - Action logs processed count + escalation changes
-  - Action returns summary with processed/updated counts
+  - audit-progress.ts exists with getAuditPlanProgress()
+  - Returns engagement status counts per quarter
+  - Calculates completion percentage
+  - TypeScript compiles successfully
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 3: Compliance aging analysis query (R44)</name>
+  <files>src/data-access/analytics/compliance-aging.ts (new)</files>
+  <action>
+  Create `src/data-access/analytics/compliance-aging.ts`:
+
+  ```typescript
+  import { prismaForTenant } from "@/data-access/prisma";
+  import type { Session } from "@/lib/auth";
+  import type { ComplianceStatus } from "@/generated/prisma/enums";
+  import { logger } from "@/lib/logger";
+
+  export interface ComplianceAgingBucket {
+    bucket: string; // "0-30", "31-60", "61-90", "90+"
+    count: number;
+    statusBreakdown: Record<ComplianceStatus, number>;
+  }
+
+  export interface ComplianceAgingSummary {
+    totalOpen: number;
+    averageDaysOpen: number;
+    buckets: ComplianceAgingBucket[];
+  }
+
+  /**
+   * Get compliance aging analysis (R44).
+   * Groups open compliance items by days-open buckets and status.
+   */
+  export async function getComplianceAgingAnalysis(
+    session: Session
+  ): Promise<ComplianceAgingSummary> {
+    const tenantId = (session.user as any).tenantId as string;
+    const db = prismaForTenant(tenantId);
+
+    try {
+      const openItems = await db.complianceItem.findMany({
+        where: {
+          tenantId,
+          status: {
+            notIn: ["COMPLIED", "ACCEPTED_RISK", "CLOSED"],
+          },
+        },
+        select: {
+          daysOpen: true,
+          status: true,
+        },
+      });
+
+      const totalOpen = openItems.length;
+      const averageDaysOpen =
+        totalOpen > 0
+          ? Math.round(
+              openItems.reduce((sum, item) => sum + item.daysOpen, 0) / totalOpen
+            )
+          : 0;
+
+      // Define buckets
+      const buckets: ComplianceAgingBucket[] = [
+        { bucket: "0-30", count: 0, statusBreakdown: {} as any },
+        { bucket: "31-60", count: 0, statusBreakdown: {} as any },
+        { bucket: "61-90", count: 0, statusBreakdown: {} as any },
+        { bucket: "90+", count: 0, statusBreakdown: {} as any },
+      ];
+
+      openItems.forEach((item) => {
+        let bucketIndex: number;
+        if (item.daysOpen <= 30) {
+          bucketIndex = 0;
+        } else if (item.daysOpen <= 60) {
+          bucketIndex = 1;
+        } else if (item.daysOpen <= 90) {
+          bucketIndex = 2;
+        } else {
+          bucketIndex = 3;
+        }
+
+        buckets[bucketIndex].count++;
+
+        if (!buckets[bucketIndex].statusBreakdown[item.status]) {
+          buckets[bucketIndex].statusBreakdown[item.status] = 0;
+        }
+        buckets[bucketIndex].statusBreakdown[item.status]++;
+      });
+
+      return {
+        totalOpen,
+        averageDaysOpen,
+        buckets,
+      };
+    } catch (error) {
+      logger.error({ error, tenantId }, "Failed to fetch compliance aging analysis");
+      throw error;
+    }
+  }
+  ```
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/analytics/compliance-aging.ts
+  ```
+  </verify>
+  <done>
+  - compliance-aging.ts exists with getComplianceAgingAnalysis()
+  - Groups items into buckets: 0-30, 31-60, 61-90, 90+ days
+  - Provides status breakdown per bucket
+  - Calculates average days open
+  - TypeScript compiles successfully
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 4: Finding trends analysis query (R45)</name>
+  <files>src/data-access/analytics/findings-trend.ts (new)</files>
+  <action>
+  Create `src/data-access/analytics/findings-trend.ts`:
+
+  ```typescript
+  import { prismaForTenant } from "@/data-access/prisma";
+  import type { Session } from "@/lib/auth";
+  import type { Severity } from "@/generated/prisma/enums";
+  import { logger } from "@/lib/logger";
+
+  export interface FindingsTrendDataPoint {
+    period: string; // "2025-Q1", "2025-01" (year-quarter or year-month)
+    totalCount: number;
+    severityBreakdown: Record<Severity, number>;
+    repeatCount: number;
+  }
+
+  export type TrendGranularity = "monthly" | "quarterly";
+
+  /**
+   * Get finding trends over time (R45).
+   * Shows observation count and severity distribution by period.
+   */
+  export async function getFindingsTrendAnalysis(
+    session: Session,
+    startDate: Date,
+    endDate: Date,
+    granularity: TrendGranularity = "quarterly"
+  ): Promise<FindingsTrendDataPoint[]> {
+    const tenantId = (session.user as any).tenantId as string;
+    const db = prismaForTenant(tenantId);
+
+    try {
+      const observations = await db.observation.findMany({
+        where: {
+          tenantId,
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+          status: "ISSUED",
+        },
+        select: {
+          createdAt: true,
+          severity: true,
+          repeatOfId: true,
+        },
+        orderBy: { createdAt: "asc" },
+      });
+
+      // Group by period
+      const periodMap = new Map<string, FindingsTrendDataPoint>();
+
+      observations.forEach((obs) => {
+        const period = this.getPeriodKey(obs.createdAt, granularity);
+
+        if (!periodMap.has(period)) {
+          periodMap.set(period, {
+            period,
+            totalCount: 0,
+            severityBreakdown: {
+              CRITICAL: 0,
+              HIGH: 0,
+              MEDIUM: 0,
+              LOW: 0,
+            },
+            repeatCount: 0,
+          });
+        }
+
+        const dataPoint = periodMap.get(period)!;
+        dataPoint.totalCount++;
+        dataPoint.severityBreakdown[obs.severity]++;
+        if (obs.repeatOfId) {
+          dataPoint.repeatCount++;
+        }
+      });
+
+      return Array.from(periodMap.values()).sort((a, b) =>
+        a.period.localeCompare(b.period)
+      );
+    } catch (error) {
+      logger.error({ error, tenantId }, "Failed to fetch findings trend analysis");
+      throw error;
+    }
+  }
+
+  function getPeriodKey(date: Date, granularity: TrendGranularity): string {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    if (granularity === "quarterly") {
+      const quarter = Math.ceil(month / 3);
+      // Indian FY quarter: Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+      const fyQuarter =
+        month >= 4 && month <= 6
+          ? 1
+          : month >= 7 && month <= 9
+          ? 2
+          : month >= 10 && month <= 12
+          ? 3
+          : 4;
+      const fyYear = month >= 4 ? year : year - 1;
+      return `${fyYear}-Q${fyQuarter}`;
+    } else {
+      return `${year}-${month.toString().padStart(2, "0")}`;
+    }
+  }
+  ```
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/analytics/findings-trend.ts
+  ```
+  </verify>
+  <done>
+  - findings-trend.ts exists with getFindingsTrendAnalysis()
+  - Supports monthly and quarterly granularity
+  - Groups observations by period with severity breakdown
+  - Tracks repeat finding count per period
+  - TypeScript compiles successfully
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 5: NPA movement waterfall query (R46)</name>
+  <files>src/data-access/analytics/npa-movement.ts (new)</files>
+  <action>
+  Create `src/data-access/analytics/npa-movement.ts`:
+
+  ```typescript
+  import { prismaForTenant } from "@/data-access/prisma";
+  import type { Session } from "@/lib/auth";
+  import { logger } from "@/lib/logger";
+
+  export interface NpaMovementWaterfall {
+    openingBalance: number;
+    additions: number;
+    upgrades: number; // SMA → NPA, or NPA_SUB → NPA_DOUBTFUL
+    recoveries: number;
+    writeOffs: number;
+    closingBalance: number;
+    netChange: number;
+  }
+
+  /**
+   * Get NPA movement waterfall (R46).
+   * Shows opening balance, additions, upgrades, recoveries, write-offs, closing balance.
+   * 
+   * NOTE: This is a simplified version. In production, this would require:
+   * - Time-series loan data (opening/closing balances per period)
+   * - Movement tracking (new NPAs, upgrades, recoveries)
+   * - CBS data integration
+   * 
+   * For Phase 2, we compute a simplified view from SmaNpaEntry data.
+   */
+  export async function getNpaMovementWaterfall(
+    session: Session,
+    startDate: Date,
+    endDate: Date
+  ): Promise<NpaMovementWaterfall> {
+    const tenantId = (session.user as any).tenantId as string;
+    const db = prismaForTenant(tenantId);
+
+    try {
+      // Fetch all SMA/NPA entries within date range
+      const entries = await db.smaNpaEntry.findMany({
+        where: {
+          tenantId,
+          engagement: {
+            actualEndDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        },
+        select: {
+          category: true,
+          totalAmount: true,
+          engagement: {
+            select: {
+              actualEndDate: true,
+            },
+          },
+        },
+        orderBy: {
+          engagement: {
+            actualEndDate: "asc",
+          },
+        },
+      });
+
+      // Simplified calculation: group by NPA categories
+      const npaCategories = ["NPA_SUB_STANDARD", "NPA_DOUBTFUL", "NPA_LOSS"];
+
+      const opening = entries
+        .filter(
+          (e) =>
+            npaCategories.includes(e.category) &&
+            e.engagement.actualEndDate &&
+            e.engagement.actualEndDate <= startDate
+        )
+        .reduce((sum, e) => sum + parseFloat(e.totalAmount.toString()), 0);
+
+      const closing = entries
+        .filter(
+          (e) =>
+            npaCategories.includes(e.category) &&
+            e.engagement.actualEndDate &&
+            e.engagement.actualEndDate <= endDate
+        )
+        .reduce((sum, e) => sum + parseFloat(e.totalAmount.toString()), 0);
+
+      // Simplified: assume net change is additions
+      const netChange = closing - opening;
+      const additions = netChange > 0 ? netChange : 0;
+      const recoveries = netChange < 0 ? Math.abs(netChange) : 0;
+
+      return {
+        openingBalance: opening,
+        additions,
+        upgrades: 0, // TODO: Requires movement tracking
+        recoveries,
+        writeOffs: 0, // TODO: Requires write-off data
+        closingBalance: closing,
+        netChange,
+      };
+    } catch (error) {
+      logger.error({ error, tenantId }, "Failed to fetch NPA movement waterfall");
+      throw error;
+    }
+  }
+  ```
+  </action>
+  <verify>
+  ```bash
+  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/analytics/npa-movement.ts
+  ```
+  </verify>
+  <done>
+  - npa-movement.ts exists with getNpaMovementWaterfall()
+  - Simplified implementation using SmaNpaEntry data
+  - Returns opening balance, additions, recoveries, closing balance
+  - TODO comments for CBS integration in future phases
+  - TypeScript compiles successfully
   </done>
 </task>
 
 ## Success Criteria
 
-1. `pnpm exec tsc --noEmit` has no errors in escalation files
-2. escalation-engine.ts exports computeEscalation + computeBatchEscalation
-3. Escalation thresholds correct: L1=15d, L2=30d, L3=90d, L4=180d
-4. computeEscalation is a pure function (accepts dates, returns result object)
-5. shouldNotify flag is true only when escalation level increases
-6. getOpenComplianceItemsForEscalation filters by open statuses
-7. computeEscalationForAllItems processes all open items in batch
-8. Action updates escalationLevel and daysOpen in transaction
-9. Action sets status to OVERDUE for overdue items
-10. Action logs processed/updated counts with escalation details
+1. `pnpm exec tsc --noEmit` passes for all new analytics DAL files
+2. getBranchRiskHeatmap() aggregates RAM scores, audit ratings, and compliance status per branch
+3. getAuditPlanProgress() shows engagement status distribution per quarter with completion percentage
+4. getComplianceAgingAnalysis() groups items into buckets (0-30, 31-60, 61-90, 90+) with status breakdown
+5. getFindingsTrendAnalysis() supports monthly and quarterly granularity with severity distribution
+6. getNpaMovementWaterfall() provides opening/closing balance and net change (simplified for Phase 2)
+7. All queries respect tenant isolation via prismaForTenant()

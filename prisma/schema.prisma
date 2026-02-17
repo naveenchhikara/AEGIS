@@ -257,6 +257,11 @@ model Tenant {
   committees                 Committee[]
   committeeMeetings          CommitteeMeeting[]
   housekeepingMetrics        HousekeepingMetric[]
+  // Phase 6
+  investmentRecords          InvestmentRecord[]
+  applicationInventory       ApplicationInventory[]
+  vendorRiskAssessments      VendorRiskAssessment[]
+  isAuditChecklists          IsAuditChecklist[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -731,6 +736,7 @@ model AuditEngagement {
   calendarEvents       AuditCalendar[]
   workProgramItems     WorkProgramItem[]
   riskAuditLinkages    RiskAuditLinkage[]
+  isAuditChecklists    IsAuditChecklist[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -1588,6 +1594,116 @@ model HousekeepingMetric {
   @@unique([tenantId, branchId, metricType, period])
   @@index([tenantId])
   @@index([branchId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 6: Specialized Regulatory Modules (R93-R104)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── M17: Investment/Treasury Audit (R93-R97) ───────────────────────────────
+
+model InvestmentRecord {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  securityType    String  // "SLR", "NON_SLR", "EQUITY", "MUTUAL_FUND"
+  classification  String  // "HTM", "HFT", "AFS"
+  isin            String?
+  faceValue       Decimal @db.Decimal(15, 2)
+  bookValue       Decimal @db.Decimal(15, 2)
+  marketValue     Decimal? @db.Decimal(15, 2)
+  brokerName      String?
+  brokerShare     Decimal? @db.Decimal(5, 4) // % of total transactions
+  sglAccount      String?  // "SGL" or "CSGL"
+  reconciled      Boolean  @default(false)
+  period          String   // "2025-Q4"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([securityType])
+  @@index([classification])
+  @@index([brokerName])
+}
+
+// ─── M18: Application Inventory (R98) ───────────────────────────────────────
+
+model ApplicationInventory {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  appName       String
+  vendor        String?
+  version       String?
+  hostingType   String   // "ON_PREMISE", "CLOUD", "HYBRID"
+  criticality   String   // "CRITICAL", "HIGH", "MEDIUM", "LOW"
+  drTested      Boolean  @default(false)
+  lastDrTestDate DateTime?
+  lastIsAuditDate DateTime?
+  dataClassification String? // "PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"
+  description   String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendorRiskAssessments VendorRiskAssessment[]
+
+  @@unique([tenantId, appName])
+  @@index([tenantId])
+  @@index([criticality])
+}
+
+// ─── M18: Vendor Risk Assessment (R100) ─────────────────────────────────────
+
+model VendorRiskAssessment {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  applicationId String?              @db.Uuid
+  application   ApplicationInventory? @relation(fields: [applicationId], references: [id])
+
+  vendorName      String
+  contractStart   DateTime?
+  contractEnd     DateTime?
+  slaCompliance   Decimal? @db.Decimal(5, 2) // percentage
+  riskRating      String?  // "HIGH", "MEDIUM", "LOW"
+  lastAssessmentDate DateTime?
+  findings        String?  @db.Text
+  mitigations     String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([vendorName])
+}
+
+// ─── M18: IS Audit Checklist (R99, R101, R103) ─────────────────────────────
+
+model IsAuditChecklist {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  category        String  // "CBS", "CHANNELS", "ACCESS_CONTROL", "BCP_DR", "VENDOR", "CHANGE_MGMT", "CYBER_SECURITY"
+  checklistName   String
+  items           Json    // Array of checklist items with responses
+  engagementId    String? @db.Uuid
+  engagement      AuditEngagement? @relation(fields: [engagementId], references: [id])
+  completedById   String? @db.Uuid
+  completedAt     DateTime?
+  overallRating   String? // "SATISFACTORY", "NEEDS_IMPROVEMENT", "UNSATISFACTORY"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([engagementId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

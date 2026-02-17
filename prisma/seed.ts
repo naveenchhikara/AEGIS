@@ -384,6 +384,43 @@ async function main() {
 
   console.log(`    ✓ Created ${branches.length} branches for Tenant A`);
 
+  // ─── 4b. Seed RAM Parameters ────────────────────────────────────────
+
+  console.log("  Seeding RAM parameters...");
+
+  const ramParametersData = await import("../src/data/seed/ram-parameters.json", { with: { type: "json" } }).then(m => m.default);
+
+  for (const tenantId of [tenantA.id, tenantB.id]) {
+    for (const param of ramParametersData) {
+      await prisma.ramParameterConfig.upsert({
+        where: {
+          tenantId_code: { tenantId, code: param.code },
+        },
+        update: {
+          name: param.name,
+          category: param.category,
+          weight: param.weight,
+          maxScore: param.maxScore,
+          scoringCriteria: param.scoringCriteria as any,
+          displayOrder: param.displayOrder,
+        },
+        create: {
+          tenantId,
+          code: param.code,
+          name: param.name,
+          category: param.category,
+          weight: param.weight,
+          maxScore: param.maxScore,
+          scoringCriteria: param.scoringCriteria as any,
+          displayOrder: param.displayOrder,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  console.log(`    ✓ ${ramParametersData.length} RAM parameters seeded for both tenants`);
+
   // ─── 5. Create Audit Areas ──────────────────────────────────────────
 
   console.log("  Creating audit areas...");

@@ -74,6 +74,12 @@ enum Quarter {
   Q4_JAN_MAR
 }
 
+enum RamAssessmentStatus {
+  DRAFT
+  COMPUTED
+  APPROVED
+}
+
 enum AuditPlanStatus {
   PLANNED
   IN_PROGRESS
@@ -189,6 +195,8 @@ model Tenant {
   branches               Branch[]
   zones                  Zone[]
   auditTeamMembers       AuditTeamMember[]
+  ramParameterConfigs    RamParameterConfig[]
+  ramAssessments         RamAssessment[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -524,6 +532,7 @@ model Branch {
   observations     Observation[]
   auditEngagements AuditEngagement[]
   userAssignments  UserBranchAssignment[]
+  ramAssessments   RamAssessment[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -666,6 +675,86 @@ model AuditTeamMember {
   @@index([tenantId])
   @@index([engagementId])
   @@index([userId])
+}
+
+// ─── RAM Parameter Config (Phase 1 — R4: master parameter definitions) ─────
+
+model RamParameterConfig {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  code           String   // e.g., "BR-01", "CR-05"
+  name           String   // e.g., "Deposit Growth Rate"
+  category       String   // "BUSINESS_RISK" or "CONTROL_RISK"
+  weight         Decimal  @db.Decimal(5, 4) // e.g., 0.0556
+  maxScore       Decimal  @db.Decimal(5, 2) @default(5)
+  scoringCriteria Json    // JSONB: { "ranges": [...] }
+  displayOrder   Int
+  isActive       Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  scores RamAssessmentScore[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// ─── RAM Assessment (Phase 1 — R5: per-branch annual assessment) ───────────
+
+model RamAssessment {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  branchId        String   @db.Uuid
+  branch          Branch   @relation(fields: [branchId], references: [id])
+
+  assessmentYear  String   // Indian FY e.g., "2025-26"
+  compositeScore  Decimal? @db.Decimal(5, 2)
+  riskCategory    String?  // "HIGH", "MEDIUM", "LOW"
+  auditFrequency  Int?     // Derived: months between audits
+
+  status          RamAssessmentStatus @default(DRAFT)
+
+  computedById    String?   @db.Uuid
+  computedAt      DateTime?
+  approvedById    String?   @db.Uuid
+  approvedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  scores RamAssessmentScore[]
+
+  @@unique([tenantId, branchId, assessmentYear])
+  @@index([tenantId])
+  @@index([branchId])
+}
+
+// ─── RAM Assessment Score (Phase 1 — R6: individual parameter scores) ──────
+
+model RamAssessmentScore {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  assessmentId   String @db.Uuid
+  assessment     RamAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  paramConfigId  String @db.Uuid
+  paramConfig    RamParameterConfig @relation(fields: [paramConfigId], references: [id])
+
+  score          Decimal @db.Decimal(5, 2)
+  remarks        String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([assessmentId, paramConfigId])
+  @@index([assessmentId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

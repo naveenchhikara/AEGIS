@@ -1,106 +1,125 @@
-# Roadmap: AEGIS
+# RBIAS v3.0 — GSD Roadmap
 
-## Milestones
-
-- ✅ **v1.0 Clickable Prototype** — Phases 1-4 (shipped 2026-02-08)
-- ✅ **v2.0 Working Core MVP** — Phases 5-14 (shipped 2026-02-10)
-- 🚧 **v2.1 Production Readiness** — Phases 15-16 (gap closure)
-
-## Completed Phases
-
-<details>
-<summary>✅ v1.0 Clickable Prototype (Phases 1-4) — SHIPPED 2026-02-08</summary>
-
-- [x] Phase 1: Project Setup & Demo Data (4/4 plans)
-- [x] Phase 2: Core Screens (6/6 plans)
-- [x] Phase 3: Finding Management & Reports (5/5 plans)
-- [x] Phase 4: Polish & Deploy (8/8 plans)
-
-</details>
-
-<details>
-<summary>✅ v2.0 Working Core MVP (Phases 5-10) — SHIPPED 2026-02-10</summary>
-
-- [x] Phase 5: Foundation & Migration (6/6 plans) — Multi-tenant PostgreSQL, Better Auth, RBAC, audit logging
-- [x] Phase 6: Observation Lifecycle (7/7 plans) — 7-state workflow, maker-checker, repeat detection
-- [x] Phase 7: Auditee Portal & Evidence (8/8 plans) — Branch-scoped portal, S3 uploads, immutable responses
-- [x] Phase 8: Notifications & Reports (6/6 plans) — Email via SES, PDF board reports, Excel exports
-- [x] Phase 9: Dashboards (5/5 plans) — 5 role-based dashboards with real-time aggregation
-- [x] Phase 10: Onboarding & Compliance (8/8 plans) — Guided wizard, RBI checklists, Excel org upload
-
-</details>
-
-<details>
-<summary>✅ v2.0 Gap Closure (Phases 11-14) — COMPLETE 2026-02-10</summary>
-
-- [x] Phase 11: Auth Security Hardening (1/1 plans) — Rate limiting, account lockout, session limits
-- [x] Phase 12: Dashboard Data Pipeline (2/2 plans) — Historical snapshots, engagement tracking, repeat findings
-- [x] Phase 13: Onboarding Persistence & Excel (2/2 plans) — Server-side save, Excel template upload
-- [x] Phase 14: Verification & Prod Readiness (5/5 plans) — VERIFICATION.md for all phases, Playwright E2E, final re-audit
-
-</details>
-
-## Active Phases
-
-### Phase 15: Production Hardening
-
-**Goal:** Eliminate code-level tech debt items identified in v2.0 milestone audit to improve production reliability and maintainability.
-
-**Gap Closure:** Addresses v2.0-MILESTONE-AUDIT.md tech debt:
-
-- Centralized environment variable validation (prevent misconfiguration)
-- Structured logging framework (enable production debugging)
-- Legacy `currentUser` cleanup (remove demo data dependency)
-- Legacy demo JSON isolation (seed-only, not runtime)
-
-**Plans:** 4 plans (2 waves)
-
-Plans:
-
-- [x] 15-01-PLAN.md — Environment variable validation with T3 Env + Zod
-- [x] 15-02-PLAN.md — Pino structured logging framework
-- [x] 15-03-PLAN.md — Legacy currentUser removal (Better Auth session)
-- [x] 15-04-PLAN.md — Demo JSON migration to seed directory
-
-### Phase 16: CI/CD Pipeline
-
-**Goal:** Automate testing and deployment to prevent regressions and enable confident production updates.
-
-**Gap Closure:** Addresses v2.0-MILESTONE-AUDIT.md tech debt:
-
-- Manual deployment risk (no automated testing before deploy)
-- No pre-merge validation (lint, type-check, build)
-- Manual Coolify dashboard deploy process
-
-**Plans:** 2 plans (2 waves)
-
-Plans:
-
-- [ ] 16-01-PLAN.md -- GitHub Actions CI/CD workflow (lint, typecheck, build, E2E, Coolify deploy)
-- [ ] 16-02-PLAN.md -- Branch protection rules (require CI pass before merge)
-
-## Progress
-
-| Phase                           | Milestone | Plans Complete | Status   | Completed  |
-| ------------------------------- | --------- | -------------- | -------- | ---------- |
-| 1. Project Setup & Demo Data    | v1.0      | 4/4            | Complete | 2026-02-07 |
-| 2. Core Screens                 | v1.0      | 6/6            | Complete | 2026-02-08 |
-| 3. Finding Management & Reports | v1.0      | 5/5            | Complete | 2026-02-08 |
-| 4. Polish & Deploy              | v1.0      | 8/8            | Complete | 2026-02-08 |
-| 5. Foundation & Migration       | v2.0      | 6/6            | Complete | 2026-02-09 |
-| 6. Observation Lifecycle        | v2.0      | 7/7            | Complete | 2026-02-09 |
-| 7. Auditee Portal & Evidence    | v2.0      | 8/8            | Complete | 2026-02-09 |
-| 8. Notifications & Reports      | v2.0      | 6/6            | Complete | 2026-02-09 |
-| 9. Dashboards                   | v2.0      | 5/5            | Complete | 2026-02-09 |
-| 10. Onboarding & Compliance     | v2.0      | 8/8            | Complete | 2026-02-10 |
-| 11. Auth Security Hardening     | v2.0 fix  | 1/1            | Complete | 2026-02-10 |
-| 12. Dashboard Data Pipeline     | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
-| 13. Onboarding Persistence      | v2.0 fix  | 2/2            | Complete | 2026-02-10 |
-| 14. Verification & Prod Ready   | v2.0 fix  | 5/5            | Complete | 2026-02-10 |
-| 15. Production Hardening        | v2.1      | 4/4            | Complete | 2026-02-11 |
-| 16. CI/CD Pipeline              | v2.1      | 0/2            | Pending  | —          |
+> Expanding AEGIS v2.0 into Risk-Based Internal Audit System for UCBs
+> Stack: Next.js 16 + PostgreSQL + Prisma 7 + Better Auth + S3/SES
 
 ---
 
-_Roadmap created: February 7, 2026_
-_Updated: February 11, 2026 — Phase 15 complete_
+## Phase 1: Core Audit Domain (Foundation)
+**Goal:** Auditors can plan RAM-based audits, assign teams, and execute structured section-based examinations at branches with 239 value statements.
+
+**Success Criteria:**
+1. RAM assessment can be created for any branch with 19 configurable parameters, producing a composite score and risk category
+2. Annual audit plan generates engagement schedule based on RAM scores and frequency rules (6/9/12/15/18 months)
+3. Audit engagement has a team (lead + members) with section assignments
+4. Auditor can execute examination across 25 functional areas, marking each of 239 items as Compliant/Non-Compliant/Partial/NA
+5. Non-compliant items auto-create observations linked to the examination response
+6. Cash verification, loan review, and SMA/NPA entry forms capture structured data per audit
+7. Branch Head can view findings and sign BH Certificate
+
+**Modules:** M1 (RAM + Planning), M2 (Pre-Audit), M3 (Execution/Value Statement)
+**Depends on:** Nothing (foundation)
+
+**Requirements:** R1-R28
+
+---
+
+## Phase 2: Reporting & Compliance Lifecycle
+**Goal:** Completed audits produce standardized reports matching bank format, and every observation flows through a tracked compliance lifecycle from Branch → ZAC → ACE → ACB with SLA enforcement.
+
+**Success Criteria:**
+1. Multi-sheet XLSX report generates with 13+ tabs matching existing bank audit format
+2. PDF summary report with executive summary, key findings, and BH Certificate
+3. Risk rating computed from weighted observation scores (repeat findings get 1.5× multiplier)
+4. Every observation auto-creates a compliance item with due date and assigned owner
+5. Compliance progresses through Branch Response → ZAC Review → ACE Processing → ACB Reporting
+6. Escalation triggers automatically at +15d/+30d/+90d/+180d overdue
+7. Zone model exists and ZAC-level compliance views work
+
+**Modules:** M4 (Reports), M5 (Compliance), M6 (Analytics), M7 (Admin enhancements)
+**Depends on:** Phase 1
+
+**Requirements:** R29-R48
+
+---
+
+## Phase 3: GRC & Issue Management
+**Goal:** Enterprise risk register links risks to controls and audits. Unified issue management tracks findings from all assurance sources. Quality assessment measures the audit function itself.
+
+**Success Criteria:**
+1. Risk register with risk statements, inherent/residual scores, and KRI tracking per entity
+2. Control library with test procedures and auto-generated work programs per engagement
+3. Unified issue model ingests from internal audit, regulatory, external audit, and self-assessment
+4. Action plans with milestones, partial closure, and accepted-risk tracking
+5. Quality self-assessment questionnaires with gap-to-issue conversion
+6. Internal audit effectiveness KPIs dashboard (plan completion, cycle time, resolution rates)
+
+**Modules:** M8 (Risk Register), M9 (Control Library), M12 (Issue Management), M13 (Quality)
+**Depends on:** Phase 2
+
+**Requirements:** R49-R68
+
+---
+
+## Phase 4: UCB Regulatory & Governance
+**Goal:** Unified audit universe covers all mandated audit types (RBIA, concurrent, IS/EDP, statutory). Concurrent audit workbench enables daily/weekly checks. Governance module supports ACB agenda building and RBI inspection readiness.
+
+**Success Criteria:**
+1. Audit universe registry with branches, departments, processes, vendors as auditable entities
+2. Unified calendar showing all audit types with periodicity compliance
+3. Concurrent audit rapid entry workbench with scope templates (cash, investments, advances, off-BS)
+4. Serious irregularity escalation with auto-routing to HO/IAD
+5. Regulatory observation hub tracking RBI/statutory/concurrent findings with ATR workflow
+6. ACB workspace with auto-generated quarterly meeting packs
+7. Policy library with version history and review reminders
+8. Board committee composition and meeting tracking
+
+**Modules:** M14 (Audit Universe), M15 (Concurrent Audit), M19 (Regulatory Hub), M20 (Governance)
+**Depends on:** Phase 3
+
+**Requirements:** R69-R92
+
+---
+
+## Phase 5: DEFERRED — Advanced Analytics & AI
+**Goal:** Data connectors + rule-based analytics engine + AI anomaly detection.
+**Modules:** M10 (Continuous Auditing), M11 (AI Analytics)
+**Status:** Deferred — requires CBS data feeds and ML infrastructure
+
+---
+
+## Phase 6: Specialized Regulatory Modules
+**Goal:** Investment/treasury audit controls and EDP/IS audit module with application inventory and IS checklists.
+
+**Success Criteria:**
+1. SGL/CSGL reconciliation tracking and broker compliance (5% cap) analytics
+2. Non-SLR investment cap monitoring with drill-down
+3. Quarterly auditor certification workflow for investments
+4. Application inventory with criticality, vendor, DR status
+5. IS audit checklists covering CBS, channels, access, BCP/DR, vendor management
+6. IS-specific role with scoped access
+
+**Modules:** M17 (Investment/Treasury), M18 (EDP/IS Audit)
+**Depends on:** Phase 4
+
+**Requirements:** R93-R104
+
+---
+
+## DEFERRED: M16 IRAC Engine
+**Status:** Deferred — complex computation engine requiring CBS loan data pipeline
+
+---
+
+## Phase Dependencies
+
+```
+Phase 1 (Foundation)
+    └── Phase 2 (Reports + Compliance)
+        └── Phase 3 (GRC + Issues)
+            └── Phase 4 (Regulatory + Governance)
+                └── Phase 6 (Treasury + IS Audit)
+
+Phase 5 (AI/Analytics) — DEFERRED
+M16 (IRAC) — DEFERRED
+```

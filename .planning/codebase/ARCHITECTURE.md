@@ -1,230 +1,697 @@
-# Architecture
-
-**Analysis Date:** 2026-02-08
-**Updated:** 2026-02-11 (post v2.0 MVP)
-
-## Pattern Overview
-
-**Overall:** Multi-tenant SaaS Platform with Server-Side Rendering and PostgreSQL Backend
-
-**Key Characteristics:**
-
-- Next.js 16 App Router with file-based routing
-- PostgreSQL database with Prisma ORM and Row-Level Security (multi-tenancy)
-- Better Auth for authentication with session cookies and RBAC (7 roles)
-- Server actions for all data mutations with Zod validation
-- React Server Components for data fetching, client components for interactivity
-- AWS S3 for evidence storage, SES for email, pg-boss for background jobs
-- Client-side i18n using next-intl with cookie-based locale storage
-
-## Layers
-
-**Presentation Layer (Client Components):**
-
-- Purpose: Renders UI, handles user interactions, manages client-side state
-- Location: `src/components/` and `src/app/(dashboard)/*/page.tsx`
-- Contains: React components with "use client" directive, shadcn/ui primitives, TanStack Table, Recharts, React Query for data caching
-- Depends on: Server components for data, types from Prisma, utility functions
-- Used by: Next.js routing system
-
-**Server Layer (Server Components + Actions):**
-
-- Purpose: Data fetching, mutations, business logic, authorization checks
-- Location: `src/actions/` (15 files), `src/app/api/` (API routes), page server components
-- Contains: Server actions with Zod validation, Prisma queries with tenant scoping, session checks
-- Depends on: Prisma client, Better Auth session, S3 client, SES client
-- Pattern: DAL pattern — `server-only → getRequiredSession → prismaForTenant → WHERE tenantId → runtime assertion`
-
-**Data Layer (PostgreSQL + Prisma):**
-
-- Purpose: Persistent storage with multi-tenant isolation
-- Location: `prisma/schema.prisma` (865 lines, 23 models)
-- Contains: Tenant, User, Observation (7-state lifecycle), Evidence, ComplianceRequirement, AuditPlan, AuditEngagement, BoardReport, DashboardSnapshot, AuditLog, NotificationQueue, EmailLog, OnboardingProgress, and more
-- Key feature: Row-Level Security — tenant isolation enforced at database level
-- Depends on: PostgreSQL
-- Used by: Server actions, API routes, server components
-
-**Authentication Layer:**
-
-- Purpose: User identity, session management, role-based access control
-- Location: `src/lib/auth.ts`, `src/lib/auth-client.ts`
-- Contains: Better Auth v1.4.18 with Prisma adapter, email/password auth, rate limiting, account lockout, session limits
-- Depends on: PostgreSQL (session/account storage)
-- Roles: Auditor, Audit Manager, CAE, CCO, CEO, Auditee, Admin
-
-**Infrastructure Layer (AWS):**
-
-- Purpose: Cloud services for evidence, email, and job processing
-- Location: `src/lib/s3.ts`, `src/lib/ses-client.ts`, `src/emails/`
-- Contains: S3 client (Mumbai, SSE-S3 encryption), SES client (email templates), pg-boss (background jobs)
-- Services: S3 (evidence files), SES (notifications), pg-boss (deadline reminders, weekly digests, daily snapshots)
-
-**Type System:**
-
-- Purpose: Enforces type safety across application
-- Location: `src/types/index.ts`, Prisma-generated types
-- Contains: Application interfaces plus Prisma model types (auto-generated from schema)
-- Pattern: Prisma types preferred for database entities; custom types for UI-only concerns
-
-**Utility Layer:**
-
-- Purpose: Shared helper functions, constants, and configuration
-- Location: `src/lib/`
-- Contains: `utils.ts`, `constants.ts`, `nav-items.ts`, `icons.ts`, `report-utils.ts`
-
-**Routing Layer:**
-
-- Purpose: File-based routing with layouts and nested routes
-- Location: `src/app/`
-- Contains: Route groups (`(auth)`, `(dashboard)`, `(onboarding)`), page components, layout components, API routes
-- New in v2.0: `(onboarding)` route group, `accept-invite` page, API routes for reports and health
-
-**Internationalization Layer:**
-
-- Purpose: Multi-language support for Indian banking context (EN, HI, MR, GU)
-- Location: `src/i18n/`, `messages/`
-- Pattern: Cookie-based locale storage, dynamic message loading
-
-## Data Flow
-
-**Page Load Flow (v2.0):**
-
-1. User navigates to route
-2. Next.js middleware / layout checks session via Better Auth
-3. Server component fetches data via Prisma with tenant-scoped queries
-4. Data passed to client components as props
-5. Client components render with TanStack Table, Recharts, etc.
-6. React Query caches client-side data for subsequent interactions
-
-**Mutation Flow (v2.0):**
-
-1. User performs action (create observation, upload evidence, transition state)
-2. Client component calls server action
-3. Server action validates input with Zod schema
-4. Server action checks session and role permissions
-5. Prisma executes tenant-scoped database operation
-6. AuditLog entry created for data-modifying actions
-7. Notification queued if applicable (pg-boss)
-8. Server action returns result; React Query invalidates cache
-
-**Observation Lifecycle Flow:**
-
-1. Auditor creates observation (Draft)
-2. Auditor submits → Submitted
-3. Audit Manager reviews → Reviewed (or returns to Draft)
-4. Audit Manager issues to auditee → Issued
-5. Auditee responds with evidence → Response
-6. Reviewer verifies compliance → Compliance
-7. Authorized closer (Manager for Low/Med, CAE for High/Critical) closes → Closed
-8. Each transition recorded in ObservationTimeline (immutable)
-
-**State Management:**
-
-- Server state: PostgreSQL (source of truth)
-- Client cache: React Query (TanStack Query v5.90)
-- Local UI state: React useState (tables, dialogs, filters)
-- Auth state: Better Auth session cookie
-- Locale: Cookie (`NEXT_LOCALE`)
-
-## Key Abstractions
-
-**Route Groups:**
-
-- `(auth)`: Login page with simple layout
-- `(dashboard)`: All authenticated pages with sidebar/topbar layout
-- `(onboarding)`: Multi-step onboarding wizard
-
-**DAL Pattern (Data Access Layer):**
-
-- Purpose: Enforce tenant isolation on every database query
-- Flow: `server-only → getRequiredSession → prismaForTenant → WHERE tenantId → runtime assertion`
-- Files: Server actions in `src/actions/`
-
-**Observation State Machine:**
-
-- Purpose: Enforce valid state transitions for audit observations
-- States: Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed
-- Special: "Resolved during fieldwork" status with rationale
-- Maker-checker: Different roles required for different transitions
-
-**Barrel Exports:**
-
-- `src/lib/icons.ts`: All Lucide icons
-- `src/data/index.ts`: Legacy demo data (kept for seed scripts)
-
-**shadcn/ui Component Pattern:**
-
-- Radix UI primitives wrapped with Tailwind CSS styling
-- "use client" since Radix requires client-side JS
-
-**Feature Component Grouping:**
-
-- `src/components/dashboard/`, `src/components/compliance/`, `src/components/findings/`, `src/components/reports/`, `src/components/pdf-report/`, `src/components/audit/`, `src/components/settings/`, `src/components/onboarding/`
-
-## Entry Points
-
-**Application Entry:**
-
-- Location: `src/app/layout.tsx`
-- Responsibilities: Load fonts, initialize next-intl provider, suppress hydration warnings
-
-**Root Redirect:**
-
-- Location: `src/app/page.tsx`
-- Responsibilities: Redirect to `/login`
-
-**Auth Routes:**
-
-- Login: `src/app/(auth)/login/page.tsx`
-- Accept Invite: `src/app/accept-invite/page.tsx`
-
-**Dashboard Layout:**
-
-- Location: `src/app/(dashboard)/layout.tsx`
-- Responsibilities: Sidebar + topbar layout, Suspense boundary, session verification
-
-**Onboarding:**
-
-- Location: `src/app/(onboarding)/onboarding/`
-- Responsibilities: 5-step wizard, server-side persistence, Excel upload
-
-**API Routes:**
-
-- Board report PDF: `src/app/api/reports/board-report/route.ts`
-- Health check: `src/app/api/health/route.ts` (used by Dockerfile)
-
-## Error Handling
-
-**Strategy:** Server action validation + session checks + Prisma error handling
-
-**Patterns:**
-
-- Zod validation on all server action inputs (fail-fast with descriptive errors)
-- Session verification before any data access
-- Tenant-scoped Prisma queries prevent cross-tenant data access
-- 404 for invalid routes via `notFound()`
-- Immutable audit log records all state-changing operations
-- No global error boundary yet (recommended for production)
-
-## Cross-Cutting Concerns
-
-**Logging:** Append-only AuditLog for all data-modifying actions. Console logging in development.
-
-**Validation:** Zod schemas for server action inputs. Prisma schema constraints at database level.
-
-**Authentication:** Better Auth with email/password, rate limiting, account lockout, session limits.
-
-**Authorization:** RBAC with 7 roles. Server actions check role before executing. Sidebar items filtered by role.
-
-**Performance Monitoring:** None (recommended: add before pilot).
-
-**Accessibility:** Skip-to-content link, Recharts `accessibilityLayer`, Radix ARIA attributes, reduced motion support, keyboard navigation.
-
-**Responsive Design:** Mobile-first with Tailwind breakpoints, collapsible sidebar, `use-mobile.tsx` hook.
-
-**Multi-tenancy:** PostgreSQL RLS. Tenant ID on all data tables. DAL pattern enforces scoping.
+# AEGIS Architecture
+
+## App Router Structure
+
+### Route Groups
+
+AEGIS uses Next.js 16 App Router with **route groups** for layout segmentation:
+
+```
+src/app/
+├── (auth)/                    # Auth layout (centered, no sidebar)
+│   └── login/
+│       └── page.tsx
+├── (dashboard)/              # Dashboard layout (sidebar + topbar)
+│   ├── layout.tsx            # Two-layer auth: cookie check + session validation
+│   ├── dashboard/
+│   │   └── page.tsx
+│   ├── findings/
+│   │   ├── page.tsx
+│   │   ├── new/
+│   │   │   └── page.tsx
+│   │   └── [id]/
+│   │       └── page.tsx
+│   ├── compliance/
+│   ├── audit-plans/
+│   ├── reports/
+│   ├── audit-trail/
+│   ├── auditee/
+│   │   ├── layout.tsx       # Nested layout for auditee view
+│   │   └── [observationId]/
+│   ├── admin/
+│   │   └── users/
+│   └── settings/
+│       ├── notifications/
+│       └── compliance/
+├── (onboarding)/             # Onboarding layout (multi-step wizard)
+│   └── onboarding/
+│       ├── layout.tsx
+│       └── page.tsx
+├── accept-invite/            # Public invite acceptance (no layout)
+│   └── page.tsx
+└── api/                      # API routes (not in route group)
+    ├── auth/
+    │   └── [...all]/         # Better Auth catch-all
+    │       └── route.ts
+    ├── exports/              # Excel export endpoints
+    │   ├── findings/
+    │   ├── compliance/
+    │   └── audit-plans/
+    ├── reports/              # PDF report generation
+    │   └── board-report/
+    ├── dashboard/            # Dashboard data endpoint
+    └── health/               # Health check
+```
+
+### Layout Hierarchy
+
+**3 distinct layouts:**
+
+1. **`(auth)/` - Auth Layout**
+   - Centered single-panel design
+   - No sidebar, no topbar
+   - Used for: login, accept-invite
+
+2. **`(dashboard)/` - Dashboard Layout**
+   - Sidebar (role-filtered navigation) + Topbar
+   - Session validation BEFORE render (zero content flash)
+   - QueryProvider wrapper for TanStack Query
+   - Suspense boundaries with loading skeletons
+   - Used for: dashboard, findings, compliance, admin, etc.
+
+3. **`(onboarding)/` - Onboarding Layout**
+   - Multi-step wizard with progress indicator
+   - No sidebar, simplified topbar
+   - Used for: bank onboarding flow
+
+**Nested layouts:**
+- `(dashboard)/auditee/layout.tsx` - Additional layout for auditee-specific pages
 
 ---
 
-_Architecture analysis: 2026-02-08_
-_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_
+## Server Actions Pattern
+
+### Directory Structure
+
+```
+src/actions/
+├── observations/
+│   ├── create.ts             # createObservation()
+│   ├── schemas.ts            # Zod schemas
+│   ├── transition.ts         # transitionObservation()
+│   └── resolve-fieldwork.ts
+├── repeat-findings/
+│   ├── detect.ts
+│   ├── confirm.ts
+│   └── schemas.ts
+├── users.ts                  # User management actions
+├── settings.ts               # Tenant settings actions
+├── compliance-management.ts
+├── notification-preferences.ts
+├── onboarding.ts
+└── onboarding-excel-upload.ts
+```
+
+### Server Action File Structure
+
+**Every server action file follows this pattern:**
+
+```typescript
+"use server"; // MUST be first line in file
+
+import { revalidatePath } from "next/cache";
+import { getRequiredSession } from "@/data-access/session";
+import { prismaForTenant } from "@/data-access/prisma";
+import { setAuditContext } from "@/data-access/audit-context";
+import { hasPermission, type Role } from "@/lib/permissions";
+import { logger } from "@/lib/logger";
+import { ActionSchema } from "./schemas"; // Co-located Zod schema
+import type { ActionInput } from "./schemas";
+
+/**
+ * JSDoc: Action purpose, security notes, atomic steps
+ */
+export async function myAction(input: ActionInput) {
+  // Step 1: Auth
+  const session = await getRequiredSession();
+  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const tenantId = (session.user as any).tenantId as string;
+
+  // Step 2: Permission check
+  if (!hasPermission(userRoles, "resource:action")) {
+    return {
+      success: false as const,
+      error: "You do not have permission...",
+    };
+  }
+
+  // Step 3: Validate input
+  const parsed = ActionSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false as const,
+      error: parsed.error.issues[0].message,
+    };
+  }
+  const validated = parsed.data;
+
+  // Step 4: Tenant-scoped Prisma
+  const db = prismaForTenant(tenantId);
+
+  try {
+    const result = await db.$transaction(async (tx) => {
+      // Set audit context (for AuditLog trigger)
+      await setAuditContext(tx, {
+        actionType: "resource.action",
+        userId: session.user.id,
+        tenantId,
+        sessionId: session.session.id,
+      });
+
+      // Perform database operations
+      const record = await tx.model.create({ ... });
+
+      return record;
+    });
+
+    // Revalidate affected paths
+    revalidatePath("/resource");
+
+    return {
+      success: true as const,
+      data: { id: result.id },
+    };
+  } catch (error) {
+    logger.error({ error, action: "my_action", tenantId }, "Action failed");
+    return {
+      success: false as const,
+      error: "Failed to perform action. Please try again.",
+    };
+  }
+}
+```
+
+**Key conventions:**
+- `"use server"` at top of file (not inline)
+- Return `{ success: boolean, data?, error? }` discriminated union
+- NEVER throw errors - always return error object
+- Always call `getRequiredSession()` first
+- Always validate with Zod
+- Always use `prismaForTenant(tenantId)` from session
+- Always wrap mutations in `$transaction` with `setAuditContext`
+- Always call `revalidatePath()` for cache invalidation
+- Always log errors with `logger.error()`
+
+---
+
+## Data Access Layer (DAL)
+
+### Directory Structure
+
+```
+src/data-access/
+├── README.md                 # DAL philosophy and conventions
+├── index.ts                  # Public DAL exports
+├── session.ts                # Session helpers (getRequiredSession, etc.)
+├── prisma.ts                 # prismaForTenant() RLS extension
+├── audit-context.ts          # setAuditContext() for AuditLog
+├── observations.ts           # Observation queries
+├── dashboard.ts              # Dashboard widget data fetchers
+├── compliance-management.ts
+├── auditee.ts
+├── audit-trail.ts
+├── exports.ts
+├── reports.ts
+├── notifications.ts
+├── onboarding.ts
+├── settings.ts
+└── users.ts
+```
+
+### DAL Function Pattern
+
+**Every DAL function:**
+1. Accepts `session` object (NOT raw tenantId string)
+2. Uses `prismaForTenant(session.user.tenantId)`
+3. Adds explicit `WHERE tenantId` clauses (belt-and-suspenders)
+4. Returns plain objects (not Prisma models with methods)
+5. Handles errors gracefully (returns null or throws domain error)
+
+```typescript
+import "server-only"; // Mark as server-only
+import { prismaForTenant } from "./prisma";
+import type { Session } from "@/lib/auth";
+
+export async function getObservation(
+  session: Session,
+  observationId: string
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  // Belt-and-suspenders: explicit WHERE tenantId clause
+  const observation = await db.observation.findFirst({
+    where: {
+      id: observationId,
+      tenantId, // ALWAYS include tenantId
+    },
+    include: {
+      branch: true,
+      auditArea: true,
+      assignedTo: true,
+    },
+  });
+
+  return observation;
+}
+```
+
+---
+
+## Lib Directory Structure
+
+```
+src/lib/
+├── auth.ts                   # Better Auth server config
+├── auth-client.ts            # Better Auth client (createAuthClient)
+├── auth-lockout-plugin.ts    # Custom Better Auth plugin for account lockout
+├── prisma.ts                 # Prisma client singleton
+├── permissions.ts            # RBAC permission system
+├── guards.ts                 # Declarative route/action guards (requirePermission, etc.)
+├── logger.ts                 # Pino structured logger
+├── constants.ts              # App-wide constants (RISK_CATEGORIES, etc.)
+├── utils.ts                  # cn() helper (tailwind-merge + clsx)
+├── s3.ts                     # AWS S3 helpers (upload, download, presigned URLs)
+├── ses-client.ts             # AWS SES email client
+├── notification-service.ts   # Notification queue interface
+├── job-queue.ts              # pg-boss job queue setup
+├── csrf.ts                   # CSRF token generation (for forms)
+├── dashboard-config.ts       # Role-to-dashboard-widget mapping
+├── nav-items.ts              # Sidebar navigation structure (role-filtered)
+├── fiscal-year.ts            # Indian FY quarter helpers (Q1=Apr-Jun, etc.)
+├── state-machine.ts          # Observation status transition logic
+├── report-utils.ts           # Board report PDF generation helpers
+├── excel-export.ts           # ExcelJS export utilities
+├── onboarding-validation.ts  # Onboarding step validation
+├── excel-parsers/            # Excel import parsers (branch, audit area, etc.)
+│   ├── branch-parser.ts
+│   └── ...
+├── excel-templates/          # Excel export templates
+│   ├── findings-template.ts
+│   └── ...
+├── validations/              # Reusable Zod schemas
+│   └── ...
+└── __tests__/                # Lib unit tests
+```
+
+### Key Lib Files
+
+**`prisma.ts`** - Prisma client singleton with error handling:
+```typescript
+import { PrismaClient } from "@/generated/prisma";
+
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
+};
+
+declare const globalThis: {
+  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+} & typeof global;
+
+export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prismaGlobal = prisma;
+}
+```
+
+**`permissions.ts`** - Multi-role permission system:
+- `hasPermission(roles: Role[], permission: Permission): boolean`
+- `getPermissions(roles: Role[]): Permission[]`
+- `canApproveObservation(userId, observation): boolean` (maker-checker)
+
+**`guards.ts`** - Declarative guards:
+- `requirePermission(permission: Permission)` - Redirects if unauthorized
+- `requireAnyPermission(permissions: Permission[])` - OR check
+- `requireAllPermissions(permissions: Permission[])` - AND check
+
+---
+
+## Component Organization
+
+```
+src/components/
+├── ui/                       # shadcn/ui primitives (Radix + Tailwind)
+│   ├── button.tsx
+│   ├── input.tsx
+│   ├── dialog.tsx
+│   ├── sidebar.tsx          # Sidebar primitive (shadcn/ui)
+│   └── ...
+├── layout/                   # Layout components
+│   ├── app-sidebar.tsx      # Main sidebar with role-filtered nav
+│   ├── top-bar.tsx          # Topbar with breadcrumbs, user menu
+│   └── ...
+├── auth/                     # Auth-related components
+│   ├── login-form.tsx
+│   ├── session-warning-wrapper.tsx
+│   └── ...
+├── dashboard/                # Dashboard widgets (client components)
+│   ├── dashboard-composer.tsx
+│   ├── observation-summary-card.tsx
+│   ├── compliance-tracker-widget.tsx
+│   └── ...
+├── findings/                 # Findings/observation components
+│   ├── observation-form.tsx
+│   ├── findings-table.tsx
+│   ├── observation-actions.tsx
+│   ├── repeat-finding-banner.tsx
+│   └── ...
+├── compliance/               # Compliance management
+│   ├── compliance-table.tsx
+│   └── ...
+├── audit/                    # Audit plan components
+│   └── ...
+├── audit-trail/              # Audit trail components
+│   └── audit-trail-table.tsx
+├── auditee/                  # Auditee-specific components
+│   └── ...
+├── reports/                  # Report generation UI
+│   └── ...
+├── pdf-report/               # PDF report components (@react-pdf/renderer)
+│   ├── board-report-document.tsx
+│   └── ...
+├── settings/                 # Settings forms
+│   ├── bank-profile-form.tsx
+│   ├── notification-preferences-form.tsx
+│   └── ...
+└── admin/                    # Admin components
+    ├── user-list.tsx
+    └── role-assignment-form.tsx
+```
+
+### Component Patterns
+
+**Server Component (default):**
+```tsx
+// No "use client" directive
+// Can directly fetch data, access session
+import { getRequiredSession } from "@/data-access/session";
+import { getDashboardData } from "@/data-access/dashboard";
+
+export default async function DashboardPage() {
+  const session = await getRequiredSession();
+  const data = await getDashboardData(session);
+
+  return <div>{/* Render data */}</div>;
+}
+```
+
+**Client Component (interactive):**
+```tsx
+"use client"; // MUST be first line
+
+import { useState } from "react";
+import { useActionState } from "react";
+import { createObservation } from "@/actions/observations/create";
+
+export function ObservationForm() {
+  const [state, formAction, isPending] = useActionState(submitAction, {});
+
+  return (
+    <form action={formAction}>
+      {/* Form fields */}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "Creating..." : "Create"}
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+## Data Flow
+
+### Request Flow (Page → Action → Prisma → Response)
+
+**1. User navigates to `/findings/new`**
+
+```
+GET /findings/new
+  ↓
+src/app/(dashboard)/findings/new/page.tsx (Server Component)
+  ↓ await getRequiredSession()
+  ↓ await getBranches(session)
+  ↓ await getAuditAreas(session)
+  ↓
+Renders <ObservationForm branches={...} auditAreas={...} />
+  ↓
+Browser: Client component hydrates
+```
+
+**2. User submits form**
+
+```
+POST (Server Action)
+  ↓
+src/components/findings/observation-form.tsx (Client Component)
+  ↓ useActionState → formAction
+  ↓
+src/actions/observations/create.ts (Server Action)
+  ↓ getRequiredSession()
+  ↓ hasPermission(roles, "observation:create")
+  ↓ Zod validation
+  ↓ prismaForTenant(tenantId)
+  ↓ $transaction: create observation + timeline
+  ↓ revalidatePath("/findings")
+  ↓ return { success: true, data: { id } }
+  ↓
+ObservationForm: useEffect on state.success
+  ↓ toast.success()
+  ↓ router.push(`/findings/${id}`)
+```
+
+**3. User views observation detail**
+
+```
+GET /findings/[id]
+  ↓
+src/app/(dashboard)/findings/[id]/page.tsx (Server Component)
+  ↓ await getRequiredSession()
+  ↓ await getObservationById(session, params.id)
+  ↓
+Renders observation detail page
+```
+
+---
+
+## Multi-Tenancy: How tenantId Flows
+
+### Critical Security Invariant
+**tenantId MUST come from session ONLY. NEVER from URL params, query strings, or request body.**
+
+### Flow Diagram
+
+```
+User logs in
+  ↓
+Better Auth creates Session
+  ↓ session.user.tenantId = "uuid"
+  ↓
+Middleware: Cookie check (optimistic)
+  ↓
+Layout: getRequiredSession() (authoritative)
+  ↓ Validates session token
+  ↓ Returns session with user.tenantId
+  ↓
+Server Action: getRequiredSession()
+  ↓ Extracts tenantId from session.user
+  ↓
+DAL Function: prismaForTenant(tenantId)
+  ↓ Wraps query in transaction with SET LOCAL 'app.current_tenant_id'
+  ↓
+Prisma Query: WHERE tenantId = ... (explicit, belt-and-suspenders)
+  ↓
+PostgreSQL RLS: Filters rows by app.current_tenant_id parameter
+  ↓
+Result: Only tenant's data returned
+```
+
+### Code Example
+
+```typescript
+// ❌ WRONG: tenantId from URL
+export async function updateTenant(tenantId: string, data: any) {
+  const db = prismaForTenant(tenantId); // ATTACKER CAN PASS ANY tenantId!
+}
+
+// ✅ CORRECT: tenantId from session
+export async function updateTenant(data: UpdateTenantInput) {
+  const session = await getRequiredSession();
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId); // Safe: from authenticated session
+
+  return db.tenant.update({
+    where: { id: tenantId }, // Belt-and-suspenders
+    data,
+  });
+}
+```
+
+---
+
+## File Structure: Where to Put New Code
+
+### New Feature Checklist
+
+**1. Database Model**
+- Add model to `prisma/schema.prisma`
+- Run `pnpm db:generate` → generates Prisma Client
+- Run `pnpm db:push` or `pnpm db:migrate` → updates database
+
+**2. Server Actions**
+- Create `src/actions/{feature}/` directory
+- Add `schemas.ts` for Zod validation
+- Add action files: `create.ts`, `update.ts`, etc.
+- Follow server action pattern (see above)
+
+**3. Data Access Layer**
+- Create `src/data-access/{feature}.ts`
+- Export query functions (accept `session` param)
+- Use `prismaForTenant()` and explicit `WHERE tenantId`
+
+**4. UI Components**
+- Add to `src/components/{feature}/`
+- Use `"use client"` only if interactive
+- Import from `@/components/ui/` for primitives
+
+**5. Page Route**
+- Add to `src/app/(dashboard)/{feature}/`
+- Create `page.tsx` (server component)
+- Fetch data directly in page component
+- Pass to client components as props
+
+**6. API Route (if needed)**
+- Add to `src/app/api/{feature}/`
+- Create `route.ts` with HTTP handlers
+- Use for: file downloads, webhooks, external integrations
+
+**7. Types**
+- Add to `src/types/index.ts` or `src/types/{feature}.ts`
+- Use `interface` for object shapes, `type` for unions/intersections
+
+**8. Constants**
+- Add to `src/lib/constants.ts`
+- Export as named const arrays/objects
+
+**9. Permissions**
+- Add permission to `Permission` type in `src/lib/permissions.ts`
+- Map permission to roles in `ROLE_PERMISSIONS`
+
+**10. Navigation**
+- Add route to `src/lib/nav-items.ts`
+- Assign permission for role filtering
+
+---
+
+## Deployment Architecture
+
+### Docker Compose Structure
+
+```yaml
+# docker-compose.prod.yml
+services:
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL
+      - BETTER_AUTH_SECRET
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - S3_BUCKET_NAME
+      - SES_FROM_EMAIL
+    ports:
+      - "3000:3000"
+```
+
+### Dockerfile (Multi-stage Build)
+
+```dockerfile
+FROM node:22-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm prisma generate
+RUN pnpm build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+CMD ["node", "server.js"]
+```
+
+---
+
+## Key Architectural Decisions
+
+### 1. Server Components by Default
+- All pages are server components unless interactive
+- Reduces client bundle size
+- Direct database access in components
+- Zero loading states for initial render
+
+### 2. Server Actions for Mutations
+- No API routes for CRUD operations
+- Server actions live in `src/actions/`
+- Progressive enhancement (forms work without JS)
+- Type-safe end-to-end (input → validation → response)
+
+### 3. Data Access Layer Separation
+- DAL functions in `src/data-access/`
+- Never call Prisma directly from actions/pages
+- Testable, reusable query logic
+- Security: tenantId from session only
+
+### 4. Multi-Tenant Row-Level Security
+- `prismaForTenant()` extension wraps all queries
+- Transaction-scoped `app.current_tenant_id` parameter
+- PostgreSQL RLS policies filter rows automatically
+- Belt-and-suspenders: explicit WHERE clauses in DAL
+
+### 5. Optimistic Locking for Concurrency
+- `version` field on mutable models (e.g., Observation)
+- Check-and-increment pattern in transactions
+- Prevents race conditions on status transitions
+
+### 6. Audit Logging on All Mutations
+- `setAuditContext()` called in every transaction
+- PostgreSQL trigger populates `AuditLog` table
+- Immutable append-only log (10-year retention)
+
+### 7. Role-Based Access Control (RBAC)
+- Multi-role support (users have `roles Role[]`)
+- Permission checks use `hasPermission(roles, permission)`
+- Guards for declarative route protection
+- Maker-checker enforcement (creator ≠ approver)
+
+### 8. Type Safety End-to-End
+- Zod for runtime validation (env vars, server actions, forms)
+- TypeScript for compile-time type checking
+- Prisma for database type generation
+- No `any` types except session user casting (Better Auth limitation)

@@ -216,6 +216,9 @@ model Tenant {
   examinationItems           ExaminationItem[]
   auditExaminationResponses  AuditExaminationResponse[]
   auditSectionInstances      AuditSectionInstance[]
+  cashChecks                 CashCheck[]
+  loanReviews                LoanReview[]
+  smaNpaEntries              SmaNpaEntry[]
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
@@ -446,8 +449,14 @@ model ObservationRbiCircular {
 
 model Evidence {
   id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  observationId String @db.Uuid
-  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  // Polymorphic evidence attachment (R27: generalized evidence)
+  // Exactly one of observationId or examinationResponseId should be set
+  observationId           String?                    @db.Uuid
+  observation             Observation?               @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  examinationResponseId   String?                    @db.Uuid
+  examinationResponse     AuditExaminationResponse?  @relation(fields: [examinationResponseId], references: [id], onDelete: Cascade)
 
   tenantId String @db.Uuid
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -466,6 +475,7 @@ model Evidence {
 
   @@index([tenantId])
   @@index([observationId])
+  @@index([examinationResponseId])
 }
 
 // ─── Compliance Requirement ──────────────────────────────────────────────────
@@ -669,6 +679,9 @@ model AuditEngagement {
   teamMembers          AuditTeamMember[]
   examinationResponses AuditExaminationResponse[]
   sectionInstances     AuditSectionInstance[]
+  cashChecks           CashCheck[]
+  loanReviews          LoanReview[]
+  smaNpaEntries        SmaNpaEntry[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -855,6 +868,9 @@ model AuditExaminationResponse {
   observationId       String?      @db.Uuid
   linkedObservation   Observation? @relation(fields: [observationId], references: [id])
 
+  // Evidence attachments
+  evidence          Evidence[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -890,6 +906,84 @@ model AuditSectionInstance {
   @@unique([engagementId, sectionCode])
   @@index([tenantId])
   @@index([engagementId])
+}
+
+// ─── Cash Check (Phase 1 — R19: cash verification per engagement) ──────────
+
+model CashCheck {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  cashInHand      Decimal   @db.Decimal(15, 2)
+  bookBalance     Decimal   @db.Decimal(15, 2)
+  difference      Decimal   @db.Decimal(15, 2)
+  retentionLimit  Decimal?  @db.Decimal(15, 2)
+
+  atmBalances      Json?    // { "ATM-01": 250000, "ATM-02": 180000 }
+  denominationData Json?    // { "2000": 10, "500": 50, "200": 20, "100": 100 }
+
+  verifiedById    String?   @db.Uuid
+  verifiedAt      DateTime?
+  remarks         String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId])
+  @@index([tenantId])
+}
+
+// ─── Loan Review (Phase 1 — R20: individual loan account review) ───────────
+
+model LoanReview {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  accountNo         String
+  borrowerName      String
+  productType       String   // "Term Loan", "CC", "OD", "Gold Loan"
+  sanctionAmount    Decimal  @db.Decimal(15, 2)
+  outstandingAmount Decimal  @db.Decimal(15, 2)
+  assetClass        String   // "STANDARD", "SMA0", "SMA1", "SMA2", "NPA_SUB", "NPA_DOUBTFUL", "NPA_LOSS"
+  dpd               Int      @default(0)
+  auditObservation  String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([engagementId, assetClass])
+}
+
+// ─── SMA/NPA Entry (Phase 1 — R21: category-wise summary per audit) ────────
+
+model SmaNpaEntry {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  category     String   // "SMA0", "SMA1", "SMA2", "NPA_SUB_STANDARD", "NPA_DOUBTFUL", "NPA_LOSS"
+  accountCount Int
+  totalAmount  Decimal  @db.Decimal(15, 2)
+  remarks      String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, category])
+  @@index([tenantId])
 }
 
 // ─── User Branch Assignment (Phase 7 — auditee branch scoping) ──────────────

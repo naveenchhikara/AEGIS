@@ -125,3 +125,66 @@ Three independent providers = at least one always available.
 - Codebase docs (STACK.md, CONVENTIONS.md) provide patterns without full code
 - Fresh context per agent = no accumulated rot
 - Max 50% context budget per plan execution
+
+## Lessons Learned (RBIAS Build — 2026-02-18)
+
+### Executor Prompt Template (Required Footer)
+Every executor sub-agent MUST receive this conventions block:
+```
+CONVENTIONS:
+- Icons: import from `@/lib/icons` (Pencil not Edit, CheckCircle, AlertTriangle)
+- Forms: `zodResolver(Schema as any)` for Zod v4 compatibility
+- DB: `prismaForTenant(tenantId)` from `@/data-access/prisma`, NEVER raw prisma
+- Session: `getRequiredSession()` from `@/data-access/session`
+- Permissions: check `src/lib/permissions.ts` for valid Permission values
+- Fields: READ `prisma/schema.prisma` for actual field names before writing queries
+- UI: check `src/components/ui/` for available components before importing
+- Dates: AuditEngagement uses scheduledStartDate/completionDate, NOT startDate/endDate
+- Periods: use periodFrom/periodTo, NOT periodStart/periodEnd
+```
+
+### Model Selection Rules (Validated)
+| Role | Model | Why |
+|------|-------|-----|
+| Planner | Opus | Deep reasoning, sees dependencies |
+| Executor | **Sonnet** (NOT Opus) | Opus fails within ~1min on file-heavy executor tasks |
+| Validator | GPT-5.2 | Different model family catches blind spots |
+| Security | GLM-5 | Third perspective on tenant isolation |
+
+### Batch Execution Rules
+- **maxChildrenPerAgent = 6** (not 8 — hard limit)
+- Fill slots as agents complete, don't wait for full batch
+- Main agent handles ALL cross-agent TS fixes after each wave
+- Never restart gateway while sub-agents have active exec sessions
+
+### Validation Discipline (NON-NEGOTIABLE)
+1. Wave executes → sub-agents write code
+2. Main agent runs `tsc --noEmit` → fixes cross-agent conflicts
+3. **Spawn per-phase GPT-5.2 validator** → wait for results
+4. Fix validator findings
+5. THEN commit + push
+6. ❌ NEVER: commit → then validate → then fix in next commit
+
+### Common Cross-Agent TS Errors (Fix Checklist)
+- [ ] Missing Permission type values → add to `src/lib/permissions.ts`
+- [ ] Missing icon exports → add alias to `src/lib/icons.ts`
+- [ ] Missing UI components → create in `src/components/ui/`
+- [ ] `asChild` prop → component needs Radix-style `asChild` support
+- [ ] Prisma `include` vs `select` mixing → use one or the other
+- [ ] Global `prisma` usage → replace with `prismaForTenant`
+- [ ] EscalationLevel type cast → `as ComplianceItemForEscalation["escalationLevel"]`
+
+### What Went Wrong This Build
+1. **Deferred validation** — Committed 2 waves without validation. Naveen called it out.
+2. **Wrong field names in plans** — Plans copied SDD field names, not actual Prisma fields.
+3. **Opus as executor** — Failed 3 times, wasted slots. Should've used Sonnet from start.
+4. **Gateway restart mid-wave** — Killed 6 running agents. Had to redo verification.
+5. **Mock data shipped** — 8+ pages had `any[] = []`. Root cause: rushed initial implementation.
+6. **Global prisma leaks** — Some DAL/action files use raw prisma. Security vulnerability.
+
+### What Went Right
+1. **Parallel sub-agents** — 6 agents × 3 waves = 21 plans executed, 31K+ lines in ~45 min wall time.
+2. **Cross-agent TS fix pattern** — Main agent consolidating fixes after each wave works well.
+3. **Separate validator model** — GPT-5.2 catches things Sonnet/Opus miss.
+4. **Schema-first approach** — 63 models built before any logic = clean parallel execution.
+5. **Fresh context per agent** — No context rot, each agent reads only what it needs.

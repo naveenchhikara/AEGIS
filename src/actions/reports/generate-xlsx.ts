@@ -6,15 +6,17 @@ import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { getAuditReportData } from "@/data-access/reports";
 import { generateAuditReportXLSX } from "@/lib/excel-export/audit-report-generator";
+import { prismaForTenant } from "@/data-access/prisma";
 import { uploadToS3 } from "@/lib/s3";
-import { ComputeRiskRatingSchema } from "./schemas";
+import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
 
 /**
  * Generate XLSX audit report and upload to S3.
  * Security: Requires report:generate permission.
  * Side effects: Uploads file to S3, stores S3 key in database (future: link to engagement).
+ * R32: Supports optional templateId for custom report formatting.
  */
-export async function generateXlsxReport(input: { engagementId: string }) {
+export async function generateXlsxReport(input: GenerateReportInput) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -26,7 +28,7 @@ export async function generateXlsxReport(input: { engagementId: string }) {
     };
   }
 
-  const parsed = ComputeRiskRatingSchema.safeParse(input);
+  const parsed = GenerateReportSchema.safeParse(input);
   if (!parsed.success) {
     return {
       success: false as const,
@@ -35,6 +37,18 @@ export async function generateXlsxReport(input: { engagementId: string }) {
   }
 
   try {
+    // Fetch template if specified (R32)
+    let templateData: Record<string, any> | null = null;
+    if (parsed.data.templateId) {
+      const db = prismaForTenant(tenantId);
+      const template = await db.reportTemplate.findFirst({
+        where: { id: parsed.data.templateId, tenantId, isActive: true },
+      });
+      if (template) {
+        templateData = template.templateData as Record<string, any>;
+      }
+    }
+
     // Fetch audit data
     const auditData = await getAuditReportData(session, parsed.data.engagementId);
 
@@ -58,7 +72,8 @@ export async function generateXlsxReport(input: { engagementId: string }) {
       "Generating XLSX audit report"
     );
 
-    const buffer = await generateAuditReportXLSX(auditData);
+    // R32: Pass template data to generator for custom formatting
+    const buffer = await generateAuditReportXLSX(auditData, templateData ?? undefined);
 
     // Upload to S3
     const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}_report.xlsx`;

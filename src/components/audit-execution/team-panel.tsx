@@ -26,6 +26,12 @@ import { UserPlus, Loader2, X } from "@/lib/icons";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+type AvailableUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 interface TeamPanelProps {
   engagementId: string;
   teamMembers: Array<{
@@ -36,6 +42,7 @@ interface TeamPanelProps {
     user: { id: string; name: string; email: string; roles: string[] };
   }>;
   canManageTeam: boolean;
+  availableUsers?: AvailableUser[];
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -47,6 +54,7 @@ export function TeamPanel({
   engagementId,
   teamMembers,
   canManageTeam,
+  availableUsers = [],
 }: TeamPanelProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -128,10 +136,20 @@ export function TeamPanel({
                         <SelectValue placeholder="Select a user" />
                       </SelectTrigger>
                       <SelectContent>
-                        {/* In production, fetch users from API */}
-                        <SelectItem value="placeholder">
-                          (Select user from database)
-                        </SelectItem>
+                        {availableUsers
+                          .filter((u) => !teamMembers.some((m) => m.userId === u.id))
+                          .map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.name} ({user.email})
+                            </SelectItem>
+                          ))}
+                        {availableUsers.filter(
+                          (u) => !teamMembers.some((m) => m.userId === u.id)
+                        ).length === 0 && (
+                          <SelectItem value="" disabled>
+                            No available users
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

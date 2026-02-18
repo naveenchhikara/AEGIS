@@ -17,7 +17,8 @@ type AuditReportData = NonNullable<
  * Returns buffer ready for S3 upload.
  */
 export async function generateAuditReportXLSX(
-  auditData: AuditReportData
+  auditData: AuditReportData,
+  templateData?: Record<string, any>
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
 

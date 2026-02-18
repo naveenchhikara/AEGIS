@@ -9,14 +9,15 @@ import { logger } from "@/lib/logger";
 import { getAuditReportData } from "@/data-access/reports";
 import { AuditSummaryDocument } from "@/components/pdf-report/audit-summary-document";
 import { uploadToS3 } from "@/lib/s3";
-import { ComputeRiskRatingSchema } from "./schemas";
+import { prismaForTenant } from "@/data-access/prisma";
+import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
 
 /**
  * Generate PDF summary report and upload to S3.
  * Security: Requires report:generate permission.
- * Side effects: Uploads PDF to S3.
+ * R32: Supports optional templateId for custom report formatting.
  */
-export async function generatePdfReport(input: { engagementId: string }) {
+export async function generatePdfReport(input: GenerateReportInput) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -28,7 +29,7 @@ export async function generatePdfReport(input: { engagementId: string }) {
     };
   }
 
-  const parsed = ComputeRiskRatingSchema.safeParse(input);
+  const parsed = GenerateReportSchema.safeParse(input);
   if (!parsed.success) {
     return {
       success: false as const,
@@ -37,6 +38,18 @@ export async function generatePdfReport(input: { engagementId: string }) {
   }
 
   try {
+    // Fetch template if specified (R32)
+    let templateData: Record<string, any> | null = null;
+    if (parsed.data.templateId) {
+      const db = prismaForTenant(tenantId);
+      const template = await db.reportTemplate.findFirst({
+        where: { id: parsed.data.templateId, tenantId, isActive: true },
+      });
+      if (template) {
+        templateData = template.templateData as Record<string, any>;
+      }
+    }
+
     // Fetch audit data
     const auditData = await getAuditReportData(session, parsed.data.engagementId);
 

@@ -1,5 +1,6 @@
 import { getRequiredSession } from "@/data-access/session";
 import { getEngagementWithTeam } from "@/data-access/audit-execution";
+import { prismaForTenant } from "@/data-access/prisma";
 import { EngagementHeader } from "@/components/audit-execution/engagement-header";
 import { SectionTabs } from "@/components/audit-execution/section-tabs";
 import { TeamPanel } from "@/components/audit-execution/team-panel";
@@ -25,6 +26,17 @@ export default async function AuditExecutionPage({ params }: PageProps) {
   }
 
   const canManageTeam = hasPermission(userRoles, "audit_execution:manage_team");
+
+  // Fetch available auditors for team assignment (R13)
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+  const availableUsers = canManageTeam
+    ? await db.user.findMany({
+        where: { tenantId },
+        select: { id: true, name: true, email: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
   const canManageSections = hasPermission(
     userRoles,
     "audit_execution:manage_sections",
@@ -50,6 +62,11 @@ export default async function AuditExecutionPage({ params }: PageProps) {
             engagementId={engagementId}
             teamMembers={engagement.teamMembers}
             canManageTeam={canManageTeam}
+            availableUsers={availableUsers.map((u) => ({
+              id: u.id,
+              name: u.name ?? "Unnamed",
+              email: u.email,
+            }))}
           />
         </div>
       </div>

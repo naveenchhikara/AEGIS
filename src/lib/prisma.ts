@@ -41,45 +41,32 @@ export const prisma = new Proxy(
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Tenant-scoped Prisma client with transaction-scoped RLS.
+ * Tenant-scoped Prisma client — application-level isolation.
  *
- * CRITICAL SECURITY NOTES (Decision D6, Skeptic S2):
+ * ARCHITECTURE NOTE (2026-02-18):
+ * Previously wrapped every query in a $transaction with SET LOCAL for
+ * PostgreSQL RLS. But: (1) no RLS policies exist in the DB, so SET LOCAL
+ * was a no-op, and (2) wrapping every query in a transaction caused P2028
+ * errors under concurrent SSR load (10+ parallel queries competing for
+ * pool connections → transaction timeouts → 500 errors).
+ *
+ * Tenant isolation is enforced at the APPLICATION level:
+ * - Every DAL function adds WHERE tenantId = ? to its queries
+ * - tenantId comes from authenticated session only
+ * - This function validates the UUID format as a safety check
+ *
+ * If PostgreSQL RLS is added later, re-enable transaction wrapping with
+ * per-connection (not per-query) tenant context via middleware.
+ *
+ * SECURITY:
  * - tenantId MUST come from authenticated session ONLY
  * - NEVER pass tenantId from URL params, request body, or query string
- * - DAL functions should accept a session object, not a raw tenantId string
- * - This function provides RLS-level isolation; DAL functions should ALSO
- *   add explicit WHERE tenantId clauses (belt-and-suspenders, Skeptic S1)
  */
 export function prismaForTenant(tenantId: string) {
   if (!UUID_REGEX.test(tenantId)) {
     throw new Error(`Invalid tenantId format: ${tenantId}`);
   }
-  return prisma.$extends({
-    query: {
-      $allOperations: async ({
-        args,
-        query,
-      }: {
-        operation: string;
-        model?: string;
-        args: Record<string, unknown>;
-        query: (args: Record<string, unknown>) => Promise<unknown>;
-      }) => {
-        // Wrap ALL queries in transaction with tenant context
-        // Extended timeouts to handle concurrent SSR data fetches
-        // (dashboard fires 10-15 parallel queries, each needing a transaction)
-        return prisma.$transaction(
-          async (tx) => {
-            // SET LOCAL parameter (transaction-scoped only — safe for connection pooling)
-            await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, TRUE)`;
-            return query(args);
-          },
-          {
-            maxWait: 15000,  // 15s to acquire a pool connection
-            timeout: 30000,  // 30s transaction execution timeout
-          },
-        );
-      },
-    },
-  });
+  // Return the singleton client — tenant isolation is via WHERE clauses
+  // in every DAL function, not via PostgreSQL RLS (no policies exist).
+  return prisma;
 }

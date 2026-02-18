@@ -17,11 +17,11 @@ import { SmaNpaSummary } from "@/components/audit-execution/sma-npa-summary";
 import { Badge } from "@/components/ui/badge";
 
 interface SmaNpaPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ engagementId: string }>;
 }
 
 export default async function SmaNpaPage({ params }: SmaNpaPageProps) {
-  const { id: engagementId } = await params;
+  const { engagementId } = await params;
   const session = await getRequiredSession();
 
   const [engagement, smaNpaEntries, loanSummary] = await Promise.all([

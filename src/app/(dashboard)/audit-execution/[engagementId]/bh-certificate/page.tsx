@@ -9,12 +9,12 @@ import { BhCertificateWorkflow } from "@/components/audit-execution/bh-certifica
 import type { Role } from "@/generated/prisma/enums";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ engagementId: string }>;
 }
 
 export default async function BhCertificatePage({ params }: PageProps) {
   // Next.js 16: params is a Promise (await it)
-  const { id: engagementId } = await params;
+  const { engagementId } = await params;
 
   const session = await getRequiredSession();
   const tenantId = (session.user as any).tenantId as string;

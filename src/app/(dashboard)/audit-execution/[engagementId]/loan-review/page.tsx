@@ -10,11 +10,11 @@ import { LoanReviewTableWrapper } from "@/components/audit-execution/loan-review
 import { LoanCsvImport } from "@/components/audit-execution/loan-csv-import";
 
 interface LoanReviewPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ engagementId: string }>;
 }
 
 export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
-  const { id: engagementId } = await params;
+  const { engagementId } = await params;
   const session = await getRequiredSession();
 
   const [engagement, loanReviews, summary] = await Promise.all([

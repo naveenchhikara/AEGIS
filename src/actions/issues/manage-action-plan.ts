@@ -132,6 +132,7 @@ export async function completeActionPlan(
   actionPlanId: string,
   evidence?: string[]
 ) {
+  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -197,6 +198,8 @@ export async function updateActionPlanProgress(
   actionPlanId: string,
   completionPct: number
 ) {
+  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
+  if (completionPct < 0 || completionPct > 100) return { success: false as const, error: "Invalid percentage." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

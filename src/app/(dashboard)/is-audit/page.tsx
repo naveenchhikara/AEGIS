@@ -60,7 +60,7 @@ export default async function IsAuditPage() {
         </TabsContent>
 
         <TabsContent value="checklist" className="space-y-4">
-          <ChecklistForm checklists={checklists as any} />
+          <ChecklistForm checklists={checklists as any} userId={session.user.id} />
         </TabsContent>
 
         <TabsContent value="vendor" className="space-y-4">
@@ -71,11 +71,11 @@ export default async function IsAuditPage() {
         </TabsContent>
 
         <TabsContent value="cbs" className="space-y-4">
-          <CbsParameterAudit />
+          <CbsParameterAudit userId={session.user.id} />
         </TabsContent>
 
         <TabsContent value="cyber" className="space-y-4">
-          <CyberSecurityChecklist />
+          <CyberSecurityChecklist userId={session.user.id} />
         </TabsContent>
 
         <TabsContent value="evidence" className="space-y-4">

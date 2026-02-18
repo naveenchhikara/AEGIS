@@ -117,6 +117,7 @@ export async function manageAuditUniverseEntity(input: ManageEntityInput) {
  * Security: Requires audit_universe:manage permission.
  */
 export async function deleteAuditUniverseEntity(entityId: string) {
+  if (!z.string().uuid().safeParse(entityId).success) return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

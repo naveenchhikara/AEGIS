@@ -152,7 +152,7 @@ type CheckItem = {
   riskLevel: string;
 };
 
-export function CbsParameterAudit() {
+export function CbsParameterAudit({ userId }: { userId: string }) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [responses, setResponses] = React.useState<Record<string, CheckItem>>({});
@@ -245,7 +245,7 @@ export function CbsParameterAudit() {
       category: "CBS",
       checklistName: "CBS Parameter Audit",
       items: allItems,
-      completedById: markComplete ? "current-user-id" : undefined,
+      completedById: markComplete ? userId : undefined,
       overallRating,
     });
 

@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { hasPermission, type Role } from "@/lib/permissions";
@@ -9,7 +10,10 @@ import { logger } from "@/lib/logger";
  * Generate one-click RBI inspection support pack (R86).
  * Aggregates 9 components for comprehensive RBI inspection readiness.
  */
+const YearSchema = z.number().int().min(2000).max(2100);
+
 export async function generateInspectionPack(year: number) {
+  if (!YearSchema.safeParse(year).success) return { success: false as const, error: "Invalid year." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

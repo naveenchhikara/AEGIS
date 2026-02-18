@@ -49,6 +49,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type VendorAssessment = {
   id: string;
+  applicationId?: string | null;
   vendorName: string;
   contractStart: Date | null;
   contractEnd: Date | null;
@@ -114,7 +115,7 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
     if (editingAssessment) {
       form.reset({
         assessmentId: editingAssessment.id,
-        applicationId: editingAssessment.application?.appName,
+        applicationId: editingAssessment.applicationId ?? undefined,
         vendorName: editingAssessment.vendorName,
         contractStart: editingAssessment.contractStart
           ? format(editingAssessment.contractStart, "yyyy-MM-dd")

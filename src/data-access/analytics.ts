@@ -1,12 +1,13 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { prismaForTenant } from "@/lib/prisma";
 
 /**
  * R42: Branch risk heatmap data — RAM scores + compliance stats per branch
  */
 export async function getBranchRiskHeatmap(tenantId: string) {
-  const branches = await prisma.branch.findMany({
+  const db = prismaForTenant(tenantId);
+  const branches = await db.branch.findMany({
     where: { tenantId },
     select: {
       id: true,
@@ -51,14 +52,15 @@ export async function getBranchRiskHeatmap(tenantId: string) {
  * R43: Audit plan progress — plans with engagement completion stats
  */
 export async function getAuditPlanProgress(tenantId: string) {
-  const plans = await prisma.auditPlan.findMany({
+  const db = prismaForTenant(tenantId);
+  const plans = await db.auditPlan.findMany({
     where: { tenantId },
     orderBy: { year: "desc" },
   });
 
   const results = [];
   for (const plan of plans) {
-    const engagements = await prisma.auditEngagement.findMany({
+    const engagements = await db.auditEngagement.findMany({
       where: { auditPlanId: plan.id },
       select: {
         id: true,
@@ -95,7 +97,8 @@ export async function getAuditPlanProgress(tenantId: string) {
  * R44: Compliance aging analysis — group open items by age buckets
  */
 export async function getComplianceAging(tenantId: string) {
-  const items = await prisma.complianceItem.findMany({
+  const db = prismaForTenant(tenantId);
+  const items = await db.complianceItem.findMany({
     where: {
       tenantId,
       status: { notIn: ["CLOSED"] },
@@ -141,7 +144,8 @@ export async function getComplianceAging(tenantId: string) {
  * R45: Finding trend analysis — observations grouped by period + severity
  */
 export async function getFindingTrends(tenantId: string) {
-  const observations = await prisma.observation.findMany({
+  const db = prismaForTenant(tenantId);
+  const observations = await db.observation.findMany({
     where: { tenantId },
     select: {
       id: true,
@@ -182,7 +186,8 @@ export async function getFindingTrends(tenantId: string) {
  * R46: NPA movement waterfall — SMA/NPA entries by category over time
  */
 export async function getNpaMovement(tenantId: string) {
-  const entries = await prisma.smaNpaEntry.findMany({
+  const db = prismaForTenant(tenantId);
+  const entries = await db.smaNpaEntry.findMany({
     where: { tenantId },
     select: {
       id: true,
@@ -225,7 +230,7 @@ export async function getAuditCalendarEvents(
   startDate?: Date,
   endDate?: Date
 ) {
-  return prisma.auditCalendar.findMany({
+  const db = prismaForTenant(tenantId); return db.auditCalendar.findMany({
     where: {
       tenantId,
       ...(startDate && endDate
@@ -247,7 +252,8 @@ export async function getAuditCalendarEvents(
  * R48: Report templates
  */
 export async function getReportTemplates(tenantId: string) {
-  return prisma.reportTemplate.findMany({
+  const db = prismaForTenant(tenantId);
+  return db.reportTemplate.findMany({
     where: { tenantId, isActive: true },
     orderBy: [{ category: "asc" }, { name: "asc" }, { versionNumber: "desc" }],
   });

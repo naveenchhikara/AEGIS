@@ -302,7 +302,7 @@ type QuestionResponse = {
   remarks?: string;
 };
 
-export function CyberSecurityChecklist() {
+export function CyberSecurityChecklist({ userId }: { userId: string }) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [responses, setResponses] = React.useState<Record<string, QuestionResponse>>({});
@@ -412,7 +412,7 @@ export function CyberSecurityChecklist() {
       category: "CYBER_SECURITY",
       checklistName: "Cyber Security Baseline Controls (25 Controls)",
       items: allItems,
-      completedById: markComplete ? "current-user-id" : undefined,
+      completedById: markComplete ? userId : undefined,
       overallRating,
     });
 

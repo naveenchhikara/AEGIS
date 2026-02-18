@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
@@ -164,7 +165,14 @@ export async function updateLoanReview(input: UpdateLoanReviewInput) {
  * Delete a loan review record.
  * Security: Requires examination:respond permission.
  */
+const DeleteLoanReviewSchema = z.object({
+  id: z.string().uuid(),
+  engagementId: z.string().uuid(),
+});
+
 export async function deleteLoanReview(input: { id: string; engagementId: string }) {
+  const parsed = DeleteLoanReviewSchema.safeParse(input);
+  if (!parsed.success) return { success: false as const, error: "Invalid input." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

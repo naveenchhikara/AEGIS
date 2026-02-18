@@ -166,6 +166,9 @@ export async function assignWorkProgramItem(
   workProgramItemId: string,
   assignedToId: string
 ) {
+  if (!z.string().uuid().safeParse(workProgramItemId).success || !z.string().uuid().safeParse(assignedToId).success) {
+    return { success: false as const, error: "Invalid ID format." };
+  }
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

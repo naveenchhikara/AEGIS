@@ -153,6 +153,7 @@ export async function manageInvestmentRecord(input: ManageInvestmentRecordInput)
  * Mark investment record as reconciled.
  */
 export async function markReconciled(recordId: string) {
+  if (!z.string().uuid().safeParse(recordId).success) return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;

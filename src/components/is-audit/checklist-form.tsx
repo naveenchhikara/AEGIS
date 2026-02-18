@@ -57,6 +57,7 @@ type Checklist = {
 };
 
 interface ChecklistFormProps {
+  userId: string;
   checklists: Checklist[];
 }
 
@@ -92,7 +93,7 @@ const NewChecklistSchema = z.object({
 
 type NewChecklistValues = z.infer<typeof NewChecklistSchema>;
 
-export function ChecklistForm({ checklists }: ChecklistFormProps) {
+export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = React.useState<string>(
     CATEGORIES[0].value
@@ -175,7 +176,7 @@ export function ChecklistForm({ checklists }: ChecklistFormProps) {
       category: activeChecklist.category as any,
       checklistName: activeChecklist.checklistName,
       items,
-      completedById: markComplete ? "current-user-id" : undefined,
+      completedById: markComplete ? userId : undefined,
       overallRating,
     });
 

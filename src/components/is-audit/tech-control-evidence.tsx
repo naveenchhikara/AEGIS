@@ -95,7 +95,8 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
     const gaps: Record<string, GapItem> = {};
     
     checklists.forEach((checklist) => {
-      checklist.items.forEach((item, idx) => {
+      const items = Array.isArray(checklist.items) ? checklist.items : [];
+      items.forEach((item: any, idx: number) => {
         if (item.response === "NON_COMPLIANT" || item.response === "PARTIAL") {
           const key = `${checklist.id}-${idx}`;
           

@@ -74,7 +74,7 @@ export async function managePolicy(input: ManagePolicyInput) {
       if (parsed.data.policyId) {
         // Update existing policy
         const updated = await tx.policyDocument.update({
-          where: { id: parsed.data.policyId },
+          where: { id: parsed.data.policyId , tenantId },
           data: {
             name: parsed.data.name,
             approvalDate: parsed.data.approvalDate,
@@ -126,6 +126,7 @@ export async function managePolicy(input: ManagePolicyInput) {
  * Delete policy document.
  */
 export async function deletePolicy(policyId: string) {
+  if (!z.string().uuid().safeParse(policyId).success) return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -149,7 +150,7 @@ export async function deletePolicy(policyId: string) {
       });
 
       await tx.policyDocument.delete({
-        where: { id: policyId },
+        where: { id: policyId , tenantId },
       });
     });
 

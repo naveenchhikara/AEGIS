@@ -69,8 +69,9 @@ export async function deactivateTemplate(templateId: string) {
     return { success: false as const, error: "Forbidden" };
 
   try {
-    await prisma.reportTemplate.update({
-      where: { id: templateId },
+    // SECURITY: Scope update to tenant to prevent cross-tenant modification
+    await prisma.reportTemplate.updateMany({
+      where: { id: templateId, tenantId: user.tenantId },
       data: { isActive: false },
     });
     revalidatePath("/admin/templates");

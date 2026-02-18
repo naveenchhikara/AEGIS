@@ -56,7 +56,8 @@ export async function deleteCalendarEvent(eventId: string) {
     return { success: false as const, error: "Forbidden" };
 
   try {
-    await prisma.auditCalendar.delete({ where: { id: eventId } });
+    // SECURITY: Scope delete to tenant to prevent cross-tenant deletion
+    await prisma.auditCalendar.deleteMany({ where: { id: eventId, tenantId: user.tenantId } });
     revalidatePath("/calendar");
     return { success: true as const, data: null };
   } catch (error) {

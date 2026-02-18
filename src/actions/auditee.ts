@@ -486,7 +486,8 @@ export async function getEvidenceDownloadUrl(evidenceId: string) {
     // If user is AUDITEE, verify branch authorization
     if (userRoles.includes("AUDITEE") && evidence.observation?.branchId) {
       const branchIds = await getUserBranches(session);
-      if (!branchIds.includes(evidence.observation.branchId)) {
+      const obsBranchId = evidence.observation.branchId;
+      if (obsBranchId && !branchIds.includes(obsBranchId)) {
         return { success: false as const, error: "Evidence not found." };
       }
     }

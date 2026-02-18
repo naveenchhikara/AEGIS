@@ -10,7 +10,7 @@ const prismaClientSingleton = () => {
   // Increase pool size to handle concurrent RLS transactions
   // Default pg.Pool max is 10; dashboard SSR fires 10-15 parallel queries
   // each wrapped in a transaction for tenant isolation
-  const adapter = new PrismaPg({ connectionString, max: 20 });
+  const adapter = new PrismaPg({ connectionString, max: 40 });
   return new PrismaClient({
     adapter,
     log:
@@ -75,8 +75,8 @@ export function prismaForTenant(tenantId: string) {
             return query(args);
           },
           {
-            maxWait: 10000,  // 10s to acquire a pool connection
-            timeout: 15000,  // 15s transaction execution timeout
+            maxWait: 15000,  // 15s to acquire a pool connection
+            timeout: 30000,  // 30s transaction execution timeout
           },
         );
       },

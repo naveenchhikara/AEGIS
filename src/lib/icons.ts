@@ -2,6 +2,7 @@ export {
   LayoutDashboard,
   ShieldCheck,
   ClipboardList,
+  ClipboardCheck,
   Search,
   FileBarChart,
   UserCheck,
@@ -73,4 +74,6 @@ export {
   X,
   Pencil,
   BookOpen,
+  Landmark,
+  Monitor,
 } from "lucide-react";

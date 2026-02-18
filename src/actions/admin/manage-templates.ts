@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { prismaForTenant } from "@/lib/prisma";
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
@@ -24,8 +24,10 @@ export async function createReportTemplate(input: z.infer<typeof createTemplateS
   if (!parsed.success) return { success: false as const, error: parsed.error.message };
 
   try {
+    const db = prismaForTenant(user.tenantId);
+
     // Get next version number
-    const existing = await prisma.reportTemplate.findMany({
+    const existing = await db.reportTemplate.findMany({
       where: { tenantId: user.tenantId, name: parsed.data.name },
       orderBy: { versionNumber: "desc" },
       take: 1,
@@ -34,13 +36,13 @@ export async function createReportTemplate(input: z.infer<typeof createTemplateS
 
     // Deactivate previous versions
     if (existing.length > 0) {
-      await prisma.reportTemplate.updateMany({
+      await db.reportTemplate.updateMany({
         where: { tenantId: user.tenantId, name: parsed.data.name },
         data: { isActive: false },
       });
     }
 
-    const template = await prisma.reportTemplate.create({
+    const template = await db.reportTemplate.create({
       data: {
         tenantId: user.tenantId,
         name: parsed.data.name,
@@ -61,16 +63,26 @@ export async function createReportTemplate(input: z.infer<typeof createTemplateS
   }
 }
 
+const deactivateTemplateSchema = z.object({
+  templateId: z.string().uuid("Invalid template ID"),
+});
+
 export async function deactivateTemplate(templateId: string) {
   const session = await getRequiredSession();
   const user = session.user as any;
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
+
+  const parsed = deactivateTemplateSchema.safeParse({ templateId });
+  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+
   if (!hasPermission(user.roles ?? [], "template:manage"))
     return { success: false as const, error: "Forbidden" };
 
   try {
+    const db = prismaForTenant(user.tenantId);
+
     // SECURITY: Scope update to tenant to prevent cross-tenant modification
-    await prisma.reportTemplate.updateMany({
+    await db.reportTemplate.updateMany({
       where: { id: templateId, tenantId: user.tenantId },
       data: { isActive: false },
     });

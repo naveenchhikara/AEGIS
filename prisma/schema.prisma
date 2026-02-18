@@ -723,6 +723,9 @@ model AuditEngagement {
   bhCertCountersignedById String?   @db.Uuid
   bhCertCountersignedAt   DateTime?
 
+  // Surprise audit + general metadata (R71)
+  metadata Json? // Stores surprise audit justification, scope, confidentiality, etc.
+
   // Report routing workflow (R33)
   reportStatus       String?   @default("DRAFT") // "DRAFT", "REVIEWED", "APPROVED", "ISSUED"
   reportReviewedById String?   @db.Uuid

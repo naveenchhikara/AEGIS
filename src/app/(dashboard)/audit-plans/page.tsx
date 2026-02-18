@@ -1,6 +1,8 @@
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { PlanGenerator } from "@/components/audit-plans/plan-generator";
+import { WhatIfSimulator } from "@/components/audit-plans/what-if-simulator";
+import { SurpriseAuditScheduler } from "@/components/audit-plans/surprise-audit-scheduler";
 import {
   Card,
   CardContent,
@@ -50,6 +52,27 @@ export default async function AuditPlansPage() {
   const session = await getRequiredSession();
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
+
+  // Fetch branches for what-if simulator (R53)
+  const branches = await db.branch.findMany({
+    where: { tenantId },
+    select: { id: true, code: true, name: true, ramScore: true },
+    orderBy: { code: "asc" },
+  });
+
+  const branchesForSimulator = branches.map((b) => ({
+    id: b.id,
+    code: b.code,
+    name: b.name,
+    ramScore: b.ramScore ? Number(b.ramScore) : null,
+  }));
+
+  // Fetch team members (auditors) for surprise audit team lead selection (R71)
+  const teamMembers = await db.user.findMany({
+    where: { tenantId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   // Fetch existing audit plans with engagements
   const auditPlans = await db.auditPlan.findMany({
@@ -175,6 +198,16 @@ export default async function AuditPlansPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* What-If Simulator (R53) */}
+      <WhatIfSimulator branches={branchesForSimulator} />
+
+      {/* Surprise Audit Scheduler (R71) */}
+      <SurpriseAuditScheduler
+        branches={branches.map((b) => ({ id: b.id, code: b.code, name: b.name }))}
+        auditPlans={auditPlans.map((p) => ({ id: p.id, year: p.year, quarter: p.quarter }))}
+        teamMembers={teamMembers.map((m) => ({ id: m.id, name: m.name ?? "Unnamed" }))}
+      />
     </div>
   );
 }

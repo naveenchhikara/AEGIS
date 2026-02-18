@@ -49,10 +49,18 @@ export async function createCalendarEvent(input: z.infer<typeof createEventSchem
   }
 }
 
+const deleteEventSchema = z.object({
+  eventId: z.string().uuid("Invalid event ID"),
+});
+
 export async function deleteCalendarEvent(eventId: string) {
   const session = await getRequiredSession();
   const user = session.user as any;
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
+
+  const parsed = deleteEventSchema.safeParse({ eventId });
+  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+
   const db = prismaForTenant(user.tenantId);
   if (!hasPermission(user.roles ?? [], "calendar:manage"))
     return { success: false as const, error: "Forbidden" };

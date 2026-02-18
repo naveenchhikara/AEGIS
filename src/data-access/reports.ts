@@ -471,5 +471,29 @@ export async function getAuditReportData(
     },
   });
 
-  return engagement;
+  if (!engagement) return null;
+
+  // Fetch BH certificate signer and countersigner names
+  let bhCertSignedByUser = null;
+  let bhCertCountersignedByUser = null;
+
+  if (engagement.bhCertSignedById) {
+    bhCertSignedByUser = await db.user.findUnique({
+      where: { id: engagement.bhCertSignedById },
+      select: { name: true },
+    });
+  }
+
+  if (engagement.bhCertCountersignedById) {
+    bhCertCountersignedByUser = await db.user.findUnique({
+      where: { id: engagement.bhCertCountersignedById },
+      select: { name: true },
+    });
+  }
+
+  return {
+    ...engagement,
+    bhCertSignedByName: bhCertSignedByUser?.name || null,
+    bhCertCountersignedByName: bhCertCountersignedByUser?.name || null,
+  };
 }

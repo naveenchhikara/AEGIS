@@ -1,6 +1,11 @@
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
+import {
+  getRiskRegisters,
+  getBreachedKRIs,
+  getAuditUniverseEntities,
+} from "@/data-access/risk-management";
 import { RiskRegisterTable } from "@/components/risk-management/risk-register-table";
 import { KriDashboard } from "@/components/risk-management/kri-dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,9 +20,29 @@ export default async function RiskManagementPage() {
 
   const canManage = hasPermission(userRoles, "risk_register:manage");
 
-  // Mock data - replace with actual data-access calls
-  const risks: any[] = [];
-  const kriData: any[] = [];
+  // Fetch real data from database
+  const risksRaw = await getRiskRegisters(session);
+  const kriDataRaw = await getBreachedKRIs(session);
+  const entities = await getAuditUniverseEntities(session);
+
+  // Convert Prisma Decimal types to numbers for client components
+  const risks = risksRaw.map((risk) => ({
+    ...risk,
+    inherentScore: Number(risk.inherentScore),
+    controlScore: Number(risk.controlScore),
+    residualScore: Number(risk.residualScore),
+    kris: risk.kris.map((kri) => ({
+      ...kri,
+      currentValue: kri.currentValue ? Number(kri.currentValue) : null,
+    })),
+  }));
+
+  const kriData = kriDataRaw.map((kri) => ({
+    ...kri,
+    currentValue: kri.currentValue ? Number(kri.currentValue) : null,
+    thresholdLow: kri.thresholdLow ? Number(kri.thresholdLow) : null,
+    thresholdHigh: kri.thresholdHigh ? Number(kri.thresholdHigh) : null,
+  }));
 
   return (
     <div className="space-y-6">
@@ -35,7 +60,7 @@ export default async function RiskManagementPage() {
         </TabsList>
 
         <TabsContent value="register" className="space-y-4">
-          <RiskRegisterTable risks={risks} canManage={canManage} />
+          <RiskRegisterTable risks={risks} entities={entities} canManage={canManage} />
         </TabsContent>
 
         <TabsContent value="kri" className="space-y-4">

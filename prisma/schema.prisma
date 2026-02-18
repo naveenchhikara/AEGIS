@@ -717,9 +717,11 @@ model AuditEngagement {
   overallRiskRating String?             // Computed after audit: "VERY_GOOD"..."POOR"
 
   // BH Certificate fields (R26)
-  bhCertSignedById  String?   @db.Uuid
-  bhCertSignedAt    DateTime?
-  bhCertComments    String?   @db.Text
+  bhCertSignedById        String?   @db.Uuid
+  bhCertSignedAt          DateTime?
+  bhCertComments          String?   @db.Text
+  bhCertCountersignedById String?   @db.Uuid
+  bhCertCountersignedAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

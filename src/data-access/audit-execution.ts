@@ -80,6 +80,20 @@ export async function getExaminationResponsesForSection(
           respondedById: true,
           respondedAt: true,
           observationId: true,
+          evidence: {
+            where: { deletedAt: null },
+            select: {
+              id: true,
+              filename: true,
+              s3Key: true,
+              fileSize: true,
+              contentType: true,
+              description: true,
+              createdAt: true,
+              uploadedBy: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: "asc" },
+          },
         },
       },
     },
@@ -109,5 +123,35 @@ export async function getEngagementExaminationItems(
   return db.examinationItem.findMany({
     where: { tenantId, areaId: area.id, isActive: true },
     orderBy: { displayOrder: "asc" },
+  });
+}
+
+/**
+ * Get evidence attached to a specific examination response.
+ */
+export async function getEvidenceForExaminationResponse(
+  session: Session,
+  responseId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.evidence.findMany({
+    where: {
+      examinationResponseId: responseId,
+      tenantId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      filename: true,
+      s3Key: true,
+      fileSize: true,
+      contentType: true,
+      description: true,
+      createdAt: true,
+      uploadedBy: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "asc" },
   });
 }

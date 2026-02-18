@@ -124,3 +124,54 @@ export async function getTemplatesByScopeArea(
     },
   });
 }
+
+/**
+ * Get concurrent audit findings with potential RBIA duplicates for de-duplication panel (R76).
+ */
+export async function getConcurrentFindingsForDedup(session: Session) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  // Get concurrent audit observations
+  const concurrentObs = await db.observation.findMany({
+    where: { tenantId, criteria: { startsWith: "Concurrent Audit" } },
+    select: {
+      id: true,
+      title: true,
+      condition: true,
+      severity: true,
+      branch: { select: { id: true, name: true } },
+      createdAt: true,
+      status: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Get RBIA observations for comparison
+  const rbiaObs = await db.observation.findMany({
+    where: { tenantId, criteria: { not: { startsWith: "Concurrent Audit" } } },
+    select: { id: true, title: true, condition: true, branch: { select: { id: true } } },
+  });
+
+  // Simple title-based duplicate detection
+  const potentialDuplicates = concurrentObs.map((co) => {
+    const matches = rbiaObs.filter((ro) => {
+      // Same branch check
+      if (ro.branch?.id !== co.branch?.id) return false;
+      
+      // Title similarity check (simple substring match)
+      const coTitle = co.title.toLowerCase();
+      const roTitle = ro.title.toLowerCase();
+      const searchLen = Math.min(20, coTitle.length);
+      
+      return (
+        roTitle.includes(coTitle.substring(0, searchLen)) ||
+        coTitle.includes(roTitle.substring(0, searchLen))
+      );
+    });
+    
+    return { ...co, potentialRbiaDuplicates: matches };
+  });
+
+  return potentialDuplicates;
+}

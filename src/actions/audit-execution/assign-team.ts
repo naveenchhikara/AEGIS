@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
+import { prismaForTenant } from "@/lib/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
@@ -14,64 +14,75 @@ import {
 } from "./schemas";
 
 /**
- * Assign a user to an audit engagement team.
- * Security: Requires audit_execution:manage_team permission.
+ * Assign a team member to an audit engagement.
+ *
+ * Security:
+ * - Requires audit_execution:manage_team permission
+ * - tenantId sourced from authenticated session
+ *
+ * Atomicity:
+ * - Creates AuditTeamMember record
+ * - Prevents duplicate user assignments
+ * - Sets audit context for AuditLog trigger
+ *
+ * @param input - Team member assignment data
+ * @returns Success with team member ID or error message
  */
 export async function assignTeamMember(input: AssignTeamMemberInput) {
+  // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
+  // ─── Step 2: Permission Check ──────────────────────────────────
   if (!hasPermission(userRoles, "audit_execution:manage_team")) {
-    return { success: false as const, error: "You do not have permission to manage audit teams." };
+    return {
+      success: false as const,
+      error: "You do not have permission to manage audit teams.",
+    };
   }
 
+  // ─── Step 3: Input Validation ──────────────────────────────────
   const parsed = AssignTeamMemberSchema.safeParse(input);
   if (!parsed.success) {
-    return { success: false as const, error: parsed.error.issues[0].message };
+    return {
+      success: false as const,
+      error: parsed.error.issues[0].message,
+    };
   }
   const validated = parsed.data;
 
+  // ─── Step 4: Tenant-Scoped Database ────────────────────────────
   const db = prismaForTenant(tenantId);
 
+  // ─── Step 5: Transaction (Atomic Operation) ────────────────────
   try {
     const result = await db.$transaction(async (tx: any) => {
+      // Set audit context for AuditLog trigger
       await setAuditContext(tx, {
-        actionType: "audit_team.member_assigned",
+        actionType: "audit_team.assigned",
         userId: session.user.id,
         tenantId,
         sessionId: session.session.id,
       });
 
-      // Verify engagement exists
-      const engagement = await tx.auditEngagement.findFirst({
-        where: { id: validated.engagementId, tenantId },
-      });
-      if (!engagement) {
-        throw new Error("Engagement not found");
-      }
-
-      // Verify user exists and belongs to tenant
-      const user = await tx.user.findFirst({
-        where: { id: validated.userId, tenantId },
-      });
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      // Upsert team member (allows updating role/sections)
-      return tx.auditTeamMember.upsert({
+      // Check if user already assigned to this engagement
+      const existing = await tx.auditTeamMember.findUnique({
         where: {
           engagementId_userId: {
             engagementId: validated.engagementId,
             userId: validated.userId,
           },
         },
-        update: {
-          roleInEngagement: validated.roleInEngagement,
-          assignedSections: validated.assignedSections,
-        },
-        create: {
+      });
+
+      if (existing) {
+        throw new Error("User already assigned to this engagement");
+      }
+
+      // Create AuditTeamMember
+      const teamMember = await tx.auditTeamMember.create({
+        data: {
           tenantId,
           engagementId: validated.engagementId,
           userId: validated.userId,
@@ -79,68 +90,117 @@ export async function assignTeamMember(input: AssignTeamMemberInput) {
           assignedSections: validated.assignedSections,
         },
       });
+
+      return teamMember;
     });
 
-    revalidatePath("/audit-execution");
-    return { success: true as const, data: { id: result.id } };
+    // ─── Step 6: Cache Revalidation ────────────────────────────
+    revalidatePath(`/audit-execution/${validated.engagementId}`);
+
+    // ─── Step 7: Success Response ──────────────────────────────
+    return {
+      success: true as const,
+      data: { id: result.id },
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to assign team member.";
-    logger.error({ error, action: "assign_team_member", tenantId }, message);
-    return { success: false as const, error: message };
+    // ─── Step 8: Error Handling ────────────────────────────────
+    logger.error(
+      { error, action: "assign_team_member", tenantId },
+      "Failed to assign team member"
+    );
+
+    // User-friendly error message
+    const errorMessage =
+      error instanceof Error && error.message.includes("already assigned")
+        ? error.message
+        : "Failed to assign team member. Please try again.";
+
+    return {
+      success: false as const,
+      error: errorMessage,
+    };
   }
 }
 
 /**
- * Remove a user from an audit engagement team.
- * Security: Requires audit_execution:manage_team permission.
+ * Remove a team member from an audit engagement.
+ *
+ * Security:
+ * - Requires audit_execution:manage_team permission
+ * - tenantId sourced from authenticated session
+ *
+ * Atomicity:
+ * - Deletes AuditTeamMember record
+ * - Sets audit context for AuditLog trigger
+ *
+ * @param input - Team member removal data
+ * @returns Success or error message
  */
 export async function removeTeamMember(input: RemoveTeamMemberInput) {
+  // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
+  // ─── Step 2: Permission Check ──────────────────────────────────
   if (!hasPermission(userRoles, "audit_execution:manage_team")) {
-    return { success: false as const, error: "You do not have permission to manage audit teams." };
+    return {
+      success: false as const,
+      error: "You do not have permission to manage audit teams.",
+    };
   }
 
+  // ─── Step 3: Input Validation ──────────────────────────────────
   const parsed = RemoveTeamMemberSchema.safeParse(input);
   if (!parsed.success) {
-    return { success: false as const, error: parsed.error.issues[0].message };
+    return {
+      success: false as const,
+      error: parsed.error.issues[0].message,
+    };
   }
   const validated = parsed.data;
 
+  // ─── Step 4: Tenant-Scoped Database ────────────────────────────
   const db = prismaForTenant(tenantId);
 
+  // ─── Step 5: Transaction (Atomic Operation) ────────────────────
   try {
     await db.$transaction(async (tx: any) => {
+      // Set audit context for AuditLog trigger
       await setAuditContext(tx, {
-        actionType: "audit_team.member_removed",
+        actionType: "audit_team.removed",
         userId: session.user.id,
         tenantId,
         sessionId: session.session.id,
       });
 
-      const member = await tx.auditTeamMember.findFirst({
+      // Delete AuditTeamMember by engagement + user
+      await tx.auditTeamMember.deleteMany({
         where: {
           engagementId: validated.engagementId,
           userId: validated.userId,
-          tenant: { id: tenantId },
+          tenantId,
         },
-      });
-      if (!member) {
-        throw new Error("Team member not found");
-      }
-
-      await tx.auditTeamMember.delete({
-        where: { id: member.id },
       });
     });
 
+    // ─── Step 6: Cache Revalidation ────────────────────────────
     revalidatePath("/audit-execution");
-    return { success: true as const, data: {} };
+
+    // ─── Step 7: Success Response ──────────────────────────────
+    return {
+      success: true as const,
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to remove team member.";
-    logger.error({ error, action: "remove_team_member", tenantId }, message);
-    return { success: false as const, error: message };
+    // ─── Step 8: Error Handling ────────────────────────────────
+    logger.error(
+      { error, action: "remove_team_member", tenantId },
+      "Failed to remove team member"
+    );
+
+    return {
+      success: false as const,
+      error: "Failed to remove team member. Please try again.",
+    };
   }
 }

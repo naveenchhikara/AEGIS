@@ -1,143 +1,180 @@
-"use client";
-
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { AuditCalendar } from "@/components/audit/audit-calendar";
-import { EngagementCard } from "@/components/audit/engagement-card";
-import { AuditFilterBar } from "@/components/audit/audit-filter-bar";
-import { EngagementDetailSheet } from "@/components/audit/engagement-detail-sheet";
-import { auditPlans } from "@/data";
-import type { AuditData, AuditPlan } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
+import { getRequiredSession } from "@/data-access/session";
+import { prismaForTenant } from "@/data-access/prisma";
+import { PlanGenerator } from "@/components/audit-plans/plan-generator";
 import {
-  ClipboardList,
-  CheckCircle2,
-  Activity,
-  Clock,
-  Download,
-} from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
-const data = auditPlans as unknown as AuditData;
+/**
+ * Get status badge variant for AuditPlanStatus
+ */
+function getStatusVariant(
+  status: string
+): "default" | "secondary" | "outline" | "destructive" {
+  switch (status) {
+    case "COMPLETED":
+      return "default";
+    case "IN_PROGRESS":
+      return "secondary";
+    case "PLANNED":
+      return "outline";
+    case "ON_HOLD":
+    case "CANCELLED":
+      return "destructive";
+    default:
+      return "outline";
+  }
+}
 
-export default function AuditPlansPage() {
-  const t = useTranslations("AuditPlan");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"calendar" | "cards">("calendar");
-  const [selectedAudit, setSelectedAudit] = useState<AuditPlan | null>(null);
+/**
+ * Audit Plans Page
+ *
+ * Features:
+ * - Annual audit plan generator (RAM-based scheduling)
+ * - List of existing audit plans with engagement counts
+ */
+export default async function AuditPlansPage() {
+  const session = await getRequiredSession();
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
-  const summaryCards = [
-    {
-      label: t("totalAudits"),
-      count: data.summary.total,
-      icon: ClipboardList,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+  // Fetch existing audit plans with engagements
+  const auditPlans = await db.auditPlan.findMany({
+    where: { tenantId },
+    include: {
+      engagements: {
+        include: {
+          branch: {
+            select: { code: true, name: true },
+          },
+        },
+      },
     },
-    {
-      label: t("completed"),
-      count: data.summary.completed,
-      icon: CheckCircle2,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-    },
-    {
-      label: t("inProgress"),
-      count: data.summary["in-progress"],
-      icon: Activity,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
-      label: t("planned"),
-      count: data.summary.planned,
-      icon: Clock,
-      color: "text-slate-600",
-      bg: "bg-slate-50",
-    },
-  ];
+    orderBy: [{ year: "desc" }, { quarter: "asc" }],
+  });
 
-  const filteredAudits =
-    typeFilter === "all"
-      ? data.auditPlans
-      : data.auditPlans.filter((a) => a.type === typeFilter);
+  // Get quarter label
+  const getQuarterLabel = (quarter: string): string => {
+    const labels: Record<string, string> = {
+      Q1_APR_JUN: "Q1 (Apr-Jun)",
+      Q2_JUL_SEP: "Q2 (Jul-Sep)",
+      Q3_OCT_DEC: "Q3 (Oct-Dec)",
+      Q4_JAN_MAR: "Q4 (Jan-Mar)",
+    };
+    return labels[quarter] || quarter;
+  };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-            {t("title")}
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            {t("subtitle")}
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <a href="/api/exports/audit-plans" download>
-            <Download className="mr-1 h-4 w-4" />
-            Export
-          </a>
-        </Button>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Annual Audit Plans
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Generate and manage audit plans based on RAM scores and audit frequency
+        </p>
       </div>
 
-      {/* Summary cards row — 2 cols mobile, 4 cols sm+ */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {summaryCards.map((card) => (
-          <Card key={card.label}>
-            <CardContent className="flex items-center gap-2 p-3 md:gap-3 md:p-4">
-              <div className={`rounded-lg p-1.5 md:p-2 ${card.bg}`}>
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-              <div>
-                <p className="text-lg font-bold md:text-xl">{card.count}</p>
-                <p className="text-muted-foreground text-sm">{card.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Plan Generator */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Generate Annual Audit Plan</CardTitle>
+          <CardDescription>
+            Auto-schedule branch audits based on RAM scores, audit frequency,
+            and last audit date. High-risk branches (RAM &gt; 3.5) are scheduled
+            for 12-month audits, medium-risk (2.5-3.5) for 18-month audits, and
+            low-risk (&lt; 2.5) for 24-month audits.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PlanGenerator />
+        </CardContent>
+      </Card>
 
-      {/* Filter bar */}
-      <AuditFilterBar
-        typeFilter={typeFilter}
-        viewMode={viewMode}
-        onTypeChange={setTypeFilter}
-        onViewModeChange={setViewMode}
-      />
+      {/* Existing Plans */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Existing Audit Plans</CardTitle>
+          <CardDescription>
+            {auditPlans.length > 0
+              ? `${auditPlans.length} audit plan${auditPlans.length > 1 ? "s" : ""} found`
+              : "No audit plans created yet"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {auditPlans.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fiscal Year</TableHead>
+                    <TableHead>Quarter</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Engagements</TableHead>
+                    <TableHead>Branches</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditPlans.map((plan) => {
+                    const fyLabel = `${plan.year}-${String(plan.year + 1).slice(2)}`;
+                    const branches = plan.engagements
+                      .filter((e) => e.branch)
+                      .map((e) => e.branch!.code)
+                      .slice(0, 5)
+                      .join(", ");
+                    const moreCount = Math.max(
+                      0,
+                      plan.engagements.length - 5
+                    );
 
-      {/* Conditional view */}
-      {viewMode === "calendar" ? (
-        <AuditCalendar
-          audits={filteredAudits}
-          typeFilter={typeFilter}
-          onAuditClick={setSelectedAudit}
-        />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
-          {filteredAudits.length > 0 ? (
-            filteredAudits.map((audit) => (
-              <EngagementCard
-                key={audit.id}
-                audit={audit}
-                onClick={() => setSelectedAudit(audit)}
-              />
-            ))
+                    return (
+                      <TableRow key={plan.id}>
+                        <TableCell className="font-medium">
+                          FY {fyLabel}
+                        </TableCell>
+                        <TableCell>
+                          {getQuarterLabel(plan.quarter)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusVariant(plan.status)}>
+                            {plan.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {plan.engagements.length}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {branches}
+                          {moreCount > 0 && ` +${moreCount} more`}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
-            <div className="text-muted-foreground col-span-full rounded-lg border border-dashed p-6 text-center text-sm md:p-8">
-              {t("noAuditsMatch")}
+            <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+              No audit plans created yet. Use the generator above to create
+              your first plan.
             </div>
           )}
-        </div>
-      )}
-
-      {/* Detail sheet */}
-      <EngagementDetailSheet
-        audit={selectedAudit}
-        open={!!selectedAudit}
-        onOpenChange={(open) => !open && setSelectedAudit(null)}
-      />
+        </CardContent>
+      </Card>
     </div>
   );
 }

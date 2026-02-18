@@ -1,4 +1,5 @@
 import { getRequiredSession } from "@/data-access/session";
+import { getControls } from "@/data-access/control-library";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { ControlLibraryTable } from "@/components/controls/control-library-table";
@@ -13,8 +14,8 @@ export default async function ControlsPage() {
 
   const canManage = hasPermission(userRoles, "control_library:manage");
 
-  // Mock data - replace with actual data-access calls
-  const controls: any[] = [];
+  // Fetch real controls from database
+  const controls = await getControls(session);
 
   return (
     <div className="space-y-6">

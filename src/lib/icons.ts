@@ -76,4 +76,11 @@ export {
   BookOpen,
   Landmark,
   Monitor,
+  AlertCircle,
+  FileWarning,
+  Minus,
+  Link,
+  Unlink,
+  Image,
+  CheckCircle,
 } from "lucide-react";

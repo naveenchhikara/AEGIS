@@ -1,9 +1,14 @@
 import { getRequiredSession } from "@/data-access/session";
+import { getWorkProgramItems } from "@/data-access/work-program";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { WorkProgramTable } from "@/components/work-program/work-program-table";
 
-export default async function WorkProgramPage() {
+export default async function WorkProgramPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ engagementId?: string; assignedToId?: string; status?: string }>;
+}) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
 
@@ -13,8 +18,15 @@ export default async function WorkProgramPage() {
 
   const canExecute = hasPermission(userRoles, "work_program:execute");
 
-  // Mock data - replace with actual data-access calls
-  const workItems: any[] = [];
+  // Await searchParams (Next.js 16 pattern)
+  const params = await searchParams;
+
+  // Fetch real work program items from database
+  const workItems = await getWorkProgramItems(session, {
+    engagementId: params.engagementId,
+    assignedToId: params.assignedToId,
+    status: params.status,
+  });
 
   return (
     <div className="space-y-6">

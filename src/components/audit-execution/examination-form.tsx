@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle2, AlertTriangle } from "@/lib/icons";
+import { Loader2, CheckCircle2, AlertTriangle, FileText } from "@/lib/icons";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { EvidenceUploadPanel } from "./evidence-upload-panel";
+import { ExaminationEvidenceList } from "./examination-evidence-list";
 
 type ExaminationStatus =
   | "COMPLIANT"
@@ -45,6 +47,15 @@ interface ExaminationFormProps {
       respondedById: string | null;
       respondedAt: Date | null;
       observationId: string | null;
+      evidence?: Array<{
+        id: string;
+        filename: string;
+        fileSize: number;
+        contentType: string;
+        description: string | null;
+        createdAt: Date;
+        uploadedBy: { id: string; name: string };
+      }>;
     }>;
   }>;
   canRespond: boolean;
@@ -264,6 +275,34 @@ function ExaminationItemForm({
             )}
             {hasResponse ? "Update Response" : "Save Response"}
           </Button>
+        )}
+
+        {/* Evidence section - only shown if response exists */}
+        {hasResponse && existingResponse && (
+          <div className="mt-4 border-t pt-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span>Evidence ({existingResponse.evidence?.length ?? 0})</span>
+            </div>
+
+            {/* Evidence list */}
+            <ExaminationEvidenceList
+              evidence={existingResponse.evidence ?? []}
+              engagementId={engagementId}
+              responseId={existingResponse.id}
+            />
+
+            {/* Evidence upload panel */}
+            {canRespond && (
+              <div className="mt-3">
+                <EvidenceUploadPanel
+                  engagementId={engagementId}
+                  responseId={existingResponse.id}
+                  onUploadComplete={onSubmitSuccess}
+                />
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

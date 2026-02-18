@@ -1,42 +1,46 @@
-# RBIAS v3.0 — Project State
+# STATE.md — Gap Closure Execution
 
-## Current Position
-- **Phase:** 1 (Core Audit Domain)
-- **Status:** EXECUTING (Wave 5 building, Wave 4 complete)
-- **Last Updated:** 2026-02-18T01:45:00+05:30
+## Current Phase: Gap Closure Wave 1
+## Started: 2026-02-18T01:44Z
 
-## Wave Progress
-| Wave | Plan | Status | Description |
-|------|------|--------|-------------|
-| 1 | 01 | ✅ DONE | Schema foundation: 3 roles, Zone, Branch extensions, AuditEngagement, AuditTeamMember, RBAC |
-| 2 | 02 | ✅ DONE | RAM tables: RamParameterConfig, RamAssessment, RamAssessmentScore + 19 param seed |
-| 3 | 03 | ✅ DONE | Examination domain: ExaminationArea, ExaminationItem, AuditExaminationResponse, AuditSectionInstance |
-| 4 | 04 | ✅ DONE | Specialized: CashCheck, LoanReview, SmaNpaEntry + Evidence generalization |
-| 5 | 05 | 🔄 BUILDING | RAM engine: pure computation + server actions (Sonnet sub-agent) |
-| 5 | 06 | 🔄 BUILDING | Audit execution backend: team assignment + section management (Sonnet sub-agent) |
-| 6 | 07 | ⏳ QUEUED | UI: RAM pages + Audit execution pages + components |
+## Execution Batches
 
-## Schema Stats
-- **Total models:** 39 (27 original + 12 Phase 1)
-- **New enums:** 3 (RamAssessmentStatus, ExaminationStatus, AuditSectionStatus)
-- **New roles:** 3 (LEAD_AUDITOR, FIELD_AUDITOR, BRANCH_HEAD) = 10 total
-- **New permissions:** 9 (ram:*, audit_execution:*, examination:*, bh_certificate:sign)
-- **DB synced:** ✅ 40 tables live
+### Wave 1a (8 parallel executors — Sonnet)
+| Plan | Status | Agent |
+|------|--------|-------|
+| A1 (R9 audit plan generator) | 🔄 EXECUTING | executor-a1 |
+| A2 (R10-11/R13 engagement mgmt) | 🔄 EXECUTING | executor-a2 |
+| A3 (R12 branch profiling) | 🔄 EXECUTING | executor-a3 |
+| A4 (R16/R27 evidence pipeline) | 🔄 EXECUTING | executor-a4 |
+| A5 (R19/R24 cash verification) | 🔄 EXECUTING | executor-a5 |
+| A6 (R20-21/R25 loan review) | 🔄 EXECUTING | executor-a6 |
+| C1 (R49-53 risk management) | 🔄 EXECUTING | executor-c1 |
+| C2 (R54-58 controls/work program) | 🔄 EXECUTING | executor-c2 |
 
-## Examination Data
-- **568 items** across **39 functional areas** extracted from IA Format
-- Covers all sections 1-39 including extended areas (KYC detailed, Credit/Advances, Forex, etc.)
-- Seed infrastructure ready, descriptions need future cleanup
+### Wave 1b (5 parallel executors — after 1a)
+| Plan | Status | Agent |
+|------|--------|-------|
+| A7 (R26 BH certificate) | ⏳ QUEUED | — |
+| C3 (R59-63 issues/board) | ⏳ QUEUED | — |
+| C4 (R64-67 QA assessment) | ⏳ QUEUED | — |
+| C5 (R72-76 concurrent audit) | ⏳ QUEUED | — |
+| C6 (R77-79 regulatory/ATR) | ⏳ QUEUED | — |
 
-## Commits (Phase 1)
-1. `9ca19db` — Wave 1: Schema foundation + RBAC
-2. `6522968` — Wave 2: RAM tables + 19 parameter seed data
-3. `9912498` — Wave 3: Examination domain models + seed
-4. `cb7f490` — Wave 4: Specialized models + Evidence generalization
+### Wave 2 (8 parallel executors — after Wave 1)
+| Plan | Status | Agent |
+|------|--------|-------|
+| A8 (R33 report routing) | ⏳ QUEUED | — |
+| A9 (R37-38 ACE/ACB) | ⏳ QUEUED | — |
+| A10 (R39 escalation automation) | ⏳ QUEUED | — |
+| A11 (R40 repeat RAM uplift) | ⏳ QUEUED | — |
+| C7 (R81-86 governance/ACB) | ⏳ QUEUED | — |
+| C8 (R93-97 investments) | ⏳ QUEUED | — |
+| C9 (R98-104 IS/EDP audit) | ⏳ QUEUED | — |
+| C10 (R80/87/88 housekeeping/MIS) | ⏳ QUEUED | — |
 
-## Blockers
-- None currently
+## Verification
+- After each wave: full `tsc --noEmit`, conflict resolution, atomic commit
+- After all waves: Sonnet verifier re-runs full R1-R104 audit
 
-## Active Sub-Agents
-- executor-ram-engine (Sonnet) — Plan 05
-- executor-audit-execution (Sonnet) — Plan 06
+## Commits
+- `dbba5c2` — planning phase complete (21 plans + seed data + reports)

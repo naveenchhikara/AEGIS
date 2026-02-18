@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 import {
   Table,
   TableBody,
@@ -24,22 +25,59 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "@/lib/icons";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Loader2, FileText, ShieldAlert } from "@/lib/icons";
 import { toast } from "sonner";
+import { manageIssue } from "@/actions/issues/manage-issue";
+import { acceptRisk } from "@/actions/issues/accept-risk";
+import { ActionPlanPanel } from "./action-plan-panel";
+import { format } from "date-fns";
 
 interface Issue {
   id: string;
-  issueCode: string;
+  title: string;
   description: string;
   source: string;
+  issueType: string;
   severity: string;
   status: string;
-  dueDate: string;
+  riskTheme?: string | null;
+  rootCause?: string | null;
+  createdAt: Date;
+  observation?: {
+    id: string;
+    title: string;
+    severity: string;
+    branch: {
+      code: string;
+      name: string;
+    } | null;
+  } | null;
+  control?: {
+    id: string;
+    controlCode: string;
+    processArea: string;
+    description: string;
+  } | null;
+  actionPlans: Array<{
+    id: string;
+    title: string;
+    status: string;
+    dueDate: Date;
+    completionPct: number;
+  }>;
 }
 
 interface IssuesTableProps {
   issues: Issue[];
   canManage: boolean;
+  canAcceptRisk: boolean;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -50,70 +88,223 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 const SOURCE_COLORS: Record<string, string> = {
-  AUDIT: "bg-blue-100 text-blue-800 border-blue-300",
+  INTERNAL_AUDIT: "bg-blue-100 text-blue-800 border-blue-300",
   REGULATORY: "bg-purple-100 text-purple-800 border-purple-300",
-  RISK: "bg-red-100 text-red-800 border-red-300",
-  COMPLIANCE: "bg-green-100 text-green-800 border-green-300",
+  EXTERNAL_AUDIT: "bg-indigo-100 text-indigo-800 border-indigo-300",
+  SELF_ASSESSMENT: "bg-green-100 text-green-800 border-green-300",
+  CONCURRENT: "bg-teal-100 text-teal-800 border-teal-300",
 };
 
 const STATUS_COLORS: Record<string, string> = {
   OPEN: "bg-red-100 text-red-800 border-red-300",
   IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-300",
-  RESOLVED: "bg-green-100 text-green-800 border-green-300",
-  RISK_ACCEPTED: "bg-amber-100 text-amber-800 border-amber-300",
+  CLOSED: "bg-green-100 text-green-800 border-green-300",
+  ACCEPTED_RISK: "bg-amber-100 text-amber-800 border-amber-300",
 };
 
-export function IssuesTable({ issues, canManage }: IssuesTableProps) {
-  const router = useRouter();
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+type FormState = {
+  success?: boolean;
+  error?: string;
+  data?: any;
+};
 
-  async function handleCreate() {
-    setIsSubmitting(true);
-    // TODO: Implement create issue action
-    toast.success("Issue created successfully");
-    setIsSubmitting(false);
-    setDialogOpen(false);
-    router.refresh();
-  }
+async function createIssueAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const input = {
+    title: formData.get("title") as string,
+    description: formData.get("description") as string,
+    source: formData.get("source") as any,
+    issueType: formData.get("issueType") as any,
+    severity: formData.get("severity") as any,
+    rootCause: (formData.get("rootCause") as string) || undefined,
+    riskTheme: (formData.get("riskTheme") as any) || undefined,
+  };
+
+  return manageIssue(input);
+}
+
+async function acceptRiskAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const input = {
+    issueId: formData.get("issueId") as string,
+    acceptanceReason: formData.get("acceptanceReason") as string,
+  };
+
+  return acceptRisk(input);
+}
+
+export function IssuesTable({ issues, canManage, canAcceptRisk }: IssuesTableProps) {
+  const router = useRouter();
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
+  const [acceptRiskDialogOpen, setAcceptRiskDialogOpen] = React.useState(false);
+  const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
+  const [actionPlanIssueId, setActionPlanIssueId] = React.useState<string | null>(null);
+
+  const [createState, createFormAction, isCreating] = useActionState(
+    createIssueAction,
+    {}
+  );
+  const [acceptRiskState, acceptRiskFormAction, isAcceptingRisk] = useActionState(
+    acceptRiskAction,
+    {}
+  );
+
+  React.useEffect(() => {
+    if (createState.success) {
+      toast.success("Issue created successfully");
+      setCreateDialogOpen(false);
+      router.refresh();
+    } else if (createState.error) {
+      toast.error(createState.error);
+    }
+  }, [createState, router]);
+
+  React.useEffect(() => {
+    if (acceptRiskState.success) {
+      toast.success("Risk accepted successfully");
+      setAcceptRiskDialogOpen(false);
+      setSelectedIssue(null);
+      router.refresh();
+    } else if (acceptRiskState.error) {
+      toast.error(acceptRiskState.error);
+    }
+  }, [acceptRiskState, router]);
 
   return (
     <div className="space-y-4">
       {canManage && (
         <div className="flex justify-end">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Log Issue
+                Create Issue
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Log New Issue</DialogTitle>
-                <DialogDescription>
-                  Create a new issue for tracking and resolution.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="issueCode">Issue Code</Label>
-                  <Input id="issueCode" placeholder="e.g., ISS-001" />
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <form action={createFormAction}>
+                <DialogHeader>
+                  <DialogTitle>Create New Issue</DialogTitle>
+                  <DialogDescription>
+                    Log a new issue from any source for tracking and resolution.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title *</Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      placeholder="Brief description of the issue"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      rows={3}
+                      placeholder="Detailed description (min 10 characters)"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="source">Source *</Label>
+                      <Select name="source" required>
+                        <SelectTrigger id="source">
+                          <SelectValue placeholder="Select source" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INTERNAL_AUDIT">Internal Audit</SelectItem>
+                          <SelectItem value="REGULATORY">Regulatory</SelectItem>
+                          <SelectItem value="EXTERNAL_AUDIT">External Audit</SelectItem>
+                          <SelectItem value="SELF_ASSESSMENT">Self Assessment</SelectItem>
+                          <SelectItem value="CONCURRENT">Concurrent Audit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="issueType">Type *</Label>
+                      <Select name="issueType" required>
+                        <SelectTrigger id="issueType">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="FINDING">Finding</SelectItem>
+                          <SelectItem value="OBSERVATION">Observation</SelectItem>
+                          <SelectItem value="EXCEPTION">Exception</SelectItem>
+                          <SelectItem value="DEFICIENCY">Deficiency</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="severity">Severity *</Label>
+                      <Select name="severity" required>
+                        <SelectTrigger id="severity">
+                          <SelectValue placeholder="Select severity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CRITICAL">Critical</SelectItem>
+                          <SelectItem value="HIGH">High</SelectItem>
+                          <SelectItem value="MEDIUM">Medium</SelectItem>
+                          <SelectItem value="LOW">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="riskTheme">Risk Theme</Label>
+                      <Select name="riskTheme">
+                        <SelectTrigger id="riskTheme">
+                          <SelectValue placeholder="Select theme (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CREDIT">Credit</SelectItem>
+                          <SelectItem value="OPERATIONAL">Operational</SelectItem>
+                          <SelectItem value="COMPLIANCE">Compliance</SelectItem>
+                          <SelectItem value="IT">IT</SelectItem>
+                          <SelectItem value="GOVERNANCE">Governance</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="rootCause">Root Cause</Label>
+                    <Textarea
+                      id="rootCause"
+                      name="rootCause"
+                      rows={2}
+                      placeholder="Root cause analysis (optional)"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" rows={3} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreate} disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create
-                </Button>
-              </DialogFooter>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isCreating}>
+                    {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Issue
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -123,45 +314,107 @@ export function IssuesTable({ issues, canManage }: IssuesTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue Code</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Title</TableHead>
               <TableHead>Source</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Severity</TableHead>
-              <TableHead>Due Date</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Action Plans</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {issues.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No issues found.
                 </TableCell>
               </TableRow>
             ) : (
               issues.map((issue) => (
-                <TableRow
-                  key={issue.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => router.push(`/issues/${issue.id}`)}
-                >
-                  <TableCell className="font-medium">{issue.issueCode}</TableCell>
-                  <TableCell>{issue.description}</TableCell>
+                <TableRow key={issue.id}>
                   <TableCell>
-                    <Badge variant="outline" className={SOURCE_COLORS[issue.source] ?? ""}>
-                      {issue.source}
+                    <div className="space-y-1">
+                      <div className="font-medium">{issue.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(issue.createdAt), "MMM d, yyyy")}
+                      </div>
+                      {issue.observation && (
+                        <div className="text-xs text-muted-foreground">
+                          From: {issue.observation.title}
+                          {issue.observation.branch &&
+                            ` (${issue.observation.branch.name})`}
+                        </div>
+                      )}
+                      {issue.control && (
+                        <div className="text-xs text-muted-foreground">
+                          Control: {issue.control.controlCode}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={SOURCE_COLORS[issue.source] ?? ""}
+                    >
+                      {issue.source.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={SEVERITY_COLORS[issue.severity] ?? ""}>
+                    <Badge variant="outline">{issue.issueType}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={SEVERITY_COLORS[issue.severity] ?? ""}
+                    >
                       {issue.severity}
                     </Badge>
                   </TableCell>
-                  <TableCell>{issue.dueDate}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={STATUS_COLORS[issue.status] ?? ""}>
-                      {issue.status.replace("_", " ")}
+                    <Badge
+                      variant="outline"
+                      className={STATUS_COLORS[issue.status] ?? ""}
+                    >
+                      {issue.status.replace(/_/g, " ")}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {issue.actionPlans.length > 0 ? (
+                        <Badge variant="secondary">
+                          {issue.actionPlans.length} plan(s)
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">None</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setActionPlanIssueId(issue.id)}
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                      {canAcceptRisk &&
+                        issue.status === "OPEN" &&
+                        issue.severity !== "LOW" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedIssue(issue);
+                              setAcceptRiskDialogOpen(true);
+                            }}
+                          >
+                            <ShieldAlert className="h-4 w-4" />
+                          </Button>
+                        )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -169,6 +422,78 @@ export function IssuesTable({ issues, canManage }: IssuesTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Accept Risk Dialog */}
+      <Dialog open={acceptRiskDialogOpen} onOpenChange={setAcceptRiskDialogOpen}>
+        <DialogContent>
+          <form action={acceptRiskFormAction}>
+            <input type="hidden" name="issueId" value={selectedIssue?.id || ""} />
+            <DialogHeader>
+              <DialogTitle>Accept Risk</DialogTitle>
+              <DialogDescription>
+                Formally accept risk for: <strong>{selectedIssue?.title}</strong>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="acceptanceReason">
+                  Acceptance Reason * (min 20 characters)
+                </Label>
+                <Textarea
+                  id="acceptanceReason"
+                  name="acceptanceReason"
+                  rows={4}
+                  placeholder="Provide detailed justification for accepting this risk..."
+                  required
+                />
+              </div>
+              <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+                This action requires executive-level approval and will be logged in
+                the audit trail.
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setAcceptRiskDialogOpen(false);
+                  setSelectedIssue(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isAcceptingRisk}>
+                {isAcceptingRisk && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Accept Risk
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Action Plan Panel Dialog */}
+      {actionPlanIssueId && (
+        <Dialog open={!!actionPlanIssueId} onOpenChange={() => setActionPlanIssueId(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Action Plans</DialogTitle>
+              <DialogDescription>
+                Manage action plans and milestones for this issue.
+              </DialogDescription>
+            </DialogHeader>
+            <ActionPlanPanel
+              issueId={actionPlanIssueId}
+              actionPlans={
+                issues.find((i) => i.id === actionPlanIssueId)?.actionPlans || []
+              }
+              canManage={canManage}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

@@ -62,6 +62,7 @@ export type Permission =
   | "audit_execution:read"
   | "audit_execution:manage_team"
   | "audit_execution:manage_sections"
+  | "audit_execution:create"
   | "examination:respond"
   | "examination:read"
   | "bh_certificate:sign"
@@ -165,6 +166,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ram:approve",
     "audit_execution:read",
     "audit_execution:manage_team",
+    "audit_execution:create",
     "audit_execution:manage_sections",
     "examination:read",
     "compliance:ace_process",
@@ -202,6 +204,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_plan:read",
     "audit_execution:read",
     "audit_execution:manage_team",
+    "audit_execution:create",
     "audit_execution:manage_sections",
     "examination:respond",
     "examination:read",

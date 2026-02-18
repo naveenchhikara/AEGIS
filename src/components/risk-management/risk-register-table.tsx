@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 import {
   Table,
   TableBody,
@@ -24,21 +25,48 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Loader2 } from "@/lib/icons";
 import { toast } from "sonner";
+import { manageRisk } from "@/actions/risk-management/manage-risk";
 
 interface Risk {
   id: string;
-  riskCode: string;
-  description: string;
-  category: string;
-  inherentRisk: number;
-  residualRisk: number;
+  riskStatement: string;
+  riskCategory: string;
+  inherentScore: number;
+  controlScore: number;
+  residualScore: number;
   status: string;
+  riskOwner?: string | null;
+  entity: {
+    id: string;
+    name: string;
+    entityType: string;
+  };
+  kris?: Array<{
+    id: string;
+    name: string;
+    breachStatus: string;
+    currentValue: number | null;
+  }>;
+}
+
+interface Entity {
+  id: string;
+  name: string;
+  entityType: string;
 }
 
 interface RiskRegisterTableProps {
   risks: Risk[];
+  entities: Entity[];
   canManage: boolean;
 }
 
@@ -49,24 +77,59 @@ const RISK_LEVEL_COLORS: Record<string, string> = {
 };
 
 function getRiskLevel(score: number): string {
-  if (score >= 15) return "HIGH";
-  if (score >= 8) return "MEDIUM";
+  if (score >= 4) return "HIGH";
+  if (score >= 2.5) return "MEDIUM";
   return "LOW";
 }
 
-export function RiskRegisterTable({ risks, canManage }: RiskRegisterTableProps) {
+type FormState = {
+  success?: boolean;
+  error?: string;
+  data?: { id: string };
+};
+
+export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    entityId: "",
+    riskStatement: "",
+    riskCategory: "OPERATIONAL",
+    inherentScore: 3,
+    controlScore: 3,
+    riskOwner: "",
+    mitigationPlan: "",
+  });
 
-  async function handleCreate() {
-    setIsSubmitting(true);
-    // TODO: Implement create risk action
-    toast.success("Risk created successfully");
-    setIsSubmitting(false);
-    setDialogOpen(false);
-    router.refresh();
+  async function submitAction(
+    _prev: FormState,
+    formData: FormData
+  ): Promise<FormState> {
+    const input = {
+      entityId: formData.get("entityId") as string,
+      riskStatement: formData.get("riskStatement") as string,
+      riskCategory: formData.get("riskCategory") as "CREDIT" | "OPERATIONAL" | "MARKET" | "LIQUIDITY" | "COMPLIANCE" | "IT",
+      inherentScore: Number(formData.get("inherentScore")),
+      controlScore: Number(formData.get("controlScore")),
+      riskOwner: formData.get("riskOwner") as string || undefined,
+      mitigationPlan: formData.get("mitigationPlan") as string || undefined,
+    };
+
+    return manageRisk(input);
   }
+
+  const [state, formAction, isPending] = useActionState(submitAction, {});
+
+  // Handle success/error feedback
+  React.useEffect(() => {
+    if (state.success) {
+      toast.success("Risk created successfully");
+      setDialogOpen(false);
+      router.refresh();
+    } else if (state.error) {
+      toast.error(state.error);
+    }
+  }, [state, router]);
 
   return (
     <div className="space-y-4">
@@ -79,32 +142,136 @@ export function RiskRegisterTable({ risks, canManage }: RiskRegisterTableProps) 
                 Add Risk
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Risk to Register</DialogTitle>
-                <DialogDescription>
-                  Create a new risk entry in the enterprise risk register.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="riskCode">Risk Code</Label>
-                  <Input id="riskCode" placeholder="e.g., CR-001" />
+            <DialogContent className="max-w-2xl">
+              <form action={formAction}>
+                <DialogHeader>
+                  <DialogTitle>Add Risk to Register</DialogTitle>
+                  <DialogDescription>
+                    Create a new risk entry in the enterprise risk register.
+                  </DialogDescription>
+                </DialogHeader>
+
+                {state.error && (
+                  <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                    {state.error}
+                  </div>
+                )}
+
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="entityId">Entity</Label>
+                    <Select name="entityId" defaultValue={formData.entityId} required>
+                      <SelectTrigger id="entityId">
+                        <SelectValue placeholder="Select entity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entities.map((entity) => (
+                          <SelectItem key={entity.id} value={entity.id}>
+                            {entity.name} ({entity.entityType})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="riskStatement">Risk Statement</Label>
+                    <Textarea
+                      id="riskStatement"
+                      name="riskStatement"
+                      placeholder="Describe the risk..."
+                      rows={3}
+                      defaultValue={formData.riskStatement}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="riskCategory">Risk Category</Label>
+                      <Select name="riskCategory" defaultValue={formData.riskCategory} required>
+                        <SelectTrigger id="riskCategory">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CREDIT">Credit</SelectItem>
+                          <SelectItem value="OPERATIONAL">Operational</SelectItem>
+                          <SelectItem value="MARKET">Market</SelectItem>
+                          <SelectItem value="LIQUIDITY">Liquidity</SelectItem>
+                          <SelectItem value="COMPLIANCE">Compliance</SelectItem>
+                          <SelectItem value="IT">IT</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="riskOwner">Risk Owner (Optional)</Label>
+                      <Input
+                        id="riskOwner"
+                        name="riskOwner"
+                        placeholder="e.g., Branch Manager"
+                        defaultValue={formData.riskOwner}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="inherentScore">Inherent Score (1-5)</Label>
+                      <Input
+                        id="inherentScore"
+                        name="inherentScore"
+                        type="number"
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        defaultValue={formData.inherentScore}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="controlScore">Control Score (1-5)</Label>
+                      <Input
+                        id="controlScore"
+                        name="controlScore"
+                        type="number"
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        defaultValue={formData.controlScore}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="mitigationPlan">Mitigation Plan (Optional)</Label>
+                    <Textarea
+                      id="mitigationPlan"
+                      name="mitigationPlan"
+                      placeholder="Describe mitigation strategies..."
+                      rows={2}
+                      defaultValue={formData.mitigationPlan}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Risk Description</Label>
-                  <Textarea id="description" rows={3} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreate} disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create
-                </Button>
-              </DialogFooter>
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDialogOpen(false)}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -114,46 +281,68 @@ export function RiskRegisterTable({ risks, canManage }: RiskRegisterTableProps) 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Risk Code</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Entity</TableHead>
+              <TableHead>Risk Statement</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Inherent Risk</TableHead>
-              <TableHead>Residual Risk</TableHead>
+              <TableHead>Inherent</TableHead>
+              <TableHead>Residual</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>KRIs</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {risks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No risks in register.
+                <TableCell colSpan={7} className="h-24 text-center">
+                  No risks in register. {canManage && "Click 'Add Risk' to create one."}
                 </TableCell>
               </TableRow>
             ) : (
               risks.map((risk) => {
-                const inherentLevel = getRiskLevel(risk.inherentRisk);
-                const residualLevel = getRiskLevel(risk.residualRisk);
+                const inherentLevel = getRiskLevel(Number(risk.inherentScore));
+                const residualLevel = getRiskLevel(Number(risk.residualScore));
+                const breachedKris = risk.kris?.filter(k => k.breachStatus === "BREACH").length || 0;
+
                 return (
                   <TableRow
                     key={risk.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => router.push(`/risk-management/${risk.id}`)}
                   >
-                    <TableCell className="font-medium">{risk.riskCode}</TableCell>
-                    <TableCell>{risk.description}</TableCell>
-                    <TableCell>{risk.category}</TableCell>
+                    <TableCell className="font-medium">
+                      {risk.entity.name}
+                      <div className="text-xs text-muted-foreground">{risk.entity.entityType}</div>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">{risk.riskStatement}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{risk.riskCategory}</Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={RISK_LEVEL_COLORS[inherentLevel]}>
-                        {risk.inherentRisk}
+                        {Number(risk.inherentScore).toFixed(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={RISK_LEVEL_COLORS[residualLevel]}>
-                        {risk.residualRisk}
+                        {Number(risk.residualScore).toFixed(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{risk.status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {risk.kris && risk.kris.length > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">{risk.kris.length}</span>
+                          {breachedKris > 0 && (
+                            <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 text-xs">
+                              {breachedKris} ⚠
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

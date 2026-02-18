@@ -56,6 +56,13 @@ export default async function RamAssessmentDetailPage({ params }: PageProps) {
           riskCategory={assessment.riskCategory ?? ""}
           auditFrequency={assessment.auditFrequency ?? 0}
           status={assessment.status}
+          repeatUpliftApplied={assessment.repeatUpliftApplied ?? false}
+          repeatFindingCount={assessment.repeatFindingCount ?? 0}
+          rawCompositeScore={
+            assessment.rawCompositeScore
+              ? Number(assessment.rawCompositeScore)
+              : undefined
+          }
         />
       )}
 

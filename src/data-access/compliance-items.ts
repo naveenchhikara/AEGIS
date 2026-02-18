@@ -170,3 +170,191 @@ export async function updateDaysOpenForOpenItems(tenantId: string) {
     throw error;
   }
 }
+
+/**
+ * Get escalation recipients by role and optional branch scope.
+ * For BRANCH_HEAD role, filters by branch assignment.
+ * For other roles, returns all users with that role in the tenant.
+ */
+export async function getEscalationRecipients(
+  session: Session,
+  roles: string[],
+  branchId?: string | null
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  // For BRANCH_HEAD, scope to branch-assigned users
+  if (roles.includes("BRANCH_HEAD") && branchId) {
+    const branchUsers = await db.user.findMany({
+      where: {
+        tenantId,
+        roles: { hasSome: roles as any },
+        branchAssignments: { some: { branchId } },
+      },
+      select: { id: true, email: true, name: true },
+    });
+
+    // Also get non-branch-specific role holders (AUDITOR, AUDIT_MANAGER)
+    const otherRoles = roles.filter((r) => r !== "BRANCH_HEAD");
+    const otherUsers =
+      otherRoles.length > 0
+        ? await db.user.findMany({
+            where: { tenantId, roles: { hasSome: otherRoles as any } },
+            select: { id: true, email: true, name: true },
+          })
+        : [];
+
+    // Deduplicate by userId
+    const map = new Map<string, { id: string; email: string; name: string }>();
+    [...branchUsers, ...otherUsers].forEach((u) => map.set(u.id, u));
+    return Array.from(map.values());
+  }
+
+  // For other roles, just fetch all matching users
+  return db.user.findMany({
+    where: { tenantId, roles: { hasSome: roles as any } },
+    select: { id: true, email: true, name: true },
+  });
+}
+
+/**
+ * Get open compliance items with enriched context for escalation routing.
+ * Includes observation title, branch name, and current escalation level.
+ */
+export async function getOpenComplianceItemsWithContext(session: Session) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceItem.findMany({
+    where: {
+      tenantId,
+      status: {
+        notIn: ["CLOSED"],
+      },
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      dueDate: true,
+      escalationLevel: true,
+      branchId: true,
+      observation: {
+        select: {
+          id: true,
+          title: true,
+          severity: true,
+        },
+      },
+      branch: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Get ACE-eligible compliance items (escalation level ≥ 3).
+ * R37: ACE quarterly processing pipeline.
+ */
+export async function getAceEligibleItems(
+  session: Session,
+  options?: { quarter?: string }
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceItem.findMany({
+    where: {
+      tenantId,
+      escalationLevel: { gte: 3 },
+      status: { notIn: ["CLOSED", "ACB_REVIEW"] },
+      ...(options?.quarter && { aceQuarter: options.quarter }),
+    },
+    include: {
+      observation: {
+        select: { id: true, title: true, severity: true, status: true },
+      },
+      branch: { select: { id: true, code: true, name: true } },
+      audit: { select: { id: true, auditNumber: true } },
+    },
+    orderBy: { daysOpen: "desc" },
+  });
+}
+
+/**
+ * Get ACB-eligible compliance items (escalation level ≥ 4 or ACE-reviewed).
+ * R38: ACB board reporting consolidation.
+ */
+export async function getAcbEligibleItems(
+  session: Session,
+  options?: { quarter?: string }
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceItem.findMany({
+    where: {
+      tenantId,
+      OR: [
+        { escalationLevel: { gte: 4 } },
+        { status: "ACE_REVIEW" },
+      ],
+      status: { not: "CLOSED" },
+      ...(options?.quarter && { aceQuarter: options.quarter }),
+    },
+    include: {
+      observation: {
+        select: { id: true, title: true, severity: true, status: true },
+      },
+      branch: { select: { id: true, code: true, name: true } },
+      audit: { select: { id: true, auditNumber: true } },
+    },
+    orderBy: [
+      { observation: { severity: "desc" } },
+      { daysOpen: "desc" },
+    ],
+  });
+}
+
+/**
+ * Get compliance escalation summary (count by level).
+ * Dashboard metrics for ACE/ACB.
+ */
+export async function getComplianceEscalationSummary(session: Session) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  const summary = await db.complianceItem.groupBy({
+    by: ["escalationLevel"],
+    where: { tenantId, status: { notIn: ["CLOSED"] } },
+    _count: true,
+  });
+
+  const totals = {
+    l0: 0,
+    l1: 0,
+    l2: 0,
+    l3: 0,
+    l4: 0,
+    total: 0,
+  };
+
+  for (const group of summary) {
+    const level = group.escalationLevel;
+    const count = group._count;
+    totals.total += count;
+
+    if (level === 0) totals.l0 = count;
+    else if (level === 1) totals.l1 = count;
+    else if (level === 2) totals.l2 = count;
+    else if (level === 3) totals.l3 = count;
+    else if (level >= 4) totals.l4 += count;
+  }
+
+  return totals;
+}

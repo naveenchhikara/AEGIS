@@ -723,6 +723,15 @@ model AuditEngagement {
   bhCertCountersignedById String?   @db.Uuid
   bhCertCountersignedAt   DateTime?
 
+  // Report routing workflow (R33)
+  reportStatus       String?   @default("DRAFT") // "DRAFT", "REVIEWED", "APPROVED", "ISSUED"
+  reportReviewedById String?   @db.Uuid
+  reportReviewedAt   DateTime?
+  reportApprovedById String?   @db.Uuid
+  reportApprovedAt   DateTime?
+  reportIssuedById   String?   @db.Uuid
+  reportIssuedAt     DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -809,6 +818,11 @@ model RamAssessment {
   compositeScore  Decimal? @db.Decimal(5, 2)
   riskCategory    String?  // "HIGH", "MEDIUM", "LOW"
   auditFrequency  Int?     // Derived: months between audits
+
+  // Repeat finding uplift tracking (R40)
+  rawCompositeScore    Decimal? @db.Decimal(5, 2)  // Score before repeat uplift
+  repeatUpliftApplied  Boolean  @default(false)     // Whether 1.5× was applied
+  repeatFindingCount   Int      @default(0)         // Number of repeat findings detected
 
   status          RamAssessmentStatus @default(DRAFT)
 

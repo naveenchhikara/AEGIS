@@ -102,7 +102,9 @@ export type Permission =
   | "housekeeping:manage"
   | "board:workspace"
   | "board:agenda"
+  | "board:reporting"
   | "risk_mis:read"
+  | "escalation:compute"
   | "admin:system";
 
 /**

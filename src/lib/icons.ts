@@ -83,4 +83,5 @@ export {
   Unlink,
   Image,
   CheckCircle,
+  Pencil as Edit,
 } from "lucide-react";

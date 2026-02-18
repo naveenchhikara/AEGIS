@@ -488,3 +488,66 @@ export async function getHighRiskHousekeepingMetrics(
     orderBy: { agingDays: "desc" },
   });
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ACB Dashboard (R81)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+export async function getAcbDashboardData(session: Session) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  const [
+    criticalObs,
+    complianceStats,
+    overdueItems,
+    recentAudits,
+    riskMetrics,
+  ] = await Promise.all([
+    db.observation.count({
+      where: {
+        tenantId,
+        severity: { in: ["HIGH", "CRITICAL"] },
+        status: { not: "CLOSED" },
+      },
+    }),
+    db.complianceItem.groupBy({
+      by: ["status"],
+      where: { tenantId },
+      _count: true,
+    }),
+    db.complianceItem.count({
+      where: {
+        tenantId,
+        dueDate: { lt: new Date() },
+        status: { notIn: ["CLOSED", "ZAC_APPROVED"] },
+      },
+    }),
+    db.auditEngagement.count({
+      where: { tenantId, status: "COMPLETED" },
+    }),
+    db.housekeepingMetric.findMany({
+      where: {
+        tenantId,
+        agingDays: { gte: 90 },
+      },
+      take: 5,
+      orderBy: { agingDays: "desc" },
+      include: {
+        branch: {
+          select: { name: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    criticalObs,
+    complianceStats,
+    overdueItems,
+    recentAudits,
+    riskMetrics,
+  };
+}

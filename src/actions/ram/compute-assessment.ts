@@ -6,7 +6,8 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { computeRam, type RamScoreInput } from "@/lib/ram-engine";
+import { computeRam, computeRamWithUplift, computeCompositeScore, type RamScoreInput } from "@/lib/ram-engine";
+import { detectRepeatFindingsForBranch, computeRepeatUplift } from "@/lib/repeat-finding-detector";
 import { AssessmentIdSchema } from "./schemas";
 
 /**
@@ -69,8 +70,20 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
         weight: Number(s.paramConfig.weight),
       }));
 
-      // Compute
-      const { compositeScore, riskCategory, auditFrequency } = computeRam(scoreInputs);
+      // Step: Detect repeat findings for this branch
+      const repeatSummary = await detectRepeatFindingsForBranch(
+        tenantId,
+        assessment.branchId,
+        undefined, // No current engagement filter — check all recent audits
+      );
+
+      // Step: Compute uplift
+      const rawComposite = computeCompositeScore(scoreInputs);
+      const uplift = computeRepeatUplift(rawComposite, repeatSummary);
+
+      // Step: Full computation with uplift
+      const result = computeRamWithUplift(scoreInputs, uplift);
+      const { compositeScore, riskCategory, auditFrequency } = result;
 
       // Update assessment
       const updated = await tx.ramAssessment.update({
@@ -79,6 +92,9 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
           compositeScore,
           riskCategory,
           auditFrequency,
+          rawCompositeScore: result.rawCompositeScore,
+          repeatUpliftApplied: result.repeatUpliftApplied,
+          repeatFindingCount: result.repeatFindingCount,
           status: "COMPUTED",
           computedById: session.user.id,
           computedAt: new Date(),
@@ -94,17 +110,27 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
         },
       });
 
-      return updated;
+      return {
+        assessment: updated,
+        upliftData: {
+          upliftApplied: uplift.upliftApplied,
+          repeatCount: uplift.repeatCount,
+          rawComposite,
+        },
+      };
     });
 
     revalidatePath("/ram");
     return {
       success: true as const,
       data: {
-        id: result.id,
-        compositeScore: Number(result.compositeScore),
-        riskCategory: result.riskCategory,
-        auditFrequency: result.auditFrequency,
+        id: result.assessment.id,
+        compositeScore: Number(result.assessment.compositeScore),
+        riskCategory: result.assessment.riskCategory,
+        auditFrequency: result.assessment.auditFrequency,
+        repeatUpliftApplied: result.upliftData.upliftApplied,
+        repeatFindingCount: result.upliftData.repeatCount,
+        rawCompositeScore: result.upliftData.rawComposite,
       },
     };
   } catch (error) {

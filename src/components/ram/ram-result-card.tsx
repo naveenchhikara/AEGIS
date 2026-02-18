@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Gauge } from "@/lib/icons";
+import { RepeatUpliftIndicator } from "./repeat-uplift-indicator";
 
 interface RamResultCardProps {
   compositeScore: number;
   riskCategory: string;
   auditFrequency: number;
   status: string;
+  repeatUpliftApplied?: boolean;
+  repeatFindingCount?: number;
+  rawCompositeScore?: number;
 }
 
 const RISK_COLORS: Record<string, string> = {
@@ -25,6 +29,9 @@ export function RamResultCard({
   riskCategory,
   auditFrequency,
   status,
+  repeatUpliftApplied = false,
+  repeatFindingCount = 0,
+  rawCompositeScore,
 }: RamResultCardProps) {
   return (
     <Card className="border-2">
@@ -40,11 +47,28 @@ export function RamResultCard({
         </div>
       </CardHeader>
       <CardContent>
+        {/* Repeat Uplift Indicator */}
+        {repeatUpliftApplied && rawCompositeScore && (
+          <div className="mb-4">
+            <RepeatUpliftIndicator
+              applied={repeatUpliftApplied}
+              repeatCount={repeatFindingCount}
+              rawScore={rawCompositeScore}
+              adjustedScore={compositeScore}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Composite Score */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Composite Score</p>
             <p className="text-3xl font-bold">{compositeScore.toFixed(2)}</p>
+            {repeatUpliftApplied && rawCompositeScore && (
+              <p className="text-xs text-muted-foreground">
+                (Base: {rawCompositeScore.toFixed(2)})
+              </p>
+            )}
           </div>
 
           {/* Risk Category */}

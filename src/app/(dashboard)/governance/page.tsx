@@ -4,6 +4,16 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PolicyTable } from "@/components/governance/policy-table";
 import { CommitteePanel } from "@/components/governance/committee-panel";
+import { AcbWorkspace } from "@/components/governance/acb-workspace";
+import { AcbAgendaBuilder } from "@/components/governance/acb-agenda-builder";
+import { BoardReviewCalendar } from "@/components/governance/board-review-calendar";
+import { RbiInspectionPack } from "@/components/governance/rbi-inspection-pack";
+import {
+  getPolicyDocuments,
+  getPoliciesDueForReview,
+  getCommittees,
+  getCommitteeMeetings,
+} from "@/data-access/governance";
 
 export default async function GovernancePage() {
   const session = await getRequiredSession();
@@ -15,10 +25,14 @@ export default async function GovernancePage() {
 
   const canManagePolicy = hasPermission(userRoles, "policy:manage");
   const canManageCommittee = hasPermission(userRoles, "committee:manage");
+  const canManageAgenda = hasPermission(userRoles, "board:agenda");
+  const canViewReporting = hasPermission(userRoles, "board:reporting");
 
-  // Mock data - replace with actual data-access calls
-  const policies: any[] = [];
-  const committees: any[] = [];
+  // Fetch real data from database
+  const policies = await getPolicyDocuments(session);
+  const policiesDueReview = await getPoliciesDueForReview(session, 30);
+  const committees = await getCommittees(session, { isActive: true });
+  const meetings = await getCommitteeMeetings(session);
 
   return (
     <div className="space-y-6">
@@ -30,26 +44,40 @@ export default async function GovernancePage() {
       </div>
 
       <Tabs defaultValue="policies" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-          <TabsTrigger value="policies">Policies</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+          <TabsTrigger value="policies">Policies ({policies.length})</TabsTrigger>
           <TabsTrigger value="committees">Committees</TabsTrigger>
-          <TabsTrigger value="board">Board Reports</TabsTrigger>
+          <TabsTrigger value="acb">ACB Workspace</TabsTrigger>
+          <TabsTrigger value="calendar">Board Calendar</TabsTrigger>
+          <TabsTrigger value="inspection">RBI Pack</TabsTrigger>
         </TabsList>
 
         <TabsContent value="policies" className="space-y-4">
-          <PolicyTable policies={policies} canManage={canManagePolicy} />
+          <PolicyTable 
+            policies={policies} 
+            policiesDueReview={policiesDueReview}
+            canManage={canManagePolicy} 
+          />
         </TabsContent>
 
         <TabsContent value="committees" className="space-y-4">
-          <CommitteePanel committees={committees} canManage={canManageCommittee} />
+          <CommitteePanel 
+            committees={committees} 
+            meetings={meetings}
+            canManage={canManageCommittee} 
+          />
         </TabsContent>
 
-        <TabsContent value="board" className="space-y-4">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            <p className="text-center text-muted-foreground">
-              Board reports module coming soon.
-            </p>
-          </div>
+        <TabsContent value="acb" className="space-y-4">
+          <AcbWorkspace canManageAgenda={canManageAgenda} />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="space-y-4">
+          <BoardReviewCalendar meetings={meetings} canManage={canManageCommittee} />
+        </TabsContent>
+
+        <TabsContent value="inspection" className="space-y-4">
+          <RbiInspectionPack canView={canViewReporting} />
         </TabsContent>
       </Tabs>
     </div>

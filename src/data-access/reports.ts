@@ -497,3 +497,36 @@ export async function getAuditReportData(
     bhCertCountersignedByName: bhCertCountersignedByUser?.name || null,
   };
 }
+
+/**
+ * Get engagement with report routing status and reviewer info.
+ */
+export async function getReportStatusForEngagement(
+  session: Session,
+  engagementId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.auditEngagement.findFirst({
+    where: { id: engagementId, tenantId },
+    select: {
+      id: true,
+      status: true,
+      reportStatus: true,
+      reportReviewedById: true,
+      reportReviewedAt: true,
+      reportApprovedById: true,
+      reportApprovedAt: true,
+      reportIssuedById: true,
+      reportIssuedAt: true,
+      branch: { select: { id: true, code: true, name: true } },
+      auditPlan: { select: { year: true, quarter: true } },
+      bhCertSignedAt: true,
+      overallRiskRating: true,
+      observations: {
+        select: { id: true, severity: true, status: true },
+      },
+    },
+  });
+}

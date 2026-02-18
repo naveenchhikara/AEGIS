@@ -89,6 +89,7 @@ export interface ComplianceItemForEscalation {
 
 export interface EscalationUpdate {
   id: string;
+  previousLevel: EscalationLevel;
   newEscalationLevel: EscalationLevel;
   daysOpen: number;
   daysOverdue: number;
@@ -113,6 +114,7 @@ export function computeBatchEscalation(
     if (result.escalationLevel !== item.escalationLevel) {
       updates.push({
         id: item.id,
+        previousLevel: item.escalationLevel,
         newEscalationLevel: result.escalationLevel,
         daysOpen: result.daysOpen,
         daysOverdue: result.daysOverdue,

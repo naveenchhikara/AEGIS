@@ -23,3 +23,27 @@ export const ZacReviewSchema = z.object({
 });
 
 export type ZacReviewInput = z.infer<typeof ZacReviewSchema>;
+
+// ─── ACE Processing ───────────────────────────────────────────
+export const ReviewAceItemSchema = z.object({
+  complianceItemId: z.string().uuid(),
+  decision: z.enum(["FORWARD_TO_ACB", "MONITOR", "CLOSE"]),
+  comments: z.string().min(1, "Comments are required").max(2000),
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+});
+
+export const ProcessAceQuarterlySchema = z.object({
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+});
+
+export type ReviewAceItemInput = z.infer<typeof ReviewAceItemSchema>;
+export type ProcessAceQuarterlyInput = z.infer<typeof ProcessAceQuarterlySchema>;
+
+// ─── ACB Reporting ────────────────────────────────────────────
+export const GenerateAcbReportSchema = z.object({
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+  title: z.string().min(1).max(200),
+  executiveCommentary: z.string().max(5000).optional(),
+});
+
+export type GenerateAcbReportInput = z.infer<typeof GenerateAcbReportSchema>;

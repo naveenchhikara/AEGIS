@@ -1,0 +1,80 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000161",
+    "appName": "Core Banking System (CBS)",
+    "vendor": "Finacle by Infosys",
+    "version": "10.2.15",
+    "hostingType": "ON_PREMISE",
+    "criticality": "CRITICAL",
+    "drTested": true,
+    "lastDrTestDate": "2025-12-15T00:00:00.000Z",
+    "lastIsAuditDate": "2025-06-20T00:00:00.000Z",
+    "dataClassification": "RESTRICTED",
+    "description": "Core Banking System handling all banking transactions, customer accounts, loans, deposits, GL, and regulatory reporting. Mission-critical application with 99.9% uptime SLA."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000162",
+    "appName": "Internet Banking",
+    "vendor": "iVision Digital Solutions",
+    "version": "3.5.2",
+    "hostingType": "CLOUD",
+    "criticality": "HIGH",
+    "drTested": true,
+    "lastDrTestDate": "2025-11-10T00:00:00.000Z",
+    "lastIsAuditDate": "2025-08-15T00:00:00.000Z",
+    "dataClassification": "CONFIDENTIAL",
+    "description": "Retail internet banking platform for fund transfers, bill payments, account statements. Integrated with CBS via API. Hosted on AWS Mumbai region."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000163",
+    "appName": "Mobile Banking",
+    "vendor": "PayCore Technologies",
+    "version": "2.8.0",
+    "hostingType": "CLOUD",
+    "criticality": "HIGH",
+    "drTested": true,
+    "lastDrTestDate": "2025-10-20T00:00:00.000Z",
+    "lastIsAuditDate": "2025-08-15T00:00:00.000Z",
+    "dataClassification": "CONFIDENTIAL",
+    "description": "Mobile banking app for Android and iOS. Features: balance inquiry, fund transfer, bill payments, QR payments. API integration with CBS. Cloud-hosted with CDN for app distribution."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000164",
+    "appName": "HRMS",
+    "vendor": "Ramco Systems",
+    "version": "5.1",
+    "hostingType": "ON_PREMISE",
+    "criticality": "MEDIUM",
+    "drTested": false,
+    "lastDrTestDate": null,
+    "lastIsAuditDate": "2024-11-10T00:00:00.000Z",
+    "dataClassification": "INTERNAL",
+    "description": "Human Resource Management System for payroll, attendance, leave, performance appraisal, recruitment. On-premise deployment. DR testing pending."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000165",
+    "appName": "Email & Collaboration",
+    "vendor": "Google Workspace",
+    "version": "Enterprise",
+    "hostingType": "CLOUD",
+    "criticality": "MEDIUM",
+    "drTested": true,
+    "lastDrTestDate": "2025-09-05T00:00:00.000Z",
+    "lastIsAuditDate": null,
+    "dataClassification": "INTERNAL",
+    "description": "Cloud-based email, calendar, document collaboration (Docs, Sheets, Drive). Managed by Google with 99.9% uptime SLA. Data residency in India region."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000166",
+    "appName": "ATM Switch",
+    "vendor": "NCR Corporation",
+    "version": "7.3.1",
+    "hostingType": "ON_PREMISE",
+    "criticality": "CRITICAL",
+    "drTested": true,
+    "lastDrTestDate": "2025-12-15T00:00:00.000Z",
+    "lastIsAuditDate": "2025-06-20T00:00:00.000Z",
+    "dataClassification": "RESTRICTED",
+    "description": "ATM transaction switching and monitoring system. Connects 15 ATMs to CBS. Handles cash withdrawal, balance inquiry, mini-statement. Integrated with National Financial Switch (NFS)."
+  }
+]

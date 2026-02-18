@@ -1,0 +1,66 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000001",
+    "observationId": "placeholder-obs-001",
+    "status": "OPEN",
+    "dueDate": "2026-03-15T00:00:00.000Z",
+    "escalationLevel": 0,
+    "daysOpen": 0,
+    "branchResponseText": null,
+    "branchResponseDate": null,
+    "branchResponseEvidence": []
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000002",
+    "observationId": "placeholder-obs-002",
+    "status": "BRANCH_RESPONSE_SUBMITTED",
+    "dueDate": "2026-02-28T00:00:00.000Z",
+    "escalationLevel": 1,
+    "daysOpen": 20,
+    "branchResponseText": "We have implemented dual authorization for all cash withdrawals above ₹50,000. Updated SOP attached. Staff training conducted on Jan 15, 2026.",
+    "branchResponseDate": "2026-01-28T00:00:00.000Z",
+    "branchResponseEvidence": ["evidence/compliance/br-pune-cash-sop-2026.pdf", "evidence/compliance/training-attendance-jan2026.pdf"]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000003",
+    "observationId": "placeholder-obs-003",
+    "status": "ZAC_REVIEW",
+    "dueDate": "2026-02-10T00:00:00.000Z",
+    "escalationLevel": 2,
+    "daysOpen": 35,
+    "branchResponseText": "KYC documents for flagged accounts have been obtained and verified. 12 out of 15 accounts now compliant. Remaining 3 accounts under closure process as per RBI norms.",
+    "branchResponseDate": "2026-01-05T00:00:00.000Z",
+    "branchResponseEvidence": ["evidence/compliance/kyc-update-report.xlsx"],
+    "zacReviewedAt": "2026-01-12T00:00:00.000Z",
+    "zacReviewComments": "Branch response acceptable. Recommend approval with monitoring for remaining 3 accounts.",
+    "zacReviewDecision": "APPROVED_WITH_CONDITIONS"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000004",
+    "observationId": "placeholder-obs-004",
+    "status": "OVERDUE",
+    "dueDate": "2025-11-30T00:00:00.000Z",
+    "escalationLevel": 3,
+    "daysOpen": 100,
+    "branchResponseText": "Capital infusion process initiated. Board approval obtained. Share allotment in progress.",
+    "branchResponseDate": "2025-12-20T00:00:00.000Z",
+    "branchResponseEvidence": ["evidence/compliance/board-resolution-capital.pdf"],
+    "aceReviewedAt": "2026-01-10T00:00:00.000Z",
+    "aceQuarter": "Q4-2025"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000005",
+    "observationId": "placeholder-obs-005",
+    "status": "CLOSED",
+    "dueDate": "2025-12-31T00:00:00.000Z",
+    "escalationLevel": 0,
+    "daysOpen": 45,
+    "branchResponseText": "ATM reconciliation process automated. Daily variance reports now generated automatically. Threshold alerts configured.",
+    "branchResponseDate": "2025-12-10T00:00:00.000Z",
+    "branchResponseEvidence": ["evidence/compliance/atm-recon-automation.pdf", "evidence/compliance/sample-daily-report.xlsx"],
+    "zacReviewedAt": "2025-12-18T00:00:00.000Z",
+    "zacReviewComments": "Evidence satisfactory. Process improvement verified.",
+    "zacReviewDecision": "APPROVED",
+    "closedAt": "2025-12-20T00:00:00.000Z"
+  }
+]

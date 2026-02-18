@@ -1,0 +1,114 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000131",
+    "name": "Audit Committee of Board (ACB)",
+    "description": "Statutory committee responsible for oversight of internal audit, compliance, and financial reporting. Reviews quarterly audit reports, compliance status, and regulatory observations.",
+    "isActive": true,
+    "members": [
+      {
+        "userId": "placeholder-user-director-1",
+        "role": "CHAIRMAN",
+        "name": "Subhash Jadhav"
+      },
+      {
+        "userId": "placeholder-user-director-2",
+        "role": "MEMBER",
+        "name": "Vandana Kulkarni"
+      },
+      {
+        "userId": "placeholder-user-director-3",
+        "role": "MEMBER",
+        "name": "Ashok Patil"
+      },
+      {
+        "userId": "placeholder-user-cae",
+        "role": "SECRETARY",
+        "name": "Priya Sharma"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000132",
+    "name": "Risk Management Committee",
+    "description": "Reviews and monitors all categories of risk - credit, market, operational, liquidity, IT, and compliance. Oversees ICAAP and stress testing.",
+    "isActive": true,
+    "members": [
+      {
+        "userId": "placeholder-user-director-4",
+        "role": "CHAIRMAN",
+        "name": "Dr. Ramesh Deshpande"
+      },
+      {
+        "userId": "placeholder-user-ceo",
+        "role": "MEMBER",
+        "name": "Rajesh Deshmukh"
+      },
+      {
+        "userId": "placeholder-user-cfo",
+        "role": "MEMBER",
+        "name": "Deepak Ghorpade"
+      },
+      {
+        "userId": "placeholder-user-cro",
+        "role": "SECRETARY",
+        "name": "Sangeeta Joshi"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000133",
+    "name": "Asset-Liability Management Committee (ALCO)",
+    "description": "Manages liquidity, interest rate risk, ALM gaps, CRR/SLR maintenance, funding strategy, and investment portfolio composition.",
+    "isActive": true,
+    "members": [
+      {
+        "userId": "placeholder-user-ceo",
+        "role": "CHAIRMAN",
+        "name": "Rajesh Deshmukh"
+      },
+      {
+        "userId": "placeholder-user-cfo",
+        "role": "MEMBER",
+        "name": "Deepak Ghorpade"
+      },
+      {
+        "userId": "placeholder-user-treasury-head",
+        "role": "MEMBER",
+        "name": "Nilesh Bhosale"
+      },
+      {
+        "userId": "placeholder-user-credit-head",
+        "role": "MEMBER",
+        "name": "Sunil Agarwal"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000134",
+    "name": "IT Strategy Committee",
+    "description": "Oversees IT governance, cyber security, digital banking initiatives, vendor management, and IT budget allocation. Reviews BCP/DR preparedness.",
+    "isActive": true,
+    "members": [
+      {
+        "userId": "placeholder-user-director-5",
+        "role": "CHAIRMAN",
+        "name": "Prof. Anil Shinde"
+      },
+      {
+        "userId": "placeholder-user-ceo",
+        "role": "MEMBER",
+        "name": "Rajesh Deshmukh"
+      },
+      {
+        "userId": "placeholder-user-cio",
+        "role": "MEMBER",
+        "name": "Kiran Patwardhan"
+      },
+      {
+        "userId": "placeholder-user-ciso",
+        "role": "SECRETARY",
+        "name": "Manish Gupta"
+      }
+    ]
+  }
+]

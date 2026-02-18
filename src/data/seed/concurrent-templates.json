@@ -1,0 +1,347 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000101",
+    "scopeArea": "CASH",
+    "name": "Cash & ATM Concurrent Audit Checklist",
+    "description": "Monthly verification of cash handling, retention limits, and ATM reconciliation",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "CASH-001",
+        "item": "Physical cash count matches book balance",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "CASH-002",
+        "item": "Cash retention limit compliance verified",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "CASH-003",
+        "item": "Denomination breakdown recorded and verified",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "CASH-004",
+        "item": "ATM balances reconciled with book balance",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "CASH-005",
+        "item": "Dual custody maintained for cash handling",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "CASH-006",
+        "item": "Cash transit insurance policy valid and adequate",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "CASH-007",
+        "item": "Mutilated/soiled notes segregated and reported to RBI",
+        "mandatory": false,
+        "evidenceRequired": false
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000102",
+    "scopeArea": "INVESTMENTS",
+    "name": "Investment Portfolio Concurrent Audit Checklist",
+    "description": "Monthly review of investment transactions, SLR compliance, and broker limits",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "INV-001",
+        "item": "SLR maintenance ratio verified against RBI requirement",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "INV-002",
+        "item": "Investment Committee approval obtained for transactions above threshold",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "INV-003",
+        "item": "SGL/CSGL account reconciled with RBI",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "INV-004",
+        "item": "HTM/HFT/AFS classification verified as per policy",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "INV-005",
+        "item": "Broker exposure limit (5% cap) compliance checked",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "INV-006",
+        "item": "Market valuation of AFS/HFT portfolio done",
+        "mandatory": true,
+        "evidenceRequired": true
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000103",
+    "scopeArea": "ADVANCES",
+    "name": "Advances Concurrent Audit Checklist",
+    "description": "Monthly review of loan sanctioning, disbursement, and asset quality",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "ADV-001",
+        "item": "Loan sanctions comply with delegation of powers",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-002",
+        "item": "Credit appraisal notes and bureau reports on file",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-003",
+        "item": "Disbursement made only after all documentation complete",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-004",
+        "item": "Collateral valuation reports current (< 3 years old)",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-005",
+        "item": "Insurance coverage adequate and valid",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-006",
+        "item": "SMA-0/1/2 accounts identified and monitored",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-007",
+        "item": "NPA classification as per 90-day overdue rule",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "ADV-008",
+        "item": "Provisioning adequacy verified",
+        "mandatory": true,
+        "evidenceRequired": false
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000104",
+    "scopeArea": "OFF_BS",
+    "name": "Off-Balance Sheet Items Concurrent Audit Checklist",
+    "description": "Monthly verification of contingent liabilities and guarantees",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "OBS-001",
+        "item": "Bank guarantees issued with proper approval and margin",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "OBS-002",
+        "item": "Letters of Credit comply with UCPDC 600 guidelines",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "OBS-003",
+        "item": "Off-balance sheet exposures within Board-approved limits",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "OBS-004",
+        "item": "Contingent liability disclosure accurate in financials",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "OBS-005",
+        "item": "Expired guarantees/LCs closed promptly",
+        "mandatory": false,
+        "evidenceRequired": false
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000105",
+    "scopeArea": "DEPOSITS",
+    "name": "Deposits Concurrent Audit Checklist",
+    "description": "Monthly review of deposit accounts, interest rates, and compliance",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "DEP-001",
+        "item": "Interest rates applied as per approved rate card",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "DEP-002",
+        "item": "KYC compliance verified for new accounts",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "DEP-003",
+        "item": "Premature withdrawal penalty computation accurate",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "DEP-004",
+        "item": "Unclaimed deposits identified and transferred to DEA fund (if applicable)",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "DEP-005",
+        "item": "Nominee registration compliance checked",
+        "mandatory": false,
+        "evidenceRequired": false
+      },
+      {
+        "id": "DEP-006",
+        "item": "Deposit insurance (DICGC) premium paid timely",
+        "mandatory": true,
+        "evidenceRequired": true
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000106",
+    "scopeArea": "KYC",
+    "name": "KYC/AML Concurrent Audit Checklist",
+    "description": "Monthly verification of KYC compliance and AML controls",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "KYC-001",
+        "item": "New accounts opened only with complete KYC documents",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "KYC-002",
+        "item": "Periodic KYC updates done as per risk category",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "KYC-003",
+        "item": "High-risk customer transactions monitored",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "KYC-004",
+        "item": "STRs filed with FIU-IND within 7 days",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "KYC-005",
+        "item": "CTRs (Cash Transaction Reports) filed for transactions ≥ ₹10 lakhs",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "KYC-006",
+        "item": "PEP (Politically Exposed Persons) accounts identified and monitored",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "KYC-007",
+        "item": "AML training conducted for branch staff",
+        "mandatory": false,
+        "evidenceRequired": true
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000107",
+    "scopeArea": "EDP",
+    "name": "EDP/IT Concurrent Audit Checklist",
+    "description": "Quarterly review of CBS operations, access controls, and IT security",
+    "isActive": true,
+    "checklistItems": [
+      {
+        "id": "EDP-001",
+        "item": "User access rights reviewed and inactive users disabled",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "EDP-002",
+        "item": "Daily CBS backup successful and verified",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "EDP-003",
+        "item": "Change management process followed for CBS changes",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "EDP-004",
+        "item": "Audit trail logging enabled and monitored",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "EDP-005",
+        "item": "Anti-virus definitions updated on all systems",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "EDP-006",
+        "item": "Firewall logs reviewed for unauthorized access attempts",
+        "mandatory": true,
+        "evidenceRequired": true
+      },
+      {
+        "id": "EDP-007",
+        "item": "Patch management up to date for critical systems",
+        "mandatory": true,
+        "evidenceRequired": false
+      },
+      {
+        "id": "EDP-008",
+        "item": "Disaster Recovery (DR) drill conducted quarterly",
+        "mandatory": true,
+        "evidenceRequired": true
+      }
+    ]
+  }
+]

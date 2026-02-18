@@ -1,0 +1,68 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000141",
+    "branchCode": "BR001",
+    "metricType": "INTER_BRANCH",
+    "period": "2025-Q4",
+    "openingBalance": 125000.00,
+    "closingBalance": 98000.00,
+    "entriesCount": 45,
+    "agingDays": 18,
+    "remarks": "3 entries pending reconciliation (₹35,000). Branch coordination initiated."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000142",
+    "branchCode": "BR002",
+    "metricType": "INTER_BRANCH",
+    "period": "2025-Q4",
+    "openingBalance": 85000.00,
+    "closingBalance": 62000.00,
+    "entriesCount": 28,
+    "agingDays": 12,
+    "remarks": "Reconciliation improving. Monthly review implemented."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000143",
+    "branchCode": "BR001",
+    "metricType": "SUSPENSE",
+    "period": "2025-Q4",
+    "openingBalance": 245000.00,
+    "closingBalance": 180000.00,
+    "entriesCount": 67,
+    "agingDays": 25,
+    "remarks": "8 entries > 90 days (₹85,000). Escalated to recovery team."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000144",
+    "branchCode": "BR003",
+    "metricType": "SUSPENSE",
+    "period": "2025-Q4",
+    "openingBalance": 98000.00,
+    "closingBalance": 75000.00,
+    "entriesCount": 34,
+    "agingDays": 15,
+    "remarks": "Suspense account review conducted Dec 2025. Old entries cleared."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000145",
+    "branchCode": "BR002",
+    "metricType": "CLEARING",
+    "period": "2025-Q4",
+    "openingBalance": 320000.00,
+    "closingBalance": 285000.00,
+    "entriesCount": 156,
+    "agingDays": 8,
+    "remarks": "Outward clearing rejection rate 2.3%. Within acceptable limits."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000146",
+    "branchCode": "BR003",
+    "metricType": "CLEARING",
+    "period": "2025-Q4",
+    "openingBalance": 275000.00,
+    "closingBalance": 240000.00,
+    "entriesCount": 142,
+    "agingDays": 6,
+    "remarks": "Clearing reconciliation smooth. Daily reconciliation adhered."
+  }
+]

@@ -1,0 +1,209 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000081",
+    "title": "CRAR Below Regulatory Threshold",
+    "description": "Capital to Risk-weighted Assets Ratio fell to 8.2% in September 2025, below the regulatory minimum of 9% as per RBI Basel III guidelines.",
+    "source": "INTERNAL_AUDIT",
+    "issueType": "FINDING",
+    "severity": "CRITICAL",
+    "rootCause": "Credit portfolio grew by 15% in Q2 2025 while capital increased by only 2%. Board approved capital plan not executed in timely manner.",
+    "riskTheme": "CREDIT",
+    "observationId": "placeholder-obs-001",
+    "status": "IN_PROGRESS",
+    "ownerId": "placeholder-user-ceo",
+    "actionPlans": [
+      {
+        "title": "Complete capital infusion of ₹50 lakh",
+        "description": "Execute share issuance to existing members as approved by Board",
+        "milestone": "Capital raising - Tranche 1",
+        "dueDate": "2026-01-31T00:00:00.000Z",
+        "status": "IN_PROGRESS",
+        "evidence": ["board-resolution-capital.pdf"],
+        "completionPct": 60
+      },
+      {
+        "title": "Implement monthly CRAR forecasting",
+        "description": "Develop and deploy monthly CRAR projection model with scenario analysis",
+        "milestone": "Risk monitoring enhancement",
+        "dueDate": "2026-02-28T00:00:00.000Z",
+        "status": "PENDING",
+        "evidence": [],
+        "completionPct": 0
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000082",
+    "title": "Gaps in Internal Audit Charter",
+    "description": "Current Internal Audit Charter does not explicitly define CAE reporting line to ACB and lacks provisions for unrestricted access to information.",
+    "source": "INTERNAL_AUDIT",
+    "issueType": "DEFICIENCY",
+    "severity": "HIGH",
+    "rootCause": "Audit Charter not updated since 2018. Recent IIA Standards revisions not incorporated.",
+    "riskTheme": "GOVERNANCE",
+    "status": "OPEN",
+    "ownerId": "placeholder-user-cae",
+    "actionPlans": [
+      {
+        "title": "Revise Internal Audit Charter",
+        "description": "Update charter to align with IIA Standards 2017 (revised 2024) and RBI guidelines on Internal Audit",
+        "milestone": "Charter revision and Board approval",
+        "dueDate": "2026-03-31T00:00:00.000Z",
+        "status": "PENDING",
+        "evidence": [],
+        "completionPct": 20
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000083",
+    "title": "RBI Inspection - KYC Documentation Gaps",
+    "description": "During RBI inspection (Nov 2025), deficiencies noted in periodic KYC updates for 8.5% of high-risk accounts.",
+    "source": "REGULATORY",
+    "issueType": "OBSERVATION",
+    "severity": "HIGH",
+    "rootCause": "Manual KYC tracking system. Inadequate alerts for KYC expiry. Staff shortage in compliance team.",
+    "riskTheme": "COMPLIANCE",
+    "status": "OPEN",
+    "ownerId": "placeholder-user-cco",
+    "actionPlans": [
+      {
+        "title": "Automate KYC expiry alerts",
+        "description": "Implement automated KYC expiry alerts in CBS with 90/60/30 day advance notifications",
+        "milestone": "System enhancement",
+        "dueDate": "2026-02-28T00:00:00.000Z",
+        "status": "IN_PROGRESS",
+        "evidence": [],
+        "completionPct": 40
+      },
+      {
+        "title": "Complete overdue KYC updates",
+        "description": "Prioritize and complete pending KYC updates for all high-risk accounts",
+        "milestone": "Remediation - High Risk Accounts",
+        "dueDate": "2026-01-31T00:00:00.000Z",
+        "status": "IN_PROGRESS",
+        "evidence": ["kyc-update-tracker.xlsx"],
+        "completionPct": 55
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000084",
+    "title": "NABARD Inspection - NPA Classification Delays",
+    "description": "NABARD inspection identified 12 accounts where NPA classification was delayed by 15-30 days beyond 90-day overdue mark.",
+    "source": "REGULATORY",
+    "issueType": "FINDING",
+    "severity": "MEDIUM",
+    "rootCause": "Manual DPD tracking. Branch staff not following SOP for NPA identification. Lack of system-generated alerts.",
+    "riskTheme": "CREDIT",
+    "status": "OPEN",
+    "ownerId": "placeholder-user-credit-manager",
+    "actionPlans": [
+      {
+        "title": "Configure automated DPD tracking",
+        "description": "Enable CBS module for automated Days Past Due (DPD) calculation and NPA alerts",
+        "milestone": "CBS configuration",
+        "dueDate": "2026-02-15T00:00:00.000Z",
+        "status": "PENDING",
+        "evidence": [],
+        "completionPct": 0
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000085",
+    "title": "Branch Self-Assessment - Cash Handling Gaps",
+    "description": "Branch Manager, Kothrud identified cash variance of ₹15,000 during self-assessment. Dual custody not followed during peak hours.",
+    "source": "SELF_ASSESSMENT",
+    "issueType": "EXCEPTION",
+    "severity": "MEDIUM",
+    "rootCause": "Staff shortage during peak hours (12-2 PM). Inadequate enforcement of dual custody policy.",
+    "riskTheme": "OPERATIONAL",
+    "status": "CLOSED",
+    "ownerId": "placeholder-user-branch-manager",
+    "closedAt": "2025-12-20T00:00:00.000Z",
+    "actionPlans": [
+      {
+        "title": "Implement shift rotation for cash counter",
+        "description": "Deploy additional cashier during peak hours. Enforce dual custody without exception.",
+        "milestone": "Process enhancement",
+        "dueDate": "2025-12-10T00:00:00.000Z",
+        "status": "COMPLETED",
+        "evidence": ["shift-roster-updated.pdf", "training-sign-off.pdf"],
+        "verifiedAt": "2025-12-18T00:00:00.000Z",
+        "completionPct": 100
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000086",
+    "title": "Branch Self-Assessment - Loan File Documentation",
+    "description": "Self-assessment at Camp Branch revealed 18% of loan files missing insurance policy copies or have expired policies.",
+    "source": "SELF_ASSESSMENT",
+    "issueType": "DEFICIENCY",
+    "severity": "LOW",
+    "rootCause": "Insurance renewal tracking not systematic. No alerts for policy expiry in CBS.",
+    "riskTheme": "OPERATIONAL",
+    "status": "OPEN",
+    "ownerId": "placeholder-user-branch-manager-camp",
+    "actionPlans": [
+      {
+        "title": "Obtain missing insurance policies",
+        "description": "Contact borrowers and obtain valid insurance policies for identified accounts",
+        "milestone": "Documentation compliance",
+        "dueDate": "2026-02-28T00:00:00.000Z",
+        "status": "IN_PROGRESS",
+        "evidence": [],
+        "completionPct": 35
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000087",
+    "title": "Statutory Auditor - Provision Coverage Ratio",
+    "description": "Statutory auditor noted that PCR (Provision Coverage Ratio) at 52% is below peer average of 65% for similar-sized UCBs.",
+    "source": "EXTERNAL_AUDIT",
+    "issueType": "OBSERVATION",
+    "severity": "MEDIUM",
+    "rootCause": "Conservative provisioning approach. Management focus on profit distribution vs. prudential provisioning.",
+    "riskTheme": "CREDIT",
+    "status": "ACCEPTED_RISK",
+    "ownerId": "placeholder-user-cfo",
+    "acceptedById": "placeholder-user-ceo",
+    "acceptedAt": "2025-11-30T00:00:00.000Z",
+    "acceptanceReason": "Bank's PCR meets regulatory minimum. Board decision to maintain current provisioning policy while monitoring peer practices. Will review annually."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000088",
+    "title": "Concurrent Audit - Investment Broker Concentration",
+    "description": "Concurrent auditor identified that 62% of investment transactions in Q3 2025 were executed through a single broker.",
+    "source": "CONCURRENT",
+    "issueType": "FINDING",
+    "severity": "HIGH",
+    "rootCause": "Preferential relationship with broker. Inadequate empanelment of additional brokers. No monitoring of broker concentration limits.",
+    "riskTheme": "OPERATIONAL",
+    "controlId": "b0000000-0000-0000-0000-000000000073",
+    "status": "OPEN",
+    "ownerId": "placeholder-user-treasury-head",
+    "actionPlans": [
+      {
+        "title": "Empanel additional brokers",
+        "description": "Identify and empanel at least 3 more SEBI-registered brokers with good track record",
+        "milestone": "Vendor diversification",
+        "dueDate": "2026-03-31T00:00:00.000Z",
+        "status": "PENDING",
+        "evidence": [],
+        "completionPct": 10
+      },
+      {
+        "title": "Implement broker exposure monitoring",
+        "description": "Configure treasury system to track and alert on broker-wise transaction concentration",
+        "milestone": "System enhancement",
+        "dueDate": "2026-02-28T00:00:00.000Z",
+        "status": "PENDING",
+        "evidence": [],
+        "completionPct": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,225 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000171",
+    "category": "CBS",
+    "checklistName": "Core Banking System IS Audit Checklist",
+    "items": [
+      {
+        "id": "CBS-001",
+        "item": "Interest rate parameters verified against Board-approved rate card",
+        "response": "COMPLIANT",
+        "observation": "Interest rate master verified. Matches Board resolution dated April 2025.",
+        "evidenceRef": "CBS-interest-rate-master.xlsx"
+      },
+      {
+        "id": "CBS-002",
+        "item": "Product masters (deposits, loans) configured as per policy",
+        "response": "COMPLIANT",
+        "observation": "All product parameters reviewed. Configuration aligns with product policy.",
+        "evidenceRef": "CBS-product-config.pdf"
+      },
+      {
+        "id": "CBS-003",
+        "item": "User privileges reviewed - segregation of duties maintained",
+        "response": "PARTIAL",
+        "observation": "2 users (userID: CBS-045, CBS-078) have both maker and checker access to GL module. Immediate remediation required.",
+        "evidenceRef": "CBS-user-master-report.xlsx"
+      },
+      {
+        "id": "CBS-004",
+        "item": "Dormant/inactive user accounts disabled",
+        "response": "COMPLIANT",
+        "observation": "8 inactive users (no login > 90 days) identified and disabled during audit.",
+        "evidenceRef": "CBS-inactive-users.pdf"
+      },
+      {
+        "id": "CBS-005",
+        "item": "Audit trail logging enabled for critical transactions",
+        "response": "COMPLIANT",
+        "observation": "Audit trail enabled for GL posting, rate changes, user creation/deletion.",
+        "evidenceRef": "CBS-audit-trail-config.pdf"
+      },
+      {
+        "id": "CBS-006",
+        "item": "Password policy enforced (complexity, expiry, history)",
+        "response": "COMPLIANT",
+        "observation": "Password policy: min 8 chars, alphanumeric, expiry 90 days, 5 password history.",
+        "evidenceRef": "CBS-security-params.pdf"
+      },
+      {
+        "id": "CBS-007",
+        "item": "Batch processing monitored and exceptions reviewed",
+        "response": "COMPLIANT",
+        "observation": "Daily EOD batch logs reviewed. Exception reports generated and reviewed by IT team.",
+        "evidenceRef": "CBS-batch-logs-sample.pdf"
+      },
+      {
+        "id": "CBS-008",
+        "item": "Change management process followed for CBS patches/upgrades",
+        "response": "COMPLIANT",
+        "observation": "Last 3 patches (10.2.13 to 10.2.15) had documented change requests, UAT, and rollback plans.",
+        "evidenceRef": "CBS-change-request-log.xlsx"
+      },
+      {
+        "id": "CBS-009",
+        "item": "Database backup and recovery tested",
+        "response": "COMPLIANT",
+        "observation": "Daily incremental, weekly full backup. Quarterly restore test successful (last: Dec 2025).",
+        "evidenceRef": "CBS-backup-restore-report.pdf"
+      },
+      {
+        "id": "CBS-010",
+        "item": "Vendor support contract active and SLA compliance monitored",
+        "response": "COMPLIANT",
+        "observation": "Infosys AMC valid till March 2027. SLA: 99.5% uptime achieved in 2025.",
+        "evidenceRef": "CBS-vendor-contract.pdf"
+      }
+    ],
+    "completedAt": "2025-12-20T00:00:00.000Z",
+    "overallRating": "SATISFACTORY"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000172",
+    "category": "BCP_DR",
+    "checklistName": "Business Continuity & Disaster Recovery Audit Checklist",
+    "items": [
+      {
+        "id": "BCP-001",
+        "item": "BCP/DR policy approved by Board and reviewed annually",
+        "response": "COMPLIANT",
+        "observation": "BCP/DR Policy v2.0 approved Oct 2024. Next review due Oct 2025.",
+        "evidenceRef": "BCP-DR-policy-v2.pdf"
+      },
+      {
+        "id": "BCP-002",
+        "item": "Recovery Time Objective (RTO) defined and achievable",
+        "response": "COMPLIANT",
+        "observation": "RTO: 4 hours for CBS. DR drill achieved RTO in 3.5 hours (Dec 2025 drill).",
+        "evidenceRef": "DR-drill-report-Dec2025.pdf"
+      },
+      {
+        "id": "BCP-003",
+        "item": "Recovery Point Objective (RPO) defined and backup frequency aligned",
+        "response": "COMPLIANT",
+        "observation": "RPO: 24 hours. Daily backup schedule supports RPO requirement.",
+        "evidenceRef": "backup-schedule.pdf"
+      },
+      {
+        "id": "BCP-004",
+        "item": "DR site infrastructure adequate and tested quarterly",
+        "response": "COMPLIANT",
+        "observation": "DR site at Nashik (80 km from HO). Last DR drill: Dec 15, 2025. CBS failover successful.",
+        "evidenceRef": "DR-site-spec.pdf"
+      },
+      {
+        "id": "BCP-005",
+        "item": "Crisis Management Team (CMT) identified and trained",
+        "response": "COMPLIANT",
+        "observation": "CMT has 7 members (CEO, CIO, CFO, CAE, Branch Heads). Annual BCP training conducted Nov 2025.",
+        "evidenceRef": "CMT-training-attendance.pdf"
+      },
+      {
+        "id": "BCP-006",
+        "item": "Communication plan for stakeholders (staff, customers, regulators) documented",
+        "response": "COMPLIANT",
+        "observation": "Communication templates available. Contact lists updated quarterly.",
+        "evidenceRef": "BCP-communication-plan.pdf"
+      },
+      {
+        "id": "BCP-007",
+        "item": "Offsite backup storage secured and accessible",
+        "response": "COMPLIANT",
+        "observation": "Backup tapes stored at DR site (Nashik). Monthly verification of tape integrity.",
+        "evidenceRef": "offsite-backup-log.xlsx"
+      },
+      {
+        "id": "BCP-008",
+        "item": "Cyber incident response plan documented and tested",
+        "response": "PARTIAL",
+        "observation": "Cyber incident response plan exists. However, no cyber drill conducted since 2024. Tabletop exercise recommended.",
+        "evidenceRef": "cyber-incident-response-plan.pdf"
+      }
+    ],
+    "completedAt": "2025-12-22T00:00:00.000Z",
+    "overallRating": "SATISFACTORY"
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000173",
+    "category": "CYBER_SECURITY",
+    "checklistName": "Cyber Security Framework Audit Checklist",
+    "items": [
+      {
+        "id": "CYB-001",
+        "item": "Firewall configured and logs reviewed regularly",
+        "response": "COMPLIANT",
+        "observation": "Cisco ASA firewall. Logs reviewed weekly by IT security team. Intrusion attempts blocked and logged.",
+        "evidenceRef": "firewall-config.pdf"
+      },
+      {
+        "id": "CYB-002",
+        "item": "Intrusion Detection System (IDS) deployed and monitored",
+        "response": "COMPLIANT",
+        "observation": "Snort IDS deployed at perimeter. Alerts forwarded to IT team. Monthly IDS report generated.",
+        "evidenceRef": "IDS-report-Dec2025.pdf"
+      },
+      {
+        "id": "CYB-003",
+        "item": "Vulnerability scanning conducted quarterly",
+        "response": "COMPLIANT",
+        "observation": "Last vulnerability scan: Nov 2025. 3 medium vulnerabilities identified and patched.",
+        "evidenceRef": "vulnerability-scan-report-Nov2025.pdf"
+      },
+      {
+        "id": "CYB-004",
+        "item": "Patch management process for critical systems",
+        "response": "COMPLIANT",
+        "observation": "Critical patches applied within 7 days. Non-critical patches within 30 days. Patch log maintained.",
+        "evidenceRef": "patch-management-log.xlsx"
+      },
+      {
+        "id": "CYB-005",
+        "item": "Access control review (privileged accounts, VPN, remote access)",
+        "response": "PARTIAL",
+        "observation": "VPN access logs reviewed. However, 3 privileged accounts (root, admin) have not changed passwords in 180+ days.",
+        "evidenceRef": "access-control-review.pdf"
+      },
+      {
+        "id": "CYB-006",
+        "item": "Email security (spam filter, phishing protection) configured",
+        "response": "COMPLIANT",
+        "observation": "Google Workspace spam filter active. Phishing simulation conducted Oct 2025 - 15% click rate.",
+        "evidenceRef": "phishing-simulation-report.pdf"
+      },
+      {
+        "id": "CYB-007",
+        "item": "Data encryption for sensitive data (at rest and in transit)",
+        "response": "COMPLIANT",
+        "observation": "Database encryption enabled (TDE). HTTPS/TLS enforced for all web applications.",
+        "evidenceRef": "encryption-config.pdf"
+      },
+      {
+        "id": "CYB-008",
+        "item": "Security awareness training for all staff",
+        "response": "COMPLIANT",
+        "observation": "Annual cyber security training conducted Sep 2025. 98% staff attendance. E-learning module deployed.",
+        "evidenceRef": "security-training-attendance.xlsx"
+      },
+      {
+        "id": "CYB-009",
+        "item": "Cyber insurance policy active",
+        "response": "COMPLIANT",
+        "observation": "Cyber insurance policy with HDFC Ergo. Coverage: ₹5 Cr. Valid till June 2026.",
+        "evidenceRef": "cyber-insurance-policy.pdf"
+      },
+      {
+        "id": "CYB-010",
+        "item": "Compliance with RBI Cyber Security Framework",
+        "response": "PARTIAL",
+        "observation": "Most controls implemented. Gap: SIEM (Security Information and Event Management) not yet deployed. Planned for Q2 2026.",
+        "evidenceRef": "RBI-cyber-framework-gap-analysis.pdf"
+      }
+    ],
+    "completedAt": "2025-12-28T00:00:00.000Z",
+    "overallRating": "SATISFACTORY"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000121",
+    "name": "Lending and Credit Policy",
+    "category": "LENDING",
+    "approvalDate": "2024-04-15T00:00:00.000Z",
+    "reviewDueDate": "2027-04-15T00:00:00.000Z",
+    "version": "3.0",
+    "status": "APPROVED",
+    "documentUrl": "policies/lending-credit-policy-v3.pdf",
+    "summary": "Comprehensive policy covering credit appraisal, sanction limits, delegation of powers, collateral valuation, NPA management, and recovery procedures. Updated to align with RBI Master Direction on Loans and Advances (2024)."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000122",
+    "name": "Investment Policy",
+    "category": "INVESTMENT",
+    "approvalDate": "2025-03-20T00:00:00.000Z",
+    "reviewDueDate": "2026-03-20T00:00:00.000Z",
+    "version": "2.1",
+    "status": "APPROVED",
+    "documentUrl": "policies/investment-policy-v2-1.pdf",
+    "summary": "Policy governing SLR/Non-SLR investments, HTM/HFT/AFS classification, broker empanelment, exposure limits, valuation methodology, and compliance with RBI investment guidelines for UCBs."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000123",
+    "name": "KYC and AML Policy",
+    "category": "KYC_AML",
+    "approvalDate": "2024-07-10T00:00:00.000Z",
+    "reviewDueDate": "2025-07-10T00:00:00.000Z",
+    "version": "4.0",
+    "status": "UNDER_REVIEW",
+    "documentUrl": "policies/kyc-aml-policy-v4.pdf",
+    "summary": "Customer due diligence procedures, risk categorization, periodic KYC timelines, PEP identification, transaction monitoring, STR/CTR filing procedures. Currently under review to incorporate latest FATF recommendations."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000124",
+    "name": "Information Security Policy",
+    "category": "IT_SECURITY",
+    "approvalDate": "2023-11-05T00:00:00.000Z",
+    "reviewDueDate": "2024-11-05T00:00:00.000Z",
+    "version": "2.0",
+    "status": "UNDER_REVIEW",
+    "documentUrl": "policies/information-security-policy-v2.pdf",
+    "summary": "Access control, password policy, data classification, encryption standards, incident response, business continuity, disaster recovery. Policy overdue for annual review - updated version incorporating RBI Cyber Security Framework in draft."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000125",
+    "name": "Human Resources Policy",
+    "category": "HR",
+    "approvalDate": "2024-06-01T00:00:00.000Z",
+    "reviewDueDate": "2027-06-01T00:00:00.000Z",
+    "version": "1.5",
+    "status": "APPROVED",
+    "documentUrl": "policies/hr-policy-v1-5.pdf",
+    "summary": "Recruitment, onboarding, performance management, compensation, leave, disciplinary procedures, code of conduct, conflict of interest, whistleblower mechanism."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000126",
+    "name": "Internal Audit Charter",
+    "category": "AUDIT",
+    "approvalDate": "2018-09-15T00:00:00.000Z",
+    "reviewDueDate": "2021-09-15T00:00:00.000Z",
+    "version": "1.0",
+    "status": "UNDER_REVIEW",
+    "documentUrl": "policies/internal-audit-charter-v1.pdf",
+    "summary": "Purpose, authority, responsibility of Internal Audit function. CAE reporting lines, independence, audit methodology. Policy significantly overdue for review - revision in progress to align with IIA Standards 2017 (revised 2024) and RBI guidelines."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000127",
+    "name": "Risk Management Policy",
+    "category": "RISK_MANAGEMENT",
+    "approvalDate": "2025-01-10T00:00:00.000Z",
+    "reviewDueDate": "2026-01-10T00:00:00.000Z",
+    "version": "3.0",
+    "status": "APPROVED",
+    "documentUrl": "policies/risk-management-policy-v3.pdf",
+    "summary": "Risk governance structure, risk appetite framework, credit risk, market risk, operational risk, liquidity risk, IT risk, compliance risk. Risk identification, assessment, mitigation, monitoring. ICAAP framework."
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000128",
+    "name": "Business Continuity and Disaster Recovery Policy",
+    "category": "IT_SECURITY",
+    "approvalDate": "2024-10-20T00:00:00.000Z",
+    "reviewDueDate": "2025-10-20T00:00:00.000Z",
+    "version": "2.0",
+    "status": "APPROVED",
+    "documentUrl": "policies/bcp-dr-policy-v2.pdf",
+    "summary": "BCP/DR governance, crisis management team, business impact analysis, recovery time objectives (RTO), recovery point objectives (RPO), DR site specifications, quarterly DR drill requirements."
+  }
+]

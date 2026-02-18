@@ -1,0 +1,423 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000061",
+    "controlCode": "CTRL-LND-001",
+    "processArea": "LENDING",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "Credit Manager",
+    "isKeyControl": true,
+    "description": "All loan sanctions above ₹5 lakhs require dual authorization from sanctioning authority and credit committee approval",
+    "frameworkMapping": {
+      "COSO": "CC5.2",
+      "RBI": "Master Direction - Loans and Advances",
+      "IIA": "2120.A1"
+    },
+    "effectivenessScore": 4.0,
+    "lastTestedDate": "2025-12-15T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Dual Authorization Verification",
+        "description": "Verify that all loan sanctions above ₹5 lakhs have dual authorization signatures",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 25,
+        "expectedEvidence": "Loan sanction letters with dual signatures, credit committee minutes",
+        "passCriteria": "100% of sampled loans have dual authorization documented"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000062",
+    "controlCode": "CTRL-LND-002",
+    "processArea": "LENDING",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "Credit Manager",
+    "isKeyControl": true,
+    "description": "Credit appraisal includes verification of borrower's credit bureau report (CIBIL/Equifax) before sanction",
+    "frameworkMapping": {
+      "COSO": "CC10.1",
+      "RBI": "Master Direction - Credit Information Companies",
+      "IIA": "2130.A1"
+    },
+    "effectivenessScore": 4.5,
+    "lastTestedDate": "2026-01-10T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Credit Bureau Report Verification",
+        "description": "Check that credit bureau reports are obtained and reviewed for all borrowers",
+        "sampleMethodology": "SYSTEMATIC",
+        "sampleSize": 30,
+        "expectedEvidence": "Credit bureau reports in loan files, appraisal notes referencing credit score",
+        "passCriteria": "95% compliance - credit reports obtained and documented"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000063",
+    "controlCode": "CTRL-LND-003",
+    "processArea": "LENDING",
+    "controlType": "DETECTIVE",
+    "frequency": "MONTHLY",
+    "owner": "Internal Audit",
+    "isKeyControl": true,
+    "description": "Monthly review of all SMA-0, SMA-1, SMA-2 accounts to ensure early warning system is functioning",
+    "frameworkMapping": {
+      "COSO": "CC11.2",
+      "RBI": "Master Direction - Prudential Norms on Income Recognition",
+      "IIA": "2120.A2"
+    },
+    "effectivenessScore": 3.8,
+    "lastTestedDate": "2025-12-20T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "SMA Account Review",
+        "description": "Verify monthly SMA account reports are generated and reviewed by management",
+        "sampleMethodology": "JUDGMENTAL",
+        "sampleSize": 3,
+        "expectedEvidence": "Monthly SMA reports, management review notes, action plans for deteriorating accounts",
+        "passCriteria": "Monthly SMA reports generated and reviewed within 5 days of month-end"
+      },
+      {
+        "name": "NPA Classification Accuracy",
+        "description": "Test accuracy of NPA classification as per RBI norms",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 20,
+        "expectedEvidence": "Account statements, DPD records, classification rationale",
+        "passCriteria": "100% accuracy in NPA classification as per 90-day overdue rule"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000064",
+    "controlCode": "CTRL-LND-004",
+    "processArea": "LENDING",
+    "controlType": "CORRECTIVE",
+    "frequency": "QUARTERLY",
+    "owner": "Credit Manager",
+    "isKeyControl": false,
+    "description": "Quarterly loan file audit to ensure completeness of documentation and compliance with sanction terms",
+    "frameworkMapping": {
+      "COSO": "CC14.1",
+      "RBI": "Master Direction - Loans and Advances",
+      "IIA": "2240.A1"
+    },
+    "effectivenessScore": 3.5,
+    "lastTestedDate": "2025-09-30T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Loan File Documentation Completeness",
+        "description": "Review loan files for presence of mandatory documents as per policy checklist",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 15,
+        "expectedEvidence": "Loan application, KYC documents, property papers, insurance, disbursement approval",
+        "passCriteria": "90% of loan files have complete documentation"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000065",
+    "controlCode": "CTRL-KYC-001",
+    "processArea": "KYC_AML",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "Compliance Officer",
+    "isKeyControl": true,
+    "description": "New account opening requires completion of KYC as per RBI Master Direction with OVD verification",
+    "frameworkMapping": {
+      "COSO": "CC6.1",
+      "RBI": "Master Direction - KYC",
+      "IIA": "2130.A1"
+    },
+    "effectivenessScore": 4.5,
+    "lastTestedDate": "2026-01-05T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "KYC Document Verification",
+        "description": "Verify that all new accounts opened have complete KYC documentation",
+        "sampleMethodology": "SYSTEMATIC",
+        "sampleSize": 50,
+        "expectedEvidence": "Account opening forms, OVD copies, address proof, photographs, risk categorization",
+        "passCriteria": "100% compliance - no account opened without complete KYC"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000066",
+    "controlCode": "CTRL-KYC-002",
+    "processArea": "KYC_AML",
+    "controlType": "DETECTIVE",
+    "frequency": "DAILY",
+    "owner": "Compliance Officer",
+    "isKeyControl": true,
+    "description": "Daily transaction monitoring for cash transactions above ₹10 lakhs and suspicious patterns",
+    "frameworkMapping": {
+      "COSO": "CC11.1",
+      "RBI": "Master Direction - AML/CFT",
+      "IIA": "2120.A1"
+    },
+    "effectivenessScore": 4.0,
+    "lastTestedDate": "2025-12-18T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "High-Value Transaction Monitoring",
+        "description": "Verify that all cash transactions above ₹10 lakhs are flagged and reviewed",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 10,
+        "expectedEvidence": "Transaction monitoring reports, review notes, CTR filings",
+        "passCriteria": "100% of high-value transactions flagged and documented"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000067",
+    "controlCode": "CTRL-KYC-003",
+    "processArea": "KYC_AML",
+    "controlType": "CORRECTIVE",
+    "frequency": "MONTHLY",
+    "owner": "Compliance Officer",
+    "isKeyControl": true,
+    "description": "STR (Suspicious Transaction Report) to be filed with FIU-IND within 7 days of identification",
+    "frameworkMapping": {
+      "COSO": "CC7.3",
+      "RBI": "PMLA Rules",
+      "IIA": "2130.A1"
+    },
+    "effectivenessScore": 3.5,
+    "lastTestedDate": "2025-11-25T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "STR Filing Timeliness",
+        "description": "Verify that STRs are filed within regulatory timeline",
+        "sampleMethodology": "JUDGMENTAL",
+        "sampleSize": 5,
+        "expectedEvidence": "STR identification notes, FIU-IND filing acknowledgment, timeline documentation",
+        "passCriteria": "100% of STRs filed within 7 days of identification"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000068",
+    "controlCode": "CTRL-IT-001",
+    "processArea": "IT_OPERATIONS",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "IT Manager",
+    "isKeyControl": true,
+    "description": "Role-based access control (RBAC) in CBS with segregation of duties for sensitive functions",
+    "frameworkMapping": {
+      "COSO": "CC6.3",
+      "RBI": "Cyber Security Framework",
+      "IIA": "2130.A1"
+    },
+    "effectivenessScore": 4.0,
+    "lastTestedDate": "2025-12-10T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "User Access Rights Review",
+        "description": "Review CBS user access rights to verify RBAC implementation and SoD compliance",
+        "sampleMethodology": "JUDGMENTAL",
+        "sampleSize": 20,
+        "expectedEvidence": "User master reports, role definitions, access approval records",
+        "passCriteria": "No unauthorized access or SoD conflicts detected"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000069",
+    "controlCode": "CTRL-IT-002",
+    "processArea": "IT_OPERATIONS",
+    "controlType": "PREVENTIVE",
+    "frequency": "DAILY",
+    "owner": "IT Manager",
+    "isKeyControl": true,
+    "description": "Daily incremental backup of CBS data with weekly full backup and offsite storage",
+    "frameworkMapping": {
+      "COSO": "CC11.1",
+      "RBI": "Information Security Guidelines",
+      "IIA": "2120.A1"
+    },
+    "effectivenessScore": 4.5,
+    "lastTestedDate": "2026-01-08T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Backup Success Verification",
+        "description": "Verify backup logs for successful completion of daily and weekly backups",
+        "sampleMethodology": "SYSTEMATIC",
+        "sampleSize": 30,
+        "expectedEvidence": "Backup logs, success reports, offsite transfer confirmations",
+        "passCriteria": "99% backup success rate; all failures documented with remediation"
+      },
+      {
+        "name": "Restore Test",
+        "description": "Quarterly restore test to verify backup integrity",
+        "sampleMethodology": "JUDGMENTAL",
+        "sampleSize": 1,
+        "expectedEvidence": "Restore test results, data integrity verification reports",
+        "passCriteria": "Successful restore with data integrity validated"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000070",
+    "controlCode": "CTRL-IT-003",
+    "processArea": "IT_OPERATIONS",
+    "controlType": "DETECTIVE",
+    "frequency": "MONTHLY",
+    "owner": "CISO",
+    "isKeyControl": false,
+    "description": "Monthly change management review to ensure all CBS changes are approved and tested",
+    "frameworkMapping": {
+      "COSO": "CC8.1",
+      "RBI": "IT Governance",
+      "IIA": "2110.A2"
+    },
+    "effectivenessScore": 3.8,
+    "lastTestedDate": "2025-12-05T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Change Request Approval Verification",
+        "description": "Review change request logs for proper approval and testing documentation",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 10,
+        "expectedEvidence": "Change request forms, approval emails, UAT sign-offs, rollback plans",
+        "passCriteria": "100% of changes have documented approval and testing"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000071",
+    "controlCode": "CTRL-TRS-001",
+    "processArea": "TREASURY",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "Treasury Head",
+    "isKeyControl": true,
+    "description": "Investment transactions above ₹1 crore require approval from Investment Committee",
+    "frameworkMapping": {
+      "COSO": "CC5.2",
+      "RBI": "Investment Portfolio - UCBs",
+      "IIA": "2120.A1"
+    },
+    "effectivenessScore": 4.2,
+    "lastTestedDate": "2025-11-20T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Investment Approval Verification",
+        "description": "Verify that all investment transactions above ₹1 crore have Investment Committee approval",
+        "sampleMethodology": "JUDGMENTAL",
+        "sampleSize": 15,
+        "expectedEvidence": "Investment Committee minutes, approval records, deal confirmations",
+        "passCriteria": "100% compliance - all investments approved as per delegation"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000072",
+    "controlCode": "CTRL-TRS-002",
+    "processArea": "TREASURY",
+    "controlType": "DETECTIVE",
+    "frequency": "MONTHLY",
+    "owner": "Treasury Manager",
+    "isKeyControl": true,
+    "description": "Monthly reconciliation of SGL/CSGL account with RBI and custodian",
+    "frameworkMapping": {
+      "COSO": "CC9.2",
+      "RBI": "SLR Maintenance",
+      "IIA": "2130.A1"
+    },
+    "effectivenessScore": 4.0,
+    "lastTestedDate": "2025-12-28T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "SGL Reconciliation Review",
+        "description": "Review monthly SGL reconciliation statements and variance resolution",
+        "sampleMethodology": "SYSTEMATIC",
+        "sampleSize": 3,
+        "expectedEvidence": "SGL statements from RBI, custodian statements, reconciliation reports, variance explanations",
+        "passCriteria": "Reconciliation completed within 5 days of month-end; all variances resolved"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000073",
+    "controlCode": "CTRL-TRS-003",
+    "processArea": "TREASURY",
+    "controlType": "PREVENTIVE",
+    "frequency": "DAILY",
+    "owner": "Treasury Manager",
+    "isKeyControl": false,
+    "description": "Broker exposure limits (5% cap per broker) monitored and enforced daily",
+    "frameworkMapping": {
+      "COSO": "CC10.2",
+      "RBI": "Investment Portfolio - UCBs",
+      "IIA": "2120.A1"
+    },
+    "effectivenessScore": 3.5,
+    "lastTestedDate": "2025-10-15T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Broker Exposure Limit Compliance",
+        "description": "Verify that no single broker exceeds 5% of total investment transactions",
+        "sampleMethodology": "MONETARY_UNIT",
+        "sampleSize": 10,
+        "expectedEvidence": "Broker-wise transaction reports, exposure limit monitoring reports",
+        "passCriteria": "No broker exceeds 5% limit; any breaches documented and justified"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000074",
+    "controlCode": "CTRL-DEP-001",
+    "processArea": "DEPOSITS",
+    "controlType": "PREVENTIVE",
+    "frequency": "TRANSACTION",
+    "owner": "Deposit Manager",
+    "isKeyControl": false,
+    "description": "Interest rate applied on deposits verified against approved rate card before account opening",
+    "frameworkMapping": {
+      "COSO": "CC6.2",
+      "RBI": "Interest Rate on Deposits",
+      "IIA": "2110.A1"
+    },
+    "effectivenessScore": 4.0,
+    "lastTestedDate": "2025-12-15T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Interest Rate Accuracy Test",
+        "description": "Verify that interest rates applied match approved rate card",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 30,
+        "expectedEvidence": "Account opening forms, interest rate cards, CBS rate master",
+        "passCriteria": "100% accuracy - no unauthorized interest rate deviations"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000075",
+    "controlCode": "CTRL-DEP-002",
+    "processArea": "DEPOSITS",
+    "controlType": "DETECTIVE",
+    "frequency": "QUARTERLY",
+    "owner": "Branch Manager",
+    "isKeyControl": false,
+    "description": "Quarterly review of premature withdrawal penalty computation and approval",
+    "frameworkMapping": {
+      "COSO": "CC9.1",
+      "RBI": "Deposit Schemes",
+      "IIA": "2120.A2"
+    },
+    "effectivenessScore": 3.5,
+    "lastTestedDate": "2025-09-30T00:00:00.000Z",
+    "testProcedures": [
+      {
+        "name": "Premature Withdrawal Test",
+        "description": "Review premature withdrawal transactions for correct penalty computation",
+        "sampleMethodology": "RANDOM",
+        "sampleSize": 20,
+        "expectedEvidence": "Withdrawal requests, penalty calculations, approval records",
+        "passCriteria": "95% accuracy in penalty computation as per policy"
+      }
+    ]
+  }
+]

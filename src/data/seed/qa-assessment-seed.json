@@ -1,0 +1,102 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000091",
+    "assessmentYear": 2025,
+    "iiaStandard": "1000",
+    "question": "Does the internal audit charter define the purpose, authority, and responsibility of the internal audit activity consistent with the Standards?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Current charter approved in 2018 defines purpose and authority. However, lacks explicit mention of unrestricted access to information and CAE's functional reporting to ACB as required by Standard 1110.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000092",
+    "assessmentYear": 2025,
+    "iiaStandard": "1100",
+    "question": "Is the internal audit activity independent and do internal auditors perform work with objectivity?",
+    "response": "CONFORMS",
+    "evidence": "CAE reports functionally to ACB and administratively to CEO. Annual independence certification obtained from all audit staff. No conflicts of interest identified in 2025.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000093",
+    "assessmentYear": 2025,
+    "iiaStandard": "1110",
+    "question": "Does the CAE report to a level within the organization that allows the internal audit activity to fulfill its responsibilities (functional reporting to Board/ACB)?",
+    "response": "CONFORMS",
+    "evidence": "CAE presents quarterly reports directly to ACB. ACB reviews and approves annual audit plan. CAE has direct access to Board Chairman and ACB Chairman.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000094",
+    "assessmentYear": 2025,
+    "iiaStandard": "1200",
+    "question": "Do internal auditors apply the care and skill expected of a reasonably prudent and competent internal auditor?",
+    "response": "CONFORMS",
+    "evidence": "All auditors hold professional certifications (CIA/CISA/CA). Annual competency assessment conducted. Continuing professional education tracked (40 hours/year per auditor).",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000095",
+    "assessmentYear": 2025,
+    "iiaStandard": "1300",
+    "question": "Has the CAE developed and maintained a quality assurance and improvement program (QAIP) that covers all aspects of the internal audit activity?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Internal QA reviews conducted quarterly. However, external quality assessment (EQA) not conducted since 2020. IIA Standards require EQA at least once every 5 years.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000096",
+    "assessmentYear": 2025,
+    "iiaStandard": "2000",
+    "question": "Does the CAE effectively manage the internal audit activity to ensure it adds value to the organization?",
+    "response": "CONFORMS",
+    "evidence": "Risk-based annual audit plan approved by ACB. Resource allocation based on risk priorities. Audit recommendations tracked in database. 85% of recommendations implemented within agreed timelines.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000097",
+    "assessmentYear": 2025,
+    "iiaStandard": "2100",
+    "question": "Does the internal audit activity evaluate and contribute to the improvement of governance, risk management, and control processes using a systematic and disciplined approach?",
+    "response": "CONFORMS",
+    "evidence": "Risk-based Internal Audit methodology deployed since 2023. Risk assessment framework covers credit, operational, compliance, IT, and market risks. Control testing procedures documented. Findings linked to risk universe.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000098",
+    "assessmentYear": 2025,
+    "iiaStandard": "2200",
+    "question": "Are engagements performed with professionalism, including appropriate planning, execution, and communication?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Audit programs developed for each engagement. Work papers maintained in electronic format. However, supervision and review documentation is inconsistent. Some engagements lack clear evidence of supervisory review.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000099",
+    "assessmentYear": 2025,
+    "iiaStandard": "2400",
+    "question": "Does the CAE communicate engagement results to appropriate parties, including conclusions and recommendations?",
+    "response": "CONFORMS",
+    "evidence": "Audit reports issued within 15 days of fieldwork completion. Reports distributed to auditees, CAE, CEO, and ACB. Follow-up audits conducted for high-risk findings. Quarterly compliance dashboard presented to ACB.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000100",
+    "assessmentYear": 2025,
+    "iiaStandard": "2600",
+    "question": "Has the CAE communicated to senior management and the Board that the internal audit activity does not conform with the Standards or Code of Ethics (if applicable)?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "While gaps in conformance exist (EQA overdue, charter update needed), CAE has not formally communicated these non-conformances to ACB as required by Standard 1322.",
+    "gapIdentified": true,
+    "issueCreated": true
+  }
+]

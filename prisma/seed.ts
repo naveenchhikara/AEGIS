@@ -933,6 +933,486 @@ async function main() {
     `    ✓ Created ${obsCount} observations with timeline events for Tenant A`,
   );
 
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // PHASE 2-6: New module seeders
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  // ─── Phase 3: Audit Universe Entities ────────────────────────────────────────
+  console.log("  Seeding audit universe entities...");
+  const auditUniverseData = await import("../src/data/seed/audit-universe.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  const entityIdMap = new Map<string, string>();
+  for (const entity of auditUniverseData) {
+    const branchId = entity.branchCode
+      ? branchMap.get(entity.branchCode) ?? null
+      : null;
+
+    const created = await prisma.auditUniverseEntity.create({
+      data: {
+        id: entity.id,
+        tenantId: tenantA.id,
+        entityType: entity.entityType,
+        name: entity.name,
+        description: entity.description,
+        branchId,
+        riskScore: entity.riskScore,
+        lastAuditDate: entity.lastAuditDate
+          ? new Date(entity.lastAuditDate)
+          : null,
+        lastAuditRating: entity.lastAuditRating,
+        requiredFrequency: entity.requiredFrequency,
+      },
+    });
+    entityIdMap.set(entity.id, created.id);
+  }
+  console.log(`    ✓ Created ${auditUniverseData.length} audit universe entities`);
+
+  // ─── Phase 3: Risk Registers with KRIs ──────────────────────────────────────
+  console.log("  Seeding risk registers...");
+  const riskRegistersData = await import("../src/data/seed/risk-registers.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  let riskCount = 0;
+  let kriCount = 0;
+  for (const risk of riskRegistersData) {
+    const riskRecord = await prisma.riskRegister.create({
+      data: {
+        id: risk.id,
+        tenantId: tenantA.id,
+        entityId: risk.entityId,
+        riskStatement: risk.riskStatement,
+        riskCategory: risk.riskCategory,
+        inherentScore: risk.inherentScore,
+        controlScore: risk.controlScore,
+        residualScore: risk.residualScore,
+        riskOwner: risk.riskOwner,
+        mitigationPlan: risk.mitigationPlan,
+        status: risk.status,
+      },
+    });
+    riskCount++;
+
+    // Create KRIs if present
+    if (risk.kris && risk.kris.length > 0) {
+      for (const kri of risk.kris) {
+        await prisma.keyRiskIndicator.create({
+          data: {
+            tenantId: tenantA.id,
+            riskRegisterId: riskRecord.id,
+            name: kri.name,
+            description: kri.description,
+            currentValue: kri.currentValue,
+            thresholdLow: kri.thresholdLow,
+            thresholdHigh: kri.thresholdHigh,
+            breachStatus: kri.breachStatus,
+            frequency: kri.frequency,
+          },
+        });
+        kriCount++;
+      }
+    }
+  }
+  console.log(`    ✓ Created ${riskCount} risk registers with ${kriCount} KRIs`);
+
+  // ─── Phase 3: Control Library with Test Procedures ──────────────────────────
+  console.log("  Seeding control library...");
+  const controlsData = await import("../src/data/seed/controls.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  let controlCount = 0;
+  let testProcCount = 0;
+  for (const control of controlsData) {
+    const controlRecord = await prisma.controlLibrary.create({
+      data: {
+        id: control.id,
+        tenantId: tenantA.id,
+        controlCode: control.controlCode,
+        processArea: control.processArea,
+        controlType: control.controlType,
+        frequency: control.frequency,
+        owner: control.owner,
+        isKeyControl: control.isKeyControl,
+        description: control.description,
+        frameworkMapping: control.frameworkMapping,
+        effectivenessScore: control.effectivenessScore,
+        lastTestedDate: control.lastTestedDate
+          ? new Date(control.lastTestedDate)
+          : null,
+      },
+    });
+    controlCount++;
+
+    // Create test procedures if present
+    if (control.testProcedures && control.testProcedures.length > 0) {
+      for (const proc of control.testProcedures) {
+        await prisma.testProcedure.create({
+          data: {
+            tenantId: tenantA.id,
+            controlId: controlRecord.id,
+            name: proc.name,
+            description: proc.description,
+            sampleMethodology: proc.sampleMethodology,
+            sampleSize: proc.sampleSize,
+            expectedEvidence: proc.expectedEvidence,
+            passCriteria: proc.passCriteria,
+          },
+        });
+        testProcCount++;
+      }
+    }
+  }
+  console.log(
+    `    ✓ Created ${controlCount} controls with ${testProcCount} test procedures`,
+  );
+
+  // ─── Phase 3: Issues with Action Plans ──────────────────────────────────────
+  console.log("  Seeding issues...");
+  const issuesData = await import("../src/data/seed/issues-seed.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  let issueCount = 0;
+  let actionPlanCount = 0;
+  for (const issue of issuesData) {
+    const issueRecord = await prisma.issue.create({
+      data: {
+        id: issue.id,
+        tenantId: tenantA.id,
+        title: issue.title,
+        description: issue.description,
+        source: issue.source,
+        issueType: issue.issueType,
+        severity: issue.severity,
+        rootCause: issue.rootCause,
+        riskTheme: issue.riskTheme,
+        status: issue.status,
+        closedAt: issue.closedAt ? new Date(issue.closedAt) : null,
+        acceptedAt: issue.acceptedAt ? new Date(issue.acceptedAt) : null,
+        acceptanceReason: issue.acceptanceReason,
+      },
+    });
+    issueCount++;
+
+    // Create action plans if present
+    if (issue.actionPlans && issue.actionPlans.length > 0) {
+      for (const ap of issue.actionPlans) {
+        await prisma.actionPlan.create({
+          data: {
+            tenantId: tenantA.id,
+            issueId: issueRecord.id,
+            title: ap.title,
+            description: ap.description,
+            milestone: ap.milestone,
+            dueDate: new Date(ap.dueDate),
+            status: ap.status,
+            evidence: ap.evidence || [],
+            verifiedAt: ap.verifiedAt ? new Date(ap.verifiedAt) : null,
+            completionPct: ap.completionPct,
+          },
+        });
+        actionPlanCount++;
+      }
+    }
+  }
+  console.log(
+    `    ✓ Created ${issueCount} issues with ${actionPlanCount} action plans`,
+  );
+
+  // ─── Phase 3: QA Self-Assessment ────────────────────────────────────────────
+  console.log("  Seeding QA self-assessments...");
+  const qaAssessmentData = await import("../src/data/seed/qa-assessment-seed.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const qa of qaAssessmentData) {
+    await prisma.qaSelfAssessment.create({
+      data: {
+        id: qa.id,
+        tenantId: tenantA.id,
+        assessmentYear: qa.assessmentYear,
+        iiaStandard: qa.iiaStandard,
+        question: qa.question,
+        response: qa.response,
+        evidence: qa.evidence,
+        gapIdentified: qa.gapIdentified,
+        issueCreated: qa.issueCreated,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${qaAssessmentData.length} QA assessment entries`);
+
+  // ─── Phase 2: Report Templates ───────────────────────────────────────────────
+  console.log("  Seeding report templates...");
+  const reportTemplatesData = await import("../src/data/seed/report-templates.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const template of reportTemplatesData) {
+    await prisma.reportTemplate.create({
+      data: {
+        id: template.id,
+        tenantId: tenantA.id,
+        name: template.name,
+        category: template.category,
+        versionNumber: template.versionNumber,
+        isActive: template.isActive,
+        templateData: template.templateData,
+        createdById: userCAE.id,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${reportTemplatesData.length} report templates`);
+
+  // ─── Phase 2: Calendar Events ────────────────────────────────────────────────
+  console.log("  Seeding calendar events...");
+  const calendarEventsData = await import("../src/data/seed/calendar-events.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const event of calendarEventsData) {
+    const branchId = event.branchCode
+      ? branchMap.get(event.branchCode) ?? null
+      : null;
+
+    await prisma.auditCalendar.create({
+      data: {
+        id: event.id,
+        tenantId: tenantA.id,
+        title: event.title,
+        eventType: event.eventType,
+        startDate: new Date(event.startDate),
+        endDate: event.endDate ? new Date(event.endDate) : null,
+        allDay: event.allDay,
+        branchId,
+        recurrenceRule: event.recurrenceRule,
+        description: event.description,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${calendarEventsData.length} calendar events`);
+
+  // ─── Phase 4: Concurrent Audit Templates ─────────────────────────────────────
+  console.log("  Seeding concurrent audit templates...");
+  const concurrentTemplatesData = await import(
+    "../src/data/seed/concurrent-templates.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
+
+  for (const template of concurrentTemplatesData) {
+    await prisma.concurrentAuditTemplate.create({
+      data: {
+        id: template.id,
+        tenantId: tenantA.id,
+        scopeArea: template.scopeArea,
+        name: template.name,
+        description: template.description,
+        checklistItems: template.checklistItems,
+        isActive: template.isActive,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${concurrentTemplatesData.length} concurrent audit templates`);
+
+  // ─── Phase 4: Regulatory Observations ────────────────────────────────────────
+  console.log("  Seeding regulatory observations...");
+  const regulatoryObsData = await import(
+    "../src/data/seed/regulatory-observations.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
+
+  for (const obs of regulatoryObsData) {
+    await prisma.regulatoryObservation.create({
+      data: {
+        id: obs.id,
+        tenantId: tenantA.id,
+        source: obs.source,
+        referenceNo: obs.referenceNo,
+        paraNo: obs.paraNo,
+        description: obs.description,
+        severity: obs.severity,
+        atrStatus: obs.atrStatus,
+        atrText: obs.atrText,
+        submittedAt: obs.submittedAt ? new Date(obs.submittedAt) : null,
+        acceptedAt: obs.acceptedAt ? new Date(obs.acceptedAt) : null,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${regulatoryObsData.length} regulatory observations`);
+
+  // ─── Phase 4: Policy Documents ───────────────────────────────────────────────
+  console.log("  Seeding policy documents...");
+  const policiesData = await import("../src/data/seed/policies.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const policy of policiesData) {
+    await prisma.policyDocument.create({
+      data: {
+        id: policy.id,
+        tenantId: tenantA.id,
+        name: policy.name,
+        category: policy.category,
+        approvalDate: policy.approvalDate ? new Date(policy.approvalDate) : null,
+        reviewDueDate: policy.reviewDueDate
+          ? new Date(policy.reviewDueDate)
+          : null,
+        version: policy.version,
+        status: policy.status,
+        documentUrl: policy.documentUrl,
+        summary: policy.summary,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${policiesData.length} policy documents`);
+
+  // ─── Phase 4: Committees ─────────────────────────────────────────────────────
+  console.log("  Seeding committees...");
+  const committeesData = await import("../src/data/seed/committees.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const committee of committeesData) {
+    const committeeRecord = await prisma.committee.create({
+      data: {
+        id: committee.id,
+        tenantId: tenantA.id,
+        name: committee.name,
+        description: committee.description,
+        isActive: committee.isActive,
+      },
+    });
+
+    // Create committee members (using placeholder user IDs - they'll be matched to real users if they exist)
+    if (committee.members && committee.members.length > 0) {
+      for (const member of committee.members) {
+        // Use existing users or skip if placeholder
+        let userId = userCAE.id; // Default to CAE
+        if (member.name === "Rajesh Deshmukh") userId = userCEO.id;
+        if (member.name === "Priya Sharma") userId = userCAE.id;
+        if (member.name === "Amit Joshi") userId = userCCO.id;
+
+        await prisma.committeeMember.create({
+          data: {
+            committeeId: committeeRecord.id,
+            userId,
+            role: member.role,
+          },
+        });
+      }
+    }
+  }
+  console.log(`    ✓ Created ${committeesData.length} committees`);
+
+  // ─── Phase 4: Housekeeping Metrics ───────────────────────────────────────────
+  console.log("  Seeding housekeeping metrics...");
+  const housekeepingData = await import(
+    "../src/data/seed/housekeeping-metrics.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
+
+  for (const metric of housekeepingData) {
+    const branchId = branchMap.get(metric.branchCode);
+    if (!branchId) continue;
+
+    await prisma.housekeepingMetric.create({
+      data: {
+        id: metric.id,
+        tenantId: tenantA.id,
+        branchId,
+        metricType: metric.metricType,
+        period: metric.period,
+        openingBalance: metric.openingBalance,
+        closingBalance: metric.closingBalance,
+        entriesCount: metric.entriesCount,
+        agingDays: metric.agingDays,
+        remarks: metric.remarks,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${housekeepingData.length} housekeeping metrics`);
+
+  // ─── Phase 6: Investment Records ─────────────────────────────────────────────
+  console.log("  Seeding investment records...");
+  const investmentsData = await import("../src/data/seed/investments.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const investment of investmentsData) {
+    await prisma.investmentRecord.create({
+      data: {
+        id: investment.id,
+        tenantId: tenantA.id,
+        securityType: investment.securityType,
+        classification: investment.classification,
+        isin: investment.isin,
+        faceValue: investment.faceValue,
+        bookValue: investment.bookValue,
+        marketValue: investment.marketValue,
+        brokerName: investment.brokerName,
+        brokerShare: investment.brokerShare,
+        sglAccount: investment.sglAccount,
+        reconciled: investment.reconciled,
+        period: investment.period,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${investmentsData.length} investment records`);
+
+  // ─── Phase 6: Application Inventory ──────────────────────────────────────────
+  console.log("  Seeding application inventory...");
+  const appInventoryData = await import("../src/data/seed/app-inventory.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const app of appInventoryData) {
+    await prisma.applicationInventory.create({
+      data: {
+        id: app.id,
+        tenantId: tenantA.id,
+        appName: app.appName,
+        vendor: app.vendor,
+        version: app.version,
+        hostingType: app.hostingType,
+        criticality: app.criticality,
+        drTested: app.drTested,
+        lastDrTestDate: app.lastDrTestDate ? new Date(app.lastDrTestDate) : null,
+        lastIsAuditDate: app.lastIsAuditDate
+          ? new Date(app.lastIsAuditDate)
+          : null,
+        dataClassification: app.dataClassification,
+        description: app.description,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${appInventoryData.length} application inventory entries`);
+
+  // ─── Phase 6: IS Audit Checklists ────────────────────────────────────────────
+  console.log("  Seeding IS audit checklists...");
+  const isChecklistsData = await import("../src/data/seed/is-checklists.json", {
+    with: { type: "json" },
+  }).then((m) => m.default);
+
+  for (const checklist of isChecklistsData) {
+    await prisma.isAuditChecklist.create({
+      data: {
+        id: checklist.id,
+        tenantId: tenantA.id,
+        category: checklist.category,
+        checklistName: checklist.checklistName,
+        items: checklist.items,
+        completedAt: checklist.completedAt
+          ? new Date(checklist.completedAt)
+          : null,
+        overallRating: checklist.overallRating,
+      },
+    });
+  }
+  console.log(`    ✓ Created ${isChecklistsData.length} IS audit checklists`);
+
   // ─── Summary ────────────────────────────────────────────────────────
 
   console.log("\n✅ Seed complete!\n");

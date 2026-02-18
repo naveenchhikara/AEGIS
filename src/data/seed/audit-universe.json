@@ -1,0 +1,90 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000031",
+    "entityType": "BRANCH",
+    "name": "Head Office",
+    "description": "Central administrative and operational hub",
+    "branchCode": "BR001",
+    "riskScore": 4.2,
+    "lastAuditDate": "2025-10-15T00:00:00.000Z",
+    "lastAuditRating": "GOOD",
+    "requiredFrequency": 6
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000032",
+    "entityType": "BRANCH",
+    "name": "Kothrud Branch",
+    "description": "High-volume retail branch in Pune west",
+    "branchCode": "BR002",
+    "riskScore": 3.5,
+    "lastAuditDate": "2025-11-20T00:00:00.000Z",
+    "lastAuditRating": "SATISFACTORY",
+    "requiredFrequency": 12
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000033",
+    "entityType": "BRANCH",
+    "name": "Shivajinagar Branch",
+    "description": "Commercial business hub branch",
+    "branchCode": "BR003",
+    "riskScore": 3.8,
+    "lastAuditDate": "2025-09-10T00:00:00.000Z",
+    "lastAuditRating": "GOOD",
+    "requiredFrequency": 12
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000034",
+    "entityType": "DEPARTMENT",
+    "name": "Treasury Department",
+    "description": "Investment management, SLR/CRR maintenance, liquidity management",
+    "branchCode": null,
+    "riskScore": 4.5,
+    "lastAuditDate": "2025-08-25T00:00:00.000Z",
+    "lastAuditRating": "SATISFACTORY",
+    "requiredFrequency": 6
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000035",
+    "entityType": "DEPARTMENT",
+    "name": "Credit Department",
+    "description": "Loan sanctioning, credit appraisal, NPA management",
+    "branchCode": null,
+    "riskScore": 4.8,
+    "lastAuditDate": "2025-07-30T00:00:00.000Z",
+    "lastAuditRating": "MODERATE",
+    "requiredFrequency": 6
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000036",
+    "entityType": "PROCESS",
+    "name": "Lending Process",
+    "description": "End-to-end lending from application to disbursement and monitoring",
+    "branchCode": null,
+    "riskScore": 4.5,
+    "lastAuditDate": "2025-09-15T00:00:00.000Z",
+    "lastAuditRating": "SATISFACTORY",
+    "requiredFrequency": 12
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000037",
+    "entityType": "PROCESS",
+    "name": "KYC/AML Process",
+    "description": "Customer due diligence, transaction monitoring, STR filing",
+    "branchCode": null,
+    "riskScore": 4.7,
+    "lastAuditDate": "2025-10-05T00:00:00.000Z",
+    "lastAuditRating": "GOOD",
+    "requiredFrequency": 6
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000038",
+    "entityType": "CHANNEL",
+    "name": "Internet Banking",
+    "description": "Digital banking channel for retail customers",
+    "branchCode": null,
+    "riskScore": 4.0,
+    "lastAuditDate": "2025-11-10T00:00:00.000Z",
+    "lastAuditRating": "GOOD",
+    "requiredFrequency": 12
+  }
+]

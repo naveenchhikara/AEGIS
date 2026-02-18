@@ -1,0 +1,287 @@
+[
+  {
+    "id": "b0000000-0000-0000-0000-000000000041",
+    "entityId": "b0000000-0000-0000-0000-000000000035",
+    "riskStatement": "Concentration risk in lending portfolio with top 10 borrowers accounting for 45% of total advances",
+    "riskCategory": "CREDIT",
+    "inherentScore": 4.5,
+    "controlScore": 3.0,
+    "residualScore": 3.8,
+    "riskOwner": "Credit Manager",
+    "mitigationPlan": "Implement exposure limits per borrower group. Diversify portfolio across sectors. Enhanced monitoring of large exposures.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Top 10 Borrower Concentration %",
+        "description": "Percentage of total advances held by top 10 borrowers",
+        "currentValue": 45.0,
+        "thresholdLow": null,
+        "thresholdHigh": 40.0,
+        "breachStatus": "BREACH",
+        "frequency": "MONTHLY"
+      },
+      {
+        "name": "Single Borrower Limit Breach Count",
+        "description": "Number of borrowers exceeding single borrower exposure limit",
+        "currentValue": 2.0,
+        "thresholdLow": null,
+        "thresholdHigh": 0.0,
+        "breachStatus": "BREACH",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000042",
+    "entityId": "b0000000-0000-0000-0000-000000000035",
+    "riskStatement": "Rising NPA ratio due to slowdown in recovery efforts and economic headwinds in certain sectors",
+    "riskCategory": "CREDIT",
+    "inherentScore": 4.0,
+    "controlScore": 3.5,
+    "residualScore": 3.8,
+    "riskOwner": "Credit Manager",
+    "mitigationPlan": "Strengthen recovery mechanism. Early warning system for SMA accounts. Sector-wise stress testing.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Gross NPA Ratio %",
+        "description": "Gross NPAs as percentage of total advances",
+        "currentValue": 6.5,
+        "thresholdLow": null,
+        "thresholdHigh": 5.0,
+        "breachStatus": "BREACH",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000043",
+    "entityId": "b0000000-0000-0000-0000-000000000036",
+    "riskStatement": "Inadequate collateral valuation and documentation in 15% of reviewed loan files",
+    "riskCategory": "CREDIT",
+    "inherentScore": 3.5,
+    "controlScore": 2.5,
+    "residualScore": 3.2,
+    "riskOwner": "Branch Manager - Lending",
+    "mitigationPlan": "Mandatory re-valuation for properties older than 3 years. Empaneled valuers list. Documentation checklist enforcement.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Collateral Documentation Gap %",
+        "description": "Percentage of loans with incomplete collateral documentation",
+        "currentValue": 15.0,
+        "thresholdLow": null,
+        "thresholdHigh": 5.0,
+        "breachStatus": "WARNING",
+        "frequency": "QUARTERLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000044",
+    "entityId": "b0000000-0000-0000-0000-000000000032",
+    "riskStatement": "Cash handling discrepancies and retention limit breaches at branch level",
+    "riskCategory": "OPERATIONAL",
+    "inherentScore": 3.0,
+    "controlScore": 2.0,
+    "residualScore": 2.7,
+    "riskOwner": "Branch Manager - Kothrud",
+    "mitigationPlan": "Daily cash reconciliation. Automated alerts for retention limit. Dual custody enforcement.",
+    "status": "MITIGATED",
+    "kris": [
+      {
+        "name": "Cash Variance Frequency",
+        "description": "Number of cash variance instances per month",
+        "currentValue": 1.0,
+        "thresholdLow": null,
+        "thresholdHigh": 2.0,
+        "breachStatus": "NORMAL",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000045",
+    "entityId": "b0000000-0000-0000-0000-000000000031",
+    "riskStatement": "Fraud risk due to gaps in transaction monitoring and exception reporting",
+    "riskCategory": "OPERATIONAL",
+    "inherentScore": 4.5,
+    "controlScore": 3.0,
+    "residualScore": 4.0,
+    "riskOwner": "Chief Operating Officer",
+    "mitigationPlan": "Implement automated transaction monitoring. Regular exception report review. Mandatory staff rotation in sensitive roles.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Unreviewed Exception Reports Count",
+        "description": "Number of exception reports pending review > 7 days",
+        "currentValue": 8.0,
+        "thresholdLow": null,
+        "thresholdHigh": 5.0,
+        "breachStatus": "WARNING",
+        "frequency": "WEEKLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000046",
+    "entityId": "b0000000-0000-0000-0000-000000000031",
+    "riskStatement": "IT system downtime and data loss risk due to inadequate disaster recovery preparedness",
+    "riskCategory": "OPERATIONAL",
+    "inherentScore": 5.0,
+    "controlScore": 3.5,
+    "residualScore": 4.5,
+    "riskOwner": "IT Manager",
+    "mitigationPlan": "DR site activation within 4 hours. Quarterly DR drills. Offsite backup verification.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "DR Drill Success Rate %",
+        "description": "Percentage of successful DR drills in last 4 quarters",
+        "currentValue": 75.0,
+        "thresholdLow": 90.0,
+        "thresholdHigh": null,
+        "breachStatus": "WARNING",
+        "frequency": "QUARTERLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000047",
+    "entityId": "b0000000-0000-0000-0000-000000000037",
+    "riskStatement": "KYC documentation gaps and delayed periodic KYC updates for high-risk customers",
+    "riskCategory": "COMPLIANCE",
+    "inherentScore": 4.0,
+    "controlScore": 3.0,
+    "residualScore": 3.7,
+    "riskOwner": "Compliance Officer",
+    "mitigationPlan": "Automated KYC expiry alerts. Dedicated KYC team. Account freeze for non-compliant accounts.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "KYC Overdue Accounts %",
+        "description": "Percentage of accounts with overdue KYC updates",
+        "currentValue": 8.5,
+        "thresholdLow": null,
+        "thresholdHigh": 5.0,
+        "breachStatus": "WARNING",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000048",
+    "entityId": "b0000000-0000-0000-0000-000000000037",
+    "riskStatement": "Delays in STR (Suspicious Transaction Report) filing to FIU-IND beyond regulatory timelines",
+    "riskCategory": "COMPLIANCE",
+    "inherentScore": 4.5,
+    "controlScore": 3.5,
+    "residualScore": 4.2,
+    "riskOwner": "Compliance Officer",
+    "mitigationPlan": "Automated STR workflow. Training on red flag identification. Monthly compliance review.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "STR Filing Delay Days (Avg)",
+        "description": "Average delay in STR filing beyond 7-day timeline",
+        "currentValue": 3.0,
+        "thresholdLow": null,
+        "thresholdHigh": 0.0,
+        "breachStatus": "BREACH",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000049",
+    "entityType": "b0000000-0000-0000-0000-000000000034",
+    "riskStatement": "Interest rate risk due to asset-liability maturity mismatch in treasury portfolio",
+    "riskCategory": "MARKET",
+    "inherentScore": 3.8,
+    "controlScore": 3.0,
+    "residualScore": 3.5,
+    "riskOwner": "Treasury Head",
+    "mitigationPlan": "ALM gap analysis. Duration matching strategy. Interest rate hedging instruments.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "ALM Gap (1-3 months) in Cr",
+        "description": "Asset-liability gap in 1-3 month bucket",
+        "currentValue": 15.0,
+        "thresholdLow": null,
+        "thresholdHigh": 20.0,
+        "breachStatus": "NORMAL",
+        "frequency": "MONTHLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000050",
+    "entityId": "b0000000-0000-0000-0000-000000000034",
+    "riskStatement": "Liquidity risk due to tight CRR/SLR maintenance and seasonal deposit withdrawal patterns",
+    "riskCategory": "MARKET",
+    "inherentScore": 4.0,
+    "controlScore": 3.5,
+    "residualScore": 3.8,
+    "riskOwner": "Treasury Head",
+    "mitigationPlan": "Maintain liquidity buffer. Seasonal cash flow forecasting. Contingency funding plan.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "LCR (Liquidity Coverage Ratio) %",
+        "description": "High-quality liquid assets / Net cash outflows (30 days)",
+        "currentValue": 105.0,
+        "thresholdLow": 100.0,
+        "thresholdHigh": null,
+        "breachStatus": "NORMAL",
+        "frequency": "DAILY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000051",
+    "entityId": "b0000000-0000-0000-0000-000000000038",
+    "riskStatement": "Cyber security threats including phishing, ransomware, and unauthorized access attempts",
+    "riskCategory": "IT",
+    "inherentScore": 5.0,
+    "controlScore": 3.5,
+    "residualScore": 4.5,
+    "riskOwner": "CISO",
+    "mitigationPlan": "Multi-factor authentication. Regular vulnerability scans. Security awareness training. Incident response plan.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Cyber Incident Count",
+        "description": "Number of cyber security incidents per quarter",
+        "currentValue": 3.0,
+        "thresholdLow": null,
+        "thresholdHigh": 2.0,
+        "breachStatus": "WARNING",
+        "frequency": "QUARTERLY"
+      }
+    ]
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000052",
+    "entityId": "b0000000-0000-0000-0000-000000000038",
+    "riskStatement": "Data loss or corruption risk due to inadequate backup procedures and testing",
+    "riskCategory": "IT",
+    "inherentScore": 4.5,
+    "controlScore": 3.0,
+    "residualScore": 4.0,
+    "riskOwner": "IT Manager",
+    "mitigationPlan": "Daily incremental backup. Weekly full backup. Monthly restore testing. Offsite backup storage.",
+    "status": "OPEN",
+    "kris": [
+      {
+        "name": "Backup Success Rate %",
+        "description": "Percentage of successful backups in last 30 days",
+        "currentValue": 98.5,
+        "thresholdLow": 99.0,
+        "thresholdHigh": null,
+        "breachStatus": "WARNING",
+        "frequency": "DAILY"
+      }
+    ]
+  }
+]

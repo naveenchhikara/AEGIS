@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequiredSession } from "@/data-access/session";
 import { getExportAuditPlans } from "@/data-access/exports";
+import { prismaForTenant } from "@/lib/prisma";
 import {
   createWorkbook,
   addHeaders,
@@ -26,8 +27,12 @@ const COLUMNS = [
 export async function GET() {
   try {
     const session = await getRequiredSession();
-    const tenantName =
-      (session.user as any).tenantName ?? "AEGIS Audit Platform";
+    const { tenantId } = session.user;
+    const tenant = await prismaForTenant(tenantId).tenant.findUnique({
+      where: { id: tenantId },
+      select: { name: true },
+    });
+    const tenantName = tenant?.name ?? "AEGIS Audit Platform";
 
     const data = await getExportAuditPlans(session);
 

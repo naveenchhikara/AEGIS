@@ -30,8 +30,8 @@ import {
 export async function signBhCertificate(input: SignBhCertificateInput) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // ─── Step 2: Role Check ──────────────────────────────────────
   if (!userRoles.includes("BRANCH_HEAD")) {
@@ -151,8 +151,8 @@ export async function countersignBhCertificate(
 ) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // ─── Step 2: Role Check ──────────────────────────────────────
   if (
@@ -270,7 +270,7 @@ export async function countersignBhCertificate(
  */
 export async function getBhCertificateStatus(engagementId: string) {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {

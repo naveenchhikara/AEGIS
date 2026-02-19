@@ -24,7 +24,7 @@ import {
  */
 export async function updateUserRoles(input: UpdateRolesInput) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   // Permission check: admin:manage_roles
   if (!hasPermission(userRoles, "admin:manage_roles")) {

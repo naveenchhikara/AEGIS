@@ -25,8 +25,8 @@ import {
  */
 export async function computeEscalationForAllItems() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Require at least compliance:read (typically CAE, AUDIT_MANAGER)
   if (!hasPermission(userRoles, "compliance:read")) {

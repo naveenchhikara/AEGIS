@@ -27,8 +27,8 @@ import { logger } from "@/lib/logger";
 export async function createObservation(input: CreateObservationInput) {
   // Step 1: Auth
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Step 2: Permission check
   if (!hasPermission(userRoles, "observation:create")) {

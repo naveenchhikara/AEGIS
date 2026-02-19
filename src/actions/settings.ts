@@ -47,7 +47,7 @@ export type SettingsInput = z.infer<typeof settingsSchema>;
  */
 export async function updateTenantSettings(formData: SettingsInput) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   // Permission check
   if (!hasPermission(userRoles, "admin:manage_settings")) {
@@ -64,7 +64,7 @@ export async function updateTenantSettings(formData: SettingsInput) {
   }
 
   const validated = result.data;
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {

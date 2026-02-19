@@ -51,8 +51,8 @@ type ManageCommitteeMeetingInput = z.infer<typeof ManageCommitteeMeetingSchema>;
  */
 export async function manageCommittee(input: ManageCommitteeInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "committee:manage")) {
     return {
@@ -124,8 +124,8 @@ export async function manageCommittee(input: ManageCommitteeInput) {
  */
 export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "committee:manage")) {
     return {
@@ -198,8 +198,8 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
  */
 export async function removeCommitteeMember(memberId: string) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "committee:manage")) {
     return {
@@ -250,8 +250,8 @@ export async function manageCommitteeMeeting(
   input: ManageCommitteeMeetingInput,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "committee:manage")) {
     return {

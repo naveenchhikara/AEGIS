@@ -29,8 +29,8 @@ type ManageActionPlanInput = z.infer<typeof ManageActionPlanSchema>;
  */
 export async function manageActionPlan(input: ManageActionPlanInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "issue:manage")) {
     return {
@@ -139,8 +139,8 @@ export async function completeActionPlan(
   if (!z.string().uuid().safeParse(actionPlanId).success)
     return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "issue:manage")) {
     return {
@@ -215,8 +215,8 @@ export async function updateActionPlanProgress(
   if (completionPct < 0 || completionPct > 100)
     return { success: false as const, error: "Invalid percentage." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "issue:manage")) {
     return {
@@ -308,8 +308,8 @@ export async function addActionPlanEvidence(
     };
 
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "issue:manage")) {
     return {

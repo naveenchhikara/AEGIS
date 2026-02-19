@@ -42,8 +42,8 @@ export async function confirmRepeatFinding(
   }
 
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles as string[]) ?? [];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles ?? [];
+  const tenantId = session.user.tenantId;
 
   if (!tenantId) {
     return { success: false, error: "No tenant context found" };
@@ -182,8 +182,8 @@ export async function dismissRepeatFinding(
   }
 
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles as string[]) ?? [];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles ?? [];
+  const tenantId = session.user.tenantId;
 
   if (!tenantId) {
     return { success: false, error: "No tenant context found" };

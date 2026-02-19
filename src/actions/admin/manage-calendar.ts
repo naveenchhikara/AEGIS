@@ -24,10 +24,9 @@ export async function createCalendarEvent(
   input: z.infer<typeof createEventSchema>,
 ) {
   const session = await getRequiredSession();
-  const user = session.user as any;
-  if (!user.tenantId) return { success: false as const, error: "No tenant" };
-  const db = prismaForTenant(user.tenantId);
-  if (!hasPermission(user.roles ?? [], "calendar:manage"))
+  const { tenantId, roles } = session.user;
+  const db = prismaForTenant(tenantId);
+  if (!hasPermission(roles, "calendar:manage"))
     return { success: false as const, error: "Forbidden" };
 
   const parsed = createEventSchema.safeParse(input);
@@ -37,7 +36,7 @@ export async function createCalendarEvent(
   try {
     const event = await db.auditCalendar.create({
       data: {
-        tenantId: user.tenantId,
+        tenantId,
         ...parsed.data,
         startDate: new Date(parsed.data.startDate),
         endDate: parsed.data.endDate
@@ -75,21 +74,20 @@ export async function updateCalendarEvent(
   input: z.infer<typeof updateEventSchema>,
 ) {
   const session = await getRequiredSession();
-  const user = session.user as any;
-  if (!user.tenantId) return { success: false as const, error: "No tenant" };
+  const { tenantId, roles } = session.user;
 
   const parsed = updateEventSchema.safeParse(input);
   if (!parsed.success)
     return { success: false as const, error: parsed.error.issues[0].message };
 
-  const db = prismaForTenant(user.tenantId);
-  if (!hasPermission(user.roles ?? [], "calendar:manage"))
+  const db = prismaForTenant(tenantId);
+  if (!hasPermission(roles, "calendar:manage"))
     return { success: false as const, error: "Forbidden" };
 
   try {
     // SECURITY: Verify event belongs to tenant before updating
     const existing = await db.auditCalendar.findFirst({
-      where: { id: parsed.data.eventId, tenantId: user.tenantId },
+      where: { id: parsed.data.eventId, tenantId },
     });
     if (!existing) return { success: false as const, error: "Event not found" };
 
@@ -122,21 +120,20 @@ const deleteEventSchema = z.object({
 
 export async function deleteCalendarEvent(eventId: string) {
   const session = await getRequiredSession();
-  const user = session.user as any;
-  if (!user.tenantId) return { success: false as const, error: "No tenant" };
+  const { tenantId, roles } = session.user;
 
   const parsed = deleteEventSchema.safeParse({ eventId });
   if (!parsed.success)
     return { success: false as const, error: parsed.error.issues[0].message };
 
-  const db = prismaForTenant(user.tenantId);
-  if (!hasPermission(user.roles ?? [], "calendar:manage"))
+  const db = prismaForTenant(tenantId);
+  if (!hasPermission(roles, "calendar:manage"))
     return { success: false as const, error: "Forbidden" };
 
   try {
     // SECURITY: Scope delete to tenant to prevent cross-tenant deletion
     await db.auditCalendar.deleteMany({
-      where: { id: eventId, tenantId: user.tenantId },
+      where: { id: eventId, tenantId },
     });
     revalidatePath("/calendar");
     return { success: true as const, data: null };

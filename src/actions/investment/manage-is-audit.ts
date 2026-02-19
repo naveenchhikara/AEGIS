@@ -84,8 +84,8 @@ export async function manageIsAuditChecklist(
   input: ManageIsAuditChecklistInput,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (
     !userRoles.includes("IS_AUDITOR") &&
@@ -177,8 +177,8 @@ export async function manageApplicationInventory(
   input: ManageApplicationInventoryInput,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (
     !userRoles.includes("IS_AUDITOR") &&
@@ -267,8 +267,8 @@ export async function manageApplicationInventory(
  */
 export async function manageVendorRiskAssessment(input: ManageVendorRiskInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (
     !userRoles.includes("IS_AUDITOR") &&

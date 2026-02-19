@@ -31,13 +31,13 @@ interface InviteUserInput {
 
 export async function sendUserInvitations(users: InviteUserInput[]) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "admin:manage_users")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   if (!tenantId) {
     return { success: false, error: "No tenant found." };
   }
@@ -206,13 +206,13 @@ export async function acceptInvitation(
 
 export async function resendInvitation(userId: string) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "admin:manage_users")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   try {
     const user = await prisma.user.findFirst({
@@ -254,13 +254,13 @@ export async function resendInvitation(userId: string) {
 
 export async function revokeInvitation(userId: string) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "admin:manage_users")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   try {
     const user = await prisma.user.findFirst({

@@ -32,7 +32,7 @@ export async function runEscalationJob() {
     throw new Error("Unauthorized: escalation:compute permission required");
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   return runEscalationJobInternal(tenantId);
 }

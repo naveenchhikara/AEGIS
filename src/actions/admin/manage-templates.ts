@@ -17,9 +17,8 @@ export async function createReportTemplate(
   input: z.infer<typeof createTemplateSchema>,
 ) {
   const session = await getRequiredSession();
-  const user = session.user as any;
-  if (!user.tenantId) return { success: false as const, error: "No tenant" };
-  if (!hasPermission(user.roles ?? [], "template:manage"))
+  const { tenantId, roles } = session.user;
+  if (!hasPermission(roles, "template:manage"))
     return { success: false as const, error: "Forbidden" };
 
   const parsed = createTemplateSchema.safeParse(input);
@@ -27,11 +26,11 @@ export async function createReportTemplate(
     return { success: false as const, error: parsed.error.message };
 
   try {
-    const db = prismaForTenant(user.tenantId);
+    const db = prismaForTenant(tenantId);
 
     // Get next version number
     const existing = await db.reportTemplate.findMany({
-      where: { tenantId: user.tenantId, name: parsed.data.name },
+      where: { tenantId, name: parsed.data.name },
       orderBy: { versionNumber: "desc" },
       take: 1,
     });
@@ -40,20 +39,20 @@ export async function createReportTemplate(
     // Deactivate previous versions
     if (existing.length > 0) {
       await db.reportTemplate.updateMany({
-        where: { tenantId: user.tenantId, name: parsed.data.name },
+        where: { tenantId, name: parsed.data.name },
         data: { isActive: false },
       });
     }
 
     const template = await db.reportTemplate.create({
       data: {
-        tenantId: user.tenantId,
+        tenantId,
         name: parsed.data.name,
         category: parsed.data.category,
         templateData: JSON.parse(JSON.stringify(parsed.data.templateData)),
         versionNumber: nextVersion,
         isActive: true,
-        createdById: user.id,
+        createdById: session.user.id,
       },
     });
 
@@ -75,22 +74,21 @@ const deactivateTemplateSchema = z.object({
 
 export async function deactivateTemplate(templateId: string) {
   const session = await getRequiredSession();
-  const user = session.user as any;
-  if (!user.tenantId) return { success: false as const, error: "No tenant" };
+  const { tenantId, roles } = session.user;
 
   const parsed = deactivateTemplateSchema.safeParse({ templateId });
   if (!parsed.success)
     return { success: false as const, error: parsed.error.issues[0].message };
 
-  if (!hasPermission(user.roles ?? [], "template:manage"))
+  if (!hasPermission(roles, "template:manage"))
     return { success: false as const, error: "Forbidden" };
 
   try {
-    const db = prismaForTenant(user.tenantId);
+    const db = prismaForTenant(tenantId);
 
     // SECURITY: Scope update to tenant to prevent cross-tenant modification
     await db.reportTemplate.updateMany({
-      where: { id: templateId, tenantId: user.tenantId },
+      where: { id: templateId, tenantId },
       data: { isActive: false },
     });
     revalidatePath("/admin/templates");

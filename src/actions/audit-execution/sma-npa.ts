@@ -19,8 +19,8 @@ import {
  */
 export async function saveSmaNpaEntries(input: SaveSmaNpaEntriesInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "examination:respond")) {
     return {

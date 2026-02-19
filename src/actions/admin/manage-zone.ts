@@ -29,8 +29,8 @@ type ManageZoneInput = z.infer<typeof ManageZoneSchema>;
  */
 export async function manageZone(input: ManageZoneInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "admin:manage_settings")) {
     return { success: false as const, error: "Forbidden" };
@@ -111,8 +111,8 @@ export async function manageZone(input: ManageZoneInput) {
  */
 export async function deleteZone(zoneId: string) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "admin:manage_settings")) {
     return { success: false as const, error: "Forbidden" };

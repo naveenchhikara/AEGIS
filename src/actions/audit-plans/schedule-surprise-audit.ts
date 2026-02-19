@@ -69,8 +69,8 @@ export async function scheduleSurpriseAudit(
 }> {
   // ─── Authentication & Authorization ──────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // R71: Surprise audits restricted to IAD Manager, ACE Officer, CAE only
   const surpriseAllowedRoles: Role[] = ["AUDIT_MANAGER", "ACE_OFFICER", "CAE"];

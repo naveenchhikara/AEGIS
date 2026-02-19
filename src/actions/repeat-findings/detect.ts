@@ -42,7 +42,7 @@ export async function detectRepeatFindings(
   }
 
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   if (!tenantId) {
     return { success: false, error: "No tenant context found" };

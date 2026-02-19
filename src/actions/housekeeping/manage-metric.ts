@@ -24,8 +24,8 @@ export async function manageHousekeepingMetric(
   input: z.infer<typeof ManageMetricSchema>,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "regulatory:manage")) {
     return { success: false as const, error: "Permission denied." };

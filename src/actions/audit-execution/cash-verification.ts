@@ -23,8 +23,8 @@ import {
 export async function saveCashVerification(input: SaveCashVerificationInput) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // ─── Step 2: Permission Check ──────────────────────────────────
   if (!hasPermission(userRoles, "examination:respond")) {
@@ -148,8 +148,8 @@ export async function saveCashVerification(input: SaveCashVerificationInput) {
  */
 export async function getCashVerificationAction(engagementId: string) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "examination:respond")) {
     return {

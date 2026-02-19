@@ -20,8 +20,8 @@ import {
  */
 export async function createLoanReview(input: CreateLoanReviewInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "examination:respond")) {
     return {
@@ -95,8 +95,8 @@ export async function createLoanReview(input: CreateLoanReviewInput) {
  */
 export async function updateLoanReview(input: UpdateLoanReviewInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "examination:respond")) {
     return {
@@ -180,8 +180,8 @@ export async function deleteLoanReview(input: {
   if (!parsed.success)
     return { success: false as const, error: "Invalid input." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "examination:respond")) {
     return {

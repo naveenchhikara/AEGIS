@@ -38,8 +38,8 @@ type ManageRiskInput = z.infer<typeof ManageRiskSchema>;
  */
 export async function manageRisk(input: ManageRiskInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "risk_register:manage")) {
     return {
@@ -148,8 +148,8 @@ type ManageKRIInput = z.infer<typeof ManageKRISchema>;
  */
 export async function manageKRI(input: ManageKRIInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "risk_register:manage")) {
     return {

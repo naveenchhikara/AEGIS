@@ -49,8 +49,8 @@ type ManagePolicyInput = z.infer<typeof ManagePolicySchema>;
  */
 export async function managePolicy(input: ManagePolicyInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "policy:manage")) {
     return {
@@ -138,8 +138,8 @@ export async function deletePolicy(policyId: string) {
   if (!z.string().uuid().safeParse(policyId).success)
     return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "policy:manage")) {
     return {

@@ -29,8 +29,8 @@ import type { TransitionReportInput } from "./schemas";
 export async function transitionReportStatus(input: TransitionReportInput) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // ─── Step 2: Input Validation ──────────────────────────────────
   const parsed = TransitionReportSchema.safeParse(input);

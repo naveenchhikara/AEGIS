@@ -33,13 +33,13 @@ interface AddCustomRequirementInput {
 
 export async function addCustomRequirement(input: AddCustomRequirementInput) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "compliance:update")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   if (!tenantId) {
     return { success: false, error: "No tenant found." };
   }
@@ -67,13 +67,13 @@ export async function markAsNotApplicable(
   reason: string,
 ) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "compliance:update")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   try {
     await markRequirementNotApplicable(tenantId, requirementId, reason);
@@ -94,13 +94,13 @@ export async function markAsNotApplicable(
 
 export async function revertNotApplicable(requirementId: string) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "compliance:update")) {
     return { success: false, error: "Insufficient permissions." };
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   try {
     await revertRequirementNotApplicable(tenantId, requirementId);
@@ -172,7 +172,7 @@ export async function searchCirculars(query: string) {
 
 export async function fetchCustomRequirements() {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   try {
     const requirements = await getCustomRequirements(tenantId);

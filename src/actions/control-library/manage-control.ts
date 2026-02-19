@@ -42,8 +42,8 @@ type ManageControlInput = z.infer<typeof ManageControlSchema>;
  */
 export async function manageControl(input: ManageControlInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "control_library:manage")) {
     return {
@@ -144,8 +144,8 @@ type ManageTestProcedureInput = z.infer<typeof ManageTestProcedureSchema>;
  */
 export async function manageTestProcedure(input: ManageTestProcedureInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "control_library:manage")) {
     return {

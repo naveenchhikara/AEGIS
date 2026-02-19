@@ -69,8 +69,8 @@ export async function submitAuditeeResponse(
   input: z.infer<typeof SubmitResponseSchema>,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as string[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!userRoles.includes("AUDITEE")) {
     return { success: false as const, error: "AUDITEE role required." };
@@ -238,8 +238,8 @@ export async function requestEvidenceUpload(
   input: z.infer<typeof RequestUploadSchema>,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as string[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!userRoles.includes("AUDITEE")) {
     return { success: false as const, error: "AUDITEE role required." };
@@ -344,8 +344,8 @@ export async function confirmEvidenceUpload(
   input: z.infer<typeof ConfirmUploadSchema>,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as string[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!userRoles.includes("AUDITEE")) {
     return { success: false as const, error: "AUDITEE role required." };
@@ -469,8 +469,8 @@ export async function confirmEvidenceUpload(
  */
 export async function getEvidenceDownloadUrl(evidenceId: string) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as string[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!evidenceId || typeof evidenceId !== "string") {
     return { success: false as const, error: "Invalid evidence ID." };

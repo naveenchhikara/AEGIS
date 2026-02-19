@@ -34,8 +34,8 @@ type CertificationInput = z.infer<typeof CertificationSchema>;
  */
 export async function submitQuarterlyCertification(input: CertificationInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!userRoles.includes("ACB_MEMBER") && !userRoles.includes("IS_AUDITOR")) {
     return {
@@ -110,7 +110,7 @@ export async function submitQuarterlyCertification(input: CertificationInput) {
  */
 export async function getInvestmentCertifications() {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {

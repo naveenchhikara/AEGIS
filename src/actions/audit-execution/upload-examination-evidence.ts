@@ -39,8 +39,8 @@ export async function requestExaminationEvidenceUpload(
   input: RequestExamEvidenceUploadInput,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Permission check
   if (!hasPermission(userRoles, "examination:respond")) {
@@ -138,8 +138,8 @@ export async function confirmExaminationEvidenceUpload(
   input: ConfirmExamEvidenceUploadInput,
 ) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Permission check
   if (!hasPermission(userRoles, "examination:respond")) {
@@ -245,8 +245,8 @@ export async function confirmExaminationEvidenceUpload(
  */
 export async function getExaminationEvidenceDownloadUrl(evidenceId: string) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Permission check
   if (!hasPermission(userRoles, "examination:read")) {

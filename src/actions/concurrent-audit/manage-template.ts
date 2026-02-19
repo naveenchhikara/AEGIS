@@ -44,8 +44,8 @@ type ManageTemplateInput = z.infer<typeof ManageTemplateSchema>;
  */
 export async function manageTemplate(input: ManageTemplateInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "concurrent_audit:execute")) {
     return {
@@ -132,8 +132,8 @@ export async function deleteTemplate(templateId: string) {
   if (!z.string().uuid().safeParse(templateId).success)
     return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "concurrent_audit:execute")) {
     return {

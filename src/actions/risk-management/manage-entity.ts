@@ -26,8 +26,8 @@ type ManageEntityInput = z.infer<typeof ManageEntitySchema>;
  */
 export async function manageAuditUniverseEntity(input: ManageEntityInput) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "audit_universe:manage")) {
     return {
@@ -114,8 +114,8 @@ export async function deleteAuditUniverseEntity(entityId: string) {
   if (!z.string().uuid().safeParse(entityId).success)
     return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "audit_universe:manage")) {
     return {

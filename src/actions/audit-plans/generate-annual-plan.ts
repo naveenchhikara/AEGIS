@@ -27,8 +27,8 @@ import type { GenerateAnnualPlanInput } from "./schemas";
 export async function generateAnnualPlan(input: GenerateAnnualPlanInput) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // ─── Step 2: Permission Check ──────────────────────────────────
   if (!hasPermission(userRoles, "audit_plan:create")) {

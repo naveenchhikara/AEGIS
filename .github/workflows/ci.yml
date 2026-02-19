@@ -151,6 +151,13 @@ jobs:
         env:
           DATABASE_URL: postgresql://aegis:testpassword123@localhost:5432/aegis_test
 
+      - name: Verify seeded data exists
+        run: |
+          PGPASSWORD=testpassword123 psql -h localhost -U aegis -d aegis_test -c 'SELECT id, email, name FROM "User" LIMIT 10;'
+          PGPASSWORD=testpassword123 psql -h localhost -U aegis -d aegis_test -c 'SELECT a.id, a."userId", a."providerId", LENGTH(a.password) as pwd_len FROM "Account" a LIMIT 10;'
+          echo "--- Table list ---"
+          PGPASSWORD=testpassword123 psql -h localhost -U aegis -d aegis_test -c '\dt'
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:

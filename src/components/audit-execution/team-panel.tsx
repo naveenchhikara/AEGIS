@@ -32,6 +32,11 @@ type AvailableUser = {
   email: string;
 };
 
+type SectionOption = {
+  code: string;
+  name: string;
+};
+
 interface TeamPanelProps {
   engagementId: string;
   teamMembers: Array<{
@@ -43,6 +48,7 @@ interface TeamPanelProps {
   }>;
   canManageTeam: boolean;
   availableUsers?: AvailableUser[];
+  sectionOptions?: SectionOption[];
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -55,16 +61,16 @@ export function TeamPanel({
   teamMembers,
   canManageTeam,
   availableUsers = [],
+  sectionOptions = [],
 }: TeamPanelProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [removing, setRemoving] = React.useState<Record<string, boolean>>({});
 
-  // For simplicity, we'll use a minimal add member form
-  // In production, you'd fetch available users from an API
   const [selectedUserId, setSelectedUserId] = React.useState("");
   const [selectedRole, setSelectedRole] = React.useState<string>("FIELD_AUDITOR");
+  const [selectedSections, setSelectedSections] = React.useState<string[]>([]);
 
   async function handleAddMember() {
     if (!selectedUserId) {
@@ -77,7 +83,7 @@ export function TeamPanel({
       engagementId,
       userId: selectedUserId,
       roleInEngagement: selectedRole as "LEAD_AUDITOR" | "FIELD_AUDITOR",
-      assignedSections: [],
+      assignedSections: selectedSections,
     });
     setIsSubmitting(false);
 
@@ -85,6 +91,7 @@ export function TeamPanel({
       toast.success("Team member added successfully");
       setDialogOpen(false);
       setSelectedUserId("");
+      setSelectedSections([]);
       router.refresh();
     } else {
       toast.error(result.error);
@@ -165,6 +172,37 @@ export function TeamPanel({
                       </SelectContent>
                     </Select>
                   </div>
+                  {sectionOptions.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Assigned Sections (R10)</Label>
+                      <div className="max-h-[200px] overflow-y-auto rounded-md border p-2 space-y-1">
+                        {sectionOptions.map((section) => (
+                          <label
+                            key={section.code}
+                            className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSections.includes(section.code)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedSections([...selectedSections, section.code]);
+                                } else {
+                                  setSelectedSections(selectedSections.filter((s) => s !== section.code));
+                                }
+                              }}
+                              className="rounded"
+                            />
+                            <span className="font-mono text-xs text-muted-foreground">{section.code}</span>
+                            <span>{section.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedSections.length} section{selectedSections.length !== 1 ? "s" : ""} selected
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button

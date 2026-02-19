@@ -37,6 +37,15 @@ export default async function AuditExecutionPage({ params }: PageProps) {
         orderBy: { name: "asc" },
       })
     : [];
+
+  // Fetch examination areas for section allocation (R10)
+  const sectionOptions = canManageTeam
+    ? await db.examinationArea.findMany({
+        where: { tenantId, isActive: true },
+        select: { code: true, name: true },
+        orderBy: { displayOrder: "asc" },
+      })
+    : [];
   const canManageSections = hasPermission(
     userRoles,
     "audit_execution:manage_sections",
@@ -67,6 +76,7 @@ export default async function AuditExecutionPage({ params }: PageProps) {
               name: u.name ?? "Unnamed",
               email: u.email,
             }))}
+            sectionOptions={sectionOptions}
           />
         </div>
       </div>

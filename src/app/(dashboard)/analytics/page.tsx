@@ -4,11 +4,13 @@ import {
   getAuditPlanProgress,
   getComplianceAging,
   getFindingTrends,
+  getNpaMovement,
 } from "@/data-access/analytics";
 import { RiskHeatmap } from "@/components/analytics/risk-heatmap";
 import { PlanProgress } from "@/components/analytics/plan-progress";
 import { ComplianceAging } from "@/components/analytics/compliance-aging";
 import { FindingTrends } from "@/components/analytics/finding-trends";
+import { NpaWaterfall } from "@/components/analytics/npa-waterfall";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,12 +30,13 @@ export default async function AnalyticsPage() {
   }
 
   // Fetch all analytics data
-  const [branchRiskData, planProgressData, complianceAgingData, findingTrendsData] =
+  const [branchRiskData, planProgressData, complianceAgingData, findingTrendsData, npaMovementData] =
     await Promise.all([
       getBranchRiskHeatmap(tenantId),
       getAuditPlanProgress(tenantId),
       getComplianceAging(tenantId),
       getFindingTrends(tenantId),
+      getNpaMovement(tenantId),
     ]);
 
   return (
@@ -46,11 +49,12 @@ export default async function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="risk" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-5">
           <TabsTrigger value="risk">Branch Risk</TabsTrigger>
           <TabsTrigger value="plan">Audit Plans</TabsTrigger>
           <TabsTrigger value="compliance">Compliance Aging</TabsTrigger>
           <TabsTrigger value="findings">Finding Trends</TabsTrigger>
+          <TabsTrigger value="npa">NPA Waterfall</TabsTrigger>
         </TabsList>
 
         <TabsContent value="risk" className="space-y-4">
@@ -67,6 +71,10 @@ export default async function AnalyticsPage() {
 
         <TabsContent value="findings" className="space-y-4">
           <FindingTrends data={findingTrendsData} />
+        </TabsContent>
+
+        <TabsContent value="npa" className="space-y-4">
+          <NpaWaterfall data={npaMovementData} />
         </TabsContent>
       </Tabs>
     </div>

@@ -127,39 +127,22 @@ export async function getComplianceItemsByEngagement(
 
 /**
  * Update daysOpen for all open compliance items (cron job).
+ * Fixes N+1: single raw SQL UPDATE instead of N individual updates.
+ * From N+1 queries (501 for 500 items) down to 1 query.
  */
 export async function updateDaysOpenForOpenItems(tenantId: string) {
   const db = prismaForTenant(tenantId);
 
   try {
-    const openItems = await db.complianceItem.findMany({
-      where: {
-        tenantId,
-        status: {
-          notIn: ["CLOSED"],
-        },
-      },
-      select: {
-        id: true,
-        createdAt: true,
-      },
-    });
-
-    const now = new Date();
-
-    for (const item of openItems) {
-      const daysOpen = Math.floor(
-        (now.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24),
-      );
-
-      await db.complianceItem.update({
-        where: { id: item.id },
-        data: { daysOpen },
-      });
-    }
+    const result = await db.$executeRaw`
+      UPDATE "ComplianceItem"
+      SET "daysOpen" = FLOOR(EXTRACT(EPOCH FROM (NOW() - "createdAt")) / 86400)
+      WHERE "tenantId" = ${tenantId}::uuid
+        AND "status" NOT IN ('CLOSED')
+    `;
 
     logger.info(
-      { tenantId, count: openItems.length },
+      { tenantId, count: result },
       "Updated daysOpen for compliance items",
     );
   } catch (error) {

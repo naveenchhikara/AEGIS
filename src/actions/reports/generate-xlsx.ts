@@ -59,16 +59,12 @@ export async function generateXlsxReport(input: GenerateReportInput) {
       };
     }
 
-    if (auditData.status !== "COMPLETED") {
-      return {
-        success: false as const,
-        error: "Can only generate reports for completed audits.",
-      };
-    }
+    // R29: Allow draft/in-progress reports (not just COMPLETED)
+    const isDraft = auditData.status !== "COMPLETED";
 
     // Generate XLSX
     logger.info(
-      { engagementId: parsed.data.engagementId },
+      { engagementId: parsed.data.engagementId, isDraft },
       "Generating XLSX audit report"
     );
 
@@ -76,7 +72,8 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     const buffer = await generateAuditReportXLSX(auditData, templateData ?? undefined);
 
     // Upload to S3
-    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}_report.xlsx`;
+    const statusTag = isDraft ? "_DRAFT" : "";
+    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}${statusTag}_report.xlsx`;
     const s3Key = await uploadToS3({
       key: filename,
       body: buffer,
@@ -88,8 +85,27 @@ export async function generateXlsxReport(input: GenerateReportInput) {
       "XLSX report uploaded to S3"
     );
 
-    // In a real implementation, you might store the S3 key in a GeneratedReport model
-    // For now, just return the S3 key for download
+    // R29: Track generated report in BoardReport for audit trail + re-download
+    const db = prismaForTenant(tenantId);
+    const now = new Date();
+    // Fiscal quarters: Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+    const month = now.getMonth(); // 0-indexed
+    const fiscalQuarter = month >= 3 && month <= 5 ? "Q1_APR_JUN"
+      : month >= 6 && month <= 8 ? "Q2_JUL_SEP"
+      : month >= 9 && month <= 11 ? "Q3_OCT_DEC"
+      : "Q4_JAN_MAR";
+    const quarterEnum = fiscalQuarter as any;
+    await db.boardReport.create({
+      data: {
+        tenantId,
+        year: now.getFullYear(),
+        quarter: quarterEnum,
+        title: `XLSX Audit Report — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
+        s3Key,
+        fileSize: buffer.length,
+        generatedById: session.user.id,
+      },
+    });
 
     revalidatePath(`/audit-plans/${parsed.data.engagementId}`);
     revalidatePath("/reports");
@@ -99,7 +115,8 @@ export async function generateXlsxReport(input: GenerateReportInput) {
       data: {
         engagementId: parsed.data.engagementId,
         s3Key,
-        filename: `${auditData.auditNumber || auditData.id}_report.xlsx`,
+        filename: `${auditData.auditNumber || auditData.id}${statusTag}_report.xlsx`,
+        isDraft,
       },
     };
   } catch (error) {

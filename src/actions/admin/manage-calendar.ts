@@ -49,6 +49,59 @@ export async function createCalendarEvent(input: z.infer<typeof createEventSchem
   }
 }
 
+// R47: Update calendar event schema + action
+const updateEventSchema = z.object({
+  eventId: z.string().uuid("Invalid event ID"),
+  title: z.string().min(1).max(200).optional(),
+  eventType: z.enum(["RBIA", "CONCURRENT", "IS_EDP", "STATUTORY", "MEETING"]).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional().nullable(),
+  allDay: z.boolean().optional(),
+  branchId: z.string().uuid().optional().nullable(),
+  engagementId: z.string().uuid().optional().nullable(),
+  recurrenceRule: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  assignedToId: z.string().uuid().optional().nullable(),
+});
+
+export async function updateCalendarEvent(input: z.infer<typeof updateEventSchema>) {
+  const session = await getRequiredSession();
+  const user = session.user as any;
+  if (!user.tenantId) return { success: false as const, error: "No tenant" };
+
+  const parsed = updateEventSchema.safeParse(input);
+  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+
+  const db = prismaForTenant(user.tenantId);
+  if (!hasPermission(user.roles ?? [], "calendar:manage"))
+    return { success: false as const, error: "Forbidden" };
+
+  try {
+    // SECURITY: Verify event belongs to tenant before updating
+    const existing = await db.auditCalendar.findFirst({
+      where: { id: parsed.data.eventId, tenantId: user.tenantId },
+    });
+    if (!existing) return { success: false as const, error: "Event not found" };
+
+    const { eventId, startDate, endDate, ...rest } = parsed.data;
+    const updateData: Record<string, unknown> = { ...rest };
+    if (startDate) updateData.startDate = new Date(startDate);
+    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+
+    const event = await db.auditCalendar.update({
+      where: { id: eventId },
+      data: updateData,
+    });
+
+    logger.info({ eventId: event.id }, "Calendar event updated");
+    revalidatePath("/calendar");
+    return { success: true as const, data: event };
+  } catch (error) {
+    logger.error({ error, eventId: parsed.data.eventId }, "Failed to update calendar event");
+    return { success: false as const, error: "Failed to update event" };
+  }
+}
+
 const deleteEventSchema = z.object({
   eventId: z.string().uuid("Invalid event ID"),
 });

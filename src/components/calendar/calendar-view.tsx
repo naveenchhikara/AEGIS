@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createCalendarEvent, deleteCalendarEvent } from "@/actions/admin/manage-calendar";
+import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "@/actions/admin/manage-calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Loader2, Trash2, Calendar as CalendarIcon } from "@/lib/icons";
+import { Plus, Loader2, Trash2, Calendar as CalendarIcon, Pencil } from "@/lib/icons";
 import { toast } from "sonner";
 
 interface CalendarViewProps {
@@ -65,6 +65,11 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
   const [allDay, setAllDay] = React.useState(false);
   const [description, setDescription] = React.useState("");
   const [recurrenceRule, setRecurrenceRule] = React.useState("");
+
+  // R47: Edit state
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [editingEventId, setEditingEventId] = React.useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState(false);
 
   // Filter events by type
   const filteredEvents = React.useMemo(() => {
@@ -129,6 +134,46 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
     const result = await deleteCalendarEvent(eventId);
     if (result.success) {
       toast.success("Event deleted");
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+  };
+
+  // R47: Open edit dialog with pre-filled data
+  const handleEditClick = (event: CalendarViewProps["events"][0]) => {
+    setEditingEventId(event.id);
+    setTitle(event.title);
+    setEventType(event.eventType);
+    setStartDate(new Date(event.startDate).toISOString().split("T")[0]);
+    setEndDate(event.endDate ? new Date(event.endDate).toISOString().split("T")[0] : "");
+    setDescription(event.description ?? "");
+    setRecurrenceRule(""); // Will be populated when schema adds recurrenceRule to select
+    setEditDialogOpen(true);
+  };
+
+  // R47: Update existing calendar event
+  const handleUpdate = async () => {
+    if (!editingEventId || !title.trim() || !startDate) {
+      toast.error("Please provide title and start date");
+      return;
+    }
+    setIsUpdating(true);
+    const result = await updateCalendarEvent({
+      eventId: editingEventId,
+      title,
+      eventType: eventType as any,
+      startDate: new Date(startDate).toISOString(),
+      endDate: endDate ? new Date(endDate).toISOString() : null,
+      description: description || null,
+      recurrenceRule: recurrenceRule || null,
+    });
+    setIsUpdating(false);
+
+    if (result.success) {
+      toast.success("Event updated");
+      setEditDialogOpen(false);
+      setEditingEventId(null);
       router.refresh();
     } else {
       toast.error(result.error);
@@ -299,13 +344,22 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
                           </div>
                         </div>
                         {canManage && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditClick(event)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(event.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </CardHeader>
@@ -344,6 +398,77 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
           ))
         )}
       </div>
+
+      {/* R47: Edit Event Dialog */}
+      {canManage && (
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Calendar Event</DialogTitle>
+              <DialogDescription>Update event details.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Event Type</Label>
+                <Select value={eventType} onValueChange={setEventType}>
+                  <SelectTrigger id="edit-type"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RBIA">RBIA</SelectItem>
+                    <SelectItem value="CONCURRENT">Concurrent</SelectItem>
+                    <SelectItem value="IS_EDP">IS/EDP Audit</SelectItem>
+                    <SelectItem value="STATUTORY">Statutory</SelectItem>
+                    <SelectItem value="MEETING">Meeting</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-start">Start Date</Label>
+                  <Input id="edit-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-end">End Date</Label>
+                  <Input id="edit-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-desc">Description</Label>
+                <Textarea id="edit-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-recurrence">Recurrence</Label>
+                <Select value={recurrenceRule} onValueChange={setRecurrenceRule}>
+                  <SelectTrigger id="edit-recurrence"><SelectValue placeholder="No recurrence" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="WEEKLY">Weekly</SelectItem>
+                    <SelectItem value="BIWEEKLY">Every 2 Weeks</SelectItem>
+                    <SelectItem value="MONTHLY">Monthly</SelectItem>
+                    <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                    <SelectItem value="HALF_YEARLY">Half-Yearly</SelectItem>
+                    <SelectItem value="ANNUAL">Annual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isUpdating}>Cancel</Button>
+              <Button onClick={handleUpdate} disabled={isUpdating}>
+                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

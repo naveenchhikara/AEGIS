@@ -225,9 +225,6 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_universe:read",
     "calendar:manage",
     "audit_trail:read",
-    "admin:manage_users",
-    "admin:manage_settings",
-    "admin:system",
   ],
   AUDITEE: ["observation:read"], // Limited to assigned observations only
   BOARD_OBSERVER: [], // Reserved — no permissions yet (DE9)

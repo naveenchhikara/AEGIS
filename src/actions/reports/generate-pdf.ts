@@ -60,16 +60,12 @@ export async function generatePdfReport(input: GenerateReportInput) {
       };
     }
 
-    if (auditData.status !== "COMPLETED") {
-      return {
-        success: false as const,
-        error: "Can only generate reports for completed audits.",
-      };
-    }
+    // R29: Allow draft/in-progress reports (not just COMPLETED)
+    const isDraft = auditData.status !== "COMPLETED";
 
     // Render PDF
     logger.info(
-      { engagementId: parsed.data.engagementId },
+      { engagementId: parsed.data.engagementId, isDraft },
       "Generating PDF audit summary"
     );
 
@@ -77,12 +73,14 @@ export async function generatePdfReport(input: GenerateReportInput) {
     const buffer = await renderToBuffer(
       React.createElement(AuditSummaryDocument, { auditData }) as any
     );
+    const pdfBuffer = Buffer.from(buffer);
 
     // Upload to S3
-    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}_summary.pdf`;
+    const statusTag = isDraft ? "_DRAFT" : "";
+    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}${statusTag}_summary.pdf`;
     const s3Key = await uploadToS3({
       key: filename,
-      body: Buffer.from(buffer),
+      body: pdfBuffer,
       contentType: "application/pdf",
     });
 
@@ -90,6 +88,27 @@ export async function generatePdfReport(input: GenerateReportInput) {
       { engagementId: parsed.data.engagementId, s3Key },
       "PDF summary uploaded to S3"
     );
+
+    // R29: Track generated report in BoardReport for audit trail + re-download
+    const db = prismaForTenant(tenantId);
+    const now = new Date();
+    const month = now.getMonth();
+    const fiscalQuarter = month >= 3 && month <= 5 ? "Q1_APR_JUN"
+      : month >= 6 && month <= 8 ? "Q2_JUL_SEP"
+      : month >= 9 && month <= 11 ? "Q3_OCT_DEC"
+      : "Q4_JAN_MAR";
+    const quarterEnum = fiscalQuarter as any;
+    await db.boardReport.create({
+      data: {
+        tenantId,
+        year: now.getFullYear(),
+        quarter: quarterEnum,
+        title: `PDF Summary — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
+        s3Key,
+        fileSize: pdfBuffer.length,
+        generatedById: session.user.id,
+      },
+    });
 
     revalidatePath(`/audit-plans/${parsed.data.engagementId}`);
     revalidatePath("/reports");
@@ -99,7 +118,8 @@ export async function generatePdfReport(input: GenerateReportInput) {
       data: {
         engagementId: parsed.data.engagementId,
         s3Key,
-        filename: `${auditData.auditNumber || auditData.id}_summary.pdf`,
+        filename: `${auditData.auditNumber || auditData.id}${statusTag}_summary.pdf`,
+        isDraft,
       },
     };
   } catch (error) {

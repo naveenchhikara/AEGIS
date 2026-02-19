@@ -530,3 +530,28 @@ export async function getReportStatusForEngagement(
     },
   });
 }
+
+/**
+ * R29: Get generated report history for re-download.
+ * Returns all BoardReport records for the tenant, sorted by generation date.
+ */
+export async function getGeneratedReports(session: Session) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.boardReport.findMany({
+    where: { tenantId },
+    select: {
+      id: true,
+      title: true,
+      year: true,
+      quarter: true,
+      s3Key: true,
+      fileSize: true,
+      generatedAt: true,
+      generatedBy: { select: { name: true } },
+    },
+    orderBy: { generatedAt: "desc" },
+    take: 100,
+  });
+}

@@ -1,6 +1,8 @@
 import { getRequiredSession } from "@/data-access/session";
 import { getReportTemplates } from "@/data-access/analytics";
+import { getGeneratedReports } from "@/data-access/reports";
 import { ReportGenerator } from "@/components/reports/report-generator";
+import { GeneratedReportsList } from "@/components/reports/generated-reports-list";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +21,9 @@ export default async function ReportsPage() {
   }
 
   const templates = await getReportTemplates(tenantId);
+
+  // R29: Fetch generated report history for re-download
+  const generatedReports = await getGeneratedReports(session);
 
   return (
     <div className="space-y-6">
@@ -78,6 +83,9 @@ export default async function ReportsPage() {
 
       {/* Report generation UI */}
       <ReportGenerator canGenerate={canGenerate} templates={templates} />
+
+      {/* R29: Generated report history with re-download */}
+      <GeneratedReportsList reports={generatedReports} />
     </div>
   );
 }

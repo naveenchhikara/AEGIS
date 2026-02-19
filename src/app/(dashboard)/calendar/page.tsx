@@ -13,8 +13,16 @@ export default async function CalendarPage() {
     redirect("/dashboard");
   }
 
-  // Fetch all calendar events (no date filter for initial load)
-  const events = await getAuditCalendarEvents(tenantId);
+  // Fetch calendar events for current fiscal year (April 1 – March 31)
+  // Prevents unbounded query loading all historical events on every page visit
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  // Indian fiscal year: April = month 3 (0-indexed). Before April → previous FY.
+  const fyYear = now.getMonth() < 3 ? currentYear - 1 : currentYear;
+  const fiscalStart = new Date(fyYear, 3, 1); // April 1
+  const fiscalEnd = new Date(fyYear + 1, 2, 31, 23, 59, 59); // March 31
+
+  const events = await getAuditCalendarEvents(tenantId, fiscalStart, fiscalEnd);
 
   const canManage = hasPermission(userRoles, "calendar:manage");
 

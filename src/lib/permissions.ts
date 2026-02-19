@@ -105,7 +105,12 @@ export type Permission =
   | "board:reporting"
   | "risk_mis:read"
   | "escalation:compute"
-  | "admin:system";
+  | "admin:system"
+  // IS Audit (R89)
+  | "is_audit:read"
+  | "is_audit:manage"
+  // Risk Head Dashboard (R90)
+  | "dashboard:risk_head";
 
 /**
  * Role-to-permission mapping.
@@ -317,6 +322,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "work_program:execute",
     "issue:read",
     "issue:manage",
+    "is_audit:read",
+    "is_audit:manage",
     "dashboard:auditor",
   ],
   RISK_HEAD: [
@@ -333,7 +340,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "observation:read",
     "policy:read",
     "housekeeping:read",
-    "dashboard:cae",
+    "dashboard:risk_head",
   ],
   ACB_MEMBER: [
     "board:workspace",
@@ -361,6 +368,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_universe:manage",
     "policy:manage",
     "committee:manage",
+    "dashboard:cae",
   ],
 };
 

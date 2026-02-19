@@ -184,7 +184,7 @@ export const navItems: NavItem[] = [
     href: "/is-audit",
     icon: Monitor,
     tKey: "isAudit",
-    requiredPermission: "concurrent_audit:read",
+    requiredPermission: "is_audit:read",
   },
   {
     title: "Admin",
@@ -235,14 +235,17 @@ export function filterNavByRoles(roles: Role[]): NavItem[] {
         permissions.has("dashboard:manager") ||
         permissions.has("dashboard:cae") ||
         permissions.has("dashboard:cco") ||
-        permissions.has("dashboard:ceo")
+        permissions.has("dashboard:ceo") ||
+        permissions.has("dashboard:risk_head")
       );
     }
 
-    // Special case: Analytics accessible by CAE or CEO
+    // Special case: Analytics accessible by CAE, CEO, or RISK_HEAD
     if (item.title === "Analytics") {
       return (
-        permissions.has("dashboard:cae") || permissions.has("dashboard:ceo")
+        permissions.has("dashboard:cae") ||
+        permissions.has("dashboard:ceo") ||
+        permissions.has("dashboard:risk_head")
       );
     }
 
@@ -390,6 +393,8 @@ function getPermissionsForRole(role: Role): Permission[] {
       "work_program:execute",
       "issue:read",
       "issue:manage",
+      "is_audit:read",
+      "is_audit:manage",
       "dashboard:auditor",
     ],
     RISK_HEAD: [
@@ -406,7 +411,7 @@ function getPermissionsForRole(role: Role): Permission[] {
       "observation:read",
       "policy:read",
       "housekeeping:read",
-      "dashboard:cae",
+      "dashboard:risk_head",
     ],
     ACB_MEMBER: [
       "board:workspace",
@@ -434,6 +439,7 @@ function getPermissionsForRole(role: Role): Permission[] {
       "audit_universe:manage",
       "policy:manage",
       "committee:manage",
+      "dashboard:cae",
     ],
   };
 

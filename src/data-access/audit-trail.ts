@@ -187,6 +187,8 @@ export async function getAuditActionTypes(tenantId: string): Promise<string[]> {
 export async function detectAuditGaps(
   tenantId: string,
 ): Promise<{ missingSequence: bigint }[]> {
+  // LIMIT 100 prevents O(max-min) work when sequence range is very large.
+  // Returns first 100 gaps only — sufficient for tamper detection alerts.
   const gaps = await prisma.$queryRaw<{ missing_sequence: bigint }[]>`
     SELECT s.i AS missing_sequence
     FROM generate_series(
@@ -197,6 +199,7 @@ export async function detectAuditGaps(
       SELECT 1 FROM "AuditLog"
       WHERE "sequenceNumber" = s.i AND "tenantId" = ${tenantId}::uuid
     )
+    LIMIT 100
   `;
   return gaps.map((g) => ({ missingSequence: g.missing_sequence }));
 }

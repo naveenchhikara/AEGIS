@@ -305,6 +305,8 @@ export async function manageVendorRiskAssessment(input: ManageVendorRiskInput) {
         const updated = await tx.vendorRiskAssessment.update({
           where: { id: parsed.data.assessmentId },
           data: {
+            vendorName: parsed.data.vendorName,
+            applicationId: parsed.data.applicationId || null,
             contractEnd: parsed.data.contractEnd,
             slaCompliance: parsed.data.slaCompliance,
             riskRating: parsed.data.riskRating,

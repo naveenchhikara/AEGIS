@@ -7,7 +7,7 @@
     "response": "PARTIALLY_CONFORMS",
     "evidence": "Current charter approved in 2018 defines purpose and authority. However, lacks explicit mention of unrestricted access to information and CAE's functional reporting to ACB as required by Standard 1110.",
     "gapIdentified": true,
-    "issueCreated": true
+    "issueCreated": false
   },
   {
     "id": "b0000000-0000-0000-0000-000000000092",
@@ -96,6 +96,416 @@
     "question": "Has the CAE communicated to senior management and the Board that the internal audit activity does not conform with the Standards or Code of Ethics (if applicable)?",
     "response": "DOES_NOT_CONFORM",
     "evidence": "While gaps in conformance exist (EQA overdue, charter update needed), CAE has not formally communicated these non-conformances to ACB as required by Standard 1322.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000101",
+    "assessmentYear": 2025,
+    "iiaStandard": "1010",
+    "question": "Does the CAE take into account the mandatory guidance provided in the Definition of Internal Auditing, the Code of Ethics, and the Standards when establishing policies for the internal audit activity?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Audit policy manual references IIA Standards and Code of Ethics. However, the manual has not been updated since 2021 and does not reflect the 2024 IPPF revisions. Staff training on mandatory guidance conducted annually but assessment of comprehension is informal.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000102",
+    "assessmentYear": 2025,
+    "iiaStandard": "1111",
+    "question": "Does the CAE communicate and interact directly with the Board/ACB without management interference?",
+    "response": "CONFORMS",
+    "evidence": "CAE has standing invitation to all ACB meetings. Quarterly executive sessions held between CAE and ACB Chairman without management present. ACB minutes confirm direct interaction on sensitive matters including fraud investigations and regulatory observations.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000103",
+    "assessmentYear": 2025,
+    "iiaStandard": "1112",
+    "question": "Where the CAE has roles and responsibilities beyond internal auditing, are safeguards in place to limit impairments to independence or objectivity?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "CAE also oversees the compliance function per RBI guidelines for UCBs with limited staff. While this dual role is disclosed to ACB, formal safeguards such as periodic independent review of compliance work or rotation of oversight responsibilities have not been documented.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000104",
+    "assessmentYear": 2025,
+    "iiaStandard": "1120",
+    "question": "Do internal auditors have an impartial, unbiased attitude and avoid any conflict of interest?",
+    "response": "CONFORMS",
+    "evidence": "Annual conflict-of-interest declarations collected from all audit staff. Rotation policy ensures auditors do not audit same branch for more than two consecutive years. No instances of bias or conflict identified during the assessment period.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000105",
+    "assessmentYear": 2025,
+    "iiaStandard": "1130",
+    "question": "Are potential impairments to independence or objectivity identified and managed at individual and functional levels?",
+    "response": "CONFORMS",
+    "evidence": "Pre-engagement independence assessment conducted for each audit. Staff who previously worked in branch operations are excluded from auditing those branches for 24 months. ACB is informed of any impairment concerns. Escalation protocol documented in audit manual.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000106",
+    "assessmentYear": 2025,
+    "iiaStandard": "1210",
+    "question": "Do internal auditors possess the knowledge, skills, and other competencies needed to perform their individual responsibilities?",
+    "response": "CONFORMS",
+    "evidence": "Team includes CAIIB, CIA, and CISA certified professionals. Competency matrix maintained mapping skills to audit areas (credit, treasury, IT, KYC/AML). Skill gap analysis conducted annually with training plans developed accordingly.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000107",
+    "assessmentYear": 2025,
+    "iiaStandard": "1220",
+    "question": "Do internal auditors apply the care and skill expected of a reasonably prudent and competent internal auditor, considering the complexity of auditable areas?",
+    "response": "CONFORMS",
+    "evidence": "Work programs tailored to risk profile of each branch and audit area. Sampling methodology documented and justified. IT-assisted audit techniques used for CBS transaction analysis. Auditors exercise professional skepticism as evidenced in work paper documentation.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000108",
+    "assessmentYear": 2025,
+    "iiaStandard": "1230",
+    "question": "Do internal auditors enhance their knowledge, skills, and competencies through continuing professional development?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "CPE tracking shows average of 32 hours per auditor against the 40-hour target. Two junior auditors fell short of the minimum. Training budget was reduced by 15% in FY2024-25 due to cost pressures. No external conferences attended in the assessment year.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000109",
+    "assessmentYear": 2025,
+    "iiaStandard": "1310",
+    "question": "Does the QAIP include both internal and external assessments as required by the Standards?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Internal assessments include ongoing monitoring through supervision and periodic self-assessments using IIA checklists. However, the program lacks a formal documented framework specifying frequency, scope, and methodology for internal assessments. External assessment is overdue (last conducted in 2020).",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000110",
+    "assessmentYear": 2025,
+    "iiaStandard": "1311",
+    "question": "Are internal assessments conducted through ongoing monitoring and periodic self-assessments or assessments by persons with sufficient knowledge?",
+    "response": "CONFORMS",
+    "evidence": "Ongoing monitoring embedded in supervisory review process. CAE reviews all audit reports before issuance. Periodic self-assessment conducted annually using IIA Quality Assessment Manual checklist. Results reported to ACB in Q4 meeting.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000111",
+    "assessmentYear": 2025,
+    "iiaStandard": "1312",
+    "question": "Has an external quality assessment been conducted at least once every five years by a qualified, independent assessor or assessment team?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "Last external quality assessment was conducted in March 2020 by an IIA-affiliated firm. The five-year cycle requirement means the next EQA was due by March 2025. No EQA has been initiated. Budget for EQA was not allocated in FY2024-25.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000112",
+    "assessmentYear": 2025,
+    "iiaStandard": "1320",
+    "question": "Does the CAE communicate the results of the QAIP to senior management and the Board/ACB?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Internal assessment results are included in the annual report to ACB but presented only as a brief summary. Detailed findings, action plans, and trend analysis are not provided. ACB members have requested more comprehensive QAIP reporting.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000113",
+    "assessmentYear": 2025,
+    "iiaStandard": "1321",
+    "question": "Does the CAE use the statement 'Conforms with the International Standards for the Professional Practice of Internal Auditing' only when QAIP results support this conclusion?",
+    "response": "CONFORMS",
+    "evidence": "CAE has not used the conformance statement in audit reports given the known gaps in QAIP (EQA overdue). Audit reports state that the activity is guided by IIA Standards without claiming full conformance. This approach is consistent with the Standard.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000114",
+    "assessmentYear": 2025,
+    "iiaStandard": "1322",
+    "question": "Has the CAE disclosed instances of nonconformance with the Standards and their impact to senior management and the Board/ACB?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "Despite identified nonconformances (EQA overdue, charter needing update, CPE shortfalls), CAE has not made a formal disclosure to ACB per Standard 1322. Nonconformances are known informally but not documented in a structured communication to the Board.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000115",
+    "assessmentYear": 2025,
+    "iiaStandard": "2010",
+    "question": "Does the CAE establish a risk-based plan to determine the priorities of the internal audit activity consistent with the organization's goals?",
+    "response": "CONFORMS",
+    "evidence": "Annual risk-based audit plan developed using entity-level risk assessment covering all branches and business verticals. Risk scores derived from RAM (Risk Assessment Module) incorporating RBI inspection findings, financial indicators, and compliance history. Plan approved by ACB before each fiscal year.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000116",
+    "assessmentYear": 2025,
+    "iiaStandard": "2020",
+    "question": "Does the CAE communicate the internal audit plan and resource requirements to senior management and the Board/ACB for review and approval?",
+    "response": "CONFORMS",
+    "evidence": "Annual audit plan with staffing requirements presented to ACB in March each year. Significant changes to the plan communicated quarterly. ACB formally approves the plan with recorded minutes. Resource constraints flagged to CEO and ACB Chairman.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000117",
+    "assessmentYear": 2025,
+    "iiaStandard": "2030",
+    "question": "Does the CAE ensure that internal audit resources are appropriate, sufficient, and effectively deployed to achieve the approved plan?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Current team of 6 auditors covers 18 branches and head office departments. Workload analysis shows 15% shortfall against planned audit days. Two vacancies remain unfilled for over 8 months. IT audit capability relies on a single CISA-certified auditor, creating a key-person risk.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000118",
+    "assessmentYear": 2025,
+    "iiaStandard": "2040",
+    "question": "Has the CAE established policies and procedures to guide the internal audit activity?",
+    "response": "CONFORMS",
+    "evidence": "Internal audit manual covers planning, fieldwork, reporting, and follow-up procedures. Standard operating procedures exist for branch audit, concurrent audit, credit review, and treasury audit. Manual was last reviewed in 2023 and is accessible to all staff on the shared drive.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000119",
+    "assessmentYear": 2025,
+    "iiaStandard": "2050",
+    "question": "Does the CAE share information, coordinate activities, and consider relying upon the work of other internal and external assurance providers?",
+    "response": "CONFORMS",
+    "evidence": "Coordination protocol established with statutory auditors and RBI inspection team. Audit findings cross-referenced with statutory audit management letter points. Concurrent auditor observations reviewed monthly and factored into risk-based planning. No duplication of coverage identified.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000120",
+    "assessmentYear": 2025,
+    "iiaStandard": "2060",
+    "question": "Does the CAE report periodically to senior management and the Board/ACB on the internal audit activity's purpose, authority, responsibility, and performance relative to the plan?",
+    "response": "CONFORMS",
+    "evidence": "Quarterly reports presented to ACB covering audit completion status, significant findings, recommendation implementation rates, and emerging risks. Annual report includes assessment of overall control environment. CEO briefed monthly on critical findings.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000121",
+    "assessmentYear": 2025,
+    "iiaStandard": "2070",
+    "question": "When an external service provider serves as the internal audit activity, does the organization ensure quality and organizational responsibility is maintained?",
+    "response": "NOT_APPLICABLE",
+    "evidence": "The bank maintains a fully in-house internal audit function. No external service provider is engaged for core internal audit activities. External specialists are engaged only for specific technical areas (IT penetration testing) under direct CAE supervision.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000122",
+    "assessmentYear": 2025,
+    "iiaStandard": "2110",
+    "question": "Does the internal audit activity assess whether IT governance supports the organization's strategies and objectives?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "IT governance assessment not included as a distinct audit area. While CBS-related controls are tested during branch audits, broader IT governance aspects (IT strategy alignment, IT risk management framework, IT resource management, IT performance measurement) are not systematically evaluated. IS audit coverage limited to annual checklist-based review.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000123",
+    "assessmentYear": 2025,
+    "iiaStandard": "2120",
+    "question": "Does the internal audit activity evaluate the effectiveness and contribute to the improvement of risk management processes?",
+    "response": "CONFORMS",
+    "evidence": "Risk management audit conducted annually covering credit risk, market risk, operational risk, and liquidity risk frameworks. ICAAP adequacy reviewed. Risk appetite statement and key risk indicators assessed. Findings reported to Risk Management Committee and ACB.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000124",
+    "assessmentYear": 2025,
+    "iiaStandard": "2130",
+    "question": "Does the internal audit activity evaluate the adequacy and effectiveness of controls in responding to risks within the organization's operations and information systems?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Operational controls comprehensively tested in branch audits covering cash management, lending procedures, and deposit operations. However, information system controls testing is limited to basic access controls and parameter verification. Application controls within CBS modules (interest calculation, fee computation, report generation) not independently validated through data analytics.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000125",
+    "assessmentYear": 2025,
+    "iiaStandard": "2201",
+    "question": "In planning the engagement, do internal auditors consider the objectives, risks, adequacy of controls, and opportunities for improvement?",
+    "response": "CONFORMS",
+    "evidence": "Pre-audit planning checklist includes prior audit findings, branch risk profile, regulatory observations, and complaint analysis. Planning memo prepared for each engagement documenting objectives, scope, resources, and timeline. Risk and control matrix updated from previous engagement.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000126",
+    "assessmentYear": 2025,
+    "iiaStandard": "2210",
+    "question": "Are engagement objectives established for each engagement reflecting the risks, controls, and governance processes?",
+    "response": "CONFORMS",
+    "evidence": "Each audit engagement has documented objectives aligned with the risk-based audit plan. Objectives cover specific RBI regulatory requirements, credit portfolio quality, operational controls, and customer service standards. Objectives reviewed and approved by CAE during planning phase.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000127",
+    "assessmentYear": 2025,
+    "iiaStandard": "2220",
+    "question": "Is the scope of the engagement sufficient to achieve the engagement objectives and does it consider relevant systems, records, personnel, and physical properties?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Scope generally covers key risk areas per audit program. However, review of completed engagements shows that digital banking channels (mobile banking, internet banking) are not consistently included in branch audit scope despite growing transaction volumes. Off-site ATM controls also insufficiently covered.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000128",
+    "assessmentYear": 2025,
+    "iiaStandard": "2230",
+    "question": "Do internal auditors determine appropriate and sufficient resources to achieve engagement objectives based on the nature and complexity of the engagement?",
+    "response": "CONFORMS",
+    "evidence": "Resource allocation matrix maps auditor skills to engagement requirements. Branch audits assigned based on auditor experience level and branch complexity. Large branches allocated additional audit days. Specialist IT auditor deployed for CBS-intensive reviews.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000129",
+    "assessmentYear": 2025,
+    "iiaStandard": "2240",
+    "question": "Do internal auditors develop and document work programs that achieve the engagement objectives?",
+    "response": "CONFORMS",
+    "evidence": "Standardized work programs exist for branch audit, credit review, KYC/AML compliance, and treasury operations. Programs include detailed procedures, sampling criteria, and expected evidence. Work programs updated annually to reflect regulatory changes and prior year findings.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000130",
+    "assessmentYear": 2025,
+    "iiaStandard": "2300",
+    "question": "Do internal auditors identify, analyze, evaluate, and document sufficient information to achieve the engagement's objectives?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Auditors collect evidence through transaction testing, document review, and management inquiry. CBS data extractions used for analytical procedures. However, evidence documentation in work papers is inconsistent across team members. Some work papers lack clear linkage between evidence gathered and conclusions drawn.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000131",
+    "assessmentYear": 2025,
+    "iiaStandard": "2310",
+    "question": "Do internal auditors identify sufficient, reliable, relevant, and useful information to achieve the engagement's objectives?",
+    "response": "CONFORMS",
+    "evidence": "Information sources include CBS transaction data, loan files, compliance records, regulatory correspondence, and management reports. Data analytics applied to identify anomalies in high-volume transaction areas. Cross-referencing of information across multiple sources performed for key risk areas.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000132",
+    "assessmentYear": 2025,
+    "iiaStandard": "2320",
+    "question": "Do internal auditors base conclusions and engagement results on appropriate analyses and evaluations?",
+    "response": "CONFORMS",
+    "evidence": "Findings supported by factual evidence with root cause analysis documented. Risk ratings assigned using a standardized severity matrix. Statistical sampling applied for loan portfolio reviews. Trend analysis conducted to identify recurring issues across branches.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000133",
+    "assessmentYear": 2025,
+    "iiaStandard": "2330",
+    "question": "Do internal auditors document sufficient, reliable, relevant, and useful information to support the engagement results and conclusions?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "Work papers maintained in electronic format with standard templates. However, documentation standards vary significantly across auditors. Review of work papers revealed that 3 of 12 completed engagements had incomplete cross-referencing. Retention policy exists but version control of electronic work papers needs improvement.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000134",
+    "assessmentYear": 2025,
+    "iiaStandard": "2340",
+    "question": "Are engagements properly supervised to ensure objectives are achieved, quality is assured, and staff are developed?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "CAE is the sole reviewer for all engagements due to staffing constraints. Review is often conducted after report drafting rather than during fieldwork. No evidence of real-time supervision or coaching during engagements. Junior auditors reported insufficient guidance on complex areas such as NPA classification and investment valuation.",
+    "gapIdentified": true,
+    "issueCreated": true
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000135",
+    "assessmentYear": 2025,
+    "iiaStandard": "2410",
+    "question": "Do engagement communications include the engagement's objectives, scope, and results including conclusions, recommendations, and action plans?",
+    "response": "CONFORMS",
+    "evidence": "Audit report template includes sections for objectives, scope, executive summary, detailed findings with risk ratings, recommendations, and management responses. Exit conference conducted with branch management before report finalization. Reports issued within the 15-day target in 90% of engagements.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000136",
+    "assessmentYear": 2025,
+    "iiaStandard": "2420",
+    "question": "Are communications accurate, objective, clear, concise, constructive, complete, and timely?",
+    "response": "CONFORMS",
+    "evidence": "Report quality review conducted by CAE before issuance. Accuracy of factual statements verified with auditees during exit conference. Reports written in clear language accessible to branch managers. Constructive recommendations include specific actionable steps and realistic timelines.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000137",
+    "assessmentYear": 2025,
+    "iiaStandard": "2421",
+    "question": "If a final communication contains a significant error or omission, does the CAE communicate corrected information to all parties who received the original?",
+    "response": "NOT_APPLICABLE",
+    "evidence": "No instances of significant errors or omissions requiring correction were identified in audit reports issued during the assessment period. The audit manual includes a procedure for issuing amended reports if such situations arise.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000138",
+    "assessmentYear": 2025,
+    "iiaStandard": "2430",
+    "question": "When the internal audit activity conforms with the Standards, does the CAE include a statement of conformance in engagement communications?",
+    "response": "CONFORMS",
+    "evidence": "Given the identified nonconformances, audit reports do not include a statement of full conformance. Reports state that audit work was conducted with reference to IIA Standards and RBI guidelines. This approach is appropriate and consistent with Standard 1321.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000139",
+    "assessmentYear": 2025,
+    "iiaStandard": "2440",
+    "question": "Does the CAE communicate results to the appropriate parties, considering the sensitivity and confidentiality of the information?",
+    "response": "CONFORMS",
+    "evidence": "Report distribution matrix maintained specifying recipients for each engagement type. Sensitive findings (fraud, significant NPA misclassification) reported directly to CAE and ACB Chairman before general distribution. Confidential findings on senior management communicated exclusively to ACB.",
+    "gapIdentified": false,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000140",
+    "assessmentYear": 2025,
+    "iiaStandard": "2450",
+    "question": "When an overall opinion is issued, does it take into account the strategies, objectives, and risks of the organization and the expectations of senior management, the Board, and other stakeholders?",
+    "response": "PARTIALLY_CONFORMS",
+    "evidence": "CAE provides an overall opinion on the control environment in the annual report to ACB. However, the opinion methodology is not formally documented. The basis for arriving at the overall opinion (weighting of individual engagement results, consideration of systemic issues) is not transparent.",
+    "gapIdentified": true,
+    "issueCreated": false
+  },
+  {
+    "id": "b0000000-0000-0000-0000-000000000141",
+    "assessmentYear": 2025,
+    "iiaStandard": "2500",
+    "question": "Has the CAE established a follow-up process for monitoring and ensuring that management actions have been effectively implemented or that senior management has accepted the risk of not taking action?",
+    "response": "DOES_NOT_CONFORM",
+    "evidence": "While a tracking system exists, the follow-up process lacks a formal escalation mechanism for overdue recommendations. Risk acceptance by management is not documented or formally communicated to ACB. Of 85 open recommendations, 22 are overdue with no formal escalation. The process does not distinguish between implemented recommendations and those where management has accepted residual risk.",
     "gapIdentified": true,
     "issueCreated": true
   }

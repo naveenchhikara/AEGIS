@@ -32,12 +32,18 @@ interface InvestmentRecord {
 
 interface NonSlrMonitorProps {
   investments: InvestmentRecord[];
+  defaultDeposits?: number;
 }
 
-export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
-  // TODO: In production, fetch totalDeposits from HousekeepingMetric TOTAL_DEPOSITS
-  // For now, allow manual input
-  const [totalDeposits, setTotalDeposits] = useState<string>("100000000"); // 10Cr default
+export function NonSlrMonitor({
+  investments,
+  defaultDeposits,
+}: NonSlrMonitorProps) {
+  // Use TOTAL_DEPOSITS from HousekeepingMetric if available, otherwise fall back to 10Cr default.
+  // User can still override via manual input.
+  const [totalDeposits, setTotalDeposits] = useState<string>(
+    defaultDeposits ? String(defaultDeposits) : "100000000",
+  );
 
   // Calculate non-SLR totals
   const nonSlrInvestments = investments.filter(
@@ -157,8 +163,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
         <CardHeader>
           <CardTitle>Total Deposits Configuration</CardTitle>
           <p className="text-muted-foreground text-sm">
-            Enter total deposits to calculate 10% non-SLR cap (or integrate with
-            Housekeeping Metrics)
+            {defaultDeposits
+              ? "Pre-filled from Housekeeping Metrics (TOTAL_DEPOSITS). You may override below."
+              : "Enter total deposits to calculate 10% non-SLR cap. Add a TOTAL_DEPOSITS housekeeping metric for automatic pre-fill."}
           </p>
         </CardHeader>
         <CardContent>

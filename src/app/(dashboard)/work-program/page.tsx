@@ -1,5 +1,6 @@
 import { getRequiredSession } from "@/data-access/session";
 import { getWorkProgramItems } from "@/data-access/work-program";
+import { getAssignableUsers } from "@/data-access/audit-teams";
 import { prismaForTenant } from "@/data-access/prisma";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -27,22 +28,24 @@ export default async function WorkProgramPage({
   // Await searchParams (Next.js 16 pattern)
   const params = await searchParams;
 
-  // Fetch real work program items from database
-  const workItems = await getWorkProgramItems(session, {
-    engagementId: params.engagementId,
-    assignedToId: params.assignedToId,
-    status: params.status,
-  });
-
-  // Fetch engagements for work program generation
+  // Fetch real work program items and assignable users in parallel
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
-  const engagements = await db.auditEngagement.findMany({
-    where: { tenantId },
-    select: { id: true, auditNumber: true, status: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+
+  const [workItems, assignableUsers, engagements] = await Promise.all([
+    getWorkProgramItems(session, {
+      engagementId: params.engagementId,
+      assignedToId: params.assignedToId,
+      status: params.status,
+    }),
+    canExecute ? getAssignableUsers(session) : Promise.resolve([]),
+    db.auditEngagement.findMany({
+      where: { tenantId },
+      select: { id: true, auditNumber: true, status: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -53,9 +56,16 @@ export default async function WorkProgramPage({
             Audit work program and task management
           </p>
         </div>
-        <WorkProgramGenerator engagements={engagements} canExecute={canExecute} />
+        <WorkProgramGenerator
+          engagements={engagements}
+          canExecute={canExecute}
+        />
       </div>
-      <WorkProgramTable workItems={workItems} canExecute={canExecute} />
+      <WorkProgramTable
+        workItems={workItems}
+        canExecute={canExecute}
+        assignableUsers={assignableUsers}
+      />
     </div>
   );
 }

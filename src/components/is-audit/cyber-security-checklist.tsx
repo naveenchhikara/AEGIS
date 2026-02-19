@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { manageIsAuditChecklist } from "@/actions/investment/manage-is-audit";
 import { Progress } from "@/components/ui/progress";
 
-// 25 baseline controls with questions (~122 total)
+// 25 baseline controls with questions (122 total)
 const CYBER_BASELINE_CONTROLS = [
   {
     id: "BC01",
@@ -42,6 +42,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Track asset lifecycle from procurement to disposal",
       "Periodic verification of inventory accuracy (at least annually)",
       "Maintain configuration management database (CMDB)",
+      "Board-approved cyber security strategy covers asset classification and protection priorities",
     ],
   },
   {
@@ -54,6 +55,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Access review conducted quarterly with documented sign-offs",
       "Vendor/third-party access through secure gateway with time-bound permissions",
       "Automated account provisioning and de-provisioning process",
+      "Cyber crisis management plan defines access revocation procedures during security incidents",
     ],
   },
   {
@@ -65,6 +67,8 @@ const CYBER_BASELINE_CONTROLS = [
       "Network segmentation between critical/non-critical zones",
       "Wireless network security controls (WPA2/3, separate SSID for guests)",
       "VPN for remote access with strong encryption (AES-256)",
+      "DMZ architecture implemented for internet-facing services (e-banking, UPI)",
+      "Network traffic baseline established with anomaly detection alerts configured",
     ],
   },
   {
@@ -106,6 +110,7 @@ const CYBER_BASELINE_CONTROLS = [
       "SPF, DKIM, DMARC configured for domain protection",
       "User awareness training on email phishing conducted quarterly",
       "Email encryption for sensitive communications",
+      "Email gateway logs integrated with SIEM for correlation and alerting",
     ],
   },
   {
@@ -126,6 +131,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Data in transit encrypted (TLS 1.2+) for all communication channels",
       "Full disk encryption enabled on laptops and mobile devices",
       "Key management practices follow industry standards (rotation, escrow)",
+      "HSM (Hardware Security Module) used for critical key storage and digital certificate management",
     ],
   },
   {
@@ -136,6 +142,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Critical vulnerabilities remediated within 30 days",
       "Scan reports reviewed by IT security committee",
       "Vulnerability management process integrated with patch management",
+      "Web application vulnerability assessment (OWASP Top 10) conducted for internet-facing applications",
     ],
   },
   {
@@ -168,6 +175,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Incident classification and escalation matrix defined",
       "Incident drills/tabletop exercises conducted annually",
       "Post-incident review and lessons learned documented",
+      "Cyber incidents reported to RBI/CSITE within prescribed timelines (6 hours for critical incidents)",
     ],
   },
   {
@@ -188,6 +196,7 @@ const CYBER_BASELINE_CONTROLS = [
       "DR test results documented with gaps identified",
       "DR plan updated based on test findings",
       "Third-party DR site SLA compliance monitored",
+      "Cyber attack scenario (e.g., ransomware) included in DR drill scope",
     ],
   },
   {
@@ -207,6 +216,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Phishing simulation exercises conducted quarterly",
       "Users who fail phishing tests provided additional training",
       "Reporting mechanism for suspected phishing emails available",
+      "Vishing (voice phishing) and smishing (SMS phishing) awareness included in training program",
     ],
   },
   {
@@ -217,6 +227,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Training covers phishing, password security, data handling, clean desk",
       "Training completion tracked and reported to management",
       "Specialized training for IT/security staff on emerging threats",
+      "Cyber security awareness metrics (click rates, incident reports) tracked and reported to board",
     ],
   },
   {
@@ -258,6 +269,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Data residency and sovereignty requirements met",
       "Right-to-audit clause included in outsourcing contracts",
       "Exit/transition plan documented with data return procedures",
+      "Cloud service provider cyber risk assessment conducted per RBI outsourcing guidelines",
     ],
   },
   {
@@ -268,6 +280,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Annual IS audit conducted and findings remediated",
       "Cyber security policy approved by board and reviewed annually",
       "Cyber incident reporting to RBI within prescribed timelines",
+      "Compliance with CERT-In directions on cyber security reporting and log retention (180 days)",
     ],
   },
   {
@@ -278,6 +291,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Audit findings presented to Audit Committee of Board",
       "Remediation action plans tracked with timelines",
       "Self-assessment against ISO 27001 or NIST framework conducted",
+      "Vendor/third-party cyber risk assessment included in annual audit scope",
     ],
   },
   {
@@ -288,6 +302,7 @@ const CYBER_BASELINE_CONTROLS = [
       "Board-approved cyber security strategy and budget",
       "Chief Information Security Officer (CISO) designated",
       "Cyber insurance coverage evaluated and obtained as appropriate",
+      "Board-level cyber crisis management plan with defined escalation and communication protocols",
     ],
   },
 ];
@@ -328,14 +343,21 @@ type QuestionResponse = {
   remarks?: string;
 };
 
-export function CyberSecurityChecklist({ userId }: { userId: string }) {
+export function CyberSecurityChecklist({
+  userId,
+  engagementId,
+}: {
+  userId: string;
+  engagementId?: string;
+}) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [responses, setResponses] = React.useState<
     Record<string, QuestionResponse>
   >({});
+  const [checklistId, setChecklistId] = React.useState<string | null>(null);
 
-  // Initialize responses
+  // Initialize responses from defaults, then load existing data if available
   React.useEffect(() => {
     const initial: Record<string, QuestionResponse> = {};
     CYBER_BASELINE_CONTROLS.forEach((control) => {
@@ -349,7 +371,33 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
       });
     });
     setResponses(initial);
-  }, []);
+
+    // Load existing checklist data if engagementId provided
+    if (engagementId) {
+      fetch(
+        `/api/is-audit/checklist?category=CYBER_SECURITY&engagementId=${engagementId}`,
+      )
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.id) {
+            setChecklistId(data.id);
+            // Merge saved items into initial responses
+            if (Array.isArray(data.items)) {
+              const merged = { ...initial };
+              for (const saved of data.items) {
+                if (saved.id && merged[saved.id]) {
+                  merged[saved.id] = { ...merged[saved.id], ...saved };
+                }
+              }
+              setResponses(merged);
+            }
+          }
+        })
+        .catch(() => {
+          // Silently ignore load errors — user can still fill fresh
+        });
+    }
+  }, [engagementId]);
 
   function updateResponse(
     key: string,
@@ -473,9 +521,11 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
     }
 
     const result = await manageIsAuditChecklist({
+      checklistId: checklistId ?? undefined,
       category: "CYBER_SECURITY",
       checklistName: "Cyber Security Baseline Controls (25 Controls)",
       items: allItems,
+      engagementId: engagementId ?? undefined,
       completedById: markComplete ? userId : undefined,
       overallRating,
     });
@@ -483,6 +533,9 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
     setIsSaving(false);
 
     if (result.success) {
+      if (!checklistId && result.data?.id) {
+        setChecklistId(result.data.id);
+      }
       toast.success(
         markComplete ? "Cyber security audit completed" : "Progress saved",
       );

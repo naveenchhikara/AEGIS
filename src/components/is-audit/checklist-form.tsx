@@ -40,6 +40,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  ClipboardList,
 } from "@/lib/icons";
 import { toast } from "sonner";
 import { manageIsAuditChecklist } from "@/actions/investment/manage-is-audit";
@@ -126,6 +127,12 @@ const NewChecklistSchema = z.object({
 
 type NewChecklistValues = z.infer<typeof NewChecklistSchema>;
 
+const OVERALL_RATING_OPTIONS = [
+  { value: "SATISFACTORY", label: "Satisfactory" },
+  { value: "NEEDS_IMPROVEMENT", label: "Needs Improvement" },
+  { value: "UNSATISFACTORY", label: "Unsatisfactory" },
+] as const;
+
 export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = React.useState<string>(
@@ -134,6 +141,12 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingChecklist, setEditingChecklist] =
     React.useState<Checklist | null>(null);
+  const [selectedChecklistId, setSelectedChecklistId] = React.useState<
+    string | undefined
+  >(undefined);
+  const [overallRating, setOverallRating] = React.useState<
+    "SATISFACTORY" | "NEEDS_IMPROVEMENT" | "UNSATISFACTORY" | undefined
+  >(undefined);
   const [responses, setResponses] = React.useState<
     Record<string, ChecklistItem>
   >({});
@@ -150,7 +163,23 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   const filteredChecklists = checklists.filter(
     (c) => c.category === selectedCategory,
   );
-  const activeChecklist = editingChecklist || filteredChecklists[0] || null;
+
+  // Determine active checklist: explicit selection > editing > first in category
+  const activeChecklist = React.useMemo(() => {
+    if (selectedChecklistId) {
+      return (
+        filteredChecklists.find((c) => c.id === selectedChecklistId) ?? null
+      );
+    }
+    return editingChecklist || filteredChecklists[0] || null;
+  }, [selectedChecklistId, editingChecklist, filteredChecklists]);
+
+  // Reset checklist selector when category changes
+  React.useEffect(() => {
+    setSelectedChecklistId(undefined);
+    setEditingChecklist(null);
+    setOverallRating(undefined);
+  }, [selectedCategory]);
 
   React.useEffect(() => {
     if (activeChecklist) {
@@ -160,6 +189,16 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
         initialResponses[key] = { ...item };
       });
       setResponses(initialResponses);
+      // Populate overall rating from saved checklist data
+      if (
+        activeChecklist.overallRating === "SATISFACTORY" ||
+        activeChecklist.overallRating === "NEEDS_IMPROVEMENT" ||
+        activeChecklist.overallRating === "UNSATISFACTORY"
+      ) {
+        setOverallRating(activeChecklist.overallRating);
+      } else {
+        setOverallRating(undefined);
+      }
     }
   }, [activeChecklist?.id]);
 
@@ -187,13 +226,14 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
 
     const items = Object.values(responses);
 
-    // Calculate overall rating if marking complete
-    let overallRating:
+    // Use manually selected rating if available; otherwise auto-calculate on complete
+    let resolvedRating:
       | "SATISFACTORY"
       | "NEEDS_IMPROVEMENT"
       | "UNSATISFACTORY"
-      | undefined;
-    if (markComplete) {
+      | undefined = overallRating;
+
+    if (markComplete && !resolvedRating) {
       const compliantCount = items.filter(
         (i) => i.response === "COMPLIANT",
       ).length;
@@ -204,11 +244,11 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
       if (totalResponded > 0) {
         const complianceRate = compliantCount / totalResponded;
         if (complianceRate >= 0.9) {
-          overallRating = "SATISFACTORY";
+          resolvedRating = "SATISFACTORY";
         } else if (complianceRate >= 0.7) {
-          overallRating = "NEEDS_IMPROVEMENT";
+          resolvedRating = "NEEDS_IMPROVEMENT";
         } else {
-          overallRating = "UNSATISFACTORY";
+          resolvedRating = "UNSATISFACTORY";
         }
       }
     }
@@ -219,7 +259,7 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
       checklistName: activeChecklist.checklistName,
       items,
       completedById: markComplete ? userId : undefined,
-      overallRating,
+      overallRating: resolvedRating,
     });
 
     setIsSaving(false);
@@ -367,6 +407,49 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
 
       {activeChecklist ? (
         <>
+          {/* Checklist Selector */}
+          {filteredChecklists.length > 1 && (
+            <div className="flex items-center gap-3">
+              <ClipboardList className="text-muted-foreground h-5 w-5" />
+              <Label className="text-sm font-medium whitespace-nowrap">
+                Select Checklist
+              </Label>
+              <Select
+                value={activeChecklist.id}
+                onValueChange={(value) => {
+                  setSelectedChecklistId(value);
+                  setEditingChecklist(null);
+                }}
+              >
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Choose a checklist" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredChecklists.map((cl) => (
+                    <SelectItem key={cl.id} value={cl.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{cl.checklistName}</span>
+                        {cl.completedAt && (
+                          <Badge
+                            variant="outline"
+                            className="border-green-300 bg-green-50 text-xs text-green-700"
+                          >
+                            Completed
+                          </Badge>
+                        )}
+                        {cl.overallRating && (
+                          <Badge variant="secondary" className="text-xs">
+                            {cl.overallRating.replace("_", " ")}
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -540,6 +623,43 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
                   );
                 })
               )}
+            </CardContent>
+          </Card>
+
+          {/* Overall Rating */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <Label className="text-sm font-medium whitespace-nowrap">
+                  Overall Rating
+                </Label>
+                <Select
+                  value={overallRating ?? ""}
+                  onValueChange={(value) =>
+                    setOverallRating(
+                      value as
+                        | "SATISFACTORY"
+                        | "NEEDS_IMPROVEMENT"
+                        | "UNSATISFACTORY",
+                    )
+                  }
+                  disabled={activeChecklist.completedAt !== null}
+                >
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Select rating (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OVERALL_RATING_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-muted-foreground text-xs">
+                  If not selected, rating is auto-calculated on completion
+                </span>
+              </div>
             </CardContent>
           </Card>
 

@@ -20,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,9 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, Loader2 } from "@/lib/icons";
+import { CheckCircle2, Loader2, UserPlus } from "@/lib/icons";
 import { toast } from "sonner";
-import { executeWorkProgramItem } from "@/actions/work-program/execute-item";
+import {
+  executeWorkProgramItem,
+  assignWorkProgramItem,
+} from "@/actions/work-program/execute-item";
 
 interface WorkItem {
   id: string;
@@ -66,9 +68,16 @@ interface WorkItem {
   };
 }
 
+interface AssignableUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface WorkProgramTableProps {
   workItems: WorkItem[];
   canExecute: boolean;
+  assignableUsers?: AssignableUser[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -110,10 +119,14 @@ async function submitExecuteAction(
 export function WorkProgramTable({
   workItems,
   canExecute,
+  assignableUsers = [],
 }: WorkProgramTableProps) {
   const router = useRouter();
   const [executeDialogOpen, setExecuteDialogOpen] = React.useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<WorkItem | null>(null);
+  const [selectedUserId, setSelectedUserId] = React.useState<string>("");
+  const [isAssigning, setIsAssigning] = React.useState(false);
   const [selectedStatus, setSelectedStatus] =
     React.useState<string>("COMPLETED");
   const [state, formAction, isPending] = useActionState(
@@ -137,6 +150,38 @@ export function WorkProgramTable({
     e.stopPropagation();
     setSelectedItem(item);
     setExecuteDialogOpen(true);
+  }
+
+  function handleAssignClick(item: WorkItem, e: React.MouseEvent) {
+    e.stopPropagation();
+    setSelectedItem(item);
+    setSelectedUserId("");
+    setAssignDialogOpen(true);
+  }
+
+  async function handleAssignSubmit() {
+    if (!selectedItem || !selectedUserId) return;
+
+    setIsAssigning(true);
+    try {
+      const result = await assignWorkProgramItem(
+        selectedItem.id,
+        selectedUserId,
+      );
+      if (result.success) {
+        toast.success("Work program item assigned successfully");
+        setAssignDialogOpen(false);
+        setSelectedItem(null);
+        setSelectedUserId("");
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Failed to assign work program item");
+    } finally {
+      setIsAssigning(false);
+    }
   }
 
   return (
@@ -233,15 +278,25 @@ export function WorkProgramTable({
                   </TableCell>
                   {canExecute && (
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => handleExecuteClick(item, e)}
-                        disabled={item.status === "COMPLETED"}
-                      >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Execute
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleAssignClick(item, e)}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Assign
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleExecuteClick(item, e)}
+                          disabled={item.status === "COMPLETED"}
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Execute
+                        </Button>
+                      </div>
                     </TableCell>
                   )}
                 </TableRow>
@@ -360,6 +415,84 @@ export function WorkProgramTable({
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Work Program Item</DialogTitle>
+            <DialogDescription>
+              Select a team member to assign this work program item to.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedItem && (
+              <div className="bg-muted space-y-2 rounded-md p-4">
+                <div>
+                  <span className="text-sm font-medium">Test Procedure:</span>{" "}
+                  <span className="text-sm">
+                    {selectedItem.testProcedure.name}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium">Control:</span>{" "}
+                  <span className="text-sm">
+                    {selectedItem.testProcedure.control.controlCode} -{" "}
+                    {selectedItem.testProcedure.control.description}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="assignee">Assign To</Label>
+              {assignableUsers.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No team members available for assignment.
+                </p>
+              ) : (
+                <Select
+                  value={selectedUserId}
+                  onValueChange={setSelectedUserId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a team member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignableUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setAssignDialogOpen(false);
+                setSelectedItem(null);
+                setSelectedUserId("");
+              }}
+              disabled={isAssigning}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAssignSubmit}
+              disabled={isAssigning || !selectedUserId}
+            >
+              {isAssigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Assign
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

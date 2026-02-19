@@ -179,24 +179,55 @@ type CheckItem = {
   riskLevel: string;
 };
 
-export function CbsParameterAudit({ userId }: { userId: string }) {
+export function CbsParameterAudit({
+  userId,
+  engagementId,
+}: {
+  userId: string;
+  engagementId?: string;
+}) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [responses, setResponses] = React.useState<Record<string, CheckItem>>(
     {},
   );
   const [activeCategory, setActiveCategory] = React.useState("INTEREST_RATES");
+  const [checklistId, setChecklistId] = React.useState<string | null>(null);
 
-  // Initialize responses
+  // Initialize responses from defaults, then load existing data if available
   React.useEffect(() => {
     const initial: Record<string, CheckItem> = {};
-    Object.entries(CBS_PARAMETER_CHECKS).forEach(([category, items]) => {
+    Object.entries(CBS_PARAMETER_CHECKS).forEach(([_category, items]) => {
       items.forEach((item) => {
         initial[item.id] = { ...item };
       });
     });
     setResponses(initial);
-  }, []);
+
+    // Load existing checklist data if engagementId provided
+    if (engagementId) {
+      fetch(`/api/is-audit/checklist?category=CBS&engagementId=${engagementId}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.id) {
+            setChecklistId(data.id);
+            // Merge saved items into initial responses
+            if (Array.isArray(data.items)) {
+              const merged = { ...initial };
+              for (const saved of data.items) {
+                if (saved.id && merged[saved.id]) {
+                  merged[saved.id] = { ...merged[saved.id], ...saved };
+                }
+              }
+              setResponses(merged);
+            }
+          }
+        })
+        .catch(() => {
+          // Silently ignore load errors — user can still fill fresh
+        });
+    }
+  }, [engagementId]);
 
   function updateResponse(
     itemId: string,
@@ -307,9 +338,11 @@ export function CbsParameterAudit({ userId }: { userId: string }) {
     }
 
     const result = await manageIsAuditChecklist({
+      checklistId: checklistId ?? undefined,
       category: "CBS",
       checklistName: "CBS Parameter Audit",
       items: allItems,
+      engagementId: engagementId ?? undefined,
       completedById: markComplete ? userId : undefined,
       overallRating,
     });
@@ -317,6 +350,9 @@ export function CbsParameterAudit({ userId }: { userId: string }) {
     setIsSaving(false);
 
     if (result.success) {
+      if (!checklistId && result.data?.id) {
+        setChecklistId(result.data.id);
+      }
       toast.success(markComplete ? "CBS audit completed" : "Progress saved");
       router.refresh();
     } else {

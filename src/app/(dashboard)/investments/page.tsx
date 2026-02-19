@@ -13,6 +13,7 @@ import {
   getBrokerConcentration,
   getUnreconciledInvestments,
 } from "@/data-access/investment";
+import { prismaForTenant } from "@/data-access/prisma";
 
 export default async function InvestmentsPage() {
   const session = await getRequiredSession();
@@ -27,6 +28,20 @@ export default async function InvestmentsPage() {
   const currentPeriod = `${new Date().getFullYear()}-Q${Math.ceil((new Date().getMonth() + 1) / 3)}`;
   const brokerData = await getBrokerConcentration(session, currentPeriod);
   const unreconciled = await getUnreconciledInvestments(session, currentPeriod);
+
+  // Fetch latest TOTAL_DEPOSITS from HousekeepingMetric for Non-SLR cap calculation
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+  const depositMetrics = await db.housekeepingMetric.findMany({
+    where: { tenantId, metricType: "TOTAL_DEPOSITS" },
+    orderBy: { period: "desc" },
+    take: 1,
+    select: { closingBalance: true },
+  });
+  const defaultDeposits =
+    depositMetrics.length > 0
+      ? Number(depositMetrics[0].closingBalance)
+      : undefined;
 
   return (
     <div className="space-y-6">
@@ -68,7 +83,10 @@ export default async function InvestmentsPage() {
         </TabsContent>
 
         <TabsContent value="non-slr">
-          <NonSlrMonitor investments={investments} />
+          <NonSlrMonitor
+            investments={investments}
+            defaultDeposits={defaultDeposits}
+          />
         </TabsContent>
 
         <TabsContent value="classification">

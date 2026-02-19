@@ -12,6 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { ShieldAlert } from "@/lib/icons";
 
 type SearchParams = Promise<{
   source?: string;
@@ -44,6 +47,13 @@ export default async function IssuesPage(props: {
     riskTheme: searchParams.riskTheme,
   });
 
+  // Count accepted-risk issues for the quick-filter badge
+  const acceptedRiskCount = await db.issue.count({
+    where: { tenantId, status: "ACCEPTED_RISK" },
+  });
+
+  const isAcceptedRiskView = searchParams.status === "ACCEPTED_RISK";
+
   // Fetch controls and compliance items for linking (R60)
   const controls = canManage
     ? await db.controlLibrary.findMany({
@@ -74,6 +84,32 @@ export default async function IssuesPage(props: {
         <p className="text-muted-foreground">
           Track and manage audit issues, corrective actions, and risk acceptance
         </p>
+      </div>
+
+      {/* Quick-filter tabs */}
+      <div className="flex items-center gap-2">
+        <Link href="/issues">
+          <Badge
+            variant={!isAcceptedRiskView ? "default" : "outline"}
+            className="cursor-pointer px-3 py-1 text-sm"
+          >
+            All Issues
+          </Badge>
+        </Link>
+        <Link href="/issues?status=ACCEPTED_RISK">
+          <Badge
+            variant={isAcceptedRiskView ? "default" : "outline"}
+            className="cursor-pointer gap-1.5 px-3 py-1 text-sm"
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            Accepted Risks
+            {acceptedRiskCount > 0 && (
+              <span className="bg-primary-foreground text-primary ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold">
+                {acceptedRiskCount}
+              </span>
+            )}
+          </Badge>
+        </Link>
       </div>
 
       {/* Filter UI */}

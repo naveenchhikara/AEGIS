@@ -115,6 +115,7 @@ async function main() {
   await prisma.auditEngagement.deleteMany();
   await prisma.auditPlan.deleteMany();
   await prisma.auditArea.deleteMany();
+  await prisma.committeeMeeting.deleteMany();
   await prisma.branch.deleteMany();
   await prisma.rbiCircular.deleteMany();
   await prisma.account.deleteMany();
@@ -1345,6 +1346,163 @@ async function main() {
   }
   console.log(`    ✓ Created ${committeesData.length} committees`);
 
+  // ─── R83: Board Review Calendar (CommitteeMeeting records) ─────────────────
+  // 10 meetings matching RBI-mandated items from board-review-calendar.tsx
+  // Spread across FY 2025-26 (Apr 2025 – Mar 2026)
+  console.log("  Seeding committee meetings (board review calendar)...");
+
+  const acbCommitteeId = "b0000000-0000-0000-0000-000000000131";
+  const riskCommitteeId = "b0000000-0000-0000-0000-000000000132";
+  const itCommitteeId = "b0000000-0000-0000-0000-000000000134";
+
+  const committeeMeetingData = [
+    // 1. ACB Meeting — Quarterly Review (Q1: Jun 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-06-28T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "Q1 FY2025-26 Internal Audit Report",
+        "Compliance status review",
+        "Status of pending observations",
+        "Risk assessment update",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 2. IS Audit Report to Board (Annual: Mar 2026) — SCHEDULED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2026-03-14T10:00:00+05:30"),
+      status: "SCHEDULED",
+      agendaItems: [
+        "IS Audit Report FY2025-26",
+        "Cyber security posture assessment",
+        "Technology risk review",
+        "IT governance compliance",
+      ],
+      attendees: [userCEO.id, userCAE.id],
+    },
+    // 3. Concurrent Audit Report (Q1: Jun 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-06-28T14:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "Concurrent audit findings — Q1",
+        "Irregularity escalation summary",
+        "Branch-wise exception analysis",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 4. RBIA Plan Approval (Annual: Mar 2026) — SCHEDULED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2026-03-21T10:00:00+05:30"),
+      status: "SCHEDULED",
+      agendaItems: [
+        "Risk-Based Internal Audit Plan FY2026-27",
+        "Risk appetite review",
+        "Audit resource allocation",
+        "Branch prioritization matrix",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 5. Risk Management Policy Review (Annual: Jun 2025) — COMPLETED
+    {
+      committeeId: riskCommitteeId,
+      meetingDate: new Date("2025-06-14T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "Annual risk management policy review",
+        "Risk appetite statement update",
+        "ICAAP document review",
+        "Stress testing results",
+      ],
+      attendees: [userCEO.id, userCCO.id],
+    },
+    // 6. KYC/AML Policy Review (Annual: Sep 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-09-20T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "KYC/AML policy annual review",
+        "STR filing statistics",
+        "PMLA compliance status",
+        "Customer due diligence gaps",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 7. Cyber Security Review (Half-yearly: Sep 2025) — COMPLETED
+    {
+      committeeId: itCommitteeId,
+      meetingDate: new Date("2025-09-27T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "H1 cyber security review",
+        "Vulnerability assessment results",
+        "Phishing simulation report",
+        "BCP/DR test results",
+      ],
+      attendees: [userCEO.id, userCAE.id],
+    },
+    // 8. Investment Policy Review (Annual: Jun 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-06-21T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "Investment policy annual review",
+        "SLR/non-SLR portfolio analysis",
+        "Broker concentration review",
+        "HTM/AFS/HFT classification compliance",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 9. Statutory Audit Report Discussion (Annual: Jun 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-06-07T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "Statutory audit report FY2024-25",
+        "Auditor observations and management responses",
+        "Long-form audit report review",
+        "Action plan for statutory audit findings",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+    // 10. RBI Inspection Report Discussion (As needed: Nov 2025) — COMPLETED
+    {
+      committeeId: acbCommitteeId,
+      meetingDate: new Date("2025-11-15T10:00:00+05:30"),
+      status: "COMPLETED",
+      agendaItems: [
+        "RBI inspection report FY2024-25 discussion",
+        "Action taken report preparation",
+        "Compliance deficiency resolution timeline",
+        "DAKSH score improvement plan",
+      ],
+      attendees: [userCEO.id, userCAE.id, userCCO.id],
+    },
+  ];
+
+  for (const meeting of committeeMeetingData) {
+    await prisma.committeeMeeting.create({
+      data: {
+        committeeId: meeting.committeeId,
+        tenantId: tenantA.id,
+        meetingDate: meeting.meetingDate,
+        status: meeting.status,
+        agendaItems: meeting.agendaItems,
+        attendees: meeting.attendees,
+      },
+    });
+  }
+  console.log(
+    `    ✓ Created ${committeeMeetingData.length} committee meetings (board review calendar)`,
+  );
+
   // ─── Phase 4: Housekeeping Metrics ───────────────────────────────────────────
   console.log("  Seeding housekeeping metrics...");
   const housekeepingData = await import(
@@ -1468,6 +1626,9 @@ async function main() {
   console.log(`    - ${engagementCount} audit engagements`);
   console.log(`    - ${complianceCount} compliance requirements`);
   console.log(`    - ${obsCount} observations with timeline events`);
+  console.log(
+    `    - ${committeeMeetingData.length} committee meetings (board review calendar)`,
+  );
   console.log("  Tenant B (Test Nagari Sahakari Bank):");
   console.log("    - 1 user (CEO+CAE dual role)");
   console.log("    - 1 branch, 1 audit area, 1 audit plan");

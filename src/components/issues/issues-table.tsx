@@ -32,7 +32,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Loader2, FileText, ShieldAlert } from "@/lib/icons";
+import {
+  Plus,
+  Loader2,
+  FileText,
+  ShieldAlert,
+  MoreHorizontal,
+} from "@/lib/icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { manageIssue } from "@/actions/issues/manage-issue";
 import { acceptRisk } from "@/actions/issues/accept-risk";
@@ -115,7 +128,7 @@ type FormState = {
 
 async function createIssueAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     title: formData.get("title") as string,
@@ -134,7 +147,7 @@ async function createIssueAction(
 
 async function acceptRiskAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     issueId: formData.get("issueId") as string,
@@ -144,21 +157,27 @@ async function acceptRiskAction(
   return acceptRisk(input);
 }
 
-export function IssuesTable({ issues, canManage, canAcceptRisk, controls, complianceItems }: IssuesTableProps) {
+export function IssuesTable({
+  issues,
+  canManage,
+  canAcceptRisk,
+  controls,
+  complianceItems,
+}: IssuesTableProps) {
   const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [acceptRiskDialogOpen, setAcceptRiskDialogOpen] = React.useState(false);
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
-  const [actionPlanIssueId, setActionPlanIssueId] = React.useState<string | null>(null);
+  const [actionPlanIssueId, setActionPlanIssueId] = React.useState<
+    string | null
+  >(null);
 
   const [createState, createFormAction, isCreating] = useActionState(
     createIssueAction,
-    {}
+    {},
   );
-  const [acceptRiskState, acceptRiskFormAction, isAcceptingRisk] = useActionState(
-    acceptRiskAction,
-    {}
-  );
+  const [acceptRiskState, acceptRiskFormAction, isAcceptingRisk] =
+    useActionState(acceptRiskAction, {});
 
   React.useEffect(() => {
     if (createState.success) {
@@ -192,7 +211,7 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                 Create Issue
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
               <form action={createFormAction}>
                 <DialogHeader>
                   <DialogTitle>Create New Issue</DialogTitle>
@@ -230,11 +249,19 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                           <SelectValue placeholder="Select source" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="INTERNAL_AUDIT">Internal Audit</SelectItem>
+                          <SelectItem value="INTERNAL_AUDIT">
+                            Internal Audit
+                          </SelectItem>
                           <SelectItem value="REGULATORY">Regulatory</SelectItem>
-                          <SelectItem value="EXTERNAL_AUDIT">External Audit</SelectItem>
-                          <SelectItem value="SELF_ASSESSMENT">Self Assessment</SelectItem>
-                          <SelectItem value="CONCURRENT">Concurrent Audit</SelectItem>
+                          <SelectItem value="EXTERNAL_AUDIT">
+                            External Audit
+                          </SelectItem>
+                          <SelectItem value="SELF_ASSESSMENT">
+                            Self Assessment
+                          </SelectItem>
+                          <SelectItem value="CONCURRENT">
+                            Concurrent Audit
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -247,7 +274,9 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="FINDING">Finding</SelectItem>
-                          <SelectItem value="OBSERVATION">Observation</SelectItem>
+                          <SelectItem value="OBSERVATION">
+                            Observation
+                          </SelectItem>
                           <SelectItem value="EXCEPTION">Exception</SelectItem>
                           <SelectItem value="DEFICIENCY">Deficiency</SelectItem>
                         </SelectContent>
@@ -279,7 +308,9 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="CREDIT">Credit</SelectItem>
-                          <SelectItem value="OPERATIONAL">Operational</SelectItem>
+                          <SelectItem value="OPERATIONAL">
+                            Operational
+                          </SelectItem>
                           <SelectItem value="COMPLIANCE">Compliance</SelectItem>
                           <SelectItem value="IT">IT</SelectItem>
                           <SelectItem value="GOVERNANCE">Governance</SelectItem>
@@ -314,13 +345,15 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Link to a specific control if applicable
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="complianceItemId">Linked Compliance Item</Label>
+                      <Label htmlFor="complianceItemId">
+                        Linked Compliance Item
+                      </Label>
                       <Select name="complianceItemId">
                         <SelectTrigger id="complianceItemId">
                           <SelectValue placeholder="Select item (optional)" />
@@ -334,7 +367,7 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Link to a compliance tracking item if applicable
                       </p>
                     </div>
@@ -349,7 +382,9 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isCreating}>
-                    {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isCreating && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Issue
                   </Button>
                 </DialogFooter>
@@ -385,18 +420,18 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                   <TableCell>
                     <div className="space-y-1">
                       <div className="font-medium">{issue.title}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {format(new Date(issue.createdAt), "MMM d, yyyy")}
                       </div>
                       {issue.observation && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           From: {issue.observation.title}
                           {issue.observation.branch &&
                             ` (${issue.observation.branch.name})`}
                         </div>
                       )}
                       {issue.control && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           Control: {issue.control.controlCode}
                         </div>
                       )}
@@ -436,34 +471,45 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                           {issue.actionPlans.length} plan(s)
                         </Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">None</span>
+                        <span className="text-muted-foreground text-xs">
+                          None
+                        </span>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setActionPlanIssueId(issue.id)}
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                      {canAcceptRisk &&
-                        issue.status === "OPEN" &&
-                        issue.severity !== "LOW" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedIssue(issue);
-                              setAcceptRiskDialogOpen(true);
-                            }}
-                          >
-                            <ShieldAlert className="h-4 w-4" />
-                          </Button>
-                        )}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => setActionPlanIssueId(issue.id)}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Action Plans
+                        </DropdownMenuItem>
+                        {canAcceptRisk &&
+                          issue.status !== "CLOSED" &&
+                          issue.status !== "ACCEPTED_RISK" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedIssue(issue);
+                                  setAcceptRiskDialogOpen(true);
+                                }}
+                              >
+                                <ShieldAlert className="mr-2 h-4 w-4" />
+                                Accept Risk
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
@@ -473,14 +519,22 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
       </div>
 
       {/* Accept Risk Dialog */}
-      <Dialog open={acceptRiskDialogOpen} onOpenChange={setAcceptRiskDialogOpen}>
+      <Dialog
+        open={acceptRiskDialogOpen}
+        onOpenChange={setAcceptRiskDialogOpen}
+      >
         <DialogContent>
           <form action={acceptRiskFormAction}>
-            <input type="hidden" name="issueId" value={selectedIssue?.id || ""} />
+            <input
+              type="hidden"
+              name="issueId"
+              value={selectedIssue?.id || ""}
+            />
             <DialogHeader>
               <DialogTitle>Accept Risk</DialogTitle>
               <DialogDescription>
-                Formally accept risk for: <strong>{selectedIssue?.title}</strong>
+                Formally accept risk for:{" "}
+                <strong>{selectedIssue?.title}</strong>
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -497,8 +551,8 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
                 />
               </div>
               <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-                This action requires executive-level approval and will be logged in
-                the audit trail.
+                This action requires executive-level approval and will be logged
+                in the audit trail.
               </div>
             </div>
             <DialogFooter>
@@ -525,8 +579,11 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
 
       {/* Action Plan Panel Dialog */}
       {actionPlanIssueId && (
-        <Dialog open={!!actionPlanIssueId} onOpenChange={() => setActionPlanIssueId(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <Dialog
+          open={!!actionPlanIssueId}
+          onOpenChange={() => setActionPlanIssueId(null)}
+        >
+          <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Action Plans</DialogTitle>
               <DialogDescription>
@@ -536,7 +593,8 @@ export function IssuesTable({ issues, canManage, canAcceptRisk, controls, compli
             <ActionPlanPanel
               issueId={actionPlanIssueId}
               actionPlans={
-                (issues.find((i) => i.id === actionPlanIssueId)?.actionPlans || []) as any
+                (issues.find((i) => i.id === actionPlanIssueId)?.actionPlans ||
+                  []) as any
               }
               canManage={canManage}
             />

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   FileText,
 } from "@/lib/icons";
+import type { AuthSession } from "@/lib/auth";
 
 interface FindingDetailProps {
   observation: {
@@ -49,16 +50,13 @@ interface FindingDetailProps {
       createdAt: Date | string;
     }>;
   };
-  session: {
-    user: { id: string; [key: string]: unknown };
-    session: { id: string; [key: string]: unknown };
-  };
+  session: AuthSession;
 }
 
 const POST_RESPONSE_STATUSES = new Set(["RESPONSE", "COMPLIANCE", "CLOSED"]);
 
 export function FindingDetail({ observation, session }: FindingDetailProps) {
-  const userRoles = ((session.user as any).roles as string[]) ?? [];
+  const userRoles = session.user.roles;
   const showResponseFields = POST_RESPONSE_STATUSES.has(observation.status);
 
   return (

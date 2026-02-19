@@ -23,7 +23,7 @@ import { hasPermission, type Permission, type Role } from "@/lib/permissions";
  */
 export async function requirePermission(permission: Permission) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, permission)) {
     redirect("/dashboard?unauthorized=true");
@@ -57,7 +57,7 @@ export async function requirePermission(permission: Permission) {
  */
 export async function requireAnyPermission(permissions: Permission[]) {
   const session = await getRequiredSession();
-  const userRoles = (session.user as any).roles as Role[];
+  const userRoles = session.user.roles;
 
   const hasAny = permissions.some((perm) => hasPermission(userRoles, perm));
   if (!hasAny) {

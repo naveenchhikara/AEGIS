@@ -17,7 +17,7 @@ import {
 
 export default async function IsAuditPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   // IS Auditor can access, or admin:system
   const canAccess =

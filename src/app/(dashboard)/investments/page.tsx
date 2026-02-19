@@ -17,7 +17,7 @@ import { prismaForTenant } from "@/data-access/prisma";
 
 export default async function InvestmentsPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "risk_mis:read")) {
     redirect("/dashboard");
@@ -30,7 +30,7 @@ export default async function InvestmentsPage() {
   const unreconciled = await getUnreconciledInvestments(session, currentPeriod);
 
   // Fetch latest TOTAL_DEPOSITS from HousekeepingMetric for Non-SLR cap calculation
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
   const depositMetrics = await db.housekeepingMetric.findMany({
     where: { tenantId, metricType: "TOTAL_DEPOSITS" },

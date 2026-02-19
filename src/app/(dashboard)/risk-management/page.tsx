@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function RiskManagementPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "risk_register:read")) {
     redirect("/dashboard");
@@ -24,7 +24,7 @@ export default async function RiskManagementPage() {
   const canManage = hasPermission(userRoles, "risk_register:manage");
 
   // Fetch real data from database
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const risksRaw = await getRiskRegisters(session);

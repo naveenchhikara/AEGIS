@@ -29,7 +29,7 @@ export default async function AuditTrailPage({
 }: AuditTrailPageProps) {
   // Route guard: CAE only
   const session = await requirePermission("audit_trail:read");
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   const params = await searchParams;
 

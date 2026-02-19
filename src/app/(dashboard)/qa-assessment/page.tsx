@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function QaAssessmentPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "qa_assessment:read")) {
     redirect("/dashboard");

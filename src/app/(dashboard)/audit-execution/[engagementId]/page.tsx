@@ -14,7 +14,7 @@ interface PageProps {
 export default async function AuditExecutionPage({ params }: PageProps) {
   const { engagementId } = await params;
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "audit_execution:read")) {
     redirect("/dashboard");
@@ -28,7 +28,7 @@ export default async function AuditExecutionPage({ params }: PageProps) {
   const canManageTeam = hasPermission(userRoles, "audit_execution:manage_team");
 
   // Fetch available auditors for team assignment (R13)
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
   const availableUsers = canManageTeam
     ? await db.user.findMany({

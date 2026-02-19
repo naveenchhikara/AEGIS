@@ -50,7 +50,7 @@ function getStatusVariant(
  */
 export default async function AuditPlansPage() {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Fetch branches for what-if simulator (R53)

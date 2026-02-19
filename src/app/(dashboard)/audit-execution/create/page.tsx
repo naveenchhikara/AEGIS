@@ -17,7 +17,7 @@ import {
  */
 export default async function CreateEngagementPage() {
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Fetch branches

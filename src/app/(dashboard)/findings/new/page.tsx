@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/guards";
 
 export default async function CreateObservationPage() {
   const session = await requirePermission("observation:create");
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Fetch dropdown options for form

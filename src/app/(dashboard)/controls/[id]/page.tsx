@@ -12,7 +12,7 @@ export default async function ControlDetailPage({
   params,
 }: ControlDetailPageProps) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "control_library:read")) {
     redirect("/dashboard");

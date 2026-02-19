@@ -14,7 +14,7 @@ import { EscalationPanel } from "@/components/concurrent-audit/escalation-panel"
 
 export default async function ConcurrentAuditPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "concurrent_audit:read")) {
     redirect("/dashboard");
@@ -27,7 +27,7 @@ export default async function ConcurrentAuditPage() {
   });
 
   // Fetch branches for rapid entry
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const branches = await db.branch.findMany({

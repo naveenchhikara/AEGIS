@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
  */
 export default async function RamConfigPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (
     !hasPermission(userRoles, "admin:system") &&
@@ -35,7 +35,7 @@ export default async function RamConfigPage() {
     redirect("/dashboard");
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const ramParams = await db.ramParameterConfig.findMany({

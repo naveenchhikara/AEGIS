@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import type { AuthSession } from "@/lib/auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
@@ -45,16 +46,19 @@ export default async function DashboardLayout({
   // Layer 2: Authoritative session validation
   // This is the TRUE security boundary
   // Call auth.api.getSession() to validate session
-  const session = await auth.api.getSession({
+  const rawSession = await auth.api.getSession({
     headers: await headers(),
   });
 
   // If no valid session → redirect to /login
   // This happens BEFORE any children render (zero content flash, Decision D12)
-  if (!session) {
+  if (!rawSession) {
     redirect("/login");
   }
 
+  // Cast at boundary — user.tenantId and user.roles are set by Better Auth
+  // additionalFields config and are always present for onboarded users
+  const session = rawSession as unknown as AuthSession;
   const user = session.user;
   const userName = user.name || "User";
   const userEmail = user.email || "";
@@ -64,8 +68,8 @@ export default async function DashboardLayout({
     .join("")
     .toUpperCase()
     .slice(0, 2);
-  const userRoles = (user as any).roles || [];
-  const userTenantId = (user as any).tenantId;
+  const userRoles = user.roles;
+  const userTenantId = user.tenantId;
 
   // If user has no tenant or no roles, show setup required message
   // instead of rendering broken dashboard with empty sidebar (BUG-001/002)

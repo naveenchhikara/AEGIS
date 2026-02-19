@@ -14,7 +14,7 @@ interface PageProps {
 export default async function SectionDetailPage({ params }: PageProps) {
   const { engagementId, sectionCode } = await params;
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "examination:read")) {
     redirect("/dashboard");

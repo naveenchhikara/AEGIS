@@ -8,7 +8,7 @@ import { Shield, Clock, AlertTriangle, CheckCircle2 } from "@/lib/icons";
 
 export default async function CompliancePage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "compliance:read")) {
     redirect("/dashboard");

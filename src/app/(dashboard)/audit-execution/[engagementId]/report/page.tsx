@@ -20,8 +20,8 @@ export default async function ReportPage({ params }: PageProps) {
   const { engagementId } = await params;
 
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const tenantId = session.user.tenantId;
+  const userRoles = session.user.roles;
 
   // Fetch engagement report status
   const engagement = await getReportStatusForEngagement(session, engagementId);

@@ -10,13 +10,13 @@ import { BranchProfileTable } from "@/components/admin/branch-profile-table";
  */
 export default async function AdminBranchesPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "admin:system")) {
     redirect("/dashboard");
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const [branches, zones] = await Promise.all([

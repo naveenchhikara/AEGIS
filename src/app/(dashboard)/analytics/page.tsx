@@ -21,8 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function AnalyticsPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
-  const tenantId = (session.user as any).tenantId as string;
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
 
   // Check permission: CAE or CEO can view analytics
   const hasAccess =

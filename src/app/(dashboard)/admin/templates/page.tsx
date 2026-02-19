@@ -10,13 +10,13 @@ import { TemplateAdminPanel } from "@/components/admin/template-admin-panel";
  */
 export default async function AdminTemplatesPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "template:manage")) {
     redirect("/dashboard");
   }
 
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const templates = await db.reportTemplate.findMany({

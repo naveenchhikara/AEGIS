@@ -24,7 +24,7 @@ const DASHBOARD_PERMISSIONS: Permission[] = [
 export default async function DashboardPage() {
   const session = await requireAnyPermission(DASHBOARD_PERMISSIONS);
 
-  const roles = ((session.user as any).roles ?? []) as Role[];
+  const roles = session.user.roles;
   const widgetConfig = getDashboardConfig(roles);
 
   // Edge case: no widgets for user's role(s)

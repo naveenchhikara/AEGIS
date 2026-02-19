@@ -17,7 +17,7 @@ import {
 
 export default async function GovernancePage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "policy:read")) {
     redirect("/dashboard");

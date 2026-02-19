@@ -17,7 +17,7 @@ export default async function WorkProgramPage({
   }>;
 }) {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "work_program:read")) {
     redirect("/dashboard");
@@ -29,7 +29,7 @@ export default async function WorkProgramPage({
   const params = await searchParams;
 
   // Fetch real work program items and assignable users in parallel
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const [workItems, assignableUsers, engagements] = await Promise.all([

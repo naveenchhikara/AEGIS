@@ -8,7 +8,7 @@ import { BoardView } from "@/components/issues/board-view";
 
 export default async function IssuesBoardPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   // Board view requires ACB_MEMBER, CAE, CEO, or RISK_HEAD role (R63 requirement)
   const hasAccess =

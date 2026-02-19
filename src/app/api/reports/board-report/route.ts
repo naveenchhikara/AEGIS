@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getRequiredSession();
-    const roles = ((session.user as any).roles ?? []) as string[];
+    const roles = session.user.roles;
 
     // Only CAE can generate reports
     if (!roles.includes("CAE")) {
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Store in S3
-    const tenantId = (session.user as any).tenantId as string;
+    const tenantId = session.user.tenantId;
     const reportId = crypto.randomUUID();
     const s3Key = `${tenantId}/reports/${year}/${quarter}/${reportId}.pdf`;
 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getRequiredSession();
-    const roles = ((session.user as any).roles ?? []) as string[];
+    const roles = session.user.roles;
 
     if (!roles.some((r) => ["CAE", "CCO", "CEO"].includes(r))) {
       return NextResponse.json(

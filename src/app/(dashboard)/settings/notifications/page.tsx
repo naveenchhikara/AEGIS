@@ -12,7 +12,7 @@ const REGULATORY_ROLES = [
 export default async function NotificationPreferencesPage() {
   const session = await getRequiredSession();
   const prefs = await getNotificationPreferences(session);
-  const userRoles = ((session.user as any).roles ?? []) as string[];
+  const userRoles = session.user.roles;
   const isRegulatoryRole = userRoles.some((r) => REGULATORY_ROLES.includes(r));
 
   return (

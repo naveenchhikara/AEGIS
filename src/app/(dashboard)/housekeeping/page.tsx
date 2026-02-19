@@ -13,14 +13,14 @@ import { InterbankExposureMonitor } from "@/components/housekeeping/interbank-ex
 
 export default async function HousekeepingPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "regulatory:read")) {
     redirect("/dashboard");
   }
 
   const canManage = hasPermission(userRoles, "regulatory:manage");
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   // Fetch housekeeping data
   const metricsRaw = await getHousekeepingMetrics(session);

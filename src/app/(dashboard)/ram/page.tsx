@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 export default async function RamPage() {
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "ram:read")) {
     redirect("/dashboard");

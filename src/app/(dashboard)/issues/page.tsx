@@ -28,7 +28,7 @@ export default async function IssuesPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const session = await getRequiredSession();
-  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const userRoles = session.user.roles;
 
   if (!hasPermission(userRoles, "issue:read")) {
     redirect("/dashboard");
@@ -36,7 +36,7 @@ export default async function IssuesPage(props: {
 
   const canManage = hasPermission(userRoles, "issue:manage");
   const canAcceptRisk = hasPermission(userRoles, "issue:accept_risk");
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Fetch issues with filters

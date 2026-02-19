@@ -1,7 +1,7 @@
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
-import { getConcurrentAuditTemplates } from "@/data-access/concurrent-audit";
+import { getConcurrentAuditTemplates, getConcurrentFindingsForDedup } from "@/data-access/concurrent-audit";
 import { prismaForTenant } from "@/data-access/prisma";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TemplateManager } from "@/components/concurrent-audit/template-manager";
@@ -30,24 +30,8 @@ export default async function ConcurrentAuditPage() {
     orderBy: { name: "asc" },
   });
   
-  // Fetch concurrent observations for dedup
-  const concurrentObs = await db.observation.findMany({
-    where: { 
-      tenantId, 
-      criteria: { startsWith: "Concurrent Audit" } 
-    },
-    select: { 
-      id: true, 
-      title: true, 
-      condition: true, 
-      severity: true, 
-      createdAt: true, 
-      status: true,
-      branch: { select: { name: true } } 
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  // Fetch concurrent findings with RBIA duplicate detection (R76)
+  const concurrentObs = await getConcurrentFindingsForDedup(session);
 
   return (
     <div className="space-y-6">

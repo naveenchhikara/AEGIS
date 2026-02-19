@@ -80,7 +80,7 @@ export async function manageCommittee(input: ManageCommitteeInput) {
 
       if (parsed.data.committeeId) {
         const updated = await tx.committee.update({
-          where: { id: parsed.data.committeeId , tenantId },
+          where: { id: parsed.data.committeeId },
           data: {
             name: parsed.data.name,
             description: parsed.data.description,
@@ -211,7 +211,7 @@ export async function removeCommitteeMember(memberId: string) {
       });
 
       await tx.committeeMember.delete({
-        where: { id: memberId , tenantId },
+        where: { id: memberId },
       });
     });
 
@@ -267,7 +267,7 @@ export async function manageCommitteeMeeting(input: ManageCommitteeMeetingInput)
 
       if (parsed.data.meetingId) {
         const updated = await tx.committeeMeeting.update({
-          where: { id: parsed.data.meetingId , tenantId },
+          where: { id: parsed.data.meetingId },
           data: {
             meetingDate: parsed.data.meetingDate,
             agendaItems: parsed.data.agendaItems,

@@ -78,6 +78,11 @@ interface IssuesTableProps {
   issues: Issue[];
   canManage: boolean;
   canAcceptRisk: boolean;
+  controls: Array<{ id: string; controlCode: string; description: string }>;
+  complianceItems: Array<{
+    id: string;
+    observation: { id: string; title: string } | null;
+  }>;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -120,6 +125,8 @@ async function createIssueAction(
     severity: formData.get("severity") as any,
     rootCause: (formData.get("rootCause") as string) || undefined,
     riskTheme: (formData.get("riskTheme") as any) || undefined,
+    controlId: (formData.get("controlId") as string) || undefined,
+    complianceItemId: (formData.get("complianceItemId") as string) || undefined,
   };
 
   return manageIssue(input);
@@ -137,7 +144,7 @@ async function acceptRiskAction(
   return acceptRisk(input);
 }
 
-export function IssuesTable({ issues, canManage, canAcceptRisk }: IssuesTableProps) {
+export function IssuesTable({ issues, canManage, canAcceptRisk, controls, complianceItems }: IssuesTableProps) {
   const router = useRouter();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [acceptRiskDialogOpen, setAcceptRiskDialogOpen] = React.useState(false);
@@ -289,6 +296,48 @@ export function IssuesTable({ issues, canManage, canAcceptRisk }: IssuesTablePro
                       rows={2}
                       placeholder="Root cause analysis (optional)"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="controlId">Linked Control</Label>
+                      <Select name="controlId">
+                        <SelectTrigger id="controlId">
+                          <SelectValue placeholder="Select control (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">None</SelectItem>
+                          {controls.map((control) => (
+                            <SelectItem key={control.id} value={control.id}>
+                              {control.controlCode}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">
+                        Link to a specific control if applicable
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="complianceItemId">Linked Compliance Item</Label>
+                      <Select name="complianceItemId">
+                        <SelectTrigger id="complianceItemId">
+                          <SelectValue placeholder="Select item (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">None</SelectItem>
+                          {complianceItems.map((item) => (
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.observation?.title || item.id.slice(0, 8)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">
+                        Link to a compliance tracking item if applicable
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
@@ -487,7 +536,7 @@ export function IssuesTable({ issues, canManage, canAcceptRisk }: IssuesTablePro
             <ActionPlanPanel
               issueId={actionPlanIssueId}
               actionPlans={
-                issues.find((i) => i.id === actionPlanIssueId)?.actionPlans || []
+                (issues.find((i) => i.id === actionPlanIssueId)?.actionPlans || []) as any
               }
               canManage={canManage}
             />

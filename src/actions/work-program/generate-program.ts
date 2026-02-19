@@ -53,7 +53,7 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
       });
 
       // Get engagement to determine scope
-      const engagement = await tx.auditEngagement.findUnique({
+      const engagement = await tx.auditEngagement.findFirst({
         where: { id: parsed.data.engagementId, tenantId },
         include: {
           teamMembers: {

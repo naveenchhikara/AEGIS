@@ -16,6 +16,13 @@ import { IrregularityEscalationDialog } from "./irregularity-escalation-dialog";
 import { AlertTriangle, ChevronDown, ChevronRight, Link2, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
+type RbiaDuplicate = {
+  id: string;
+  title: string;
+  condition: string;
+  branch: { id: string } | null;
+};
+
 type Finding = {
   id: string;
   title: string;
@@ -23,7 +30,8 @@ type Finding = {
   severity: string;
   status: string;
   createdAt: Date;
-  branch: { name: string } | null;
+  branch: { name: string; id: string } | null;
+  potentialRbiaDuplicates: RbiaDuplicate[];
 };
 
 interface DedupFindingsPanelProps {
@@ -44,12 +52,8 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
     setExpandedRows(newExpanded);
   };
 
-  // For demo purposes, we'll mock some potential duplicates
-  // In a real implementation, this would come from the DAL function
-  const findingsWithDuplicates = findings.map((finding) => ({
-    ...finding,
-    potentialRbiaDuplicates: [], // Would be populated by DAL
-  }));
+  // Findings now come with potentialRbiaDuplicates from DAL (R76)
+  const findingsWithDuplicates = findings;
 
   const totalFindings = findings.length;
   const potentialDuplicates = findingsWithDuplicates.filter(

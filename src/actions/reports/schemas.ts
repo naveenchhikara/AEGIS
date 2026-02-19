@@ -16,6 +16,7 @@ export type ComputeRiskRatingInput = z.infer<typeof ComputeRiskRatingSchema>;
 
 export const GenerateReportSchema = z.object({
   engagementId: z.string().uuid("Invalid engagement ID"),
+  templateId: z.string().uuid("Invalid template ID").optional(),
 });
 
 export type GenerateReportInput = z.infer<typeof GenerateReportSchema>;

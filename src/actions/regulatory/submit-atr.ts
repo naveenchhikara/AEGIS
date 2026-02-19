@@ -75,7 +75,7 @@ export async function submitAtr(input: SubmitAtrInput) {
 
       // Get current observation
       const current = await tx.regulatoryObservation.findUnique({
-        where: { id: parsed.data.observationId , tenantId },
+        where: { id: parsed.data.observationId },
       });
 
       if (!current) {
@@ -115,7 +115,7 @@ export async function submitAtr(input: SubmitAtrInput) {
 
       // Update observation
       const updated = await tx.regulatoryObservation.update({
-        where: { id: parsed.data.observationId , tenantId },
+        where: { id: parsed.data.observationId },
         data: {
           atrText: parsed.data.atrText,
           atrStatus: newStatus,

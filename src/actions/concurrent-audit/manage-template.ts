@@ -68,7 +68,7 @@ export async function manageTemplate(input: ManageTemplateInput) {
       if (parsed.data.templateId) {
         // Update existing template
         const updated = await tx.concurrentAuditTemplate.update({
-          where: { id: parsed.data.templateId , tenantId },
+          where: { id: parsed.data.templateId },
           data: {
             name: parsed.data.name,
             description: parsed.data.description,
@@ -140,7 +140,7 @@ export async function deleteTemplate(templateId: string) {
       });
 
       await tx.concurrentAuditTemplate.delete({
-        where: { id: templateId , tenantId },
+        where: { id: templateId },
       });
     });
 

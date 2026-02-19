@@ -73,8 +73,14 @@ export async function manageRisk(input: ManageRiskInput) {
 
       if (parsed.data.id) {
         // Update existing risk
-        return tx.riskRegister.update({
+        const existing = await tx.riskRegister.findFirst({
           where: { id: parsed.data.id, tenantId },
+        });
+        if (!existing) {
+          throw new Error("Risk not found");
+        }
+        return tx.riskRegister.update({
+          where: { id: parsed.data.id },
           data: {
             entityId: parsed.data.entityId,
             riskStatement: parsed.data.riskStatement,
@@ -193,8 +199,14 @@ export async function manageKRI(input: ManageKRIInput) {
 
       if (parsed.data.id) {
         // Update existing KRI
-        return tx.keyRiskIndicator.update({
+        const existing = await tx.keyRiskIndicator.findFirst({
           where: { id: parsed.data.id, tenantId },
+        });
+        if (!existing) {
+          throw new Error("KRI not found");
+        }
+        return tx.keyRiskIndicator.update({
+          where: { id: parsed.data.id },
           data: {
             riskRegisterId: parsed.data.riskRegisterId,
             name: parsed.data.name,

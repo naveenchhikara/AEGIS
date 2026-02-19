@@ -58,7 +58,8 @@ export function EngagementForm({
       visitNumber: 1,
       periodFrom: "",
       periodTo: "",
-      scheduledStartDate: undefined,
+      scheduledStartDate: "",
+      completionDate: "",
     },
   });
 
@@ -244,9 +245,9 @@ export function EngagementForm({
           )}
         </div>
 
-        {/* Scheduled Start Date (Optional) */}
+        {/* Scheduled Start Date */}
         <div className="space-y-2">
-          <Label htmlFor="scheduledStartDate">Scheduled Start Date</Label>
+          <Label htmlFor="scheduledStartDate">Scheduled Start Date *</Label>
           <Input
             id="scheduledStartDate"
             type="datetime-local"
@@ -259,6 +260,25 @@ export function EngagementForm({
           {errors.scheduledStartDate && (
             <p className="text-sm text-destructive">
               {errors.scheduledStartDate.message}
+            </p>
+          )}
+        </div>
+
+        {/* Completion Date */}
+        <div className="space-y-2">
+          <Label htmlFor="completionDate">Completion Date *</Label>
+          <Input
+            id="completionDate"
+            type="datetime-local"
+            disabled={isSubmitting}
+            {...register("completionDate")}
+          />
+          <p className="text-sm text-muted-foreground">
+            Expected audit completion date
+          </p>
+          {errors.completionDate && (
+            <p className="text-sm text-destructive">
+              {errors.completionDate.message}
             </p>
           )}
         </div>

@@ -9,13 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Save, CheckCircle2 } from "@/lib/icons";
+import { Info, Save, CheckCircle2, Loader2 } from "@/lib/icons";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { saveClassificationChecklist } from "@/actions/investment/save-classification-checklist";
+import { toast } from "sonner";
 
 interface InvestmentRecord {
   id: string;
@@ -27,6 +29,7 @@ interface InvestmentRecord {
 
 interface ClassificationChecklistProps {
   investments: InvestmentRecord[];
+  engagementId?: string;
 }
 
 interface ChecklistItem {
@@ -91,7 +94,7 @@ const CLASSIFICATION_CHECKS = [
   },
 ];
 
-export function ClassificationChecklist({ investments }: ClassificationChecklistProps) {
+export function ClassificationChecklist({ investments, engagementId }: ClassificationChecklistProps) {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
     CLASSIFICATION_CHECKS.map((check) => ({
       ...check,
@@ -100,6 +103,7 @@ export function ClassificationChecklist({ investments }: ClassificationChecklist
       remarks: "",
     }))
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   // Calculate portfolio metrics
   const totalInvestment = investments.reduce((sum, inv) => sum + Number(inv.faceValue), 0);
@@ -150,9 +154,26 @@ export function ClassificationChecklist({ investments }: ClassificationChecklist
     );
   };
 
-  const handleSave = () => {
-    // TODO: Save to server (e.g., create IsAuditChecklist or similar)
-    alert("Classification checklist saved (integrate with server action)");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const result = await saveClassificationChecklist({
+        engagementId,
+        checklistItems,
+        overallRating,
+        period: `${new Date().getFullYear()}-Q${Math.ceil((new Date().getMonth() + 1) / 3)}`,
+      });
+
+      if (result.success) {
+        toast.success("Classification checklist saved successfully");
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      toast.error("Failed to save checklist. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const compliantCount = checklistItems.filter((item) => item.compliant).length;
@@ -258,9 +279,13 @@ export function ClassificationChecklist({ investments }: ClassificationChecklist
                 Review investment classification compliance with RBI norms
               </p>
             </div>
-            <Button onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" />
-              Save Checklist
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              {isSaving ? "Saving..." : "Save Checklist"}
             </Button>
           </div>
         </CardHeader>

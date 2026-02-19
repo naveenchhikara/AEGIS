@@ -33,7 +33,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
   const router = useRouter();
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [engagementId, setEngagementId] = React.useState("");
-  const [selectedTemplate, setSelectedTemplate] = React.useState("");
+  const [selectedTemplate, setSelectedTemplate] = React.useState<string | null>(null);
 
   const handleGenerateXlsx = async () => {
     if (!engagementId.trim()) {
@@ -42,7 +42,10 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
     }
 
     setIsGenerating(true);
-    const result = await generateXlsxReport({ engagementId });
+    const result = await generateXlsxReport({
+      engagementId,
+      ...(selectedTemplate && { templateId: selectedTemplate }),
+    });
     setIsGenerating(false);
 
     if (result.success) {
@@ -62,7 +65,10 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
     }
 
     setIsGenerating(true);
-    const result = await generatePdfReport({ engagementId });
+    const result = await generatePdfReport({
+      engagementId,
+      ...(selectedTemplate && { templateId: selectedTemplate }),
+    });
     setIsGenerating(false);
 
     if (result.success) {
@@ -172,29 +178,69 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {selectedTemplate && (
+              <div className="mb-4 p-3 border border-primary/30 rounded-md bg-primary/5">
+                <p className="text-sm font-medium text-primary">
+                  Active template: {templates.find((t) => t.id === selectedTemplate)?.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This template will be applied when generating reports. Select an engagement ID above and generate.
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    toast.info("Template deselected");
+                  }}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            )}
             {templates.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">
                 No templates configured.
               </p>
             ) : (
               <div className="space-y-3">
-                {templates.map((template) => (
-                  <div
-                    key={template.id}
-                    className="flex items-center justify-between p-3 border rounded-md"
-                  >
-                    <div>
-                      <p className="font-medium">{template.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {template.category} • v{template.versionNumber}
-                      </p>
+                {templates.map((template) => {
+                  const isActive = selectedTemplate === template.id;
+                  return (
+                    <div
+                      key={template.id}
+                      className={`flex items-center justify-between p-3 border rounded-md transition-colors ${
+                        isActive
+                          ? "border-primary bg-primary/5"
+                          : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <div>
+                        <p className="font-medium">{template.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {template.category} • v{template.versionNumber}
+                        </p>
+                      </div>
+                      <Button
+                        variant={isActive ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          if (isActive) {
+                            setSelectedTemplate(null);
+                            toast.info("Template deselected");
+                          } else {
+                            setSelectedTemplate(template.id);
+                            toast.success(`Template "${template.name}" selected — switch to XLSX or PDF tab to generate`);
+                          }
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        {isActive ? "Selected" : "Use"}
+                      </Button>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-1" />
-                      Use
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

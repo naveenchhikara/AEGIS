@@ -94,6 +94,17 @@ async function submitControlAction(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
+  const frameworkMappingRaw = formData.get("frameworkMapping") as string;
+  let frameworkMapping = undefined;
+  
+  if (frameworkMappingRaw && frameworkMappingRaw.trim()) {
+    try {
+      frameworkMapping = JSON.parse(frameworkMappingRaw);
+    } catch (e) {
+      return { error: "Invalid JSON in Framework Mapping field" };
+    }
+  }
+
   const input = {
     controlCode: formData.get("controlCode") as string,
     processArea: formData.get("processArea") as any,
@@ -102,6 +113,7 @@ async function submitControlAction(
     owner: formData.get("owner") as string,
     isKeyControl: formData.get("isKeyControl") === "true",
     description: formData.get("description") as string,
+    frameworkMapping,
   };
 
   return manageControl(input);
@@ -237,6 +249,19 @@ export function ControlLibraryTable({
                       placeholder="Describe the control objective and procedure..."
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="frameworkMapping">Framework Mapping (JSON)</Label>
+                    <Textarea
+                      id="frameworkMapping"
+                      name="frameworkMapping"
+                      rows={3}
+                      placeholder='{"COSO": "CC1.1", "RBI": "DoS.1", "IIA": "2120.A1"}'
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Optional: Map control to frameworks (COSO, RBI, IIA, etc.)
+                    </p>
                   </div>
                 </div>
                 <DialogFooter>

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, TrendingUp, Activity } from "@/lib/icons";
+import { KriFormDialog } from "./kri-form-dialog";
 
 interface KriData {
   id: string;
@@ -26,6 +27,7 @@ interface KriData {
 
 interface KriDashboardProps {
   data: KriData[];
+  canManage?: boolean;
 }
 
 const BREACH_STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -40,7 +42,7 @@ const BREACH_STATUS_BADGE_COLORS: Record<string, string> = {
   NORMAL: "bg-green-100 text-green-800 border-green-300",
 };
 
-export function KriDashboard({ data }: KriDashboardProps) {
+export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
   if (data.length === 0) {
     return (
       <Card>
@@ -95,13 +97,29 @@ export function KriDashboard({ data }: KriDashboardProps) {
                     {kri.riskRegister.entity.name}
                   </p>
                 </div>
-                {kri.breachStatus !== "NORMAL" && (
-                  <AlertTriangle
-                    className={`h-4 w-4 flex-shrink-0 ${
-                      kri.breachStatus === "BREACH" ? "text-red-600" : "text-amber-600"
-                    }`}
-                  />
-                )}
+                <div className="flex items-center gap-2">
+                  {canManage && (
+                    <KriFormDialog
+                      riskRegisterId={kri.riskRegister.id}
+                      kri={{
+                        id: kri.id,
+                        name: kri.name,
+                        description: kri.description,
+                        currentValue: kri.currentValue,
+                        thresholdLow: kri.thresholdLow,
+                        thresholdHigh: kri.thresholdHigh,
+                        frequency: kri.frequency,
+                      }}
+                    />
+                  )}
+                  {kri.breachStatus !== "NORMAL" && (
+                    <AlertTriangle
+                      className={`h-4 w-4 flex-shrink-0 ${
+                        kri.breachStatus === "BREACH" ? "text-red-600" : "text-amber-600"
+                      }`}
+                    />
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">

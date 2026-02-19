@@ -73,8 +73,14 @@ export async function manageIssue(input: ManageIssueInput) {
 
       if (parsed.data.id) {
         // Update existing issue
-        return tx.issue.update({
+        const existing = await tx.issue.findFirst({
           where: { id: parsed.data.id, tenantId },
+        });
+        if (!existing) {
+          throw new Error("Issue not found");
+        }
+        return tx.issue.update({
+          where: { id: parsed.data.id },
           data: {
             title: parsed.data.title,
             description: parsed.data.description,
@@ -172,8 +178,15 @@ export async function closeIssue(issueId: string) {
         );
       }
 
-      return tx.issue.update({
+      const existing = await tx.issue.findFirst({
         where: { id: issueId, tenantId },
+      });
+      if (!existing) {
+        throw new Error("Issue not found");
+      }
+
+      return tx.issue.update({
+        where: { id: issueId },
         data: {
           status: "CLOSED",
           closedAt: new Date(),

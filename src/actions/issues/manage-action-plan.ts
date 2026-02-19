@@ -75,8 +75,14 @@ export async function manageActionPlan(input: ManageActionPlanInput) {
 
       if (parsed.data.id) {
         // Update existing action plan
-        return tx.actionPlan.update({
+        const existing = await tx.actionPlan.findFirst({
           where: { id: parsed.data.id, tenantId },
+        });
+        if (!existing) {
+          throw new Error("Action plan not found");
+        }
+        return tx.actionPlan.update({
+          where: { id: parsed.data.id },
           data: {
             issueId: parsed.data.issueId,
             title: parsed.data.title,
@@ -155,8 +161,15 @@ export async function completeActionPlan(
         sessionId: session.session.id,
       });
 
-      return tx.actionPlan.update({
+      const existing = await tx.actionPlan.findFirst({
         where: { id: actionPlanId, tenantId },
+      });
+      if (!existing) {
+        throw new Error("Action plan not found");
+      }
+
+      return tx.actionPlan.update({
+        where: { id: actionPlanId },
         data: {
           status: "COMPLETED",
           completionPct: 100,
@@ -237,8 +250,15 @@ export async function updateActionPlanProgress(
         status = "IN_PROGRESS";
       }
 
-      return tx.actionPlan.update({
+      const existing = await tx.actionPlan.findFirst({
         where: { id: actionPlanId, tenantId },
+      });
+      if (!existing) {
+        throw new Error("Action plan not found");
+      }
+
+      return tx.actionPlan.update({
+        where: { id: actionPlanId },
         data: {
           completionPct,
           ...(status && { status }),
@@ -264,6 +284,77 @@ export async function updateActionPlanProgress(
         : "Failed to update action plan progress.";
     logger.error(
       { error, action: "update_action_plan_progress", tenantId },
+      message
+    );
+    return { success: false as const, error: message };
+  }
+}
+
+/**
+ * Add evidence reference to an action plan (R61).
+ * Security: Requires issue:manage permission.
+ */
+export async function addActionPlanEvidence(
+  actionPlanId: string,
+  evidenceRef: string
+) {
+  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
+  if (!evidenceRef || evidenceRef.trim().length === 0) return { success: false as const, error: "Evidence reference is required." };
+  
+  const session = await getRequiredSession();
+  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const tenantId = (session.user as any).tenantId as string;
+
+  if (!hasPermission(userRoles, "issue:manage")) {
+    return {
+      success: false as const,
+      error: "You do not have permission to add evidence.",
+    };
+  }
+
+  const db = prismaForTenant(tenantId);
+
+  try {
+    const actionPlan = await db.$transaction(async (tx: any) => {
+      await setAuditContext(tx, {
+        actionType: "action_plan.evidence_added",
+        userId: session.user.id,
+        tenantId,
+        sessionId: session.session.id,
+      });
+
+      // Get current evidence array
+      const current = await tx.actionPlan.findFirst({
+        where: { id: actionPlanId, tenantId },
+        select: { evidence: true },
+      });
+
+      if (!current) {
+        throw new Error("Action plan not found");
+      }
+
+      const updatedEvidence = [...(current.evidence || []), evidenceRef.trim()];
+
+      return tx.actionPlan.update({
+        where: { id: actionPlanId },
+        data: { evidence: updatedEvidence },
+      });
+    });
+
+    revalidatePath(`/action-plans/${actionPlanId}`);
+    revalidatePath(`/issues/${actionPlan.issueId}`);
+
+    return {
+      success: true as const,
+      data: actionPlan,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to add evidence.";
+    logger.error(
+      { error, action: "add_action_plan_evidence", tenantId },
       message
     );
     return { success: false as const, error: message };

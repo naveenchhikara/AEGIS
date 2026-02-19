@@ -74,7 +74,7 @@ export async function managePolicy(input: ManagePolicyInput) {
       if (parsed.data.policyId) {
         // Update existing policy
         const updated = await tx.policyDocument.update({
-          where: { id: parsed.data.policyId , tenantId },
+          where: { id: parsed.data.policyId },
           data: {
             name: parsed.data.name,
             approvalDate: parsed.data.approvalDate,
@@ -150,7 +150,7 @@ export async function deletePolicy(policyId: string) {
       });
 
       await tx.policyDocument.delete({
-        where: { id: policyId , tenantId },
+        where: { id: policyId },
       });
     });
 

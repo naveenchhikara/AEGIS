@@ -44,10 +44,11 @@ export default async function GovernancePage() {
       </div>
 
       <Tabs defaultValue="policies" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto">
           <TabsTrigger value="policies">Policies ({policies.length})</TabsTrigger>
           <TabsTrigger value="committees">Committees</TabsTrigger>
           <TabsTrigger value="acb">ACB Workspace</TabsTrigger>
+          <TabsTrigger value="agenda">Agenda Builder</TabsTrigger>
           <TabsTrigger value="calendar">Board Calendar</TabsTrigger>
           <TabsTrigger value="inspection">RBI Pack</TabsTrigger>
         </TabsList>
@@ -70,6 +71,10 @@ export default async function GovernancePage() {
 
         <TabsContent value="acb" className="space-y-4">
           <AcbWorkspace canManageAgenda={canManageAgenda} />
+        </TabsContent>
+
+        <TabsContent value="agenda" className="space-y-4">
+          <AcbAgendaBuilder />
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-4">

@@ -3,6 +3,7 @@ import { getIssues } from "@/data-access/issues";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { IssuesTable } from "@/components/issues/issues-table";
+import { prismaForTenant } from "@/lib/prisma";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,8 @@ export default async function IssuesPage(props: {
 
   const canManage = hasPermission(userRoles, "issue:manage");
   const canAcceptRisk = hasPermission(userRoles, "issue:accept_risk");
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
   // Fetch issues with filters
   const issues = await getIssues(session, {
@@ -40,6 +43,29 @@ export default async function IssuesPage(props: {
     status: searchParams.status,
     riskTheme: searchParams.riskTheme,
   });
+
+  // Fetch controls and compliance items for linking (R60)
+  const controls = canManage
+    ? await db.controlLibrary.findMany({
+        where: { tenantId },
+        select: { id: true, controlCode: true, description: true },
+        orderBy: { controlCode: "asc" },
+      })
+    : [];
+
+  const complianceItems = canManage
+    ? await db.complianceItem.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          observation: {
+            select: { id: true, title: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -135,6 +161,8 @@ export default async function IssuesPage(props: {
         issues={issues}
         canManage={canManage}
         canAcceptRisk={canAcceptRisk}
+        controls={controls}
+        complianceItems={complianceItems}
       />
     </div>
   );

@@ -1,8 +1,10 @@
 import { getRequiredSession } from "@/data-access/session";
 import { getWorkProgramItems } from "@/data-access/work-program";
+import { prismaForTenant } from "@/data-access/prisma";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { WorkProgramTable } from "@/components/work-program/work-program-table";
+import { WorkProgramGenerator } from "@/components/work-program/work-program-generator";
 
 export default async function WorkProgramPage({
   searchParams,
@@ -28,13 +30,26 @@ export default async function WorkProgramPage({
     status: params.status,
   });
 
+  // Fetch engagements for work program generation
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+  const engagements = await db.auditEngagement.findMany({
+    where: { tenantId },
+    select: { id: true, auditNumber: true, status: true },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Work Program</h1>
-        <p className="text-muted-foreground">
-          Audit work program and task management
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Work Program</h1>
+          <p className="text-muted-foreground">
+            Audit work program and task management
+          </p>
+        </div>
+        <WorkProgramGenerator engagements={engagements} canExecute={canExecute} />
       </div>
       <WorkProgramTable workItems={workItems} canExecute={canExecute} />
     </div>

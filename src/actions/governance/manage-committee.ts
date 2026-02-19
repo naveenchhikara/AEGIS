@@ -83,8 +83,9 @@ export async function manageCommittee(input: ManageCommitteeInput) {
       });
 
       if (parsed.data.committeeId) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         const updated = await tx.committee.update({
-          where: { id: parsed.data.committeeId },
+          where: { id: parsed.data.committeeId, tenantId },
           data: {
             name: parsed.data.name,
             description: parsed.data.description,
@@ -195,6 +196,7 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
 
 /**
  * Remove committee member.
+ * CommitteeMember has no direct tenantId — verify via parent committee's tenantId.
  */
 export async function removeCommitteeMember(memberId: string) {
   const session = await getRequiredSession();
@@ -219,8 +221,9 @@ export async function removeCommitteeMember(memberId: string) {
         sessionId: session.session.id,
       });
 
-      await tx.committeeMember.delete({
-        where: { id: memberId },
+      // Use deleteMany with relation filter since CommitteeMember has no direct tenantId
+      await tx.committeeMember.deleteMany({
+        where: { id: memberId, committee: { tenantId } },
       });
     });
 
@@ -282,8 +285,9 @@ export async function manageCommitteeMeeting(
       });
 
       if (parsed.data.meetingId) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         const updated = await tx.committeeMeeting.update({
-          where: { id: parsed.data.meetingId },
+          where: { id: parsed.data.meetingId, tenantId },
           data: {
             meetingDate: parsed.data.meetingDate,
             agendaItems: parsed.data.agendaItems,

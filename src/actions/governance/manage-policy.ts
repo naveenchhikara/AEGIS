@@ -81,9 +81,9 @@ export async function managePolicy(input: ManagePolicyInput) {
       });
 
       if (parsed.data.policyId) {
-        // Update existing policy
+        // Update existing policy — include tenantId in WHERE to prevent IDOR
         const updated = await tx.policyDocument.update({
-          where: { id: parsed.data.policyId },
+          where: { id: parsed.data.policyId, tenantId },
           data: {
             name: parsed.data.name,
             approvalDate: parsed.data.approvalDate,
@@ -159,8 +159,9 @@ export async function deletePolicy(policyId: string) {
         sessionId: session.session.id,
       });
 
+      // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
       await tx.policyDocument.delete({
-        where: { id: policyId },
+        where: { id: policyId, tenantId },
       });
     });
 

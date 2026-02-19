@@ -60,10 +60,12 @@ export default async function AuditExecutionPage({ params }: PageProps) {
         <div className="lg:col-span-3">
           <SectionTabs
             engagementId={engagementId}
-            sections={(engagement as any).sectionInstances?.map((s: any) => ({
-              ...s,
-              assignedToName: null, // R18: resolved via separate lookup if needed
-            })) ?? []}
+            sections={
+              (engagement as any).sectionInstances?.map((s: any) => ({
+                ...s,
+                assignedToName: null, // R18: resolved via separate lookup if needed
+              })) ?? []
+            }
             canManageSections={canManageSections}
           />
         </div>

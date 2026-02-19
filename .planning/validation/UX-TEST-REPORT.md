@@ -1,4 +1,5 @@
 # AEGIS UX Test Report
+
 **Date:** 2026-02-18 11:33 GMT+5:30  
 **Tester:** UX Test Sub-Agent  
 **Environment:** Production (https://aegis.nexlyadvisory.com)  
@@ -10,9 +11,10 @@
 
 **Issue:** OpenClaw browser control service is unreachable  
 **Impact:** Cannot perform interactive UX testing (login, navigation, forms, visual verification)  
-**Root Cause:** Browser control service not responding despite Chromium installation and gateway running  
+**Root Cause:** Browser control service not responding despite Chromium installation and gateway running
 
 ### Infrastructure Status
+
 - ✅ Chromium browser installed (v145.0.7632.75)
 - ✅ OpenClaw gateway running (PID 299966)
 - ❌ Browser control service unreachable (timeout after 15s)
@@ -25,6 +27,7 @@
 ## Limited Verification (web_fetch only)
 
 ### ✅ Base URL & Login Page
+
 **Route:** `/` (redirects to `/login`)  
 **Status:** 200 OK  
 **Result:** ✅ **PASS**
@@ -44,11 +47,13 @@
 The following routes **require authenticated browser testing** and could not be verified:
 
 ### Dashboard & Core
+
 - `/dashboard` — ❌ NOT TESTED (requires auth)
 - `/calendar` — ❌ NOT TESTED (requires auth)
 - `/analytics` — ❌ NOT TESTED (requires auth)
 
 ### Audit Module
+
 - `/audit-plans` — ❌ NOT TESTED (requires auth)
 - `/audit-execution/create` — ❌ NOT TESTED (requires auth)
 - `/concurrent-audit` — ❌ NOT TESTED (requires auth)
@@ -57,6 +62,7 @@ The following routes **require authenticated browser testing** and could not be 
 - `/qa-assessment` — ❌ NOT TESTED (requires auth)
 
 ### Risk & Compliance
+
 - `/ram` — ❌ NOT TESTED (requires auth)
 - `/risk-management` — ❌ NOT TESTED (requires auth)
 - `/compliance` — ❌ NOT TESTED (requires auth)
@@ -64,27 +70,32 @@ The following routes **require authenticated browser testing** and could not be 
 - `/compliance/acb` — ❌ NOT TESTED (requires auth)
 
 ### Findings & Issues
+
 - `/findings` — ❌ NOT TESTED (requires auth)
 - `/findings/new` — ❌ NOT TESTED (requires auth)
 - `/issues` — ❌ NOT TESTED (requires auth)
 - `/issues/board` — ❌ NOT TESTED (requires auth)
 
 ### Controls & Governance
+
 - `/controls` — ❌ NOT TESTED (requires auth)
 - `/work-program` — ❌ NOT TESTED (requires auth)
 - `/governance` — ❌ NOT TESTED (requires auth)
 
 ### Specialized Audits
+
 - `/housekeeping` — ❌ NOT TESTED (requires auth)
 - `/investments` — ❌ NOT TESTED (requires auth)
 - `/is-audit` — ❌ NOT TESTED (requires auth)
 - `/regulatory` — ❌ NOT TESTED (requires auth)
 
 ### Reports & Logs
+
 - `/reports` — ❌ NOT TESTED (requires auth)
 - `/audit-trail` — ❌ NOT TESTED (requires auth)
 
 ### Administration
+
 - `/settings` — ❌ NOT TESTED (requires auth)
 - `/admin/users` — ❌ NOT TESTED (requires auth)
 - `/auditee` — ❌ NOT TESTED (requires auth)
@@ -95,20 +106,20 @@ The following routes **require authenticated browser testing** and could not be 
 
 The following accounts were prepared for testing but could not be used:
 
-1. **Naveen (Admin)**  
-   - Email: naveenchhikara@gmail.com  
+1. **Naveen (Admin)**
+   - Email: naveenchhikara@gmail.com
    - Password: AegisAdmin@2026
 
-2. **Auditor**  
-   - Email: auditor@nexlybank.com  
+2. **Auditor**
+   - Email: auditor@nexlybank.com
    - Password: AegisAdmin@2026
 
-3. **CAE**  
-   - Email: cae@nexlybank.com  
+3. **CAE**
+   - Email: cae@nexlybank.com
    - Password: AegisAdmin@2026
 
-4. **CCO**  
-   - Email: cco@nexlybank.com  
+4. **CCO**
+   - Email: cco@nexlybank.com
    - Password: AegisAdmin@2026
 
 ---
@@ -116,12 +127,15 @@ The following accounts were prepared for testing but could not be used:
 ## Recommendations
 
 ### Immediate Actions
+
 1. **Restart OpenClaw Gateway** with browser service enabled
 2. **Verify browser dependencies** are properly configured
 3. **Re-run this test** once browser control is available
 
 ### Testing Checklist (When Browser Available)
+
 For each route, verify:
+
 - [ ] Page loads without errors (200 status, no 500/404)
 - [ ] Real data vs empty state display
 - [ ] Navigation tabs/buttons visible and clickable
@@ -132,12 +146,13 @@ For each route, verify:
 - [ ] Loading states and transitions
 
 ### Multi-Role Testing Matrix
-| Route | Naveen (Admin) | Auditor | CAE | CCO |
-|-------|----------------|---------|-----|-----|
-| Dashboard | ✅ Full | ✅ Limited | ✅ Limited | ✅ Limited |
-| Admin/Users | ✅ Full | ❌ No Access | ❌ No Access | ❌ No Access |
-| Audit Plans | ✅ Full | ✅ Read/Write | ✅ Review | ❌ View Only |
-| Compliance | ✅ Full | ✅ Execute | ✅ Review | ✅ Oversight |
+
+| Route       | Naveen (Admin) | Auditor       | CAE          | CCO          |
+| ----------- | -------------- | ------------- | ------------ | ------------ |
+| Dashboard   | ✅ Full        | ✅ Limited    | ✅ Limited   | ✅ Limited   |
+| Admin/Users | ✅ Full        | ❌ No Access  | ❌ No Access | ❌ No Access |
+| Audit Plans | ✅ Full        | ✅ Read/Write | ✅ Review    | ❌ View Only |
+| Compliance  | ✅ Full        | ✅ Execute    | ✅ Review    | ✅ Oversight |
 
 ---
 

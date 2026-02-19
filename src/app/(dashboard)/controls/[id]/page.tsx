@@ -8,7 +8,9 @@ interface ControlDetailPageProps {
   params: { id: string };
 }
 
-export default async function ControlDetailPage({ params }: ControlDetailPageProps) {
+export default async function ControlDetailPage({
+  params,
+}: ControlDetailPageProps) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
 

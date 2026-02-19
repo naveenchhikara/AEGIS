@@ -70,7 +70,7 @@ type FormState = {
 
 async function submitTestProcedureAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     controlId: formData.get("controlId") as string,
@@ -94,7 +94,10 @@ export function TestProceduresTab({
 }: TestProceduresTabProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [state, formAction, isPending] = useActionState(submitTestProcedureAction, {});
+  const [state, formAction, isPending] = useActionState(
+    submitTestProcedureAction,
+    {},
+  );
 
   // Handle success/error feedback
   React.useEffect(() => {
@@ -139,7 +142,8 @@ export function TestProceduresTab({
                       <SelectContent>
                         {controls.map((control) => (
                           <SelectItem key={control.id} value={control.id}>
-                            {control.controlCode} - {control.description.slice(0, 60)}...
+                            {control.controlCode} -{" "}
+                            {control.description.slice(0, 60)}...
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -148,7 +152,8 @@ export function TestProceduresTab({
 
                   <div className="space-y-2">
                     <Label htmlFor="name">
-                      Test Procedure Name <span className="text-destructive">*</span>
+                      Test Procedure Name{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="name"
@@ -173,7 +178,9 @@ export function TestProceduresTab({
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="sampleMethodology">Sample Methodology</Label>
+                      <Label htmlFor="sampleMethodology">
+                        Sample Methodology
+                      </Label>
                       <Select name="sampleMethodology">
                         <SelectTrigger>
                           <SelectValue placeholder="(Optional) Select methodology" />
@@ -182,7 +189,9 @@ export function TestProceduresTab({
                           <SelectItem value="RANDOM">Random</SelectItem>
                           <SelectItem value="JUDGMENTAL">Judgmental</SelectItem>
                           <SelectItem value="SYSTEMATIC">Systematic</SelectItem>
-                          <SelectItem value="MONETARY_UNIT">Monetary Unit</SelectItem>
+                          <SelectItem value="MONETARY_UNIT">
+                            Monetary Unit
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -230,7 +239,9 @@ export function TestProceduresTab({
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Test Procedure
                   </Button>
                 </DialogFooter>
@@ -256,11 +267,12 @@ export function TestProceduresTab({
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
                   <div className="text-muted-foreground">
-                    <CheckCircle className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                    <CheckCircle className="mx-auto mb-2 h-8 w-8 opacity-50" />
                     <p>No test procedures found.</p>
                     {canManage && (
-                      <p className="text-sm mt-1">
-                        Click "Add Test Procedure" to create your first procedure.
+                      <p className="mt-1 text-sm">
+                        Click "Add Test Procedure" to create your first
+                        procedure.
                       </p>
                     )}
                   </div>
@@ -269,10 +281,10 @@ export function TestProceduresTab({
             ) : (
               testProcedures.map((tp) => {
                 const completedItems = tp.workProgramItems.filter(
-                  (item) => item.status === "COMPLETED"
+                  (item) => item.status === "COMPLETED",
                 );
                 const effectiveCount = completedItems.filter(
-                  (item) => item.result === "EFFECTIVE"
+                  (item) => item.result === "EFFECTIVE",
                 ).length;
 
                 return (
@@ -281,7 +293,7 @@ export function TestProceduresTab({
                       <div>
                         <div className="font-medium">{tp.name}</div>
                         {tp.description && (
-                          <div className="text-xs text-muted-foreground line-clamp-1 max-w-md">
+                          <div className="text-muted-foreground line-clamp-1 max-w-md text-xs">
                             {tp.description}
                           </div>
                         )}
@@ -303,14 +315,14 @@ export function TestProceduresTab({
                           {tp.sampleMethodology.replace(/_/g, " ")}
                         </Badge>
                       ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
+                        <span className="text-muted-foreground text-sm">—</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {tp.sampleSize ? (
                         <span className="text-sm">{tp.sampleSize}</span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
+                        <span className="text-muted-foreground text-sm">—</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -327,7 +339,7 @@ export function TestProceduresTab({
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           Not tested
                         </span>
                       )}

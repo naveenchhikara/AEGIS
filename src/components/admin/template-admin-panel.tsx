@@ -39,7 +39,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Archive } from "lucide-react";
-import { createReportTemplate, deactivateTemplate } from "@/actions/admin/manage-templates";
+import {
+  createReportTemplate,
+  deactivateTemplate,
+} from "@/actions/admin/manage-templates";
 
 type Template = {
   id: string;
@@ -89,7 +92,9 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
       });
 
       if (result.success) {
-        toast.success(`Template "${name}" created (v${(result.data as any)?.versionNumber ?? "new"})`);
+        toast.success(
+          `Template "${name}" created (v${(result.data as any)?.versionNumber ?? "new"})`,
+        );
         setDialogOpen(false);
         setName("");
         setTemplateJson("{}");
@@ -134,7 +139,8 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
           <div>
             <CardTitle>Active Templates</CardTitle>
             <CardDescription>
-              {activeTemplates.length} active template{activeTemplates.length !== 1 ? "s" : ""}
+              {activeTemplates.length} active template
+              {activeTemplates.length !== 1 ? "s" : ""}
             </CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -167,14 +173,20 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="AUDIT_SECTION">Audit Section</SelectItem>
+                      <SelectItem value="AUDIT_SECTION">
+                        Audit Section
+                      </SelectItem>
                       <SelectItem value="CHECKLIST">Checklist</SelectItem>
-                      <SelectItem value="REPORT_HEADER">Report Header</SelectItem>
+                      <SelectItem value="REPORT_HEADER">
+                        Report Header
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Template Data (JSON)</label>
+                  <label className="text-sm font-medium">
+                    Template Data (JSON)
+                  </label>
                   <Textarea
                     value={templateJson}
                     onChange={(e) => setTemplateJson(e.target.value)}
@@ -197,7 +209,7 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
         </CardHeader>
         <CardContent>
           {activeTemplates.length === 0 ? (
-            <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground rounded-md border border-dashed p-8 text-center text-sm">
               No active templates. Create one to get started.
             </div>
           ) : (
@@ -217,10 +229,14 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.name}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{t.category.replace(/_/g, " ")}</Badge>
+                        <Badge variant="outline">
+                          {t.category.replace(/_/g, " ")}
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-center">v{t.versionNumber}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-center">
+                        v{t.versionNumber}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
                         {new Date(t.createdAt).toLocaleDateString("en-IN")}
                       </TableCell>
                       <TableCell className="text-right">
@@ -249,7 +265,8 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
           <CardHeader>
             <CardTitle className="text-sm">Inactive Templates</CardTitle>
             <CardDescription>
-              {inactiveTemplates.length} deactivated template{inactiveTemplates.length !== 1 ? "s" : ""}
+              {inactiveTemplates.length} deactivated template
+              {inactiveTemplates.length !== 1 ? "s" : ""}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -267,7 +284,9 @@ export function TemplateAdminPanel({ templates }: TemplateAdminPanelProps) {
                     <TableRow key={t.id} className="opacity-60">
                       <TableCell>{t.name}</TableCell>
                       <TableCell>{t.category.replace(/_/g, " ")}</TableCell>
-                      <TableCell className="text-center">v{t.versionNumber}</TableCell>
+                      <TableCell className="text-center">
+                        v{t.versionNumber}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

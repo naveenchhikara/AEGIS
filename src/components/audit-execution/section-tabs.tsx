@@ -64,7 +64,7 @@ export function SectionTabs({
           <CardTitle>Audit Sections</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
+          <div className="py-8 text-center">
             <p className="text-muted-foreground mb-4">
               No sections have been initialized for this engagement.
             </p>
@@ -88,7 +88,7 @@ export function SectionTabs({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Audit Sections</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {sections.length} functional areas
           </p>
         </div>
@@ -97,7 +97,9 @@ export function SectionTabs({
         <ScrollArea className="w-full">
           <div className="flex flex-wrap gap-2">
             {sections.map((section) => {
-              const isActive = pathname.includes(`/sections/${section.sectionCode}`);
+              const isActive = pathname.includes(
+                `/sections/${section.sectionCode}`,
+              );
               return (
                 <Button
                   key={section.id}
@@ -120,11 +122,9 @@ export function SectionTabs({
                       STATUS_DOT_COLORS[section.status] ?? "bg-gray-400",
                     )}
                   />
-                  <span className="text-xs">
-                    {section.sectionCode}
-                  </span>
+                  <span className="text-xs">{section.sectionCode}</span>
                   {section.assignedToName && (
-                    <span className="text-[10px] text-muted-foreground ml-1">
+                    <span className="text-muted-foreground ml-1 text-[10px]">
                       ({section.assignedToName.split(" ")[0]})
                     </span>
                   )}
@@ -135,7 +135,7 @@ export function SectionTabs({
         </ScrollArea>
 
         {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-4 border-t pt-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-4 flex flex-wrap gap-4 border-t pt-4 text-xs">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-gray-400" />
             Not Started

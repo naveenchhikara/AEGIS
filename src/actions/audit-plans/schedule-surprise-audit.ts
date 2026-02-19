@@ -20,21 +20,29 @@ import { z } from "zod";
 const ScheduleSurpriseAuditSchema = z.object({
   auditPlanId: z.string().uuid("Invalid audit plan ID"),
   branchId: z.string().uuid("Invalid branch ID"),
-  scheduledDate: z.string().min(1, "Scheduled date is required").refine(
-    (val) => !isNaN(Date.parse(val)),
-    "Invalid date format"
-  ).refine(
-    (val) => new Date(val) >= new Date(new Date().toISOString().split("T")[0]),
-    "Scheduled date must be today or in the future"
-  ),
-  justification: z.string().min(10, "Justification must be at least 10 characters")
+  scheduledDate: z
+    .string()
+    .min(1, "Scheduled date is required")
+    .refine((val) => !isNaN(Date.parse(val)), "Invalid date format")
+    .refine(
+      (val) =>
+        new Date(val) >= new Date(new Date().toISOString().split("T")[0]),
+      "Scheduled date must be today or in the future",
+    ),
+  justification: z
+    .string()
+    .min(10, "Justification must be at least 10 characters")
     .max(1000, "Justification too long"),
   scope: z.string().min(5, "Scope description is required").max(2000),
   teamLeadId: z.string().uuid("Invalid team lead ID").optional(),
-  confidentialityLevel: z.enum(["STANDARD", "RESTRICTED", "HIGHLY_RESTRICTED"]).default("RESTRICTED"),
+  confidentialityLevel: z
+    .enum(["STANDARD", "RESTRICTED", "HIGHLY_RESTRICTED"])
+    .default("RESTRICTED"),
 });
 
-export type ScheduleSurpriseAuditInput = z.infer<typeof ScheduleSurpriseAuditSchema>;
+export type ScheduleSurpriseAuditInput = z.infer<
+  typeof ScheduleSurpriseAuditSchema
+>;
 
 /**
  * Schedule a surprise (unannounced) audit for a branch (R71).
@@ -52,7 +60,9 @@ export type ScheduleSurpriseAuditInput = z.infer<typeof ScheduleSurpriseAuditSch
  * @param input - Branch, date, justification, scope, team lead, confidentiality
  * @returns Success with engagement ID, or error
  */
-export async function scheduleSurpriseAudit(input: ScheduleSurpriseAuditInput): Promise<{
+export async function scheduleSurpriseAudit(
+  input: ScheduleSurpriseAuditInput,
+): Promise<{
   success: boolean;
   data?: { engagementId: string; auditNumber: string };
   error?: string;
@@ -64,9 +74,15 @@ export async function scheduleSurpriseAudit(input: ScheduleSurpriseAuditInput): 
 
   // R71: Surprise audits restricted to IAD Manager, ACE Officer, CAE only
   const surpriseAllowedRoles: Role[] = ["AUDIT_MANAGER", "ACE_OFFICER", "CAE"];
-  const hasSurpriseAccess = userRoles.some((r) => surpriseAllowedRoles.includes(r));
+  const hasSurpriseAccess = userRoles.some((r) =>
+    surpriseAllowedRoles.includes(r),
+  );
   if (!hasSurpriseAccess && !hasPermission(userRoles, "audit_plan:create")) {
-    return { success: false, error: "Only IAD Manager, ACE Officer, or CAE can schedule surprise audits." };
+    return {
+      success: false,
+      error:
+        "Only IAD Manager, ACE Officer, or CAE can schedule surprise audits.",
+    };
   }
 
   // ─── Input Validation ────────────────────────────────────────
@@ -166,18 +182,24 @@ export async function scheduleSurpriseAudit(input: ScheduleSurpriseAuditInput): 
         engagementId: engagement.engagement.id,
         auditNumber: engagement.auditNumber,
       },
-      `Surprise audit scheduled for branch ${branch.code}`
+      `Surprise audit scheduled for branch ${branch.code}`,
     );
 
     return {
       success: true,
-      data: { engagementId: engagement.engagement.id, auditNumber: engagement.auditNumber },
+      data: {
+        engagementId: engagement.engagement.id,
+        auditNumber: engagement.auditNumber,
+      },
     };
   } catch (error) {
     logger.error(
       { error, action: "schedule_surprise_audit", tenantId },
-      "Failed to schedule surprise audit"
+      "Failed to schedule surprise audit",
     );
-    return { success: false, error: "Failed to schedule surprise audit. Please try again." };
+    return {
+      success: false,
+      error: "Failed to schedule surprise audit. Please try again.",
+    };
   }
 }

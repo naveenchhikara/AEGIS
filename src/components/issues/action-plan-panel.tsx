@@ -122,7 +122,10 @@ export function ActionPlanPanel({
     setUpdatingProgress(null);
   };
 
-  const handleAddEvidence = async (actionPlanId: string, evidenceRef: string) => {
+  const handleAddEvidence = async (
+    actionPlanId: string,
+    evidenceRef: string,
+  ) => {
     const result = await addActionPlanEvidence(actionPlanId, evidenceRef);
 
     if (result.success) {
@@ -290,9 +293,11 @@ export function ActionPlanPanel({
                   )}
 
                   {/* Evidence Section (R61) */}
-                  <div className="space-y-2 pt-2 border-t">
+                  <div className="space-y-2 border-t pt-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm text-muted-foreground">Evidence</Label>
+                      <Label className="text-muted-foreground text-sm">
+                        Evidence
+                      </Label>
                       {plan.evidence.length > 0 && (
                         <Badge variant="secondary" className="text-xs">
                           {plan.evidence.length} file(s)
@@ -302,14 +307,19 @@ export function ActionPlanPanel({
                     {plan.evidence.length > 0 ? (
                       <ul className="space-y-1">
                         {plan.evidence.map((ref, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-sm">
-                            <FileText className="h-3 w-3 text-muted-foreground" />
+                          <li
+                            key={idx}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <FileText className="text-muted-foreground h-3 w-3" />
                             <span className="truncate">{ref}</span>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No evidence uploaded</p>
+                      <p className="text-muted-foreground text-sm">
+                        No evidence uploaded
+                      </p>
                     )}
                     {canManage && plan.status !== "COMPLETED" && (
                       <Input
@@ -335,8 +345,9 @@ export function ActionPlanPanel({
                       <CheckCircle2 className="h-4 w-4" />
                       <span>Completed</span>
                       {plan.verifiedAt && (
-                        <span className="text-xs text-muted-foreground">
-                          • Verified {format(new Date(plan.verifiedAt), "MMM d, yyyy")}
+                        <span className="text-muted-foreground text-xs">
+                          • Verified{" "}
+                          {format(new Date(plan.verifiedAt), "MMM d, yyyy")}
                         </span>
                       )}
                     </div>

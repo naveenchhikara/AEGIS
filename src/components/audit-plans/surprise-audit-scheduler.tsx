@@ -80,7 +80,13 @@ export function SurpriseAuditScheduler({
   >("RESTRICTED");
 
   const handleSubmit = async () => {
-    if (!selectedBranch || !selectedPlan || !scheduledDate || !justification || !scope) {
+    if (
+      !selectedBranch ||
+      !selectedPlan ||
+      !scheduledDate ||
+      !justification ||
+      !scope
+    ) {
       toast.error("Please fill all required fields.");
       return;
     }
@@ -153,8 +159,9 @@ export function SurpriseAuditScheduler({
               Confidential
             </div>
             <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-              Surprise audit details are hidden from branch-level users.
-              Only the assigned team and approving authority can view scheduling details.
+              Surprise audit details are hidden from branch-level users. Only
+              the assigned team and approving authority can view scheduling
+              details.
             </p>
           </div>
 
@@ -185,7 +192,8 @@ export function SurpriseAuditScheduler({
                     <SelectContent>
                       {auditPlans.map((plan) => (
                         <SelectItem key={plan.id} value={plan.id}>
-                          FY {plan.year}-{String(plan.year + 1).slice(2)} ({plan.quarter})
+                          FY {plan.year}-{String(plan.year + 1).slice(2)} (
+                          {plan.quarter})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -195,7 +203,10 @@ export function SurpriseAuditScheduler({
                 {/* Branch */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Target Branch *</label>
-                  <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                  <Select
+                    value={selectedBranch}
+                    onValueChange={setSelectedBranch}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
@@ -213,7 +224,10 @@ export function SurpriseAuditScheduler({
                 {teamMembers.length > 0 && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Team Lead</label>
-                    <Select value={selectedTeamLead} onValueChange={setSelectedTeamLead}>
+                    <Select
+                      value={selectedTeamLead}
+                      onValueChange={setSelectedTeamLead}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select team lead (optional)" />
                       </SelectTrigger>
@@ -230,7 +244,9 @@ export function SurpriseAuditScheduler({
 
                 {/* Scheduled Date */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Scheduled Date *</label>
+                  <label className="text-sm font-medium">
+                    Scheduled Date *
+                  </label>
                   <Input
                     type="date"
                     value={scheduledDate}
@@ -263,11 +279,15 @@ export function SurpriseAuditScheduler({
 
                 {/* Confidentiality Level */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Confidentiality Level</label>
+                  <label className="text-sm font-medium">
+                    Confidentiality Level
+                  </label>
                   <Select
                     value={confidentiality}
                     onValueChange={(v) =>
-                      setConfidentiality(v as "STANDARD" | "RESTRICTED" | "HIGHLY_RESTRICTED")
+                      setConfidentiality(
+                        v as "STANDARD" | "RESTRICTED" | "HIGHLY_RESTRICTED",
+                      )
                     }
                   >
                     <SelectTrigger>
@@ -276,10 +296,14 @@ export function SurpriseAuditScheduler({
                     <SelectContent>
                       <SelectItem value="STANDARD">Standard</SelectItem>
                       <SelectItem value="RESTRICTED">Restricted</SelectItem>
-                      <SelectItem value="HIGHLY_RESTRICTED">Highly Restricted</SelectItem>
+                      <SelectItem value="HIGHLY_RESTRICTED">
+                        Highly Restricted
+                      </SelectItem>
                     </SelectContent>
                   </Select>
-                  <Badge variant={getConfidentialityColor(confidentiality) as any}>
+                  <Badge
+                    variant={getConfidentialityColor(confidentiality) as any}
+                  >
                     {confidentiality.replace(/_/g, " ")}
                   </Badge>
                 </div>

@@ -45,7 +45,9 @@ export default async function GovernancePage() {
 
       <Tabs defaultValue="policies" className="space-y-4">
         <TabsList className="grid w-full grid-cols-6 lg:w-auto">
-          <TabsTrigger value="policies">Policies ({policies.length})</TabsTrigger>
+          <TabsTrigger value="policies">
+            Policies ({policies.length})
+          </TabsTrigger>
           <TabsTrigger value="committees">Committees</TabsTrigger>
           <TabsTrigger value="acb">ACB Workspace</TabsTrigger>
           <TabsTrigger value="agenda">Agenda Builder</TabsTrigger>
@@ -54,18 +56,18 @@ export default async function GovernancePage() {
         </TabsList>
 
         <TabsContent value="policies" className="space-y-4">
-          <PolicyTable 
-            policies={policies} 
+          <PolicyTable
+            policies={policies}
             policiesDueReview={policiesDueReview}
-            canManage={canManagePolicy} 
+            canManage={canManagePolicy}
           />
         </TabsContent>
 
         <TabsContent value="committees" className="space-y-4">
-          <CommitteePanel 
-            committees={committees} 
+          <CommitteePanel
+            committees={committees}
             meetings={meetings}
-            canManage={canManageCommittee} 
+            canManage={canManageCommittee}
           />
         </TabsContent>
 
@@ -78,7 +80,10 @@ export default async function GovernancePage() {
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-4">
-          <BoardReviewCalendar meetings={meetings} canManage={canManageCommittee} />
+          <BoardReviewCalendar
+            meetings={meetings}
+            canManage={canManageCommittee}
+          />
         </TabsContent>
 
         <TabsContent value="inspection" className="space-y-4">

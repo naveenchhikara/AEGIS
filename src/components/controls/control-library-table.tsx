@@ -96,7 +96,7 @@ async function submitControlAction(
 ): Promise<FormState> {
   const frameworkMappingRaw = formData.get("frameworkMapping") as string;
   let frameworkMapping = undefined;
-  
+
   if (frameworkMappingRaw && frameworkMappingRaw.trim()) {
     try {
       frameworkMapping = JSON.parse(frameworkMappingRaw);
@@ -257,14 +257,16 @@ export function ControlLibraryTable({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="frameworkMapping">Framework Mapping (JSON)</Label>
+                    <Label htmlFor="frameworkMapping">
+                      Framework Mapping (JSON)
+                    </Label>
                     <Textarea
                       id="frameworkMapping"
                       name="frameworkMapping"
                       rows={3}
                       placeholder='{"COSO": "CC1.1", "RBI": "DoS.1", "IIA": "2120.A1"}'
                     />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Optional: Map control to frameworks (COSO, RBI, IIA, etc.)
                     </p>
                   </div>

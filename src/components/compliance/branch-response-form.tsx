@@ -165,7 +165,8 @@ export function BranchResponseForm({
         <DialogHeader>
           <DialogTitle>Submit Branch Response</DialogTitle>
           <DialogDescription>
-            Provide your response to the compliance item. This will be forwarded to ZAC for review.
+            Provide your response to the compliance item. This will be forwarded
+            to ZAC for review.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -184,7 +185,7 @@ export function BranchResponseForm({
           {/* Evidence Upload (R35) */}
           <div className="space-y-2">
             <Label>Evidence Attachments</Label>
-            <div className="rounded-md border border-dashed p-4 space-y-3">
+            <div className="space-y-3 rounded-md border border-dashed p-4">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -203,7 +204,7 @@ export function BranchResponseForm({
                 <Upload className="mr-2 h-4 w-4" />
                 Attach Evidence ({selectedFiles.length}/{MAX_FILES})
               </Button>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 PDF, JPEG, PNG, XLSX, DOCX — max {MAX_FILE_SIZE_MB}MB each
               </p>
 
@@ -213,12 +214,12 @@ export function BranchResponseForm({
                   {selectedFiles.map((file, idx) => (
                     <div
                       key={`${file.name}-${idx}`}
-                      className="flex items-center justify-between rounded bg-muted px-3 py-1.5 text-sm"
+                      className="bg-muted flex items-center justify-between rounded px-3 py-1.5 text-sm"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <div className="flex min-w-0 items-center gap-2">
+                        <FileText className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{file.name}</span>
-                        <Badge variant="secondary" className="text-xs shrink-0">
+                        <Badge variant="secondary" className="shrink-0 text-xs">
                           {(file.size / 1024).toFixed(0)} KB
                         </Badge>
                       </div>
@@ -239,8 +240,9 @@ export function BranchResponseForm({
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            Your response will be reviewed by the Zonal Audit Committee (ZAC) before closure.
+          <p className="text-muted-foreground text-sm">
+            Your response will be reviewed by the Zonal Audit Committee (ZAC)
+            before closure.
           </p>
         </div>
         <DialogFooter>

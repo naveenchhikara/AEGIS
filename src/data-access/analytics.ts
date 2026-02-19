@@ -250,7 +250,8 @@ export async function getAuditCalendarEvents(
   startDate?: Date,
   endDate?: Date,
 ) {
-  const db = prismaForTenant(tenantId); return db.auditCalendar.findMany({
+  const db = prismaForTenant(tenantId);
+  return db.auditCalendar.findMany({
     where: {
       tenantId,
       ...(startDate && endDate

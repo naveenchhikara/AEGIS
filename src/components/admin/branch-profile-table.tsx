@@ -61,7 +61,10 @@ interface BranchProfileTableProps {
   zones: Zone[];
 }
 
-export function BranchProfileTable({ branches, zones }: BranchProfileTableProps) {
+export function BranchProfileTable({
+  branches,
+  zones,
+}: BranchProfileTableProps) {
   const router = useRouter();
   const [editing, setEditing] = useState<Branch | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -87,7 +90,8 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
     const result = await updateBranchProfile({
       branchId: editing.id,
       zoneId: editZoneId || null,
-      category: (editCategory as "LARGE" | "MEDIUM" | "SMALL" | "VERY_SMALL") || null,
+      category:
+        (editCategory as "LARGE" | "MEDIUM" | "SMALL" | "VERY_SMALL") || null,
       businessSize: editBusinessSize ? parseFloat(editBusinessSize) : null,
       staffStrength: editStaffStrength ? parseInt(editStaffStrength, 10) : null,
     });
@@ -123,7 +127,9 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
       <Card>
         <CardHeader>
           <CardTitle>All Branches</CardTitle>
-          <CardDescription>{branches.length} branches configured</CardDescription>
+          <CardDescription>
+            {branches.length} branches configured
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -150,12 +156,18 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
                     <TableCell className="text-right">
                       {b.businessSize?.toLocaleString("en-IN") ?? "—"}
                     </TableCell>
-                    <TableCell className="text-right">{b.staffStrength ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      {b.staffStrength ?? "—"}
+                    </TableCell>
                     <TableCell className="text-right">
                       {b.ramScore?.toFixed(2) ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => openEdit(b)}
+                      >
                         <Pencil className="h-3 w-3" />
                       </Button>
                     </TableCell>
@@ -168,7 +180,10 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
       </Card>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+      <Dialog
+        open={!!editing}
+        onOpenChange={(open) => !open && setEditing(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Branch Profile: {editing?.code}</DialogTitle>
@@ -206,7 +221,9 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Business Size (₹ Lakhs)</label>
+              <label className="text-sm font-medium">
+                Business Size (₹ Lakhs)
+              </label>
               <Input
                 type="number"
                 value={editBusinessSize}
@@ -225,7 +242,9 @@ export function BranchProfileTable({ branches, zones }: BranchProfileTableProps)
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save"}
             </Button>

@@ -82,7 +82,8 @@ export async function createLoanReview(input: CreateLoanReviewInput) {
     revalidatePath("/audit-execution");
     return { success: true as const, data: { id: result.id } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create loan review.";
+    const message =
+      error instanceof Error ? error.message : "Failed to create loan review.";
     logger.error({ error, action: "create_loan_review", tenantId }, message);
     return { success: false as const, error: message };
   }
@@ -155,7 +156,8 @@ export async function updateLoanReview(input: UpdateLoanReviewInput) {
     revalidatePath("/audit-execution");
     return { success: true as const, data: { id: result.id } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update loan review.";
+    const message =
+      error instanceof Error ? error.message : "Failed to update loan review.";
     logger.error({ error, action: "update_loan_review", tenantId }, message);
     return { success: false as const, error: message };
   }
@@ -170,9 +172,13 @@ const DeleteLoanReviewSchema = z.object({
   engagementId: z.string().uuid(),
 });
 
-export async function deleteLoanReview(input: { id: string; engagementId: string }) {
+export async function deleteLoanReview(input: {
+  id: string;
+  engagementId: string;
+}) {
   const parsed = DeleteLoanReviewSchema.safeParse(input);
-  if (!parsed.success) return { success: false as const, error: "Invalid input." };
+  if (!parsed.success)
+    return { success: false as const, error: "Invalid input." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -214,7 +220,8 @@ export async function deleteLoanReview(input: { id: string; engagementId: string
     revalidatePath("/audit-execution");
     return { success: true as const };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to delete loan review.";
+    const message =
+      error instanceof Error ? error.message : "Failed to delete loan review.";
     logger.error({ error, action: "delete_loan_review", tenantId }, message);
     return { success: false as const, error: message };
   }

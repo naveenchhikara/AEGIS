@@ -46,7 +46,7 @@ type FormState = {
 
 async function submitGenerateAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     engagementId: formData.get("engagementId") as string,
@@ -62,13 +62,16 @@ export function WorkProgramGenerator({
 }: WorkProgramGeneratorProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [state, formAction, isPending] = useActionState(submitGenerateAction, {});
+  const [state, formAction, isPending] = useActionState(
+    submitGenerateAction,
+    {},
+  );
 
   // Handle success/error feedback
   React.useEffect(() => {
     if (state.success && state.data) {
       toast.success(
-        `Work program generated: ${state.data.created} items created from ${state.data.total} test procedures`
+        `Work program generated: ${state.data.created} items created from ${state.data.total} test procedures`,
       );
       setDialogOpen(false);
       router.refresh();
@@ -94,8 +97,8 @@ export function WorkProgramGenerator({
           <DialogHeader>
             <DialogTitle>Auto-Generate Work Program</DialogTitle>
             <DialogDescription>
-              Automatically create work program items from test procedures linked to
-              key controls for a selected audit engagement.
+              Automatically create work program items from test procedures
+              linked to key controls for a selected audit engagement.
             </DialogDescription>
           </DialogHeader>
 
@@ -110,15 +113,19 @@ export function WorkProgramGenerator({
                 </SelectTrigger>
                 <SelectContent>
                   {engagements
-                    .filter((e) => e.status === "PLANNED" || e.status === "IN_PROGRESS")
+                    .filter(
+                      (e) =>
+                        e.status === "PLANNED" || e.status === "IN_PROGRESS",
+                    )
                     .map((engagement) => (
                       <SelectItem key={engagement.id} value={engagement.id}>
-                        {engagement.auditNumber || engagement.id} ({engagement.status})
+                        {engagement.auditNumber || engagement.id} (
+                        {engagement.status})
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Only planned or in-progress engagements are shown
               </p>
             </div>
@@ -127,16 +134,19 @@ export function WorkProgramGenerator({
               <Checkbox id="autoAssign" name="autoAssign" />
               <Label
                 htmlFor="autoAssign"
-                className="text-sm font-normal cursor-pointer"
+                className="cursor-pointer text-sm font-normal"
               >
                 Auto-assign to Lead Auditor
               </Label>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 space-y-2">
+            <div className="bg-muted space-y-2 rounded-lg p-4">
               <p className="text-sm font-medium">What will be generated?</p>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Work program items for all test procedures linked to key controls</li>
+              <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
+                <li>
+                  Work program items for all test procedures linked to key
+                  controls
+                </li>
                 <li>Items will be created with "PENDING" status</li>
                 <li>Duplicate items will be skipped automatically</li>
                 <li>You can manually add more items later</li>

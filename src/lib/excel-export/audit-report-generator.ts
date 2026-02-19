@@ -18,7 +18,7 @@ type AuditReportData = NonNullable<
  */
 export async function generateAuditReportXLSX(
   auditData: AuditReportData,
-  templateData?: Record<string, any>
+  templateData?: Record<string, any>,
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
 
@@ -63,14 +63,18 @@ export async function generateAuditReportXLSX(
  */
 async function addSummarySheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Audit Summary");
 
   // Header styling
   const headerStyle = {
     font: { bold: true, size: 12 },
-    fill: { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFD9E1F2" } },
+    fill: {
+      type: "pattern" as const,
+      pattern: "solid" as const,
+      fgColor: { argb: "FFD9E1F2" },
+    },
     alignment: { vertical: "middle" as const, horizontal: "left" as const },
   };
 
@@ -104,12 +108,16 @@ async function addSummarySheet(
 
   sheet.getCell(`A${row}`).value = "Period From:";
   sheet.getCell(`A${row}`).font = { bold: true };
-  sheet.getCell(`B${row}`).value = data.periodFrom ? new Date(data.periodFrom) : "N/A";
+  sheet.getCell(`B${row}`).value = data.periodFrom
+    ? new Date(data.periodFrom)
+    : "N/A";
   row++;
 
   sheet.getCell(`A${row}`).value = "Period To:";
   sheet.getCell(`A${row}`).font = { bold: true };
-  sheet.getCell(`B${row}`).value = data.periodTo ? new Date(data.periodTo) : "N/A";
+  sheet.getCell(`B${row}`).value = data.periodTo
+    ? new Date(data.periodTo)
+    : "N/A";
   row++;
 
   sheet.getCell(`A${row}`).value = "Overall Risk Rating:";
@@ -131,7 +139,7 @@ async function addSummarySheet(
  */
 async function addObservationsSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Observations");
 
@@ -191,36 +199,57 @@ async function addObservationsSheet(
  */
 async function addObservationsBySeveritySheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Observations by Severity");
 
   const severities = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
 
   severities.forEach((severity, idx) => {
-    const filtered = data.observations?.filter((o: any) => o.severity === severity) || [];
+    const filtered =
+      data.observations?.filter((o: any) => o.severity === severity) || [];
 
     const startRow = idx * 20 + 1; // Space between sections
 
     // Section title
     sheet.mergeCells(`A${startRow}:D${startRow}`);
-    sheet.getCell(`A${startRow}`).value = `${severity} Severity Observations (${filtered.length})`;
+    sheet.getCell(`A${startRow}`).value =
+      `${severity} Severity Observations (${filtered.length})`;
     sheet.getCell(`A${startRow}`).font = { bold: true, size: 14 };
     sheet.getCell(`A${startRow}`).fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: severity === "CRITICAL" ? "FFFF0000" : severity === "HIGH" ? "FFFF9900" : severity === "MEDIUM" ? "FFFFFF00" : "FF00FF00" },
+      fgColor: {
+        argb:
+          severity === "CRITICAL"
+            ? "FFFF0000"
+            : severity === "HIGH"
+              ? "FFFF9900"
+              : severity === "MEDIUM"
+                ? "FFFFFF00"
+                : "FF00FF00",
+      },
     };
 
     // Headers
     const headerRow = startRow + 1;
-    sheet.getRow(headerRow).values = ["S.No.", "Title", "Condition", "Recommendation"];
+    sheet.getRow(headerRow).values = [
+      "S.No.",
+      "Title",
+      "Condition",
+      "Recommendation",
+    ];
     sheet.getRow(headerRow).font = { bold: true };
 
     // Data
     filtered.forEach((obs: any, i: number) => {
       const dataRow = headerRow + i + 1;
-      sheet.getRow(dataRow).values = [i + 1, obs.title, obs.condition, obs.recommendation];
+      sheet.getRow(dataRow).values = [
+        i + 1,
+        obs.title,
+        obs.condition,
+        obs.recommendation,
+      ];
     });
   });
 
@@ -235,7 +264,7 @@ async function addObservationsBySeveritySheet(
  */
 async function addCashVerificationSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Cash Verification");
 
@@ -260,7 +289,9 @@ async function addCashVerificationSheet(
 
   sheet.getCell("A4").value = "Retention Limit:";
   sheet.getCell("A4").font = { bold: true };
-  sheet.getCell("B4").value = cashCheck.retentionLimit ? Number(cashCheck.retentionLimit) : "N/A";
+  sheet.getCell("B4").value = cashCheck.retentionLimit
+    ? Number(cashCheck.retentionLimit)
+    : "N/A";
 
   // Denomination breakdown if available
   if (cashCheck.denominationData) {
@@ -285,7 +316,7 @@ async function addCashVerificationSheet(
  */
 async function addLoanReviewSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Loan Review");
 
@@ -339,7 +370,7 @@ async function addLoanReviewSheet(
  */
 async function addSmaNpaSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("SMA-NPA Analysis");
 
@@ -353,7 +384,11 @@ async function addSmaNpaSheet(
   };
 
   data.smaNpaEntries?.forEach((entry: any) => {
-    sheet.addRow([entry.category, entry.accountCount, Number(entry.totalAmount)]);
+    sheet.addRow([
+      entry.category,
+      entry.accountCount,
+      Number(entry.totalAmount),
+    ]);
   });
 
   sheet.getColumn(1).width = 20;
@@ -366,7 +401,7 @@ async function addSmaNpaSheet(
  */
 async function addBranchProfileSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Branch Profile");
 
@@ -381,7 +416,10 @@ async function addBranchProfileSheet(
     ["City", data.branch.city],
     ["State", data.branch.state],
     ["Category", data.branch.category || "N/A"],
-    ["Business Size (₹ Lakhs)", data.branch.businessSize ? Number(data.branch.businessSize) : "N/A"],
+    [
+      "Business Size (₹ Lakhs)",
+      data.branch.businessSize ? Number(data.branch.businessSize) : "N/A",
+    ],
     ["RAM Score", data.branch.ramScore ? Number(data.branch.ramScore) : "N/A"],
   ];
 
@@ -401,7 +439,7 @@ async function addBranchProfileSheet(
  */
 async function addExaminationResponseSheets(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   // Group responses by area
   const responsesByArea = new Map<string, any[]>();
@@ -418,7 +456,13 @@ async function addExaminationResponseSheets(
   responsesByArea.forEach((responses, areaName) => {
     const sheet = workbook.addWorksheet(areaName.substring(0, 31)); // Excel limit
 
-    const headers = ["Item No", "Particulars", "Status", "Observation", "Risk Rating"];
+    const headers = [
+      "Item No",
+      "Particulars",
+      "Status",
+      "Observation",
+      "Risk Rating",
+    ];
     sheet.addRow(headers);
     sheet.getRow(1).font = { bold: true };
     sheet.getRow(1).fill = {
@@ -450,7 +494,7 @@ async function addExaminationResponseSheets(
  */
 async function addTeamMembersSheet(
   workbook: ExcelJS.Workbook,
-  data: AuditReportData
+  data: AuditReportData,
 ) {
   const sheet = workbook.addWorksheet("Team Members");
 

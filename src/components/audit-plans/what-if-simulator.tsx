@@ -28,8 +28,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, FlaskConical, RotateCcw, TrendingDown, TrendingUp } from "lucide-react";
-import { simulatePlan, type SimulationResult } from "@/actions/audit-plans/simulate-plan";
+import {
+  ArrowRight,
+  FlaskConical,
+  RotateCcw,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import {
+  simulatePlan,
+  type SimulationResult,
+} from "@/actions/audit-plans/simulate-plan";
 
 type Branch = {
   id: string;
@@ -106,16 +115,20 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
     try {
       const result = await simulatePlan({
         fiscalYear: selectedFY,
-        overrides: Array.from(overrides.entries()).map(([branchId, ramScore]) => ({
-          branchId,
-          ramScore,
-        })),
+        overrides: Array.from(overrides.entries()).map(
+          ([branchId, ramScore]) => ({
+            branchId,
+            ramScore,
+          }),
+        ),
       });
 
       if (result.success && result.data) {
         setResults(result.data.results);
         setSummary(result.data.summary);
-        toast.success(`Simulation complete — ${result.data.summary.branchesAffected} branch(es) affected`);
+        toast.success(
+          `Simulation complete — ${result.data.summary.branchesAffected} branch(es) affected`,
+        );
       } else {
         toast.error(result.error || "Simulation failed");
       }
@@ -133,7 +146,7 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
   };
 
   const getPriorityVariant = (
-    priority: "HIGH" | "MEDIUM" | "LOW"
+    priority: "HIGH" | "MEDIUM" | "LOW",
   ): "destructive" | "default" | "secondary" => {
     if (priority === "HIGH") return "destructive";
     if (priority === "MEDIUM") return "default";
@@ -192,7 +205,8 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
         {/* Branch Score Overrides */}
         <div>
           <h4 className="mb-3 text-sm font-medium">
-            Adjust RAM Scores ({overrides.size} override{overrides.size !== 1 ? "s" : ""})
+            Adjust RAM Scores ({overrides.size} override
+            {overrides.size !== 1 ? "s" : ""})
           </h4>
           <div className="max-h-[300px] overflow-y-auto rounded-md border">
             <Table>
@@ -208,7 +222,9 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
                   <TableRow key={branch.id}>
                     <TableCell>
                       <span className="font-medium">{branch.code}</span>{" "}
-                      <span className="text-muted-foreground">{branch.name}</span>
+                      <span className="text-muted-foreground">
+                        {branch.name}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       {branch.ramScore !== null
@@ -241,22 +257,26 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Card>
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold">{summary.branchesAffected}</div>
-                <p className="text-xs text-muted-foreground">Branches Affected</p>
+                <div className="text-2xl font-bold">
+                  {summary.branchesAffected}
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Branches Affected
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-1">
-                  <span className="text-2xl font-bold text-destructive">
+                  <span className="text-destructive text-2xl font-bold">
                     {summary.highRiskOriginal}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-2xl font-bold text-destructive">
+                  <ArrowRight className="text-muted-foreground h-4 w-4" />
+                  <span className="text-destructive text-2xl font-bold">
                     {summary.highRiskSimulated}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">High Risk</p>
+                <p className="text-muted-foreground text-xs">High Risk</p>
               </CardContent>
             </Card>
             <Card>
@@ -265,12 +285,12 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
                   <span className="text-2xl font-bold">
                     {summary.mediumRiskOriginal}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="text-muted-foreground h-4 w-4" />
                   <span className="text-2xl font-bold">
                     {summary.mediumRiskSimulated}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Medium Risk</p>
+                <p className="text-muted-foreground text-xs">Medium Risk</p>
               </CardContent>
             </Card>
             <Card>
@@ -279,12 +299,12 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
                   <span className="text-2xl font-bold text-green-600">
                     {summary.lowRiskOriginal}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="text-muted-foreground h-4 w-4" />
                   <span className="text-2xl font-bold text-green-600">
                     {summary.lowRiskSimulated}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Low Risk</p>
+                <p className="text-muted-foreground text-xs">Low Risk</p>
               </CardContent>
             </Card>
           </div>
@@ -308,38 +328,51 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
                 {results.map((r) => (
                   <TableRow
                     key={r.branchId}
-                    className={r.changed ? "bg-yellow-50 dark:bg-yellow-950/20" : ""}
+                    className={
+                      r.changed ? "bg-yellow-50 dark:bg-yellow-950/20" : ""
+                    }
                   >
                     <TableCell>
                       <span className="font-medium">{r.branchCode}</span>{" "}
-                      <span className="text-muted-foreground">{r.branchName}</span>
+                      <span className="text-muted-foreground">
+                        {r.branchName}
+                      </span>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="text-muted-foreground">
                         {r.originalRamScore?.toFixed(2) ?? "N/A"}
                       </span>
-                      <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">{r.simulatedRamScore.toFixed(2)}</span>
+                      <ArrowRight className="text-muted-foreground mx-1 inline h-3 w-3" />
+                      <span className="font-medium">
+                        {r.simulatedRamScore.toFixed(2)}
+                      </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={getPriorityVariant(r.originalPriority)} className="mr-1">
+                      <Badge
+                        variant={getPriorityVariant(r.originalPriority)}
+                        className="mr-1"
+                      >
                         {r.originalPriority}
                       </Badge>
-                      <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
+                      <ArrowRight className="text-muted-foreground mx-1 inline h-3 w-3" />
                       <Badge variant={getPriorityVariant(r.simulatedPriority)}>
                         {r.simulatedPriority}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="text-muted-foreground">{r.originalFrequency}</span>
-                      <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">{r.simulatedFrequency}</span>
+                      <span className="text-muted-foreground">
+                        {r.originalFrequency}
+                      </span>
+                      <ArrowRight className="text-muted-foreground mx-1 inline h-3 w-3" />
+                      <span className="font-medium">
+                        {r.simulatedFrequency}
+                      </span>
                     </TableCell>
                     <TableCell className="text-center text-sm">
                       <span className="text-muted-foreground">
                         {format(new Date(r.originalNextAudit), "MMM yyyy")}
                       </span>
-                      <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
+                      <ArrowRight className="text-muted-foreground mx-1 inline h-3 w-3" />
                       <span className="font-medium">
                         {format(new Date(r.simulatedNextAudit), "MMM yyyy")}
                       </span>
@@ -347,7 +380,7 @@ export function WhatIfSimulator({ branches }: WhatIfSimulatorProps) {
                     <TableCell className="text-center">
                       {r.changed ? (
                         r.simulatedFrequency < r.originalFrequency ? (
-                          <TrendingUp className="inline h-4 w-4 text-destructive" />
+                          <TrendingUp className="text-destructive inline h-4 w-4" />
                         ) : (
                           <TrendingDown className="inline h-4 w-4 text-green-600" />
                         )

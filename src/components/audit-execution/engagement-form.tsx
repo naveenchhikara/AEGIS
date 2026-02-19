@@ -291,11 +291,11 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("completionDate")}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Expected audit completion date
           </p>
           {errors.completionDate && (
-            <p className="text-sm text-destructive">
+            <p className="text-destructive text-sm">
               {errors.completionDate.message}
             </p>
           )}

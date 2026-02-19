@@ -3,7 +3,13 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -95,11 +101,11 @@ type FormState = {
 
 async function submitUpdateAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const frameworkMappingRaw = formData.get("frameworkMapping") as string;
   let frameworkMapping = null;
-  
+
   if (frameworkMappingRaw && frameworkMappingRaw.trim()) {
     try {
       frameworkMapping = JSON.parse(frameworkMappingRaw);
@@ -123,7 +129,10 @@ async function submitUpdateAction(
   return updateControl(input);
 }
 
-export function ControlDetailView({ control, canManage }: ControlDetailViewProps) {
+export function ControlDetailView({
+  control,
+  canManage,
+}: ControlDetailViewProps) {
   const router = useRouter();
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [state, formAction, isPending] = useActionState(submitUpdateAction, {});
@@ -141,7 +150,7 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
   const formatProcessArea = (area: string) => area.replace(/_/g, " ");
 
   return (
-    <div className="container max-w-6xl py-8 space-y-6">
+    <div className="container max-w-6xl space-y-6 py-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -154,7 +163,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                 <Shield className="h-5 w-5 text-amber-600" />
               )}
             </div>
-            <p className="text-muted-foreground">{formatProcessArea(control.processArea)}</p>
+            <p className="text-muted-foreground">
+              {formatProcessArea(control.processArea)}
+            </p>
           </div>
         </div>
         {canManage && (
@@ -165,7 +176,7 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                 Edit Control
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
               <form action={formAction}>
                 <input type="hidden" name="controlId" value={control.id} />
                 <DialogHeader>
@@ -187,7 +198,11 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="processArea">Process Area</Label>
-                      <Select name="processArea" defaultValue={control.processArea} required>
+                      <Select
+                        name="processArea"
+                        defaultValue={control.processArea}
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -196,7 +211,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                           <SelectItem value="DEPOSITS">Deposits</SelectItem>
                           <SelectItem value="TREASURY">Treasury</SelectItem>
                           <SelectItem value="KYC_AML">KYC/AML</SelectItem>
-                          <SelectItem value="IT_OPERATIONS">IT Operations</SelectItem>
+                          <SelectItem value="IT_OPERATIONS">
+                            IT Operations
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -205,7 +222,11 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="controlType">Control Type</Label>
-                      <Select name="controlType" defaultValue={control.controlType} required>
+                      <Select
+                        name="controlType"
+                        defaultValue={control.controlType}
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -218,12 +239,18 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="frequency">Frequency</Label>
-                      <Select name="frequency" defaultValue={control.frequency} required>
+                      <Select
+                        name="frequency"
+                        defaultValue={control.frequency}
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="TRANSACTION">Transaction</SelectItem>
+                          <SelectItem value="TRANSACTION">
+                            Transaction
+                          </SelectItem>
                           <SelectItem value="DAILY">Daily</SelectItem>
                           <SelectItem value="WEEKLY">Weekly</SelectItem>
                           <SelectItem value="MONTHLY">Monthly</SelectItem>
@@ -271,7 +298,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="frameworkMapping">Framework Mapping (JSON)</Label>
+                    <Label htmlFor="frameworkMapping">
+                      Framework Mapping (JSON)
+                    </Label>
                     <Textarea
                       id="frameworkMapping"
                       name="frameworkMapping"
@@ -283,7 +312,7 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                       }
                       placeholder='{"COSO": "CC1.1", "RBI": "DoS.1", "IIA": "2120.A1"}'
                     />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Optional: Map control to frameworks (COSO, RBI, IIA, etc.)
                     </p>
                   </div>
@@ -298,7 +327,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Update Control
                   </Button>
                 </DialogFooter>
@@ -319,7 +350,10 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
               <div>
                 <Label className="text-muted-foreground">Control Type</Label>
                 <div className="mt-1">
-                  <Badge variant="outline" className={CONTROL_TYPE_COLORS[control.controlType]}>
+                  <Badge
+                    variant="outline"
+                    className={CONTROL_TYPE_COLORS[control.controlType]}
+                  >
                     {control.controlType}
                   </Badge>
                 </div>
@@ -333,7 +367,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                 <p className="mt-1">{control.owner || "—"}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Effectiveness Score</Label>
+                <Label className="text-muted-foreground">
+                  Effectiveness Score
+                </Label>
                 <p className="mt-1">
                   {control.effectivenessScore !== null
                     ? `${Number(control.effectivenessScore).toFixed(0)}%`
@@ -348,8 +384,10 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
 
             {control.frameworkMapping && (
               <div>
-                <Label className="text-muted-foreground">Framework Mapping</Label>
-                <div className="mt-2 rounded-md bg-muted p-3 font-mono text-sm">
+                <Label className="text-muted-foreground">
+                  Framework Mapping
+                </Label>
+                <div className="bg-muted mt-2 rounded-md p-3 font-mono text-sm">
                   <pre>{JSON.stringify(control.frameworkMapping, null, 2)}</pre>
                 </div>
               </div>
@@ -370,7 +408,9 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
                   <p className="mt-1">{control.riskRegister.entity.name}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Risk Statement</Label>
+                  <Label className="text-muted-foreground">
+                    Risk Statement
+                  </Label>
                   <p className="mt-1">{control.riskRegister.riskStatement}</p>
                 </div>
                 <div>
@@ -385,17 +425,23 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
         {/* Test Procedures */}
         <Card>
           <CardHeader>
-            <CardTitle>Test Procedures ({control.testProcedures.length})</CardTitle>
+            <CardTitle>
+              Test Procedures ({control.testProcedures.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {control.testProcedures.length === 0 ? (
-              <p className="text-muted-foreground">No test procedures defined.</p>
+              <p className="text-muted-foreground">
+                No test procedures defined.
+              </p>
             ) : (
               <ul className="space-y-3">
                 {control.testProcedures.map((proc) => (
                   <li key={proc.id} className="border-l-2 border-blue-500 pl-3">
                     <p className="font-medium">{proc.name}</p>
-                    <p className="text-sm text-muted-foreground">{proc.description}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {proc.description}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -414,19 +460,27 @@ export function ControlDetailView({ control, canManage }: ControlDetailViewProps
             ) : (
               <ul className="space-y-3">
                 {control.issues.map((issue) => (
-                  <li key={issue.id} className="flex items-start justify-between">
+                  <li
+                    key={issue.id}
+                    className="flex items-start justify-between"
+                  >
                     <div>
                       <p className="font-medium">{issue.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className={SEVERITY_COLORS[issue.severity]}>
+                      <div className="mt-1 flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={SEVERITY_COLORS[issue.severity]}
+                        >
                           {issue.severity}
                         </Badge>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {issue.actionPlans.length} action plan(s)
                         </span>
                       </div>
                     </div>
-                    <Badge variant="outline">{issue.status.replace("_", " ")}</Badge>
+                    <Badge variant="outline">
+                      {issue.status.replace("_", " ")}
+                    </Badge>
                   </li>
                 ))}
               </ul>

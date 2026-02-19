@@ -50,7 +50,10 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     }
 
     // Fetch audit data
-    const auditData = await getAuditReportData(session, parsed.data.engagementId);
+    const auditData = await getAuditReportData(
+      session,
+      parsed.data.engagementId,
+    );
 
     if (!auditData) {
       return {
@@ -65,11 +68,14 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     // Generate XLSX
     logger.info(
       { engagementId: parsed.data.engagementId, isDraft },
-      "Generating XLSX audit report"
+      "Generating XLSX audit report",
     );
 
     // R32: Pass template data to generator for custom formatting
-    const buffer = await generateAuditReportXLSX(auditData, templateData ?? undefined);
+    const buffer = await generateAuditReportXLSX(
+      auditData,
+      templateData ?? undefined,
+    );
 
     // Upload to S3
     const statusTag = isDraft ? "_DRAFT" : "";
@@ -77,12 +83,13 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     const s3Key = await uploadToS3({
       key: filename,
       body: buffer,
-      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      contentType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
     logger.info(
       { engagementId: parsed.data.engagementId, s3Key },
-      "XLSX report uploaded to S3"
+      "XLSX report uploaded to S3",
     );
 
     // R29: Track generated report in BoardReport for audit trail + re-download
@@ -90,10 +97,14 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     const now = new Date();
     // Fiscal quarters: Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
     const month = now.getMonth(); // 0-indexed
-    const fiscalQuarter = month >= 3 && month <= 5 ? "Q1_APR_JUN"
-      : month >= 6 && month <= 8 ? "Q2_JUL_SEP"
-      : month >= 9 && month <= 11 ? "Q3_OCT_DEC"
-      : "Q4_JAN_MAR";
+    const fiscalQuarter =
+      month >= 3 && month <= 5
+        ? "Q1_APR_JUN"
+        : month >= 6 && month <= 8
+          ? "Q2_JUL_SEP"
+          : month >= 9 && month <= 11
+            ? "Q3_OCT_DEC"
+            : "Q4_JAN_MAR";
     const quarterEnum = fiscalQuarter as any;
     await db.boardReport.create({
       data: {
@@ -121,7 +132,9 @@ export async function generateXlsxReport(input: GenerateReportInput) {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to generate XLSX report.";
+      error instanceof Error
+        ? error.message
+        : "Failed to generate XLSX report.";
     logger.error({ error, action: "generate_xlsx_report", tenantId }, message);
     return { success: false as const, error: message };
   }

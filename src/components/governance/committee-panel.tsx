@@ -6,7 +6,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,7 +39,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Plus, Users, Calendar, ChevronDown, Loader2, Edit, X, Save } from "@/lib/icons";
+import {
+  Plus,
+  Users,
+  Calendar,
+  ChevronDown,
+  Loader2,
+  Edit,
+  X,
+  Save,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import {
   manageCommittee,
@@ -93,7 +108,9 @@ const meetingSchema = z.object({
 
 const memberSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  role: z.enum(["CHAIRMAN", "MEMBER", "SECRETARY", "INVITEE"]).describe("Role is required"),
+  role: z
+    .enum(["CHAIRMAN", "MEMBER", "SECRETARY", "INVITEE"])
+    .describe("Role is required"),
 });
 
 type CommitteeFormValues = z.infer<typeof committeeSchema>;
@@ -106,16 +123,26 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-800 border-red-300",
 };
 
-export function CommitteePanel({ committees, meetings, canManage }: CommitteePanelProps) {
+export function CommitteePanel({
+  committees,
+  meetings,
+  canManage,
+}: CommitteePanelProps) {
   const router = useRouter();
   const [committeeDialogOpen, setCommitteeDialogOpen] = React.useState(false);
   const [meetingDialogOpen, setMeetingDialogOpen] = React.useState(false);
   const [memberDialogOpen, setMemberDialogOpen] = React.useState(false);
-  const [editingCommittee, setEditingCommittee] = React.useState<Committee | null>(null);
-  const [selectedCommitteeId, setSelectedCommitteeId] = React.useState<string>("");
+  const [editingCommittee, setEditingCommittee] =
+    React.useState<Committee | null>(null);
+  const [selectedCommitteeId, setSelectedCommitteeId] =
+    React.useState<string>("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [expandedCommittees, setExpandedCommittees] = React.useState<Set<string>>(new Set());
-  const [editingMinutes, setEditingMinutes] = React.useState<{ [key: string]: string }>({});
+  const [expandedCommittees, setExpandedCommittees] = React.useState<
+    Set<string>
+  >(new Set());
+  const [editingMinutes, setEditingMinutes] = React.useState<{
+    [key: string]: string;
+  }>({});
 
   const committeeForm = useForm<CommitteeFormValues>({
     resolver: zodResolver(committeeSchema) as any,
@@ -167,7 +194,9 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
     });
 
     if (result.success) {
-      toast.success(editingCommittee ? "Committee updated" : "Committee created");
+      toast.success(
+        editingCommittee ? "Committee updated" : "Committee created",
+      );
       setCommitteeDialogOpen(false);
       setEditingCommittee(null);
       committeeForm.reset();
@@ -199,7 +228,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
 
   async function onMemberSubmit(values: MemberFormValues) {
     if (!selectedCommitteeId) return;
-    
+
     setIsSubmitting(true);
     const result = await manageCommitteeMember({
       committeeId: selectedCommitteeId,
@@ -220,7 +249,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
 
   async function handleRemoveMember(memberId: string) {
     if (!confirm("Remove this member from the committee?")) return;
-    
+
     const result = await removeCommitteeMember(memberId);
 
     if (result.success) {
@@ -300,7 +329,10 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
     <div className="space-y-4">
       {canManage && (
         <div className="flex justify-end gap-2">
-          <Dialog open={committeeDialogOpen} onOpenChange={setCommitteeDialogOpen}>
+          <Dialog
+            open={committeeDialogOpen}
+            onOpenChange={setCommitteeDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button onClick={openCreateDialog}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -318,7 +350,10 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                     : "Create a new governance committee"}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={committeeForm.handleSubmit(onCommitteeSubmit)} className="space-y-4 py-4">
+              <form
+                onSubmit={committeeForm.handleSubmit(onCommitteeSubmit)}
+                className="space-y-4 py-4"
+              >
                 <div className="space-y-2">
                   <Label htmlFor="name">Committee Name</Label>
                   <Input
@@ -327,7 +362,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                     placeholder="e.g., Audit Committee of Board"
                   />
                   {committeeForm.formState.errors.name && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-destructive text-sm">
                       {committeeForm.formState.errors.name.message}
                     </p>
                   )}
@@ -367,7 +402,9 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     {editingCommittee ? "Update" : "Create"}
                   </Button>
                 </DialogFooter>
@@ -385,7 +422,10 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
               Add a new meeting to the calendar
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={meetingForm.handleSubmit(onMeetingSubmit)} className="space-y-4 py-4">
+          <form
+            onSubmit={meetingForm.handleSubmit(onMeetingSubmit)}
+            className="space-y-4 py-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="meetingDate">Meeting Date</Label>
               <Input
@@ -404,7 +444,9 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Schedule
               </Button>
             </DialogFooter>
@@ -420,7 +462,10 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
               Add a new member to this committee
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={memberForm.handleSubmit(onMemberSubmit)} className="space-y-4 py-4">
+          <form
+            onSubmit={memberForm.handleSubmit(onMemberSubmit)}
+            className="space-y-4 py-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="userId">User ID</Label>
               <Input
@@ -429,7 +474,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                 placeholder="Enter user ID"
               />
               {memberForm.formState.errors.userId && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {memberForm.formState.errors.userId.message}
                 </p>
               )}
@@ -439,7 +484,12 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
               <Label htmlFor="role">Role</Label>
               <Select
                 value={memberForm.watch("role") || "MEMBER"}
-                onValueChange={(value: string) => memberForm.setValue("role", value as "CHAIRMAN" | "MEMBER" | "SECRETARY" | "INVITEE")}
+                onValueChange={(value: string) =>
+                  memberForm.setValue(
+                    "role",
+                    value as "CHAIRMAN" | "MEMBER" | "SECRETARY" | "INVITEE",
+                  )
+                }
               >
                 <SelectTrigger id="role">
                   <SelectValue placeholder="Select role" />
@@ -452,7 +502,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                 </SelectContent>
               </Select>
               {memberForm.formState.errors.role && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {memberForm.formState.errors.role.message}
                 </p>
               )}
@@ -467,7 +517,9 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Add Member
               </Button>
             </DialogFooter>
@@ -478,7 +530,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
       {committees.length === 0 ? (
         <Card>
           <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">
+            <p className="text-muted-foreground text-center">
               No committees found. Create one to get started.
             </p>
           </CardContent>
@@ -495,7 +547,9 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">{committee.name}</CardTitle>
+                        <CardTitle className="text-base">
+                          {committee.name}
+                        </CardTitle>
                         {!committee.isActive && (
                           <Badge variant="outline" className="bg-gray-100">
                             Inactive
@@ -523,9 +577,16 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(committee.id)}>
+                  <Collapsible
+                    open={isExpanded}
+                    onOpenChange={() => toggleExpanded(committee.id)}
+                  >
                     <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-full justify-between">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-between"
+                      >
                         <span className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
                           View Members & Meetings
@@ -539,7 +600,7 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-4 space-y-4">
                       <div>
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <h4 className="text-sm font-medium">Members</h4>
                           {canManage && (
                             <Button
@@ -547,29 +608,34 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                               variant="outline"
                               onClick={() => openMemberDialog(committee.id)}
                             >
-                              <Plus className="h-3 w-3 mr-1" />
+                              <Plus className="mr-1 h-3 w-3" />
                               Add Member
                             </Button>
                           )}
                         </div>
                         {committee.members.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No members yet</p>
+                          <p className="text-muted-foreground text-sm">
+                            No members yet
+                          </p>
                         ) : (
                           <ul className="space-y-2">
                             {committee.members.map((member) => (
-                              <li key={member.id} className="text-sm flex justify-between items-center">
+                              <li
+                                key={member.id}
+                                className="flex items-center justify-between text-sm"
+                              >
                                 <span>
                                   {member.user.name} ({member.user.email})
                                 </span>
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline">
-                                    {member.role}
-                                  </Badge>
+                                  <Badge variant="outline">{member.role}</Badge>
                                   {canManage && (
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleRemoveMember(member.id)}
+                                      onClick={() =>
+                                        handleRemoveMember(member.id)
+                                      }
                                       className="h-6 w-6 p-0"
                                     >
                                       <X className="h-3 w-3" />
@@ -583,33 +649,42 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-medium">Recent Meetings</h4>
+                        <div className="mb-2 flex items-center justify-between">
+                          <h4 className="text-sm font-medium">
+                            Recent Meetings
+                          </h4>
                           {canManage && (
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => openMeetingDialog(committee.id)}
                             >
-                              <Plus className="h-3 w-3 mr-1" />
+                              <Plus className="mr-1 h-3 w-3" />
                               Schedule
                             </Button>
                           )}
                         </div>
                         {committeeMeetings.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No meetings scheduled</p>
+                          <p className="text-muted-foreground text-sm">
+                            No meetings scheduled
+                          </p>
                         ) : (
                           <ul className="space-y-2">
                             {committeeMeetings.map((meeting) => (
-                              <li key={meeting.id} className="text-sm space-y-2">
-                                <div className="flex justify-between items-center">
+                              <li
+                                key={meeting.id}
+                                className="space-y-2 text-sm"
+                              >
+                                <div className="flex items-center justify-between">
                                   <span className="flex items-center gap-2">
                                     <Calendar className="h-3 w-3" />
                                     {format(meeting.meetingDate, "PPP")}
                                   </span>
                                   <Badge
                                     variant="outline"
-                                    className={STATUS_COLORS[meeting.status] ?? ""}
+                                    className={
+                                      STATUS_COLORS[meeting.status] ?? ""
+                                    }
                                   >
                                     {meeting.status}
                                   </Badge>
@@ -626,12 +701,19 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                                           [meeting.id]: e.target.value,
                                         }));
                                       }}
-                                      className="h-7 text-xs flex-1"
+                                      className="h-7 flex-1 text-xs"
                                     />
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => handleSaveMinutes(meeting, editingMinutes[meeting.id] || meeting.minutesRef || "")}
+                                      onClick={() =>
+                                        handleSaveMinutes(
+                                          meeting,
+                                          editingMinutes[meeting.id] ||
+                                            meeting.minutesRef ||
+                                            "",
+                                        )
+                                      }
                                       disabled={isSubmitting}
                                       className="h-7 px-2"
                                     >
@@ -647,8 +729,8 @@ export function CommitteePanel({ committees, meetings, canManage }: CommitteePan
                     </CollapsibleContent>
                   </Collapsible>
 
-                  <div className="flex gap-2 pt-2 border-t">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="flex gap-2 border-t pt-2">
+                    <div className="text-muted-foreground text-sm">
                       {committee._count.meetings} total meetings
                     </div>
                   </div>

@@ -44,7 +44,8 @@ interface ChecklistItem {
 const CLASSIFICATION_CHECKS = [
   {
     id: "htmLimit",
-    question: "HTM portfolio does not exceed 25% of total investments (or applicable limit)",
+    question:
+      "HTM portfolio does not exceed 25% of total investments (or applicable limit)",
     category: "HTM",
   },
   {
@@ -94,19 +95,25 @@ const CLASSIFICATION_CHECKS = [
   },
 ];
 
-export function ClassificationChecklist({ investments, engagementId }: ClassificationChecklistProps) {
+export function ClassificationChecklist({
+  investments,
+  engagementId,
+}: ClassificationChecklistProps) {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
     CLASSIFICATION_CHECKS.map((check) => ({
       ...check,
       compliant: false,
       evidence: "",
       remarks: "",
-    }))
+    })),
   );
   const [isSaving, setIsSaving] = useState(false);
 
   // Calculate portfolio metrics
-  const totalInvestment = investments.reduce((sum, inv) => sum + Number(inv.faceValue), 0);
+  const totalInvestment = investments.reduce(
+    (sum, inv) => sum + Number(inv.faceValue),
+    0,
+  );
   const htmTotal = investments
     .filter((inv) => inv.classification === "HTM")
     .reduce((sum, inv) => sum + Number(inv.faceValue), 0);
@@ -117,7 +124,8 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
     .filter((inv) => inv.classification === "AFS")
     .reduce((sum, inv) => sum + Number(inv.faceValue), 0);
 
-  const htmPercent = totalInvestment > 0 ? (htmTotal / totalInvestment) * 100 : 0;
+  const htmPercent =
+    totalInvestment > 0 ? (htmTotal / totalInvestment) * 100 : 0;
 
   // Auto-populate HTM limit check
   React.useEffect(() => {
@@ -132,25 +140,27 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
           };
         }
         return item;
-      })
+      }),
     );
   }, [htmPercent]);
 
   const handleCheckChange = (id: string, checked: boolean) => {
     setChecklistItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, compliant: checked } : item))
+      prev.map((item) =>
+        item.id === id ? { ...item, compliant: checked } : item,
+      ),
     );
   };
 
   const handleEvidenceChange = (id: string, evidence: string) => {
     setChecklistItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, evidence } : item))
+      prev.map((item) => (item.id === id ? { ...item, evidence } : item)),
     );
   };
 
   const handleRemarksChange = (id: string, remarks: string) => {
     setChecklistItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, remarks } : item))
+      prev.map((item) => (item.id === id ? { ...item, remarks } : item)),
     );
   };
 
@@ -181,10 +191,10 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
     compliantCount === checklistItems.length
       ? "FULL_COMPLIANCE"
       : compliantCount >= checklistItems.length * 0.8
-      ? "SUBSTANTIAL_COMPLIANCE"
-      : compliantCount >= checklistItems.length * 0.5
-      ? "PARTIAL_COMPLIANCE"
-      : "NON_COMPLIANCE";
+        ? "SUBSTANTIAL_COMPLIANCE"
+        : compliantCount >= checklistItems.length * 0.5
+          ? "PARTIAL_COMPLIANCE"
+          : "NON_COMPLIANCE";
 
   const categories = ["HTM", "HFT", "AFS", "PROVISION", "GENERAL"];
 
@@ -195,9 +205,10 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
         <Info className="h-4 w-4" />
         <AlertTitle>HTM/HFT/AFS Classification Norms</AlertTitle>
         <AlertDescription>
-          Investment classification must comply with RBI Master Circular on Investments. This
-          checklist covers key requirements for Held to Maturity (HTM), Held for Trading (HFT), and
-          Available for Sale (AFS) categories, including valuation, shifting norms, and provisioning
+          Investment classification must comply with RBI Master Circular on
+          Investments. This checklist covers key requirements for Held to
+          Maturity (HTM), Held for Trading (HFT), and Available for Sale (AFS)
+          categories, including valuation, shifting norms, and provisioning
           requirements.
         </AlertDescription>
       </Alert>
@@ -209,10 +220,17 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
             <CardTitle className="text-sm font-medium">HTM Portfolio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(htmTotal / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+              ₹{(htmTotal / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">
               {htmPercent.toFixed(2)}% of total
-              {htmPercent > 25 && <span className="text-red-600 font-semibold"> (Over limit)</span>}
+              {htmPercent > 25 && (
+                <span className="font-semibold text-red-600">
+                  {" "}
+                  (Over limit)
+                </span>
+              )}
             </p>
           </CardContent>
         </Card>
@@ -222,10 +240,14 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
             <CardTitle className="text-sm font-medium">HFT Portfolio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(hftTotal / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">
-              {totalInvestment > 0 ? ((hftTotal / totalInvestment) * 100).toFixed(2) : "0.00"}% of
-              total
+            <div className="text-2xl font-bold">
+              ₹{(hftTotal / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {totalInvestment > 0
+                ? ((hftTotal / totalInvestment) * 100).toFixed(2)
+                : "0.00"}
+              % of total
             </p>
           </CardContent>
         </Card>
@@ -235,17 +257,23 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
             <CardTitle className="text-sm font-medium">AFS Portfolio</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(afsTotal / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">
-              {totalInvestment > 0 ? ((afsTotal / totalInvestment) * 100).toFixed(2) : "0.00"}% of
-              total
+            <div className="text-2xl font-bold">
+              ₹{(afsTotal / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {totalInvestment > 0
+                ? ((afsTotal / totalInvestment) * 100).toFixed(2)
+                : "0.00"}
+              % of total
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Status</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Compliance Status
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -255,12 +283,12 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
               variant="outline"
               className={
                 overallRating === "FULL_COMPLIANCE"
-                  ? "bg-green-100 text-green-800 border-green-300"
+                  ? "border-green-300 bg-green-100 text-green-800"
                   : overallRating === "SUBSTANTIAL_COMPLIANCE"
-                  ? "bg-blue-100 text-blue-800 border-blue-300"
-                  : overallRating === "PARTIAL_COMPLIANCE"
-                  ? "bg-amber-100 text-amber-800 border-amber-300"
-                  : "bg-red-100 text-red-800 border-red-300"
+                    ? "border-blue-300 bg-blue-100 text-blue-800"
+                    : overallRating === "PARTIAL_COMPLIANCE"
+                      ? "border-amber-300 bg-amber-100 text-amber-800"
+                      : "border-red-300 bg-red-100 text-red-800"
               }
             >
               {overallRating.replace("_", " ")}
@@ -275,7 +303,7 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Classification Audit Checklist</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm">
                 Review investment classification compliance with RBI norms
               </p>
             </div>
@@ -292,30 +320,34 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
         <CardContent>
           <Accordion type="multiple" className="w-full">
             {categories.map((category) => {
-              const categoryItems = checklistItems.filter((item) => item.category === category);
-              const categoryCompliant = categoryItems.filter((item) => item.compliant).length;
+              const categoryItems = checklistItems.filter(
+                (item) => item.category === category,
+              );
+              const categoryCompliant = categoryItems.filter(
+                (item) => item.compliant,
+              ).length;
 
               return (
                 <AccordionItem key={category} value={category}>
                   <AccordionTrigger>
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex w-full items-center gap-3">
                       <Badge
                         variant="outline"
                         className={
                           category === "HTM"
-                            ? "bg-indigo-100 text-indigo-800 border-indigo-300"
+                            ? "border-indigo-300 bg-indigo-100 text-indigo-800"
                             : category === "HFT"
-                            ? "bg-rose-100 text-rose-800 border-rose-300"
-                            : category === "AFS"
-                            ? "bg-amber-100 text-amber-800 border-amber-300"
-                            : category === "PROVISION"
-                            ? "bg-purple-100 text-purple-800 border-purple-300"
-                            : "bg-gray-100 text-gray-800 border-gray-300"
+                              ? "border-rose-300 bg-rose-100 text-rose-800"
+                              : category === "AFS"
+                                ? "border-amber-300 bg-amber-100 text-amber-800"
+                                : category === "PROVISION"
+                                  ? "border-purple-300 bg-purple-100 text-purple-800"
+                                  : "border-gray-300 bg-gray-100 text-gray-800"
                         }
                       >
                         {category}
                       </Badge>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {categoryCompliant}/{categoryItems.length} compliant
                       </span>
                     </div>
@@ -323,7 +355,10 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
                   <AccordionContent>
                     <div className="space-y-6 pt-4">
                       {categoryItems.map((item) => (
-                        <div key={item.id} className="border rounded-lg p-4 space-y-3">
+                        <div
+                          key={item.id}
+                          className="space-y-3 rounded-lg border p-4"
+                        >
                           <div className="flex items-start gap-3">
                             <Checkbox
                               id={item.id}
@@ -334,31 +369,47 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
                               className="mt-1"
                             />
                             <div className="flex-1 space-y-3">
-                              <Label htmlFor={item.id} className="text-base font-medium cursor-pointer">
+                              <Label
+                                htmlFor={item.id}
+                                className="cursor-pointer text-base font-medium"
+                              >
                                 {item.question}
                               </Label>
 
                               <div className="space-y-2">
-                                <Label htmlFor={`${item.id}-evidence`} className="text-sm">
+                                <Label
+                                  htmlFor={`${item.id}-evidence`}
+                                  className="text-sm"
+                                >
                                   Evidence / Supporting Data
                                 </Label>
                                 <Textarea
                                   id={`${item.id}-evidence`}
                                   value={item.evidence}
-                                  onChange={(e) => handleEvidenceChange(item.id, e.target.value)}
+                                  onChange={(e) =>
+                                    handleEvidenceChange(
+                                      item.id,
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Enter evidence or supporting documentation"
                                   rows={2}
                                 />
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor={`${item.id}-remarks`} className="text-sm">
+                                <Label
+                                  htmlFor={`${item.id}-remarks`}
+                                  className="text-sm"
+                                >
                                   Remarks / Action Items
                                 </Label>
                                 <Textarea
                                   id={`${item.id}-remarks`}
                                   value={item.remarks}
-                                  onChange={(e) => handleRemarksChange(item.id, e.target.value)}
+                                  onChange={(e) =>
+                                    handleRemarksChange(item.id, e.target.value)
+                                  }
                                   placeholder="Any additional remarks or action items"
                                   rows={2}
                                 />
@@ -366,7 +417,7 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
                             </div>
 
                             {item.compliant && (
-                              <CheckCircle2 className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                              <CheckCircle2 className="mt-1 h-5 w-5 flex-shrink-0 text-green-600" />
                             )}
                           </div>
                         </div>
@@ -388,34 +439,36 @@ export function ClassificationChecklist({ investments, engagementId }: Classific
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <div className="text-sm text-muted-foreground">Total Checks</div>
+              <div className="text-muted-foreground text-sm">Total Checks</div>
               <div className="text-2xl font-bold">{checklistItems.length}</div>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground">Compliant</div>
-              <div className="text-2xl font-bold text-green-600">{compliantCount}</div>
+              <div className="text-muted-foreground text-sm">Compliant</div>
+              <div className="text-2xl font-bold text-green-600">
+                {compliantCount}
+              </div>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground">Non-Compliant</div>
+              <div className="text-muted-foreground text-sm">Non-Compliant</div>
               <div className="text-2xl font-bold text-red-600">
                 {checklistItems.length - compliantCount}
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t">
+          <div className="border-t pt-4">
             <div className="flex items-center justify-between">
               <span className="font-medium">Overall Rating:</span>
               <Badge
                 variant="outline"
                 className={
                   overallRating === "FULL_COMPLIANCE"
-                    ? "bg-green-100 text-green-800 border-green-300"
+                    ? "border-green-300 bg-green-100 text-green-800"
                     : overallRating === "SUBSTANTIAL_COMPLIANCE"
-                    ? "bg-blue-100 text-blue-800 border-blue-300"
-                    : overallRating === "PARTIAL_COMPLIANCE"
-                    ? "bg-amber-100 text-amber-800 border-amber-300"
-                    : "bg-red-100 text-red-800 border-red-300"
+                      ? "border-blue-300 bg-blue-100 text-blue-800"
+                      : overallRating === "PARTIAL_COMPLIANCE"
+                        ? "border-amber-300 bg-amber-100 text-amber-800"
+                        : "border-red-300 bg-red-100 text-red-800"
                 }
               >
                 {overallRating.replace("_", " ")}

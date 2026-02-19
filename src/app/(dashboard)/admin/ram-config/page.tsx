@@ -59,7 +59,8 @@ export default async function RamConfigPage() {
         <CardHeader>
           <CardTitle>Active Parameters</CardTitle>
           <CardDescription>
-            {ramParams.length} parameters configured. Total weight should equal 100%.
+            {ramParams.length} parameters configured. Total weight should equal
+            100%.
           </CardDescription>
         </CardHeader>
         <CardContent>

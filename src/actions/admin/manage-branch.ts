@@ -23,7 +23,9 @@ const UpdateBranchProfileSchema = z.object({
   staffStrength: z.number().int().min(0).nullable().optional(),
 });
 
-export type UpdateBranchProfileInput = z.infer<typeof UpdateBranchProfileSchema>;
+export type UpdateBranchProfileInput = z.infer<
+  typeof UpdateBranchProfileSchema
+>;
 
 /**
  * Update branch profile with R3 metadata fields.
@@ -61,9 +63,15 @@ export async function updateBranchProfile(input: UpdateBranchProfileInput) {
       where: { id: parsed.data.branchId },
       data: {
         ...(parsed.data.zoneId !== undefined && { zoneId: parsed.data.zoneId }),
-        ...(parsed.data.category !== undefined && { category: parsed.data.category }),
-        ...(parsed.data.businessSize !== undefined && { businessSize: parsed.data.businessSize }),
-        ...(parsed.data.staffStrength !== undefined && { staffStrength: parsed.data.staffStrength }),
+        ...(parsed.data.category !== undefined && {
+          category: parsed.data.category,
+        }),
+        ...(parsed.data.businessSize !== undefined && {
+          businessSize: parsed.data.businessSize,
+        }),
+        ...(parsed.data.staffStrength !== undefined && {
+          staffStrength: parsed.data.staffStrength,
+        }),
       },
     });
 
@@ -73,7 +81,13 @@ export async function updateBranchProfile(input: UpdateBranchProfileInput) {
 
     return { success: true as const, data: null };
   } catch (error) {
-    logger.error({ error, branchId: parsed.data.branchId }, "Failed to update branch profile");
-    return { success: false as const, error: "Failed to update branch profile." };
+    logger.error(
+      { error, branchId: parsed.data.branchId },
+      "Failed to update branch profile",
+    );
+    return {
+      success: false as const,
+      error: "Failed to update branch profile.",
+    };
   }
 }

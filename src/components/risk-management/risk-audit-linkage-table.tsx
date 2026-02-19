@@ -76,7 +76,7 @@ type FormState = {
 
 async function submitLinkageAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     entityId: formData.get("entityId") as string,
@@ -99,7 +99,10 @@ export function RiskAuditLinkageTable({
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [selectedEntity, setSelectedEntity] = React.useState<string>("");
-  const [state, formAction, isPending] = useActionState(submitLinkageAction, {});
+  const [state, formAction, isPending] = useActionState(
+    submitLinkageAction,
+    {},
+  );
 
   // Filter risks based on selected entity
   const filteredRisks = selectedEntity
@@ -134,7 +137,8 @@ export function RiskAuditLinkageTable({
                 <DialogHeader>
                   <DialogTitle>Create Risk-Audit Linkage</DialogTitle>
                   <DialogDescription>
-                    Link an enterprise risk to an audit engagement for coverage tracking.
+                    Link an enterprise risk to an audit engagement for coverage
+                    tracking.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -206,9 +210,14 @@ export function RiskAuditLinkageTable({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="thematicArea">
-                        Thematic Area <span className="text-destructive">*</span>
+                        Thematic Area{" "}
+                        <span className="text-destructive">*</span>
                       </Label>
-                      <Select name="thematicArea" defaultValue="OPERATIONS" required>
+                      <Select
+                        name="thematicArea"
+                        defaultValue="OPERATIONS"
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -251,7 +260,9 @@ export function RiskAuditLinkageTable({
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Linkage
                   </Button>
                 </DialogFooter>
@@ -278,10 +289,10 @@ export function RiskAuditLinkageTable({
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   <div className="text-muted-foreground">
-                    <LinkIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                    <LinkIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
                     <p>No risk-audit linkages found.</p>
                     {canManage && (
-                      <p className="text-sm mt-1">
+                      <p className="mt-1 text-sm">
                         Click "Link Risk to Audit" to create your first linkage.
                       </p>
                     )}
@@ -294,14 +305,14 @@ export function RiskAuditLinkageTable({
                   <TableCell>
                     <div>
                       <div className="font-medium">{linkage.entity.name}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {linkage.entity.entityType}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="max-w-sm">
-                      <p className="text-sm line-clamp-2">
+                      <p className="line-clamp-2 text-sm">
                         {linkage.riskRegister.riskStatement}
                       </p>
                       <Badge variant="outline" className="mt-1">
@@ -336,7 +347,7 @@ export function RiskAuditLinkageTable({
                         </Badge>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
                 </TableRow>

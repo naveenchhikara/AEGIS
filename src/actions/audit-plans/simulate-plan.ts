@@ -18,12 +18,15 @@ const SimulatePlanSchema = z.object({
   fiscalYear: z
     .string()
     .regex(/^\d{4}-\d{2}$/, "Invalid fiscal year format (e.g., 2025-26)"),
-  overrides: z.array(
-    z.object({
-      branchId: z.string().uuid("Invalid branch ID"),
-      ramScore: z.number().min(0).max(5, "RAM score must be between 0 and 5"),
-    })
-  ).min(1, "At least one override is required").max(100),
+  overrides: z
+    .array(
+      z.object({
+        branchId: z.string().uuid("Invalid branch ID"),
+        ramScore: z.number().min(0).max(5, "RAM score must be between 0 and 5"),
+      }),
+    )
+    .min(1, "At least one override is required")
+    .max(100),
 });
 
 export type SimulatePlanInput = z.infer<typeof SimulatePlanSchema>;
@@ -99,7 +102,10 @@ export async function simulatePlan(input: SimulatePlanInput): Promise<{
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "audit_plan:create")) {
-    return { success: false, error: "You do not have permission to simulate audit plans." };
+    return {
+      success: false,
+      error: "You do not have permission to simulate audit plans.",
+    };
   }
 
   // ─── Input Validation ────────────────────────────────────────
@@ -114,7 +120,7 @@ export async function simulatePlan(input: SimulatePlanInput): Promise<{
 
     // Build overrides map for O(1) lookup
     const overrideMap = new Map(
-      validated.overrides.map((o) => [o.branchId, o.ramScore])
+      validated.overrides.map((o) => [o.branchId, o.ramScore]),
     );
 
     // Fetch branches involved in overrides
@@ -139,16 +145,23 @@ export async function simulatePlan(input: SimulatePlanInput): Promise<{
 
     // Compute simulation results
     const results: SimulationResult[] = branches.map((branch) => {
-      const originalRam = branch.ramScore !== null && branch.ramScore !== undefined
-        ? Number(branch.ramScore)
-        : null;
+      const originalRam =
+        branch.ramScore !== null && branch.ramScore !== undefined
+          ? Number(branch.ramScore)
+          : null;
       const simulatedRam = overrideMap.get(branch.id)!;
 
       const originalFreq = frequencyFromRam(originalRam);
       const simulatedFreq = frequencyFromRam(simulatedRam);
 
-      const originalNext = computeNextAuditDate(branch.lastAuditDate, originalFreq);
-      const simulatedNext = computeNextAuditDate(branch.lastAuditDate, simulatedFreq);
+      const originalNext = computeNextAuditDate(
+        branch.lastAuditDate,
+        originalFreq,
+      );
+      const simulatedNext = computeNextAuditDate(
+        branch.lastAuditDate,
+        simulatedFreq,
+      );
 
       const originalPriority = priorityFromRam(originalRam);
       const simulatedPriority = priorityFromRam(simulatedRam);
@@ -165,7 +178,9 @@ export async function simulatePlan(input: SimulatePlanInput): Promise<{
         simulatedFrequency: simulatedFreq,
         originalNextAudit: originalNext,
         simulatedNextAudit: simulatedNext,
-        changed: originalFreq !== simulatedFreq || originalPriority !== simulatedPriority,
+        changed:
+          originalFreq !== simulatedFreq ||
+          originalPriority !== simulatedPriority,
       };
     });
 
@@ -173,19 +188,26 @@ export async function simulatePlan(input: SimulatePlanInput): Promise<{
     const summary = {
       totalBranches: results.length,
       branchesAffected: results.filter((r) => r.changed).length,
-      highRiskOriginal: results.filter((r) => r.originalPriority === "HIGH").length,
-      highRiskSimulated: results.filter((r) => r.simulatedPriority === "HIGH").length,
-      mediumRiskOriginal: results.filter((r) => r.originalPriority === "MEDIUM").length,
-      mediumRiskSimulated: results.filter((r) => r.simulatedPriority === "MEDIUM").length,
-      lowRiskOriginal: results.filter((r) => r.originalPriority === "LOW").length,
-      lowRiskSimulated: results.filter((r) => r.simulatedPriority === "LOW").length,
+      highRiskOriginal: results.filter((r) => r.originalPriority === "HIGH")
+        .length,
+      highRiskSimulated: results.filter((r) => r.simulatedPriority === "HIGH")
+        .length,
+      mediumRiskOriginal: results.filter((r) => r.originalPriority === "MEDIUM")
+        .length,
+      mediumRiskSimulated: results.filter(
+        (r) => r.simulatedPriority === "MEDIUM",
+      ).length,
+      lowRiskOriginal: results.filter((r) => r.originalPriority === "LOW")
+        .length,
+      lowRiskSimulated: results.filter((r) => r.simulatedPriority === "LOW")
+        .length,
     };
 
     return { success: true, data: { results, summary } };
   } catch (error) {
     logger.error(
       { error, action: "simulate_plan", tenantId },
-      "What-if simulation failed"
+      "What-if simulation failed",
     );
     return { success: false, error: "Simulation failed. Please try again." };
   }

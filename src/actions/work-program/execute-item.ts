@@ -170,7 +170,10 @@ export async function assignWorkProgramItem(
   workProgramItemId: string,
   assignedToId: string,
 ) {
-  if (!z.string().uuid().safeParse(workProgramItemId).success || !z.string().uuid().safeParse(assignedToId).success) {
+  if (
+    !z.string().uuid().safeParse(workProgramItemId).success ||
+    !z.string().uuid().safeParse(assignedToId).success
+  ) {
     return { success: false as const, error: "Invalid ID format." };
   }
   const session = await getRequiredSession();

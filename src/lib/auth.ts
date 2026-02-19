@@ -20,7 +20,11 @@ import { accountLockout } from "./auth-lockout-plugin";
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  trustedOrigins: ["http://127.0.0.1:3000", "https://aegis.nexlyadvisory.com"],
+  trustedOrigins: [
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://aegis.nexlyadvisory.com",
+  ].filter(Boolean),
 
   // Prisma adapter
   database: prismaAdapter(prisma, {
@@ -85,10 +89,13 @@ export const auth = betterAuth({
       generateId: () => randomUUID(),
     },
     // Explicit cookie security (Phase 11 SC-4)
-    useSecureCookies: process.env.NODE_ENV === "production", // true in prod, false in dev (http://localhost)
+    // Only use secure cookies when serving over HTTPS (detected from BETTER_AUTH_URL)
+    useSecureCookies: (process.env.BETTER_AUTH_URL || "").startsWith(
+      "https://",
+    ),
     defaultCookieAttributes: {
       httpOnly: true, // Prevent JavaScript access to session cookies
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
+      secure: (process.env.BETTER_AUTH_URL || "").startsWith("https://"), // HTTPS only when URL is https
       sameSite: "lax" as const, // CSRF protection while allowing top-level navigations
     },
   },

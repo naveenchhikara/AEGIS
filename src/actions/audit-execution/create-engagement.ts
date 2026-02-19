@@ -84,17 +84,18 @@ export async function createEngagement(input: CreateEngagementInput) {
 
     // ─── Step 6: Auto-generate work program (R57) ────────────────
     try {
-      const { generateWorkProgram } = await import("@/actions/work-program/generate-program");
+      const { generateWorkProgram } =
+        await import("@/actions/work-program/generate-program");
       await generateWorkProgram({ engagementId: result.id });
       logger.info(
         { engagementId: result.id },
-        "Auto-generated work program for new engagement"
+        "Auto-generated work program for new engagement",
       );
     } catch (wpError) {
       // Non-fatal: work program can be generated manually later
       logger.warn(
         { error: wpError, engagementId: result.id },
-        "Failed to auto-generate work program (non-fatal)"
+        "Failed to auto-generate work program (non-fatal)",
       );
     }
 

@@ -34,7 +34,9 @@ interface ControlEffectivenessDashboardProps {
 
 function getRatingBadge(score: number) {
   if (score >= 80)
-    return <Badge className="bg-green-100 text-green-800">Highly Effective</Badge>;
+    return (
+      <Badge className="bg-green-100 text-green-800">Highly Effective</Badge>
+    );
   if (score >= 60)
     return <Badge className="bg-blue-100 text-blue-800">Effective</Badge>;
   if (score >= 40)
@@ -66,31 +68,33 @@ export function ControlEffectivenessDashboard({
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold">{avgScore.toFixed(0)}%</div>
-            <p className="text-xs text-muted-foreground">Avg Effectiveness</p>
+            <p className="text-muted-foreground text-xs">Avg Effectiveness</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-green-600">{highlyEffective}</div>
-            <p className="text-xs text-muted-foreground">Highly Effective</p>
+            <div className="text-2xl font-bold text-green-600">
+              {highlyEffective}
+            </div>
+            <p className="text-muted-foreground text-xs">Highly Effective</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-blue-600">{effective}</div>
-            <p className="text-xs text-muted-foreground">Effective</p>
+            <p className="text-muted-foreground text-xs">Effective</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-amber-600">{partial}</div>
-            <p className="text-xs text-muted-foreground">Partial</p>
+            <p className="text-muted-foreground text-xs">Partial</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-red-600">{ineffective}</div>
-            <p className="text-xs text-muted-foreground">Ineffective</p>
+            <p className="text-muted-foreground text-xs">Ineffective</p>
           </CardContent>
         </Card>
       </div>
@@ -105,7 +109,7 @@ export function ControlEffectivenessDashboard({
         </CardHeader>
         <CardContent>
           {data.length === 0 ? (
-            <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground rounded-md border border-dashed p-8 text-center text-sm">
               No control test results yet. Run work programs to populate.
             </div>
           ) : (
@@ -116,9 +120,15 @@ export function ControlEffectivenessDashboard({
                     <TableHead>Control</TableHead>
                     <TableHead>Process Area</TableHead>
                     <TableHead className="text-center">Tests</TableHead>
-                    <TableHead className="text-center text-green-700">✓</TableHead>
-                    <TableHead className="text-center text-amber-700">~</TableHead>
-                    <TableHead className="text-center text-red-700">✗</TableHead>
+                    <TableHead className="text-center text-green-700">
+                      ✓
+                    </TableHead>
+                    <TableHead className="text-center text-amber-700">
+                      ~
+                    </TableHead>
+                    <TableHead className="text-center text-red-700">
+                      ✗
+                    </TableHead>
                     <TableHead className="text-right">Score</TableHead>
                     <TableHead>Rating</TableHead>
                   </TableRow>
@@ -129,13 +139,19 @@ export function ControlEffectivenessDashboard({
                     .map((control) => (
                       <TableRow key={control.controlCode}>
                         <TableCell>
-                          <span className="font-mono text-xs text-muted-foreground">
+                          <span className="text-muted-foreground font-mono text-xs">
                             {control.controlCode}
                           </span>{" "}
-                          <span className="font-medium">{control.controlName}</span>
+                          <span className="font-medium">
+                            {control.controlName}
+                          </span>
                         </TableCell>
-                        <TableCell className="text-sm">{control.processArea}</TableCell>
-                        <TableCell className="text-center">{control.totalTests}</TableCell>
+                        <TableCell className="text-sm">
+                          {control.processArea}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {control.totalTests}
+                        </TableCell>
                         <TableCell className="text-center text-green-700">
                           {control.effectiveCount}
                         </TableCell>

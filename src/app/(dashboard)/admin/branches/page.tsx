@@ -57,7 +57,8 @@ export default async function AdminBranchesPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Branch Profiles</h1>
         <p className="text-muted-foreground">
-          Manage branch metadata: zone assignment, category, business size, staff strength
+          Manage branch metadata: zone assignment, category, business size,
+          staff strength
         </p>
       </div>
 

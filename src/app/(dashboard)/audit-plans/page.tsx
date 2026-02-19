@@ -200,9 +200,20 @@ export default async function AuditPlansPage() {
 
       {/* Surprise Audit Scheduler (R71) */}
       <SurpriseAuditScheduler
-        branches={branches.map((b) => ({ id: b.id, code: b.code, name: b.name }))}
-        auditPlans={auditPlans.map((p) => ({ id: p.id, year: p.year, quarter: p.quarter }))}
-        teamMembers={teamMembers.map((m) => ({ id: m.id, name: m.name ?? "Unnamed" }))}
+        branches={branches.map((b) => ({
+          id: b.id,
+          code: b.code,
+          name: b.name,
+        }))}
+        auditPlans={auditPlans.map((p) => ({
+          id: p.id,
+          year: p.year,
+          quarter: p.quarter,
+        }))}
+        teamMembers={teamMembers.map((m) => ({
+          id: m.id,
+          name: m.name ?? "Unnamed",
+        }))}
       />
     </div>
   );

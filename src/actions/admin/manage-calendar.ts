@@ -20,7 +20,9 @@ const createEventSchema = z.object({
   assignedToId: z.string().uuid().optional(),
 });
 
-export async function createCalendarEvent(input: z.infer<typeof createEventSchema>) {
+export async function createCalendarEvent(
+  input: z.infer<typeof createEventSchema>,
+) {
   const session = await getRequiredSession();
   const user = session.user as any;
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
@@ -29,7 +31,8 @@ export async function createCalendarEvent(input: z.infer<typeof createEventSchem
     return { success: false as const, error: "Forbidden" };
 
   const parsed = createEventSchema.safeParse(input);
-  if (!parsed.success) return { success: false as const, error: parsed.error.message };
+  if (!parsed.success)
+    return { success: false as const, error: parsed.error.message };
 
   try {
     const event = await db.auditCalendar.create({
@@ -37,7 +40,9 @@ export async function createCalendarEvent(input: z.infer<typeof createEventSchem
         tenantId: user.tenantId,
         ...parsed.data,
         startDate: new Date(parsed.data.startDate),
-        endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : undefined,
+        endDate: parsed.data.endDate
+          ? new Date(parsed.data.endDate)
+          : undefined,
       },
     });
     logger.info({ eventId: event.id }, "Calendar event created");
@@ -53,7 +58,9 @@ export async function createCalendarEvent(input: z.infer<typeof createEventSchem
 const updateEventSchema = z.object({
   eventId: z.string().uuid("Invalid event ID"),
   title: z.string().min(1).max(200).optional(),
-  eventType: z.enum(["RBIA", "CONCURRENT", "IS_EDP", "STATUTORY", "MEETING"]).optional(),
+  eventType: z
+    .enum(["RBIA", "CONCURRENT", "IS_EDP", "STATUTORY", "MEETING"])
+    .optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional().nullable(),
   allDay: z.boolean().optional(),
@@ -64,13 +71,16 @@ const updateEventSchema = z.object({
   assignedToId: z.string().uuid().optional().nullable(),
 });
 
-export async function updateCalendarEvent(input: z.infer<typeof updateEventSchema>) {
+export async function updateCalendarEvent(
+  input: z.infer<typeof updateEventSchema>,
+) {
   const session = await getRequiredSession();
   const user = session.user as any;
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
 
   const parsed = updateEventSchema.safeParse(input);
-  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+  if (!parsed.success)
+    return { success: false as const, error: parsed.error.issues[0].message };
 
   const db = prismaForTenant(user.tenantId);
   if (!hasPermission(user.roles ?? [], "calendar:manage"))
@@ -86,7 +96,8 @@ export async function updateCalendarEvent(input: z.infer<typeof updateEventSchem
     const { eventId, startDate, endDate, ...rest } = parsed.data;
     const updateData: Record<string, unknown> = { ...rest };
     if (startDate) updateData.startDate = new Date(startDate);
-    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+    if (endDate !== undefined)
+      updateData.endDate = endDate ? new Date(endDate) : null;
 
     const event = await db.auditCalendar.update({
       where: { id: eventId },
@@ -97,7 +108,10 @@ export async function updateCalendarEvent(input: z.infer<typeof updateEventSchem
     revalidatePath("/calendar");
     return { success: true as const, data: event };
   } catch (error) {
-    logger.error({ error, eventId: parsed.data.eventId }, "Failed to update calendar event");
+    logger.error(
+      { error, eventId: parsed.data.eventId },
+      "Failed to update calendar event",
+    );
     return { success: false as const, error: "Failed to update event" };
   }
 }
@@ -112,7 +126,8 @@ export async function deleteCalendarEvent(eventId: string) {
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
 
   const parsed = deleteEventSchema.safeParse({ eventId });
-  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+  if (!parsed.success)
+    return { success: false as const, error: parsed.error.issues[0].message };
 
   const db = prismaForTenant(user.tenantId);
   if (!hasPermission(user.roles ?? [], "calendar:manage"))
@@ -120,7 +135,9 @@ export async function deleteCalendarEvent(eventId: string) {
 
   try {
     // SECURITY: Scope delete to tenant to prevent cross-tenant deletion
-    await db.auditCalendar.deleteMany({ where: { id: eventId, tenantId: user.tenantId } });
+    await db.auditCalendar.deleteMany({
+      where: { id: eventId, tenantId: user.tenantId },
+    });
     revalidatePath("/calendar");
     return { success: true as const, data: null };
   } catch (error) {

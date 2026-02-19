@@ -84,7 +84,9 @@ export async function getControlEffectivenessData(tenantId: string) {
     ...c,
     score:
       c.totalTests > 0
-        ? ((c.effectiveCount * 100 + c.partialCount * 50) / (c.totalTests * 100)) * 100
+        ? ((c.effectiveCount * 100 + c.partialCount * 50) /
+            (c.totalTests * 100)) *
+          100
         : 0,
   }));
 }

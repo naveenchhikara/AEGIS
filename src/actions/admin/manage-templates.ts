@@ -79,7 +79,8 @@ export async function deactivateTemplate(templateId: string) {
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
 
   const parsed = deactivateTemplateSchema.safeParse({ templateId });
-  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message };
+  if (!parsed.success)
+    return { success: false as const, error: parsed.error.issues[0].message };
 
   if (!hasPermission(user.roles ?? [], "template:manage"))
     return { success: false as const, error: "Forbidden" };

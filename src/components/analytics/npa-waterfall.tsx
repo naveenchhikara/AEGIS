@@ -38,7 +38,7 @@ interface NpaWaterfallProps {
 export function NpaWaterfall({ data }: NpaWaterfallProps) {
   const totalAccounts = data.reduce(
     (sum, q) => sum + q.SMA0 + q.SMA1 + q.SMA2 + q.NPA,
-    0
+    0,
   );
 
   return (
@@ -46,18 +46,20 @@ export function NpaWaterfall({ data }: NpaWaterfallProps) {
       <CardHeader>
         <CardTitle>NPA Movement Waterfall</CardTitle>
         <CardDescription>
-          SMA/NPA category movement across quarters — tracks asset quality deterioration
+          SMA/NPA category movement across quarters — tracks asset quality
+          deterioration
         </CardDescription>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No SMA/NPA data available. Data is captured during loan review audits.
+          <div className="text-muted-foreground rounded-md border border-dashed p-8 text-center text-sm">
+            No SMA/NPA data available. Data is captured during loan review
+            audits.
           </div>
         ) : (
           <div className="space-y-4">
             {/* Summary badges */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{totalAccounts} total entries</Badge>
               <Badge variant="outline">{data.length} quarters tracked</Badge>
             </div>
@@ -80,7 +82,9 @@ export function NpaWaterfall({ data }: NpaWaterfallProps) {
                     const total = row.SMA0 + row.SMA1 + row.SMA2 + row.NPA;
                     return (
                       <TableRow key={row.quarter}>
-                        <TableCell className="font-medium">{row.quarter}</TableCell>
+                        <TableCell className="font-medium">
+                          {row.quarter}
+                        </TableCell>
                         <TableCell className="text-right">{row.SMA0}</TableCell>
                         <TableCell className="text-right text-amber-600">
                           {row.SMA1}
@@ -91,7 +95,9 @@ export function NpaWaterfall({ data }: NpaWaterfallProps) {
                         <TableCell className="text-right font-medium text-red-600">
                           {row.NPA}
                         </TableCell>
-                        <TableCell className="text-right font-medium">{total}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {total}
+                        </TableCell>
                       </TableRow>
                     );
                   })}

@@ -48,7 +48,7 @@ type FormState = {
 
 async function submitKriAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     id: formData.get("id") as string | undefined,
@@ -70,7 +70,11 @@ async function submitKriAction(
   return manageKRI(input);
 }
 
-export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogProps) {
+export function KriFormDialog({
+  riskRegisterId,
+  kri,
+  trigger,
+}: KriFormDialogProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [state, formAction, isPending] = useActionState(submitKriAction, {});
@@ -78,7 +82,9 @@ export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogPro
   // Handle success/error feedback
   React.useEffect(() => {
     if (state.success) {
-      toast.success(kri ? "KRI updated successfully" : "KRI created successfully");
+      toast.success(
+        kri ? "KRI updated successfully" : "KRI created successfully",
+      );
       setOpen(false);
       router.refresh();
     } else if (state.error) {
@@ -105,9 +111,11 @@ export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogPro
         <form action={formAction}>
           {kri?.id && <input type="hidden" name="id" value={kri.id} />}
           <input type="hidden" name="riskRegisterId" value={riskRegisterId} />
-          
+
           <DialogHeader>
-            <DialogTitle>{kri ? "Edit KRI" : "Create Key Risk Indicator"}</DialogTitle>
+            <DialogTitle>
+              {kri ? "Edit KRI" : "Create Key Risk Indicator"}
+            </DialogTitle>
             <DialogDescription>
               {kri
                 ? "Update the KRI details and thresholds."
@@ -143,9 +151,13 @@ export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogPro
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="frequency">
-                  Monitoring Frequency <span className="text-destructive">*</span>
+                  Monitoring Frequency{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
-                <Select name="frequency" defaultValue={kri?.frequency || "MONTHLY"}>
+                <Select
+                  name="frequency"
+                  defaultValue={kri?.frequency || "MONTHLY"}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -182,7 +194,7 @@ export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogPro
                   defaultValue={kri?.thresholdLow ?? undefined}
                   placeholder="Minimum acceptable value"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Values below this trigger a warning
                 </p>
               </div>
@@ -197,7 +209,7 @@ export function KriFormDialog({ riskRegisterId, kri, trigger }: KriFormDialogPro
                   defaultValue={kri?.thresholdHigh ?? undefined}
                   placeholder="Maximum acceptable value"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Values above this trigger a warning
                 </p>
               </div>

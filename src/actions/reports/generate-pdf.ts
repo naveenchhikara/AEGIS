@@ -51,7 +51,10 @@ export async function generatePdfReport(input: GenerateReportInput) {
     }
 
     // Fetch audit data
-    const auditData = await getAuditReportData(session, parsed.data.engagementId);
+    const auditData = await getAuditReportData(
+      session,
+      parsed.data.engagementId,
+    );
 
     if (!auditData) {
       return {
@@ -66,12 +69,12 @@ export async function generatePdfReport(input: GenerateReportInput) {
     // Render PDF
     logger.info(
       { engagementId: parsed.data.engagementId, isDraft },
-      "Generating PDF audit summary"
+      "Generating PDF audit summary",
     );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const buffer = await renderToBuffer(
-      React.createElement(AuditSummaryDocument, { auditData }) as any
+      React.createElement(AuditSummaryDocument, { auditData }) as any,
     );
     const pdfBuffer = Buffer.from(buffer);
 
@@ -86,17 +89,21 @@ export async function generatePdfReport(input: GenerateReportInput) {
 
     logger.info(
       { engagementId: parsed.data.engagementId, s3Key },
-      "PDF summary uploaded to S3"
+      "PDF summary uploaded to S3",
     );
 
     // R29: Track generated report in BoardReport for audit trail + re-download
     const db = prismaForTenant(tenantId);
     const now = new Date();
     const month = now.getMonth();
-    const fiscalQuarter = month >= 3 && month <= 5 ? "Q1_APR_JUN"
-      : month >= 6 && month <= 8 ? "Q2_JUL_SEP"
-      : month >= 9 && month <= 11 ? "Q3_OCT_DEC"
-      : "Q4_JAN_MAR";
+    const fiscalQuarter =
+      month >= 3 && month <= 5
+        ? "Q1_APR_JUN"
+        : month >= 6 && month <= 8
+          ? "Q2_JUL_SEP"
+          : month >= 9 && month <= 11
+            ? "Q3_OCT_DEC"
+            : "Q4_JAN_MAR";
     const quarterEnum = fiscalQuarter as any;
     await db.boardReport.create({
       data: {

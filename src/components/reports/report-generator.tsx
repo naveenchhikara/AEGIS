@@ -4,7 +4,13 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { generateXlsxReport } from "@/actions/reports/generate-xlsx";
 import { generatePdfReport } from "@/actions/reports/generate-pdf";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,11 +35,16 @@ interface ReportGeneratorProps {
   }>;
 }
 
-export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps) {
+export function ReportGenerator({
+  canGenerate,
+  templates,
+}: ReportGeneratorProps) {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [engagementId, setEngagementId] = React.useState("");
-  const [selectedTemplate, setSelectedTemplate] = React.useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = React.useState<string | null>(
+    null,
+  );
 
   const handleGenerateXlsx = async () => {
     if (!engagementId.trim()) {
@@ -83,7 +94,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
   if (!canGenerate) {
     return (
       <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
+        <CardContent className="text-muted-foreground p-8 text-center">
           You do not have permission to generate reports.
         </CardContent>
       </Card>
@@ -103,7 +114,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-primary" />
+              <FileSpreadsheet className="text-primary h-5 w-5" />
               <CardTitle>Generate XLSX Report</CardTitle>
             </div>
             <CardDescription>
@@ -120,12 +131,15 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
                 onChange={(e) => setEngagementId(e.target.value)}
                 disabled={isGenerating}
               />
-              <p className="text-xs text-muted-foreground">
-                Generate a comprehensive audit report with all findings, cash checks, loan reviews, and SMA/NPA data
+              <p className="text-muted-foreground text-xs">
+                Generate a comprehensive audit report with all findings, cash
+                checks, loan reviews, and SMA/NPA data
               </p>
             </div>
             <Button onClick={handleGenerateXlsx} disabled={isGenerating}>
-              {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isGenerating && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               Generate XLSX
             </Button>
@@ -138,7 +152,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
+              <FileText className="text-primary h-5 w-5" />
               <CardTitle>Generate PDF Summary</CardTitle>
             </div>
             <CardDescription>
@@ -155,12 +169,15 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
                 onChange={(e) => setEngagementId(e.target.value)}
                 disabled={isGenerating}
               />
-              <p className="text-xs text-muted-foreground">
-                Generate a formatted PDF summary for board presentations and executive review
+              <p className="text-muted-foreground text-xs">
+                Generate a formatted PDF summary for board presentations and
+                executive review
               </p>
             </div>
             <Button onClick={handleGeneratePdf} disabled={isGenerating}>
-              {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isGenerating && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               <FileText className="mr-2 h-4 w-4" />
               Generate PDF
             </Button>
@@ -179,12 +196,14 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
           </CardHeader>
           <CardContent>
             {selectedTemplate && (
-              <div className="mb-4 p-3 border border-primary/30 rounded-md bg-primary/5">
-                <p className="text-sm font-medium text-primary">
-                  Active template: {templates.find((t) => t.id === selectedTemplate)?.name}
+              <div className="border-primary/30 bg-primary/5 mb-4 rounded-md border p-3">
+                <p className="text-primary text-sm font-medium">
+                  Active template:{" "}
+                  {templates.find((t) => t.id === selectedTemplate)?.name}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  This template will be applied when generating reports. Select an engagement ID above and generate.
+                <p className="text-muted-foreground mt-1 text-xs">
+                  This template will be applied when generating reports. Select
+                  an engagement ID above and generate.
                 </p>
                 <Button
                   variant="ghost"
@@ -200,7 +219,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
               </div>
             )}
             {templates.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
+              <p className="text-muted-foreground py-4 text-center">
                 No templates configured.
               </p>
             ) : (
@@ -210,7 +229,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
                   return (
                     <div
                       key={template.id}
-                      className={`flex items-center justify-between p-3 border rounded-md transition-colors ${
+                      className={`flex items-center justify-between rounded-md border p-3 transition-colors ${
                         isActive
                           ? "border-primary bg-primary/5"
                           : "hover:bg-muted/50"
@@ -218,7 +237,7 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
                     >
                       <div>
                         <p className="font-medium">{template.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {template.category} • v{template.versionNumber}
                         </p>
                       </div>
@@ -231,11 +250,13 @@ export function ReportGenerator({ canGenerate, templates }: ReportGeneratorProps
                             toast.info("Template deselected");
                           } else {
                             setSelectedTemplate(template.id);
-                            toast.success(`Template "${template.name}" selected — switch to XLSX or PDF tab to generate`);
+                            toast.success(
+                              `Template "${template.name}" selected — switch to XLSX or PDF tab to generate`,
+                            );
                           }
                         }}
                       >
-                        <Download className="h-4 w-4 mr-1" />
+                        <Download className="mr-1 h-4 w-4" />
                         {isActive ? "Selected" : "Use"}
                       </Button>
                     </div>

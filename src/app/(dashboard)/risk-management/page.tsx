@@ -26,12 +26,12 @@ export default async function RiskManagementPage() {
   // Fetch real data from database
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
-  
+
   const risksRaw = await getRiskRegisters(session);
   const kriDataRaw = await getBreachedKRIs(session);
   const entities = await getAuditUniverseEntities(session);
   const linkagesRaw = await getRiskAuditLinkages(session);
-  
+
   // Fetch recent engagements for linkage
   const engagements = await db.auditEngagement.findMany({
     where: { tenantId },

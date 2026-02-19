@@ -34,23 +34,33 @@ export default async function AnalyticsPage() {
   }
 
   // Fetch all analytics data
-  const [branchRiskData, planProgressData, complianceAgingData, findingTrendsData, npaMovementData, controlEffectivenessData, riskMisData] =
-    await Promise.all([
-      getBranchRiskHeatmap(tenantId),
-      getAuditPlanProgress(tenantId),
-      getComplianceAging(tenantId),
-      getFindingTrends(tenantId),
-      getNpaMovement(tenantId),
-      getControlEffectivenessData(tenantId),
-      getRiskMisDashboardData(tenantId),
-    ]);
+  const [
+    branchRiskData,
+    planProgressData,
+    complianceAgingData,
+    findingTrendsData,
+    npaMovementData,
+    controlEffectivenessData,
+    riskMisData,
+  ] = await Promise.all([
+    getBranchRiskHeatmap(tenantId),
+    getAuditPlanProgress(tenantId),
+    getComplianceAging(tenantId),
+    getFindingTrends(tenantId),
+    getNpaMovement(tenantId),
+    getControlEffectivenessData(tenantId),
+    getRiskMisDashboardData(tenantId),
+  ]);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Analytics Dashboard
+        </h1>
         <p className="text-muted-foreground">
-          Comprehensive insights into audit performance, compliance, and risk metrics
+          Comprehensive insights into audit performance, compliance, and risk
+          metrics
         </p>
       </div>
 

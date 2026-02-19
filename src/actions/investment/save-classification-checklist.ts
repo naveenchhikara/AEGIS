@@ -50,7 +50,7 @@ export type SaveClassificationChecklistInput = z.infer<
  * @returns Success with checklist ID or error message
  */
 export async function saveClassificationChecklist(
-  input: SaveClassificationChecklistInput
+  input: SaveClassificationChecklistInput,
 ) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
@@ -150,7 +150,7 @@ export async function saveClassificationChecklist(
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, action: "save_classification_checklist", tenantId },
-      "Failed to save classification checklist"
+      "Failed to save classification checklist",
     );
 
     const errorMessage =

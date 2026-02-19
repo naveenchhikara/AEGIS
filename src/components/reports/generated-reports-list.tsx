@@ -51,7 +51,7 @@ export function GeneratedReportsList({ reports }: GeneratedReportsListProps) {
       </CardHeader>
       <CardContent>
         {reports.length === 0 ? (
-          <p className="text-center text-muted-foreground py-4">
+          <p className="text-muted-foreground py-4 text-center">
             No reports generated yet.
           </p>
         ) : (
@@ -74,46 +74,49 @@ export function GeneratedReportsList({ reports }: GeneratedReportsListProps) {
                   <TableRow key={report.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{report.title}</span>
+                        <span className="text-sm font-medium">
+                          {report.title}
+                        </span>
                         {isDraft && <Badge variant="outline">Draft</Badge>}
                       </div>
                     </TableCell>
                     <TableCell>
                       {report.quarter} {report.year}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {report.generatedBy?.name ?? "System"}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(report.generatedAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <TableCell className="text-muted-foreground text-sm">
+                      {new Date(report.generatedAt).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">
                       {formatFileSize(report.fileSize)}
                     </TableCell>
                     <TableCell>
                       {report.s3Key ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                        >
+                        <Button variant="ghost" size="sm" asChild>
                           <a
                             href={`/api/download?key=${encodeURIComponent(report.s3Key)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Download className="h-4 w-4 mr-1" />
+                            <Download className="mr-1 h-4 w-4" />
                             {isPdf ? "PDF" : "XLSX"}
                           </a>
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">N/A</span>
+                        <span className="text-muted-foreground text-sm">
+                          N/A
+                        </span>
                       )}
                     </TableCell>
                   </TableRow>

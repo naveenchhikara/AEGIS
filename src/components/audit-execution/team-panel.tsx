@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { assignTeamMember, removeTeamMember } from "@/actions/audit-execution/assign-team";
+import {
+  assignTeamMember,
+  removeTeamMember,
+} from "@/actions/audit-execution/assign-team";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +72,8 @@ export function TeamPanel({
   const [removing, setRemoving] = React.useState<Record<string, boolean>>({});
 
   const [selectedUserId, setSelectedUserId] = React.useState("");
-  const [selectedRole, setSelectedRole] = React.useState<string>("FIELD_AUDITOR");
+  const [selectedRole, setSelectedRole] =
+    React.useState<string>("FIELD_AUDITOR");
   const [selectedSections, setSelectedSections] = React.useState<string[]>([]);
 
   async function handleAddMember() {
@@ -138,20 +142,25 @@ export function TeamPanel({
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="user">User</Label>
-                    <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                    <Select
+                      value={selectedUserId}
+                      onValueChange={setSelectedUserId}
+                    >
                       <SelectTrigger id="user">
                         <SelectValue placeholder="Select a user" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableUsers
-                          .filter((u) => !teamMembers.some((m) => m.userId === u.id))
+                          .filter(
+                            (u) => !teamMembers.some((m) => m.userId === u.id),
+                          )
                           .map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.name} ({user.email})
                             </SelectItem>
                           ))}
                         {availableUsers.filter(
-                          (u) => !teamMembers.some((m) => m.userId === u.id)
+                          (u) => !teamMembers.some((m) => m.userId === u.id),
                         ).length === 0 && (
                           <SelectItem value="" disabled>
                             No available users
@@ -162,44 +171,61 @@ export function TeamPanel({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
-                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <Select
+                      value={selectedRole}
+                      onValueChange={setSelectedRole}
+                    >
                       <SelectTrigger id="role">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="LEAD_AUDITOR">Lead Auditor</SelectItem>
-                        <SelectItem value="FIELD_AUDITOR">Field Auditor</SelectItem>
+                        <SelectItem value="LEAD_AUDITOR">
+                          Lead Auditor
+                        </SelectItem>
+                        <SelectItem value="FIELD_AUDITOR">
+                          Field Auditor
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   {sectionOptions.length > 0 && (
                     <div className="space-y-2">
                       <Label>Assigned Sections (R10)</Label>
-                      <div className="max-h-[200px] overflow-y-auto rounded-md border p-2 space-y-1">
+                      <div className="max-h-[200px] space-y-1 overflow-y-auto rounded-md border p-2">
                         {sectionOptions.map((section) => (
                           <label
                             key={section.code}
-                            className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted cursor-pointer"
+                            className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm"
                           >
                             <input
                               type="checkbox"
                               checked={selectedSections.includes(section.code)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedSections([...selectedSections, section.code]);
+                                  setSelectedSections([
+                                    ...selectedSections,
+                                    section.code,
+                                  ]);
                                 } else {
-                                  setSelectedSections(selectedSections.filter((s) => s !== section.code));
+                                  setSelectedSections(
+                                    selectedSections.filter(
+                                      (s) => s !== section.code,
+                                    ),
+                                  );
                                 }
                               }}
                               className="rounded"
                             />
-                            <span className="font-mono text-xs text-muted-foreground">{section.code}</span>
+                            <span className="text-muted-foreground font-mono text-xs">
+                              {section.code}
+                            </span>
                             <span>{section.name}</span>
                           </label>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {selectedSections.length} section{selectedSections.length !== 1 ? "s" : ""} selected
+                      <p className="text-muted-foreground text-xs">
+                        {selectedSections.length} section
+                        {selectedSections.length !== 1 ? "s" : ""} selected
                       </p>
                     </div>
                   )}
@@ -213,7 +239,9 @@ export function TeamPanel({
                     Cancel
                   </Button>
                   <Button onClick={handleAddMember} disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Add Member
                   </Button>
                 </DialogFooter>
@@ -225,7 +253,7 @@ export function TeamPanel({
       <CardContent>
         <div className="space-y-3">
           {teamMembers.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               No team members assigned yet.
             </p>
           ) : (
@@ -236,7 +264,7 @@ export function TeamPanel({
               >
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium">{member.user.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {member.user.email}
                   </p>
                   <Badge
@@ -246,7 +274,7 @@ export function TeamPanel({
                     {member.roleInEngagement.replace(/_/g, " ")}
                   </Badge>
                   {member.assignedSections.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Sections: {member.assignedSections.join(", ")}
                     </p>
                   )}

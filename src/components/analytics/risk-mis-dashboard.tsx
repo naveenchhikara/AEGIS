@@ -66,8 +66,11 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold">{data.totalRisks}</div>
-            <p className="text-xs text-muted-foreground">Total Risks</p>
-            <Badge variant={data.openRisks > 0 ? "destructive" : "secondary"} className="mt-1">
+            <p className="text-muted-foreground text-xs">Total Risks</p>
+            <Badge
+              variant={data.openRisks > 0 ? "destructive" : "secondary"}
+              className="mt-1"
+            >
               {data.openRisks} open
             </Badge>
           </CardContent>
@@ -77,7 +80,9 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
             <div className="text-2xl font-bold">
               {formatLakhs(data.investment.totalMarketValue)}
             </div>
-            <p className="text-xs text-muted-foreground">Investment Portfolio</p>
+            <p className="text-muted-foreground text-xs">
+              Investment Portfolio
+            </p>
             {data.investment.depreciation > 0 && (
               <Badge variant="outline" className="mt-1 text-red-600">
                 ↓ {data.investment.depreciation.toFixed(1)}% depreciation
@@ -90,7 +95,9 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
             <div className="text-2xl font-bold text-amber-600">
               {data.housekeeping.highAgingCount}
             </div>
-            <p className="text-xs text-muted-foreground">High-Aging Items (90d+)</p>
+            <p className="text-muted-foreground text-xs">
+              High-Aging Items (90d+)
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -98,7 +105,9 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
             <div className="text-2xl font-bold">
               {data.investment.unreconciledCount}
             </div>
-            <p className="text-xs text-muted-foreground">Unreconciled Investments</p>
+            <p className="text-muted-foreground text-xs">
+              Unreconciled Investments
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -111,7 +120,7 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
         </CardHeader>
         <CardContent>
           {data.assetQuality.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               No SMA/NPA data captured yet
             </p>
           ) : (
@@ -129,7 +138,9 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
                     <TableRow key={aq.category}>
                       <TableCell>
                         <Badge
-                          variant={aq.category === "NPA" ? "destructive" : "outline"}
+                          variant={
+                            aq.category === "NPA" ? "destructive" : "outline"
+                          }
                         >
                           {aq.category}
                         </Badge>
@@ -151,11 +162,13 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
       <Card>
         <CardHeader>
           <CardTitle>Operational Risk by Category</CardTitle>
-          <CardDescription>Average residual risk scores from the risk register</CardDescription>
+          <CardDescription>
+            Average residual risk scores from the risk register
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {data.operationalRisk.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-muted-foreground py-4 text-center text-sm">
               No risk register entries
             </p>
           ) : (
@@ -165,14 +178,18 @@ export function RiskMisDashboard({ data }: RiskMisDashboardProps) {
                   <TableRow>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">Count</TableHead>
-                    <TableHead className="text-right">Avg Residual Score</TableHead>
+                    <TableHead className="text-right">
+                      Avg Residual Score
+                    </TableHead>
                     <TableHead>Level</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.operationalRisk.map((or) => (
                     <TableRow key={or.category}>
-                      <TableCell className="font-medium">{or.category}</TableCell>
+                      <TableCell className="font-medium">
+                        {or.category}
+                      </TableCell>
                       <TableCell className="text-right">{or.count}</TableCell>
                       <TableCell className="text-right">
                         {or.avgResidualScore.toFixed(1)}

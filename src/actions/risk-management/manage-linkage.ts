@@ -13,7 +13,13 @@ const ManageRiskAuditLinkageSchema = z.object({
   entityId: z.string().uuid(),
   riskRegisterId: z.string().uuid(),
   engagementId: z.string().uuid().optional(),
-  thematicArea: z.enum(["CREDIT", "OPERATIONS", "COMPLIANCE", "IT", "GOVERNANCE"]),
+  thematicArea: z.enum([
+    "CREDIT",
+    "OPERATIONS",
+    "COMPLIANCE",
+    "IT",
+    "GOVERNANCE",
+  ]),
   linkageType: z.enum(["DIRECT", "THEMATIC", "COVERAGE"]).optional(),
 });
 
@@ -24,7 +30,9 @@ type ManageRiskAuditLinkageInput = z.infer<typeof ManageRiskAuditLinkageSchema>;
  * Links enterprise risks to audit engagements for coverage tracking.
  * Security: Requires risk_register:manage permission.
  */
-export async function manageRiskAuditLinkage(input: ManageRiskAuditLinkageInput) {
+export async function manageRiskAuditLinkage(
+  input: ManageRiskAuditLinkageInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -98,8 +106,13 @@ export async function manageRiskAuditLinkage(input: ManageRiskAuditLinkageInput)
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage risk-audit linkage.";
-    logger.error({ error, action: "manage_risk_audit_linkage", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to manage risk-audit linkage.";
+    logger.error(
+      { error, action: "manage_risk_audit_linkage", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

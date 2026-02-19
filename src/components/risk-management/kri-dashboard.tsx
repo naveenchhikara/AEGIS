@@ -30,9 +30,20 @@ interface KriDashboardProps {
   canManage?: boolean;
 }
 
-const BREACH_STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  BREACH: { bg: "bg-red-50/50", text: "text-red-800", border: "border-red-300" },
-  WARNING: { bg: "bg-amber-50/50", text: "text-amber-800", border: "border-amber-300" },
+const BREACH_STATUS_COLORS: Record<
+  string,
+  { bg: string; text: string; border: string }
+> = {
+  BREACH: {
+    bg: "bg-red-50/50",
+    text: "text-red-800",
+    border: "border-red-300",
+  },
+  WARNING: {
+    bg: "bg-amber-50/50",
+    text: "text-amber-800",
+    border: "border-amber-300",
+  },
   NORMAL: { bg: "", text: "text-green-800", border: "border-green-300" },
 };
 
@@ -46,13 +57,13 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
   if (data.length === 0) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center h-48">
+        <CardContent className="flex h-48 items-center justify-center">
           <div className="text-center">
-            <Activity className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">
+            <Activity className="text-muted-foreground/50 mx-auto mb-3 h-12 w-12" />
+            <p className="text-muted-foreground text-sm">
               No KRI breaches or warnings detected.
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               All key risk indicators are within normal thresholds.
             </p>
           </div>
@@ -66,16 +77,21 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Breached & Warning KRIs</h3>
-          <p className="text-sm text-muted-foreground">
-            {data.length} indicator{data.length !== 1 ? "s" : ""} requiring attention
+          <p className="text-muted-foreground text-sm">
+            {data.length} indicator{data.length !== 1 ? "s" : ""} requiring
+            attention
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {data.map((kri) => {
-          const colors = BREACH_STATUS_COLORS[kri.breachStatus] || BREACH_STATUS_COLORS.NORMAL;
-          const badgeColor = BREACH_STATUS_BADGE_COLORS[kri.breachStatus] || BREACH_STATUS_BADGE_COLORS.NORMAL;
+          const colors =
+            BREACH_STATUS_COLORS[kri.breachStatus] ||
+            BREACH_STATUS_COLORS.NORMAL;
+          const badgeColor =
+            BREACH_STATUS_BADGE_COLORS[kri.breachStatus] ||
+            BREACH_STATUS_BADGE_COLORS.NORMAL;
 
           // Determine if value is above or below threshold
           const isAboveThreshold =
@@ -91,9 +107,11 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
           return (
             <Card key={kri.id} className={`${colors.bg} ${colors.border}`}>
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="space-y-1 flex-1">
-                  <CardTitle className="text-sm font-medium">{kri.name}</CardTitle>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex-1 space-y-1">
+                  <CardTitle className="text-sm font-medium">
+                    {kri.name}
+                  </CardTitle>
+                  <p className="text-muted-foreground text-xs">
                     {kri.riskRegister.entity.name}
                   </p>
                 </div>
@@ -115,7 +133,9 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
                   {kri.breachStatus !== "NORMAL" && (
                     <AlertTriangle
                       className={`h-4 w-4 flex-shrink-0 ${
-                        kri.breachStatus === "BREACH" ? "text-red-600" : "text-amber-600"
+                        kri.breachStatus === "BREACH"
+                          ? "text-red-600"
+                          : "text-amber-600"
                       }`}
                     />
                   )}
@@ -130,7 +150,7 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
                         : "N/A"}
                     </div>
                     {kri.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
                         {kri.description}
                       </p>
                     )}
@@ -154,7 +174,9 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
                       <div className="flex items-center">
                         <TrendingUp
                           className={`h-4 w-4 ${
-                            isAboveThreshold ? "text-red-500 rotate-0" : "text-red-500 rotate-180"
+                            isAboveThreshold
+                              ? "rotate-0 text-red-500"
+                              : "rotate-180 text-red-500"
                           }`}
                         />
                       </div>
@@ -165,13 +187,13 @@ export function KriDashboard({ data, canManage = false }: KriDashboardProps) {
                     <Badge variant="outline" className={badgeColor}>
                       {kri.breachStatus}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {kri.frequency}
                     </span>
                   </div>
 
                   {kri.lastUpdated && (
-                    <div className="text-xs text-muted-foreground pt-1 border-t">
+                    <div className="text-muted-foreground border-t pt-1 text-xs">
                       Updated: {new Date(kri.lastUpdated).toLocaleDateString()}
                     </div>
                   )}

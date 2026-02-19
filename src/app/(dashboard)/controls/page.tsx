@@ -31,8 +31,12 @@ export default async function ControlsPage() {
 
       <Tabs defaultValue="controls" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 lg:w-auto">
-          <TabsTrigger value="controls">Controls ({controls.length})</TabsTrigger>
-          <TabsTrigger value="procedures">Test Procedures ({testProcedures.length})</TabsTrigger>
+          <TabsTrigger value="controls">
+            Controls ({controls.length})
+          </TabsTrigger>
+          <TabsTrigger value="procedures">
+            Test Procedures ({testProcedures.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="controls" className="space-y-4">

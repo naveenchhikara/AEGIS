@@ -136,7 +136,8 @@ export async function completeActionPlan(
   actionPlanId: string,
   evidence?: string[],
 ) {
-  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
+  if (!z.string().uuid().safeParse(actionPlanId).success)
+    return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -209,8 +210,10 @@ export async function updateActionPlanProgress(
   actionPlanId: string,
   completionPct: number,
 ) {
-  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
-  if (completionPct < 0 || completionPct > 100) return { success: false as const, error: "Invalid percentage." };
+  if (!z.string().uuid().safeParse(actionPlanId).success)
+    return { success: false as const, error: "Invalid ID." };
+  if (completionPct < 0 || completionPct > 100)
+    return { success: false as const, error: "Invalid percentage." };
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -294,11 +297,16 @@ export async function updateActionPlanProgress(
  */
 export async function addActionPlanEvidence(
   actionPlanId: string,
-  evidenceRef: string
+  evidenceRef: string,
 ) {
-  if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
-  if (!evidenceRef || evidenceRef.trim().length === 0) return { success: false as const, error: "Evidence reference is required." };
-  
+  if (!z.string().uuid().safeParse(actionPlanId).success)
+    return { success: false as const, error: "Invalid ID." };
+  if (!evidenceRef || evidenceRef.trim().length === 0)
+    return {
+      success: false as const,
+      error: "Evidence reference is required.",
+    };
+
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -348,12 +356,10 @@ export async function addActionPlanEvidence(
     };
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to add evidence.";
+      error instanceof Error ? error.message : "Failed to add evidence.";
     logger.error(
       { error, action: "add_action_plan_evidence", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

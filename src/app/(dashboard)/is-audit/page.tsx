@@ -64,7 +64,10 @@ export default async function IsAuditPage() {
         </TabsContent>
 
         <TabsContent value="checklist" className="space-y-4">
-          <ChecklistForm checklists={checklists as any} userId={session.user.id} />
+          <ChecklistForm
+            checklists={checklists as any}
+            userId={session.user.id}
+          />
         </TabsContent>
 
         <TabsContent value="vendor" className="space-y-4">

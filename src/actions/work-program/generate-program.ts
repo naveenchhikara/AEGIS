@@ -66,7 +66,7 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
         throw new Error("Engagement not found");
       }
 
-      // Get test procedures to include
+      // Get test procedures to include (with safety limit)
       let testProcedures;
       if (
         parsed.data.testProcedureIds &&
@@ -78,9 +78,10 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
             tenantId,
             id: { in: parsed.data.testProcedureIds },
           },
+          take: 500, // Safety guard — prevents memory explosion
         });
       } else {
-        // Get all test procedures for key controls
+        // Get all test procedures for key controls (with safety guard)
         testProcedures = await tx.testProcedure.findMany({
           where: {
             tenantId,
@@ -88,6 +89,7 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
               isKeyControl: true,
             },
           },
+          take: 500, // Safety guard — prevents memory explosion
         });
       }
 
@@ -95,43 +97,51 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
         throw new Error("No test procedures found to generate work program");
       }
 
-      // Create work program items
-      const createdItems = [];
-      for (const testProcedure of testProcedures) {
-        // Check if work program item already exists
-        const existing = await tx.workProgramItem.findFirst({
-          where: {
+      // Fetch all existing work program items for the engagement in one query
+      const existingItems = await tx.workProgramItem.findMany({
+        where: {
+          tenantId,
+          engagementId: parsed.data.engagementId,
+        },
+        select: { testProcedureId: true },
+      });
+
+      const existingProcedureIds = new Set(
+        existingItems
+          .map((i) => i.testProcedureId)
+          .filter((id): id is string => !!id),
+      );
+
+      // Filter to only new procedures that need work program items
+      const newProcedures = testProcedures.filter(
+        (tp) => !existingProcedureIds.has(tp.id),
+      );
+
+      // Auto-assign to lead auditor if requested
+      let assignedToId: string | undefined = undefined;
+      if (parsed.data.autoAssign) {
+        const leadAuditor = engagement.teamMembers.find(
+          (tm: any) => tm.roleInEngagement === "LEAD_AUDITOR",
+        );
+        assignedToId = leadAuditor?.userId;
+      }
+
+      // Batch-create all new work program items with createMany
+      if (newProcedures.length > 0) {
+        await tx.workProgramItem.createMany({
+          data: newProcedures.map((tp) => ({
             tenantId,
             engagementId: parsed.data.engagementId,
-            testProcedureId: testProcedure.id,
-          },
+            testProcedureId: tp.id,
+            assignedToId,
+            status: "PENDING" as const,
+          })),
+          skipDuplicates: true,
         });
-
-        if (!existing) {
-          // Auto-assign to lead auditor if requested
-          let assignedToId = undefined;
-          if (parsed.data.autoAssign) {
-            const leadAuditor = engagement.teamMembers.find(
-              (tm: any) => tm.roleInEngagement === "LEAD_AUDITOR",
-            );
-            assignedToId = leadAuditor?.userId;
-          }
-
-          const item = await tx.workProgramItem.create({
-            data: {
-              tenantId,
-              engagementId: parsed.data.engagementId,
-              testProcedureId: testProcedure.id,
-              assignedToId,
-              status: "PENDING",
-            },
-          });
-          createdItems.push(item);
-        }
       }
 
       return {
-        created: createdItems.length,
+        created: newProcedures.length,
         total: testProcedures.length,
         engagementId: parsed.data.engagementId,
       };

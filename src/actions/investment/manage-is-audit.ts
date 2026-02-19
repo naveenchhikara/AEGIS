@@ -121,8 +121,9 @@ export async function manageIsAuditChecklist(
       const completedAt = parsed.data.overallRating ? new Date() : null;
 
       if (parsed.data.checklistId) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         const updated = await tx.isAuditChecklist.update({
-          where: { id: parsed.data.checklistId },
+          where: { id: parsed.data.checklistId, tenantId },
           data: {
             items: parsed.data.items,
             completedById: parsed.data.completedById,
@@ -212,8 +213,9 @@ export async function manageApplicationInventory(
       });
 
       if (parsed.data.appId) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         const updated = await tx.applicationInventory.update({
-          where: { id: parsed.data.appId },
+          where: { id: parsed.data.appId, tenantId },
           data: {
             vendor: parsed.data.vendor,
             version: parsed.data.version,
@@ -302,8 +304,9 @@ export async function manageVendorRiskAssessment(input: ManageVendorRiskInput) {
       });
 
       if (parsed.data.assessmentId) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         const updated = await tx.vendorRiskAssessment.update({
-          where: { id: parsed.data.assessmentId },
+          where: { id: parsed.data.assessmentId, tenantId },
           data: {
             vendorName: parsed.data.vendorName,
             applicationId: parsed.data.applicationId || null,

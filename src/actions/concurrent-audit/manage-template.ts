@@ -76,9 +76,9 @@ export async function manageTemplate(input: ManageTemplateInput) {
       });
 
       if (parsed.data.templateId) {
-        // Update existing template
+        // Update existing template — include tenantId in WHERE to prevent IDOR
         const updated = await tx.concurrentAuditTemplate.update({
-          where: { id: parsed.data.templateId },
+          where: { id: parsed.data.templateId, tenantId },
           data: {
             name: parsed.data.name,
             description: parsed.data.description,
@@ -153,8 +153,9 @@ export async function deleteTemplate(templateId: string) {
         sessionId: session.session.id,
       });
 
+      // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
       await tx.concurrentAuditTemplate.delete({
-        where: { id: templateId },
+        where: { id: templateId, tenantId },
       });
     });
 

@@ -50,8 +50,9 @@ export async function manageHousekeepingMetric(
       });
 
       if (parsed.data.id) {
+        // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
         return tx.housekeepingMetric.update({
-          where: { id: parsed.data.id },
+          where: { id: parsed.data.id, tenantId },
           data: {
             openingBalance: parsed.data.openingBalance,
             closingBalance: parsed.data.closingBalance,

@@ -77,9 +77,9 @@ export async function manageInvestmentRecord(
 
       let record;
       if (parsed.data.recordId) {
-        // Update
+        // Update — include tenantId in WHERE to prevent IDOR cross-tenant mutation
         record = await tx.investmentRecord.update({
-          where: { id: parsed.data.recordId },
+          where: { id: parsed.data.recordId, tenantId },
           data: {
             faceValue: parsed.data.faceValue,
             bookValue: parsed.data.bookValue,
@@ -188,8 +188,9 @@ export async function markReconciled(recordId: string) {
         sessionId: session.session.id,
       });
 
+      // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
       await tx.investmentRecord.update({
-        where: { id: recordId },
+        where: { id: recordId, tenantId },
         data: { reconciled: true },
       });
     });

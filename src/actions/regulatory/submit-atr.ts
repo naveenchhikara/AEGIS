@@ -73,9 +73,9 @@ export async function submitAtr(input: SubmitAtrInput) {
         sessionId: session.session.id,
       });
 
-      // Get current observation
-      const current = await tx.regulatoryObservation.findUnique({
-        where: { id: parsed.data.observationId },
+      // Get current observation — scoped to tenant to prevent IDOR info disclosure
+      const current = await tx.regulatoryObservation.findFirst({
+        where: { id: parsed.data.observationId, tenantId },
       });
 
       if (!current) {
@@ -118,9 +118,9 @@ export async function submitAtr(input: SubmitAtrInput) {
           throw new Error("Invalid action");
       }
 
-      // Update observation
+      // Update observation — include tenantId in WHERE to prevent IDOR cross-tenant mutation
       const updated = await tx.regulatoryObservation.update({
-        where: { id: parsed.data.observationId },
+        where: { id: parsed.data.observationId, tenantId },
         data: {
           atrText: parsed.data.atrText,
           atrStatus: newStatus,

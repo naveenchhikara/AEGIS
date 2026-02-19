@@ -69,9 +69,9 @@ export async function manageRegulatoryObservation(
       });
 
       if (parsed.data.observationId) {
-        // Update existing observation
+        // Update existing observation — include tenantId in WHERE to prevent IDOR
         const updated = await tx.regulatoryObservation.update({
-          where: { id: parsed.data.observationId },
+          where: { id: parsed.data.observationId, tenantId },
           data: {
             description: parsed.data.description,
             severity: parsed.data.severity,

@@ -1,5 +1,7 @@
 import { getRequiredSession } from "@/data-access/session";
-import { getIssues } from "@/data-access/issues";
+import { getIssues, getOverdueActionPlans } from "@/data-access/issues";
+import { getQaSelfAssessments } from "@/data-access/qa-assessment";
+import { getBreachedKRIs } from "@/data-access/risk-management";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { BoardView } from "@/components/issues/board-view";
@@ -19,14 +21,20 @@ export default async function IssuesBoardPage() {
     redirect("/issues");
   }
 
-  // Fetch all open issues across all sources
-  const openIssues = await getIssues(session, {
-    status: "OPEN",
-  });
-
-  const inProgressIssues = await getIssues(session, {
-    status: "IN_PROGRESS",
-  });
+  // Fetch all open issues across all sources + board-level aggregations in parallel
+  const [
+    openIssues,
+    inProgressIssues,
+    overdueActions,
+    qaGapAssessments,
+    breachedKRIs,
+  ] = await Promise.all([
+    getIssues(session, { status: "OPEN" }),
+    getIssues(session, { status: "IN_PROGRESS" }),
+    getOverdueActionPlans(session),
+    getQaSelfAssessments(session, { gapIdentified: true }),
+    getBreachedKRIs(session),
+  ]);
 
   const allActiveIssues = [...openIssues, ...inProgressIssues];
 
@@ -65,6 +73,11 @@ export default async function IssuesBoardPage() {
       .length,
   };
 
+  // Board-level counts for R63 consolidated view
+  const overdueActionPlans = overdueActions.length;
+  const qaGaps = qaGapAssessments.length;
+  const kriBreaches = breachedKRIs.length;
+
   return (
     <div className="space-y-6">
       <div>
@@ -81,6 +94,9 @@ export default async function IssuesBoardPage() {
         bySeverity={bySeverity}
         byRiskTheme={byRiskTheme}
         allActiveIssues={allActiveIssues}
+        overdueActionPlans={overdueActionPlans}
+        qaGaps={qaGaps}
+        kriBreaches={kriBreaches}
       />
     </div>
   );

@@ -26,7 +26,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { AlertTriangle, Shield, TrendingUp, FileWarning } from "@/lib/icons";
+import {
+  AlertTriangle,
+  Shield,
+  TrendingUp,
+  FileWarning,
+  Clock,
+  ShieldAlert,
+} from "@/lib/icons";
 import { format } from "date-fns";
 
 interface Issue {
@@ -86,6 +93,9 @@ interface BoardViewProps {
     GOVERNANCE: number;
   };
   allActiveIssues: Issue[];
+  overdueActionPlans: number;
+  qaGaps: number;
+  kriBreaches: number;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -115,6 +125,9 @@ export function BoardView({
   bySeverity,
   byRiskTheme,
   allActiveIssues,
+  overdueActionPlans,
+  qaGaps,
+  kriBreaches,
 }: BoardViewProps) {
   const router = useRouter();
   const [groupBy, setGroupBy] = React.useState<
@@ -178,23 +191,113 @@ export function BoardView({
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
+      {/* Board Consolidated Stats (R63) */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card
+          className={
+            totalIssues > 0
+              ? "border-red-200 bg-red-50/40"
+              : "border-green-200 bg-green-50/40"
+          }
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Open Issues
-            </CardTitle>
-            <FileWarning className="text-muted-foreground h-4 w-4" />
+            <CardTitle className="text-sm font-medium">Open Issues</CardTitle>
+            <AlertTriangle
+              className={`h-4 w-4 ${totalIssues > 0 ? "text-red-500" : "text-green-500"}`}
+            />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalIssues}</div>
+            <div
+              className={`text-2xl font-bold ${totalIssues > 0 ? "text-red-700" : "text-green-700"}`}
+            >
+              {totalIssues}
+            </div>
             <p className="text-muted-foreground text-xs">
-              Across all sources and risk themes
+              {bySeverity.critical} Critical, {bySeverity.high} High
             </p>
           </CardContent>
         </Card>
 
+        <Card
+          className={
+            overdueActionPlans > 0
+              ? "border-red-200 bg-red-50/40"
+              : "border-green-200 bg-green-50/40"
+          }
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Overdue Actions
+            </CardTitle>
+            <Clock
+              className={`h-4 w-4 ${overdueActionPlans > 0 ? "text-red-500" : "text-green-500"}`}
+            />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${overdueActionPlans > 0 ? "text-red-700" : "text-green-700"}`}
+            >
+              {overdueActionPlans}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Action plans past due date
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={
+            qaGaps > 0
+              ? "border-red-200 bg-red-50/40"
+              : "border-green-200 bg-green-50/40"
+          }
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">QA Gaps</CardTitle>
+            <ShieldAlert
+              className={`h-4 w-4 ${qaGaps > 0 ? "text-red-500" : "text-green-500"}`}
+            />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${qaGaps > 0 ? "text-red-700" : "text-green-700"}`}
+            >
+              {qaGaps}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              QA self-assessment gaps identified
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={
+            kriBreaches > 0
+              ? "border-red-200 bg-red-50/40"
+              : "border-green-200 bg-green-50/40"
+          }
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">KRI Breaches</CardTitle>
+            <TrendingUp
+              className={`h-4 w-4 ${kriBreaches > 0 ? "text-red-500" : "text-green-500"}`}
+            />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${kriBreaches > 0 ? "text-red-700" : "text-green-700"}`}
+            >
+              {kriBreaches}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Key risk indicators in warning/breach
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -249,6 +352,21 @@ export function BoardView({
                 )[0][1]
               }{" "}
               issues
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Medium / Low</CardTitle>
+            <FileWarning className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {bySeverity.medium + bySeverity.low}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {bySeverity.medium} Medium, {bySeverity.low} Low
             </p>
           </CardContent>
         </Card>

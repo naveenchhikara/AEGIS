@@ -117,6 +117,7 @@ async function main() {
   await prisma.auditArea.deleteMany();
   await prisma.committeeMeeting.deleteMany();
   await prisma.branch.deleteMany();
+  await prisma.zone.deleteMany();
   await prisma.rbiCircular.deleteMany();
   await prisma.account.deleteMany();
   await prisma.session.deleteMany();
@@ -271,6 +272,30 @@ async function main() {
   console.log(
     `    ✓ Created ${allUsers.length} auth accounts (password: ${TEST_PASSWORD})`,
   );
+
+  // ─── 3c. Create Zones ──────────────────────────────────────────────
+
+  console.log("  Creating zones...");
+
+  const zoneData = [
+    { code: "WEST", name: "Western Zone" },
+    { code: "EAST", name: "Eastern Zone" },
+    { code: "CENTRAL", name: "Central Zone" },
+    { code: "NORTH", name: "Northern Zone" },
+  ];
+
+  const zones = await Promise.all(
+    zoneData.map((z) =>
+      prisma.zone.create({
+        data: { ...z, tenantId: tenantA.id },
+      }),
+    ),
+  );
+
+  const zoneMap = new Map<string, string>();
+  zones.forEach((z) => zoneMap.set(z.code, z.id));
+
+  console.log(`    ✓ Created ${zones.length} zones for Tenant A`);
 
   // ─── 4. Create Branches ─────────────────────────────────────────────
 
@@ -1618,6 +1643,7 @@ async function main() {
   console.log("\n✅ Seed complete!\n");
   console.log("  Tenant A (Apex Sahakari Bank):");
   console.log(`    - ${allUsersA.length} users (2 multi-role)`);
+  console.log(`    - ${zones.length} zones`);
   console.log(`    - ${branches.length} branches`);
   console.log(`    - ${auditAreas.length} audit areas`);
   console.log(

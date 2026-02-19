@@ -84,4 +84,5 @@ export {
   Image,
   CheckCircle,
   Pencil as Edit,
+  Repeat2,
 } from "lucide-react";

@@ -41,7 +41,10 @@ import {
   Clock,
 } from "@/lib/icons";
 import { toast } from "sonner";
-import { generateInspectionPack } from "@/actions/governance/generate-inspection-pack";
+import {
+  generateInspectionPack,
+  generateInspectionPackXlsx,
+} from "@/actions/governance/generate-inspection-pack";
 import { format } from "date-fns";
 
 interface RbiInspectionPackProps {
@@ -50,6 +53,7 @@ interface RbiInspectionPackProps {
 
 export function RbiInspectionPack({ canView }: RbiInspectionPackProps) {
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isExporting, setIsExporting] = React.useState(false);
   const [packData, setPackData] = React.useState<any>(null);
   const [selectedYear, setSelectedYear] = React.useState<number>(
     new Date().getFullYear(),
@@ -82,6 +86,40 @@ export function RbiInspectionPack({ canView }: RbiInspectionPackProps) {
     }
 
     setIsGenerating(false);
+  }
+
+  async function handleExportXlsx() {
+    setIsExporting(true);
+    try {
+      const result = await generateInspectionPackXlsx(selectedYear);
+      if (result.success) {
+        // Decode base64 to binary and trigger download
+        const byteCharacters = atob(result.base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("XLSX exported successfully");
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Failed to export XLSX");
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   if (!canView) {
@@ -156,9 +194,18 @@ export function RbiInspectionPack({ canView }: RbiInspectionPackProps) {
                     <Download className="mr-2 h-4 w-4" />
                     Export PDF
                   </Button>
-                  <Button size="sm" variant="outline" disabled>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export XLSX
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleExportXlsx}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="mr-2 h-4 w-4" />
+                    )}
+                    {isExporting ? "Exporting..." : "Export XLSX"}
                   </Button>
                 </div>
               </div>

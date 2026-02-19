@@ -47,6 +47,26 @@
 - After each wave: full `tsc --noEmit`, conflict resolution, atomic commit
 - After all waves: Sonnet verifier re-runs full R1-R104 audit
 
+## Phase 17 — Critical Security & Quality
+
+| Plan | Title                                      | Status   | Commit    |
+| ---- | ------------------------------------------ | -------- | --------- |
+| 02   | Stored XSS Fix — documentUrl Protocol Val. | COMPLETE | `9689632` |
+
 ## Commits
 
 - `dbba5c2` — planning phase complete (21 plans + seed data + reports)
+- `9689632` — fix(17-02): stored XSS fix — documentUrl protocol validation
+
+## Last Session
+
+- **Last session:** 2026-02-19T16:54:41Z
+- **Stopped at:** Completed 17-02-PLAN.md (Stored XSS Fix)
+- **Resume file:** None
+
+## Accumulated Decisions
+
+| Decision                                                                        | Context                                                  | Plan  |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------- | ----- |
+| Defense-in-depth URL validation: server Zod + client Zod + render guard         | documentUrl XSS fix — three-layer protection pattern     | 17-02 |
+| `.url().refine(https?://).optional().or(z.literal(""))` — Zod URL field pattern | Allows clearing field while blocking dangerous protocols | 17-02 |

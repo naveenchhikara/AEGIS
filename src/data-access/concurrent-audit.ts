@@ -132,7 +132,7 @@ export async function getConcurrentFindingsForDedup(session: Session) {
   const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
-  // Get concurrent audit observations
+  // Get concurrent audit observations (capped at 500)
   const concurrentObs = await db.observation.findMany({
     where: { tenantId, criteria: { startsWith: "Concurrent Audit" } },
     select: {
@@ -145,9 +145,10 @@ export async function getConcurrentFindingsForDedup(session: Session) {
       status: true,
     },
     orderBy: { createdAt: "desc" },
+    take: 500,
   });
 
-  // Get RBIA observations for comparison
+  // Get RBIA observations for comparison (capped at 2000)
   const rbiaObs = await db.observation.findMany({
     where: { tenantId, criteria: { not: { startsWith: "Concurrent Audit" } } },
     select: {
@@ -156,6 +157,7 @@ export async function getConcurrentFindingsForDedup(session: Session) {
       condition: true,
       branch: { select: { id: true } },
     },
+    take: 2000,
   });
 
   // Simple title-based duplicate detection

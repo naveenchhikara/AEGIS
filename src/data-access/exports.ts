@@ -135,8 +135,14 @@ export async function getExportAuditPlans(session: AuthSession) {
     return [];
   }
 
+  const planWhere: any = { tenantId };
+  // For restricted roles, only return plans that have at least one visible engagement
+  if (engagementWhere.assignedToId) {
+    planWhere.engagements = { some: engagementWhere };
+  }
+
   const plans = await db.auditPlan.findMany({
-    where: { tenantId },
+    where: planWhere,
     include: {
       engagements: {
         where: engagementWhere,

@@ -1,6 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import type { AuthSession as Session } from "@/lib/auth";
 
 /**
  * Data Access Layer for observations.
@@ -15,17 +15,8 @@ import { prismaForTenant } from "./prisma";
  * SECURITY: tenantId MUST come from session only, never from URL/body/query.
  */
 
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
 function extractTenantId(session: Session): string {
-  const tenantId = session.user.tenantId;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
+  return session.user.tenantId;
 }
 
 // ─── getObservations ────────────────────────────────────────────────────────

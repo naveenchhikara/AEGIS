@@ -188,20 +188,17 @@ export async function submitAuditeeResponse(
         },
       });
       if (obs?.createdById) {
-        await createNotification(
-          { user: { id: session.user.id, tenantId }, session: session.session },
-          {
-            recipientId: obs.createdById,
-            type: "RESPONSE_SUBMITTED",
-            payload: {
-              observationId,
-              observationTitle: obs.title,
-              severity: obs.severity,
-              branchName: obs.branch?.name ?? "",
-              responseType,
-            },
+        await createNotification(session, {
+          recipientId: obs.createdById,
+          type: "RESPONSE_SUBMITTED",
+          payload: {
+            observationId,
+            observationTitle: obs.title,
+            severity: obs.severity,
+            branchName: obs.branch?.name ?? "",
+            responseType,
           },
-        );
+        });
       }
     } catch (e) {
       // Non-blocking: log but don't fail the response submission

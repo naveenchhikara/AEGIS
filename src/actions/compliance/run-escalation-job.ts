@@ -292,16 +292,23 @@ export async function runEscalationJobInternal(tenantId: string) {
       });
     }
 
-    // Batch-update compliance items in a transaction
+    // Batch-update compliance items in chunked transactions (100 per batch)
     if (itemUpdates.length > 0) {
-      await db.$transaction(
-        itemUpdates.map((u) =>
-          db.complianceItem.update({
-            where: { id: u.id },
-            data: { escalationLevel: u.escalationLevel, daysOpen: u.daysOpen },
-          }),
-        ),
-      );
+      const CHUNK_SIZE = 100;
+      for (let i = 0; i < itemUpdates.length; i += CHUNK_SIZE) {
+        const chunk = itemUpdates.slice(i, i + CHUNK_SIZE);
+        await db.$transaction(
+          chunk.map((u) =>
+            db.complianceItem.update({
+              where: { id: u.id, tenantId },
+              data: {
+                escalationLevel: u.escalationLevel,
+                daysOpen: u.daysOpen,
+              },
+            }),
+          ),
+        );
+      }
     }
 
     const summary = {

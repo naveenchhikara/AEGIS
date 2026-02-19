@@ -73,9 +73,9 @@ export async function scheduleSurpriseAudit(
   const tenantId = session.user.tenantId;
 
   // R71: Surprise audits restricted to IAD Manager, ACE Officer, CAE only
-  const surpriseAllowedRoles = ["AUDIT_MANAGER", "ACE_OFFICER", "CAE"] as const;
-  const hasSurpriseAccess = userRoles.some((r) =>
-    (surpriseAllowedRoles as readonly string[]).includes(r),
+  const surpriseAllowedRoles = ["AUDIT_MANAGER", "ACE_OFFICER", "CAE"];
+  const hasSurpriseAccess = surpriseAllowedRoles.some((role) =>
+    userRoles.includes(role),
   );
   if (!hasSurpriseAccess && !hasPermission(userRoles, "audit_plan:create")) {
     return {

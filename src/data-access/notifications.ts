@@ -1,6 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import type { AuthSession as Session } from "@/lib/auth";
 
 /**
  * Data Access Layer for notification queue operations and preferences.
@@ -15,17 +15,8 @@ import { prismaForTenant } from "./prisma";
  * Cross-tenant functions (for cron jobs) import base prisma directly.
  */
 
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
 function extractTenantId(session: Session): string {
-  const tenantId = session.user.tenantId;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
+  return session.user.tenantId;
 }
 
 // ─── Batch window for NOTF-06 ─────────────────────────────────────────────

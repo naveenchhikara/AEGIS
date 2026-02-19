@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
+import type { AuthSession } from "@/lib/auth";
 
 /**
  * Application-level notification service.
@@ -9,11 +9,6 @@ import { logger } from "@/lib/logger";
  * Checks user preferences before queueing to avoid unnecessary records.
  * Delegates actual queue insertion to the notification DAL.
  */
-
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
 
 /**
  * Queue a notification for a user.
@@ -28,21 +23,12 @@ type Session = {
  * @param batchKey - Optional key for grouping related notifications (NOTF-06)
  */
 export async function queueNotification(
-  session: Session,
+  session: AuthSession,
   recipientId: string,
   type: string,
   payload: Record<string, unknown>,
   batchKey?: string,
 ): Promise<void> {
-  const tenantId = (session.user as Record<string, unknown>).tenantId as string;
-  if (!tenantId) {
-    logger.error(
-      { action: "queue_notification", recipientId, type },
-      "No tenantId in session, skipping notification",
-    );
-    return;
-  }
-
   // Regulatory notifications bypass preference check
   const MANDATORY_TYPES = ["WEEKLY_DIGEST", "OVERDUE_ESCALATION", "INVITATION"];
 
@@ -75,7 +61,7 @@ export async function queueNotification(
  * Queue notifications for multiple recipients (e.g., escalation to auditee + auditor + manager).
  */
 export async function queueBulkNotifications(
-  session: Session,
+  session: AuthSession,
   recipientIds: string[],
   type: string,
   payload: Record<string, unknown>,

@@ -154,6 +154,15 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
         sessionId: session.session.id,
       });
 
+      // Verify committee belongs to this tenant before modifying members
+      const committee = await tx.committee.findFirst({
+        where: { id: parsed.data.committeeId, tenantId },
+        select: { id: true },
+      });
+      if (!committee) {
+        throw new Error("Committee not found");
+      }
+
       const member = await tx.committeeMember.upsert({
         where: {
           committeeId_userId: {

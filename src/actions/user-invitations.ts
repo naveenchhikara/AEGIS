@@ -228,8 +228,9 @@ export async function resendInvitation(userId: string) {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = await bcrypt.hash(rawToken, 12);
 
-    await prisma.user.update({
-      where: { id: userId },
+    // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
+    await prisma.user.updateMany({
+      where: { id: userId, tenantId },
       data: {
         inviteTokenHash: tokenHash,
         inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -271,7 +272,8 @@ export async function revokeInvitation(userId: string) {
       return { success: false, error: "User not found or already active." };
     }
 
-    await prisma.user.delete({ where: { id: userId } });
+    // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
+    await prisma.user.deleteMany({ where: { id: userId, tenantId } });
 
     // Audit log
     await prisma.auditLog.create({

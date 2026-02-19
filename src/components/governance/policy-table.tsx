@@ -80,7 +80,14 @@ const policySchema = z.object({
   version: z.string().optional(),
   approvalDate: z.string().optional(),
   reviewDueDate: z.string().optional(),
-  documentUrl: z.string().optional(),
+  documentUrl: z
+    .string()
+    .url("Must be a valid URL")
+    .refine((val) => /^https?:\/\//i.test(val), {
+      message: "URL must start with https:// or http://",
+    })
+    .optional()
+    .or(z.literal("")),
   summary: z.string().optional(),
 });
 
@@ -331,9 +338,15 @@ export function PolicyTable({
                   <Label htmlFor="documentUrl">Document URL</Label>
                   <Input
                     id="documentUrl"
+                    type="url"
                     {...form.register("documentUrl")}
                     placeholder="https://..."
                   />
+                  {form.formState.errors.documentUrl && (
+                    <p className="text-destructive text-sm">
+                      {form.formState.errors.documentUrl.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -438,17 +451,18 @@ export function PolicyTable({
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                        {policy.documentUrl && (
-                          <Button size="sm" variant="ghost" asChild>
-                            <a
-                              href={policy.documentUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <FileText className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
+                        {policy.documentUrl &&
+                          /^https?:\/\//i.test(policy.documentUrl) && (
+                            <Button size="sm" variant="ghost" asChild>
+                              <a
+                                href={policy.documentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <FileText className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
                       </div>
                     </TableCell>
                   )}

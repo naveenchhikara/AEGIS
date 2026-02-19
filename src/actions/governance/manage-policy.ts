@@ -29,7 +29,14 @@ const ManagePolicySchema = z.object({
   status: z
     .enum(["DRAFT", "APPROVED", "UNDER_REVIEW", "SUPERSEDED"])
     .optional(),
-  documentUrl: z.string().optional(),
+  documentUrl: z
+    .string()
+    .url("Must be a valid URL")
+    .refine((val) => /^https?:\/\//i.test(val), {
+      message: "URL must start with https:// or http://",
+    })
+    .optional()
+    .or(z.literal("")),
   summary: z.string().optional(),
 });
 

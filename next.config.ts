@@ -3,7 +3,9 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // standalone output is for Docker/production deployments only.
+  // In CI E2E tests, "next start" is incompatible with standalone output.
+  output: process.env.CI ? undefined : "standalone",
   serverExternalPackages: ["@react-pdf/renderer", "pg-boss", "exceljs"],
   experimental: {
     turbopackFileSystemCacheForDev: false,

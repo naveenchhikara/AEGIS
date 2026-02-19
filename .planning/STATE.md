@@ -51,6 +51,7 @@
 
 | Plan | Title                                      | Status   | Commit    |
 | ---- | ------------------------------------------ | -------- | --------- |
+| 01   | IDOR Tenant Isolation — tenantId in WHERE  | COMPLETE | `d098335` |
 | 02   | Stored XSS Fix — documentUrl Protocol Val. | COMPLETE | `9689632` |
 | 03   | Typed Session Helpers — Eliminate as any   | COMPLETE | `ff4678b` |
 
@@ -65,19 +66,32 @@
 - `990be27` — refactor(17-03): remove as-any session casts from src/app/
 - `7c16d1a` — refactor(17-03): remove as-any casts from guards.ts and finding-detail.tsx
 - `ff4678b` — chore(17-03): governance action files from bulk update
+- `e146462` — fix(17-01): add tenantId to WHERE clauses in governance.ts DAL
+- `1fb2a58` — fix(17-01): add tenantId to WHERE clauses in users.ts DAL
+- `ba0c86c` — fix(17-01): add tenantId to WHERE clauses in compliance-management.ts DAL
+- `71c20c3` — fix(17-01): add tenantId to WHERE clauses in concurrent-audit.ts DAL
+- `00e40ff` — fix(17-01): add tenantId to WHERE clause in regulatory.ts DAL
+- `1510997` — fix(17-01): add tenantId to WHERE clauses in investment.ts DAL
+- `f0b085e` — fix(17-01): add tenantId to WHERE clauses in action-layer mutations
+- `7479884` — fix(17-01): add tenantId to WHERE clauses in user-invitations.ts
+- `d098335` — fix(17-01): use AuthSession import in DAL files to resolve tenantId type errors
 
 ## Last Session
 
-- **Last session:** 2026-02-19T17:03:48Z
-- **Stopped at:** Completed 17-03-PLAN.md (Typed Session Helpers)
+- **Last session:** 2026-02-19T17:13:09Z
+- **Stopped at:** Completed 17-01-PLAN.md (IDOR Tenant Isolation)
 - **Resume file:** None
 
 ## Accumulated Decisions
 
-| Decision                                                                             | Context                                                        | Plan  |
-| ------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ----- |
-| Defense-in-depth URL validation: server Zod + client Zod + render guard              | documentUrl XSS fix — three-layer protection pattern           | 17-02 |
-| `.url().refine(https?://).optional().or(z.literal(""))` — Zod URL field pattern      | Allows clearing field while blocking dangerous protocols       | 17-02 |
-| Single boundary cast in getRequiredSession() — all downstream gets AuthSession       | 417 as-any cast elimination — type safety without noise        | 17-03 |
-| SessionUser types tenantId: string (non-nullable), roles: Role[] (non-nullable)      | Safe for authenticated onboarded users; redirect if no session | 17-03 |
-| Export routes tenantName: DB query via prismaForTenant instead of non-existent field | Session never had tenantName — was always falling back         | 17-03 |
+| Decision                                                                             | Context                                                           | Plan                          |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- | ----------------------------- | ----- |
+| Defense-in-depth URL validation: server Zod + client Zod + render guard              | documentUrl XSS fix — three-layer protection pattern              | 17-02                         |
+| `.url().refine(https?://).optional().or(z.literal(""))` — Zod URL field pattern      | Allows clearing field while blocking dangerous protocols          | 17-02                         |
+| Single boundary cast in getRequiredSession() — all downstream gets AuthSession       | 417 as-any cast elimination — type safety without noise           | 17-03                         |
+| SessionUser types tenantId: string (non-nullable), roles: Role[] (non-nullable)      | Safe for authenticated onboarded users; redirect if no session    | 17-03                         |
+| Export routes tenantName: DB query via prismaForTenant instead of non-existent field | Session never had tenantName — was always falling back            | 17-03                         |
+| where: { id, tenantId } invariant: ALL Prisma UPDATE/DELETE must include tenantId    | IDOR defense in depth — belt-and-suspenders on every mutation     | 17-01                         |
+| CommitteeMember IDOR: deleteMany with relation filter { committee: { tenantId } }    | Model has no direct tenantId column — ownership via parent        | 17-01                         |
+| User \*Many variants: updateMany/deleteMany when model lacks compound unique         | Prisma single-record ops require unique — \*Many allows composite | 17-01                         |
+| DAL files: import AuthSession as Session to guarantee tenantId: string (non-null)    | Plain Session has tenantId?: string                               | null — breaks prismaForTenant | 17-01 |

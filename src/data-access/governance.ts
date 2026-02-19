@@ -15,7 +15,7 @@ export async function getPolicyDocuments(
     status?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.policyDocument.findMany({
@@ -29,7 +29,7 @@ export async function getPolicyDocuments(
 }
 
 export async function getPolicyDocument(session: Session, policyId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.policyDocument.findFirst({
@@ -50,7 +50,7 @@ export async function createPolicyDocument(
     summary?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.policyDocument.create({
@@ -76,21 +76,21 @@ export async function updatePolicyDocument(
     summary?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.policyDocument.update({
-    where: { id: policyId },
+    where: { id: policyId, tenantId },
     data,
   });
 }
 
 export async function deletePolicyDocument(session: Session, policyId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.policyDocument.delete({
-    where: { id: policyId },
+    where: { id: policyId, tenantId },
   });
 }
 
@@ -101,7 +101,7 @@ export async function getPoliciesDueForReview(
   session: Session,
   withinDays: number = 30,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const cutoffDate = new Date();
@@ -131,7 +131,7 @@ export async function getCommittees(
     isActive?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committee.findMany({
@@ -156,7 +156,7 @@ export async function getCommittees(
 }
 
 export async function getCommittee(session: Session, committeeId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committee.findFirst({
@@ -185,7 +185,7 @@ export async function createCommittee(
     isActive?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committee.create({
@@ -206,11 +206,11 @@ export async function updateCommittee(
     isActive?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committee.update({
-    where: { id: committeeId },
+    where: { id: committeeId, tenantId },
     data,
   });
 }
@@ -229,7 +229,7 @@ export async function addCommitteeMember(
     role: string;
   },
 ) {
-  const db = prismaForTenant((session.user as any).tenantId as string);
+  const db = prismaForTenant(session.user.tenantId);
 
   return db.committeeMember.create({
     data,
@@ -240,10 +240,12 @@ export async function removeCommitteeMember(
   session: Session,
   memberId: string,
 ) {
-  const db = prismaForTenant((session.user as any).tenantId as string);
+  const tenantId = session.user.tenantId;
+  const db = prismaForTenant(tenantId);
 
-  return db.committeeMember.delete({
-    where: { id: memberId },
+  // CommitteeMember has no direct tenantId — verify via parent committee's tenantId
+  return db.committeeMember.deleteMany({
+    where: { id: memberId, committee: { tenantId } },
   });
 }
 
@@ -252,10 +254,12 @@ export async function updateCommitteeMemberRole(
   memberId: string,
   role: string,
 ) {
-  const db = prismaForTenant((session.user as any).tenantId as string);
+  const tenantId = session.user.tenantId;
+  const db = prismaForTenant(tenantId);
 
-  return db.committeeMember.update({
-    where: { id: memberId },
+  // CommitteeMember has no direct tenantId — verify via parent committee's tenantId
+  return db.committeeMember.updateMany({
+    where: { id: memberId, committee: { tenantId } },
     data: { role },
   });
 }
@@ -275,7 +279,7 @@ export async function getCommitteeMeetings(
     toDate?: Date;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committeeMeeting.findMany({
@@ -296,7 +300,7 @@ export async function getCommitteeMeetings(
 }
 
 export async function getCommitteeMeeting(session: Session, meetingId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committeeMeeting.findFirst({
@@ -326,7 +330,7 @@ export async function createCommitteeMeeting(
     attendees?: string[];
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committeeMeeting.create({
@@ -349,11 +353,11 @@ export async function updateCommitteeMeeting(
     attendees?: string[];
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.committeeMeeting.update({
-    where: { id: meetingId },
+    where: { id: meetingId, tenantId },
     data,
   });
 }
@@ -372,7 +376,7 @@ export async function getHousekeepingMetrics(
     period?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.housekeepingMetric.findMany({
@@ -395,7 +399,7 @@ export async function getHousekeepingMetric(
   session: Session,
   metricId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.housekeepingMetric.findFirst({
@@ -419,7 +423,7 @@ export async function createHousekeepingMetric(
     remarks?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.housekeepingMetric.create({
@@ -442,11 +446,11 @@ export async function updateHousekeepingMetric(
     remarks?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.housekeepingMetric.update({
-    where: { id: metricId },
+    where: { id: metricId, tenantId },
     data,
   });
 }
@@ -458,7 +462,7 @@ export async function getHighRiskHousekeepingMetrics(
   session: Session,
   thresholdDays: number = 90,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.housekeepingMetric.findMany({
@@ -484,7 +488,7 @@ export async function getHighRiskHousekeepingMetrics(
  */
 
 export async function getAcbDashboardData(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const [

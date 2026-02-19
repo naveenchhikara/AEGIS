@@ -1,5 +1,5 @@
 import { getAuditEffectivenessKpis } from "@/data-access/qa-assessment";
-import type { Session } from "@/lib/auth";
+import type { AuthSession as Session } from "@/lib/auth";
 import {
   Card,
   CardContent,

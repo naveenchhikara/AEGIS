@@ -1,6 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
+import type { AuthSession } from "@/lib/auth";
 
 /**
  * Data Access Layer for Excel exports.
@@ -19,20 +19,11 @@ import { prismaForTenant } from "./prisma";
  * | AUDITEE       | Only assigned       | No         | No                       |
  */
 
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = session.user.tenantId;
-  if (!tenantId) {
-    redirect("/dashboard?setup=required");
-  }
-  return tenantId;
+function extractTenantId(session: AuthSession): string {
+  return session.user.tenantId;
 }
 
-function getUserRoles(session: Session): string[] {
+function getUserRoles(session: AuthSession): string[] {
   return session.user.roles;
 }
 
@@ -40,7 +31,7 @@ const FULL_ACCESS_ROLES = ["CEO", "CAE", "CCO"];
 
 // ─── Findings Export (EXP-01) ───────────────────────────────────────────────
 
-export async function getExportFindings(session: Session) {
+export async function getExportFindings(session: AuthSession) {
   const tenantId = extractTenantId(session);
   const roles = getUserRoles(session);
   const db = prismaForTenant(tenantId);
@@ -90,7 +81,7 @@ export async function getExportFindings(session: Session) {
 
 // ─── Compliance Export (EXP-02) ─────────────────────────────────────────────
 
-export async function getExportCompliance(session: Session) {
+export async function getExportCompliance(session: AuthSession) {
   const tenantId = extractTenantId(session);
   const roles = getUserRoles(session);
 
@@ -127,7 +118,7 @@ export async function getExportCompliance(session: Session) {
 
 // ─── Audit Plans Export (EXP-03) ────────────────────────────────────────────
 
-export async function getExportAuditPlans(session: Session) {
+export async function getExportAuditPlans(session: AuthSession) {
   const tenantId = extractTenantId(session);
   const roles = getUserRoles(session);
   const db = prismaForTenant(tenantId);

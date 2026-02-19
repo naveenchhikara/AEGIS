@@ -1,21 +1,14 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { prismaForTenant } from "./prisma";
 import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
+import type { AuthSession } from "@/lib/auth";
 
-type Session = {
-  user: { id: string; tenantId?: string | null; [key: string]: unknown };
-  session: { id: string; [key: string]: unknown };
-};
-
-function extractTenantId(session: Session): string {
-  const tenantId = session.user.tenantId;
-  if (!tenantId) redirect("/dashboard?setup=required");
-  return tenantId;
+function extractTenantId(session: AuthSession): string {
+  return session.user.tenantId;
 }
 
-function getUserRoles(session: Session): string[] {
+function getUserRoles(session: AuthSession): string[] {
   return session.user.roles;
 }
 
@@ -28,7 +21,7 @@ const REPORT_ACCESS_ROLES = ["CAE", "CCO", "CEO"];
  * Only CAE/CCO/CEO can generate reports.
  */
 export async function aggregateReportData(
-  session: Session,
+  session: AuthSession,
   year: number,
   quarter: string,
   executiveCommentary?: string,
@@ -328,7 +321,7 @@ export async function aggregateReportData(
 // ─── CRUD for BoardReport Record ────────────────────────────────────────────
 
 export async function createBoardReport(
-  session: Session,
+  session: AuthSession,
   data: {
     year: number;
     quarter: string;
@@ -356,7 +349,7 @@ export async function createBoardReport(
   });
 }
 
-export async function getBoardReports(session: Session) {
+export async function getBoardReports(session: AuthSession) {
   const tenantId = extractTenantId(session);
   const roles = getUserRoles(session);
 
@@ -373,7 +366,7 @@ export async function getBoardReports(session: Session) {
   });
 }
 
-export async function getBoardReportById(session: Session, id: string) {
+export async function getBoardReportById(session: AuthSession, id: string) {
   const tenantId = extractTenantId(session);
   const roles = getUserRoles(session);
 
@@ -394,7 +387,7 @@ export async function getBoardReportById(session: Session, id: string) {
  * Fetches all nested data for a single audit engagement.
  */
 export async function getAuditReportData(
-  session: Session,
+  session: AuthSession,
   engagementId: string,
 ) {
   const tenantId = extractTenantId(session);
@@ -500,7 +493,7 @@ export async function getAuditReportData(
  * Get engagement with report routing status and reviewer info.
  */
 export async function getReportStatusForEngagement(
-  session: Session,
+  session: AuthSession,
   engagementId: string,
 ) {
   const tenantId = session.user.tenantId;
@@ -533,7 +526,7 @@ export async function getReportStatusForEngagement(
  * R29: Get generated report history for re-download.
  * Returns all BoardReport records for the tenant, sorted by generation date.
  */
-export async function getGeneratedReports(session: Session) {
+export async function getGeneratedReports(session: AuthSession) {
   const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 

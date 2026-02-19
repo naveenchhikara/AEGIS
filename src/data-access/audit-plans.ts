@@ -1,7 +1,7 @@
 import "server-only";
 import { addMonths, isAfter } from "date-fns";
 import { prismaForTenant } from "./prisma";
-import type { Session } from "@/lib/auth";
+import type { AuthSession as Session } from "@/lib/auth";
 import type { Quarter } from "@/generated/prisma/enums";
 
 /**

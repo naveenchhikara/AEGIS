@@ -106,7 +106,7 @@ export const auth = betterAuth({
  */
 export type Session = typeof auth.$Infer.Session;
 
-import type { Role } from "@/generated/prisma";
+import type { Role } from "@/generated/prisma/enums";
 
 /**
  * Narrowed session user type for authenticated, onboarded users.

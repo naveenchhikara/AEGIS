@@ -1,7 +1,7 @@
 import "server-only";
 import { auth } from "@/lib/auth";
 import type { AuthSession } from "@/lib/auth";
-import type { Role } from "@/generated/prisma";
+import type { Role } from "@/generated/prisma/enums";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

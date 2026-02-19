@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prismaForTenant } from "./prisma";
-import type { Session } from "@/lib/auth";
+import type { AuthSession as Session } from "@/lib/auth";
 
 /**
  * R12: Pre-audit branch profiling data

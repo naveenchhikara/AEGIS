@@ -71,6 +71,7 @@ export async function getExportFindings(session: Session) {
       auditeeResponses: { select: { id: true } },
     },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
+    take: 5000, // Safety guard — prevents memory explosion on large tenants
   });
 
   return observations.map((o: any) => ({
@@ -107,6 +108,7 @@ export async function getExportCompliance(session: Session) {
       owner: { select: { name: true } },
     },
     orderBy: [{ category: "asc" }, { status: "asc" }],
+    take: 5000, // Safety guard — prevents memory explosion on large tenants
   });
 
   return requirements.map((r: any) => ({

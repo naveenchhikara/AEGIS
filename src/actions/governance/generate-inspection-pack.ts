@@ -76,15 +76,16 @@ export async function generateInspectionPack(year: number) {
       orderBy: [{ severity: "desc" }, { createdAt: "asc" }],
     });
 
-    // Component 4: Compliance Status Report
+    // Component 4: Compliance Status Report (exclude closed items for active view)
     const compliance = await db.complianceItem.findMany({
-      where: { tenantId },
+      where: { tenantId, status: { not: "CLOSED" } },
       include: {
         branch: {
           select: { code: true, name: true },
         },
       },
       orderBy: { dueDate: "asc" },
+      take: 2000, // Safety guard
     });
 
     // Component 5: Regulatory Observation ATR Status
@@ -129,7 +130,15 @@ export async function generateInspectionPack(year: number) {
       orderBy: { completedAt: "desc" },
     });
 
-    // Summary stats
+    // Summary stats — use DB count for overdue compliance instead of in-memory filter
+    const overdueComplianceCount = await db.complianceItem.count({
+      where: {
+        tenantId,
+        status: { notIn: ["CLOSED", "ZAC_APPROVED"] },
+        dueDate: { lt: new Date() },
+      },
+    });
+
     const stats = {
       totalBranches: await db.branch.count({ where: { tenantId } }),
       totalAudits: auditCoverage.length,
@@ -138,11 +147,7 @@ export async function generateInspectionPack(year: number) {
       criticalObservations: openObs.filter((o) => o.severity === "CRITICAL")
         .length,
       highObservations: openObs.filter((o) => o.severity === "HIGH").length,
-      overdueCompliance: compliance.filter(
-        (c) =>
-          c.dueDate < new Date() &&
-          !["CLOSED", "ZAC_APPROVED"].includes(c.status),
-      ).length,
+      overdueCompliance: overdueComplianceCount,
       activeRisks: risks.filter((r) => r.status === "OPEN").length,
       kriBreach: kris.length,
       policiesDueReview: policies.filter(

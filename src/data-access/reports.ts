@@ -64,6 +64,7 @@ export async function aggregateReportData(
       assignedTo: { select: { name: true } },
     },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
+    take: 1000, // Safety guard — topFindings only uses first 15 anyway
   });
 
   const now = new Date();

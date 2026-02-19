@@ -96,6 +96,48 @@ export interface EscalationUpdate {
   shouldNotify: boolean;
 }
 
+/**
+ * Get escalation notification targets and action per level (R39).
+ */
+export function getEscalationRouting(level: EscalationLevel): {
+  action: string;
+  targets: string[]; // Role names to notify
+  emailSubject: string;
+} {
+  switch (level) {
+    case 1:
+      return {
+        action: "EMAIL_REMINDER",
+        targets: ["BRANCH_HEAD", "AUDIT_MANAGER"],
+        emailSubject: "Compliance Overdue: 15-Day Escalation Notice",
+      };
+    case 2:
+      return {
+        action: "ZAC_REVIEW",
+        targets: ["ZONAL_AUDITOR", "AUDIT_MANAGER"],
+        emailSubject: "Compliance Overdue: 30-Day ZAC Review Required",
+      };
+    case 3:
+      return {
+        action: "ACE_QUARTERLY",
+        targets: ["ACE_OFFICER", "CAE"],
+        emailSubject: "Compliance Overdue: 90-Day ACE Quarterly Processing",
+      };
+    case 4:
+      return {
+        action: "ACB_REPORTING",
+        targets: ["ACB_MEMBER", "CAE", "CEO"],
+        emailSubject: "Critical: 180-Day ACB Board Escalation",
+      };
+    default:
+      return {
+        action: "NONE",
+        targets: [],
+        emailSubject: "",
+      };
+  }
+}
+
 export function computeBatchEscalation(
   items: ComplianceItemForEscalation[],
   now: Date = new Date()

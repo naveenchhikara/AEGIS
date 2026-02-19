@@ -82,10 +82,27 @@ export async function createEngagement(input: CreateEngagementInput) {
       return engagement;
     });
 
-    // ─── Step 6: Cache Revalidation ────────────────────────────
-    revalidatePath("/audit-execution");
+    // ─── Step 6: Auto-generate work program (R57) ────────────────
+    try {
+      const { generateWorkProgram } = await import("@/actions/work-program/generate-program");
+      await generateWorkProgram({ engagementId: result.id });
+      logger.info(
+        { engagementId: result.id },
+        "Auto-generated work program for new engagement"
+      );
+    } catch (wpError) {
+      // Non-fatal: work program can be generated manually later
+      logger.warn(
+        { error: wpError, engagementId: result.id },
+        "Failed to auto-generate work program (non-fatal)"
+      );
+    }
 
-    // ─── Step 7: Success Response ──────────────────────────────
+    // ─── Step 7: Cache Revalidation ────────────────────────────
+    revalidatePath("/audit-execution");
+    revalidatePath("/work-program");
+
+    // ─── Step 8: Success Response ──────────────────────────────
     return {
       success: true as const,
       data: { id: result.id },

@@ -53,32 +53,58 @@ export function computeCompositeScore(scores: RamScoreInput[]): number {
 }
 
 /**
- * Derive risk category from composite score.
- * Per RBIA Policy §7.5:
- *   - > 3.5  → HIGH risk
- *   - 2.5-3.5 → MEDIUM risk
- *   - < 2.5  → LOW risk
+ * Configurable RAM thresholds (R8).
+ * Defaults per RBIA Policy §7.5/§7.6; can be overridden per tenant.
  */
-export function deriveRiskCategory(compositeScore: number): "HIGH" | "MEDIUM" | "LOW" {
-  if (compositeScore > 3.5) return "HIGH";
-  if (compositeScore >= 2.5) return "MEDIUM";
+export type RamThresholds = {
+  highRiskMin: number;   // Score above this → HIGH risk (default 3.5)
+  mediumRiskMin: number; // Score above this → MEDIUM risk (default 2.5)
+  highFrequency: number; // Months for HIGH risk (default 12)
+  mediumFrequency: number; // Months for MEDIUM risk (default 18)
+  lowFrequency: number;  // Months for LOW risk (default 24)
+};
+
+export const DEFAULT_RAM_THRESHOLDS: RamThresholds = {
+  highRiskMin: 3.5,
+  mediumRiskMin: 2.5,
+  highFrequency: 12,
+  mediumFrequency: 18,
+  lowFrequency: 24,
+};
+
+/**
+ * Derive risk category from composite score.
+ * Per RBIA Policy §7.5 (configurable via thresholds):
+ *   - > highRiskMin  → HIGH risk
+ *   - >= mediumRiskMin → MEDIUM risk
+ *   - < mediumRiskMin  → LOW risk
+ */
+export function deriveRiskCategory(
+  compositeScore: number,
+  thresholds: RamThresholds = DEFAULT_RAM_THRESHOLDS
+): "HIGH" | "MEDIUM" | "LOW" {
+  if (compositeScore > thresholds.highRiskMin) return "HIGH";
+  if (compositeScore >= thresholds.mediumRiskMin) return "MEDIUM";
   return "LOW";
 }
 
 /**
  * Derive audit frequency from risk category.
- * Per RBIA Policy §7.6:
- *   - HIGH   → 12 months (annual)
- *   - MEDIUM → 18 months
- *   - LOW    → 24 months (biennial)
+ * Per RBIA Policy §7.6 (configurable via thresholds):
+ *   - HIGH   → highFrequency months
+ *   - MEDIUM → mediumFrequency months
+ *   - LOW    → lowFrequency months
  */
-export function deriveAuditFrequency(riskCategory: "HIGH" | "MEDIUM" | "LOW"): number {
+export function deriveAuditFrequency(
+  riskCategory: "HIGH" | "MEDIUM" | "LOW",
+  thresholds: RamThresholds = DEFAULT_RAM_THRESHOLDS
+): number {
   const FREQUENCY_MAP: Record<string, number> = {
-    HIGH: 12,
-    MEDIUM: 18,
-    LOW: 24,
+    HIGH: thresholds.highFrequency,
+    MEDIUM: thresholds.mediumFrequency,
+    LOW: thresholds.lowFrequency,
   };
-  return FREQUENCY_MAP[riskCategory] ?? 18; // Default to 18 if unknown
+  return FREQUENCY_MAP[riskCategory] ?? thresholds.mediumFrequency;
 }
 
 /**

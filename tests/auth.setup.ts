@@ -1,32 +1,40 @@
-import { test as setup, expect } from "@playwright/test";
+import { test as setup } from "@playwright/test";
 
 /**
  * Authentication setup — creates storageState for 4 roles.
+ *
+ * Emails and password must match prisma/seed.ts exactly:
+ *   - suresh.patil@apexbank.example → AUDITOR
+ *   - priya.sharma@apexbank.example → CAE + AUDIT_MANAGER
+ *   - amit.joshi@apexbank.example   → CCO
+ *   - vikram.kulkarni@apexbank.example → AUDITEE + AUDITOR
  */
+
+const TEST_PASSWORD = "TestPassword123!";
 
 const users = [
   {
     role: "auditor",
-    email: "auditor@nexlybank.com",
-    password: "Aegis@Test2026!",
+    email: "suresh.patil@apexbank.example",
+    password: TEST_PASSWORD,
     file: "playwright/.auth/auditor.json",
   },
   {
     role: "manager",
-    email: "naveenchhikara@gmail.com",
-    password: "Aegis@Admin2026!",
+    email: "priya.sharma@apexbank.example",
+    password: TEST_PASSWORD,
     file: "playwright/.auth/manager.json",
   },
   {
     role: "cae",
-    email: "cae@nexlybank.com",
-    password: "Aegis@Test2026!",
+    email: "priya.sharma@apexbank.example",
+    password: TEST_PASSWORD,
     file: "playwright/.auth/cae.json",
   },
   {
     role: "auditee",
-    email: "cco@nexlybank.com",
-    password: "Aegis@Test2026!",
+    email: "vikram.kulkarni@apexbank.example",
+    password: TEST_PASSWORD,
     file: "playwright/.auth/auditee.json",
   },
 ];

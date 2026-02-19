@@ -90,7 +90,7 @@ export async function updateInvestmentRecord(
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.update({
-    where: { id: recordId },
+    where: { id: recordId, tenantId },
     data,
   });
 }
@@ -252,7 +252,7 @@ export async function updateApplication(
   const db = prismaForTenant(tenantId);
 
   return db.applicationInventory.update({
-    where: { id: appId },
+    where: { id: appId, tenantId },
     data,
   });
 }
@@ -368,7 +368,7 @@ export async function updateVendorRiskAssessment(
   const db = prismaForTenant(tenantId);
 
   return db.vendorRiskAssessment.update({
-    where: { id: assessmentId },
+    where: { id: assessmentId, tenantId },
     data,
   });
 }
@@ -464,7 +464,7 @@ export async function updateIsAuditChecklist(
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.update({
-    where: { id: checklistId },
+    where: { id: checklistId, tenantId },
     data,
   });
 }

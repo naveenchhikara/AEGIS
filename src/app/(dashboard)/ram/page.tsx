@@ -1,7 +1,8 @@
 import { getRequiredSession } from "@/data-access/session";
 import { getRamAssessments } from "@/data-access/ram";
 import { RamAssessmentsTable } from "@/components/ram/ram-assessments-table";
-import { hasPermission, type Role } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
+import { prismaForTenant } from "@/data-access/prisma";
 import { redirect } from "next/navigation";
 
 export default async function RamPage() {
@@ -15,6 +16,14 @@ export default async function RamPage() {
   const assessments = await getRamAssessments(session);
   const canCreate = hasPermission(userRoles, "ram:create");
 
+  // Fetch all tenant branches for the create dialog
+  const allBranches = canCreate
+    ? await prismaForTenant(session.user.tenantId).branch.findMany({
+        select: { id: true, code: true, name: true },
+        orderBy: { code: "asc" },
+      })
+    : [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -26,7 +35,11 @@ export default async function RamPage() {
           </p>
         </div>
       </div>
-      <RamAssessmentsTable assessments={assessments} canCreate={canCreate} />
+      <RamAssessmentsTable
+        assessments={assessments}
+        canCreate={canCreate}
+        allBranches={allBranches}
+      />
     </div>
   );
 }

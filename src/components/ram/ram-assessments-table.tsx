@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createRamAssessment } from "@/actions/ram/create-assessment";
-import { prismaForTenant } from "@/data-access/prisma";
 import {
   Table,
   TableBody,
@@ -46,6 +45,7 @@ interface RamAssessmentsTableProps {
     branch: { id: string; code: string; name: string; city: string } | null;
   }>;
   canCreate: boolean;
+  allBranches?: Array<{ id: string; code: string; name: string }>;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -63,32 +63,15 @@ const RISK_COLORS: Record<string, string> = {
 export function RamAssessmentsTable({
   assessments,
   canCreate,
+  allBranches = [],
 }: RamAssessmentsTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [branches, setBranches] = React.useState<
-    Array<{ id: string; code: string; name: string }>
-  >([]);
   const [selectedBranchId, setSelectedBranchId] = React.useState("");
   const [assessmentYear, setAssessmentYear] = React.useState(
     new Date().getFullYear().toString(),
   );
-
-  // Load branches when dialog opens (client-side fetch for simplicity)
-  React.useEffect(() => {
-    if (dialogOpen && branches.length === 0) {
-      // For now, extract unique branches from existing assessments
-      const uniqueBranches = Array.from(
-        new Map(
-          assessments
-            .filter((a) => a.branch)
-            .map((a) => [a.branch!.id, a.branch!]),
-        ).values(),
-      );
-      setBranches(uniqueBranches);
-    }
-  }, [dialogOpen, assessments, branches.length]);
 
   async function handleCreate() {
     if (!selectedBranchId || !assessmentYear) {
@@ -143,7 +126,7 @@ export function RamAssessmentsTable({
                       <SelectValue placeholder="Select a branch" />
                     </SelectTrigger>
                     <SelectContent>
-                      {branches.map((branch) => (
+                      {allBranches.map((branch) => (
                         <SelectItem key={branch.id} value={branch.id}>
                           {branch.code} — {branch.name}
                         </SelectItem>

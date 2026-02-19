@@ -107,13 +107,13 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
       });
 
       const existingProcedureIds = new Set(
-        existingItems
+        (existingItems as { testProcedureId: string | null }[])
           .map((i) => i.testProcedureId)
           .filter((id): id is string => !!id),
       );
 
       // Filter to only new procedures that need work program items
-      const newProcedures = testProcedures.filter(
+      const newProcedures = (testProcedures as { id: string }[]).filter(
         (tp) => !existingProcedureIds.has(tp.id),
       );
 
@@ -129,7 +129,7 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
       // Batch-create all new work program items with createMany
       if (newProcedures.length > 0) {
         await tx.workProgramItem.createMany({
-          data: newProcedures.map((tp) => ({
+          data: newProcedures.map((tp: { id: string }) => ({
             tenantId,
             engagementId: parsed.data.engagementId,
             testProcedureId: tp.id,

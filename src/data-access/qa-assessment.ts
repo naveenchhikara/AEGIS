@@ -235,7 +235,7 @@ export async function getAuditEffectivenessKpis(session: Session) {
     db.qaSelfAssessment.groupBy({
       by: ["response"],
       where: { tenantId, assessmentYear: currentYear },
-      _count: { id: true },
+      _count: true,
     }),
     // KPI 8: Compliance Item Overdue Rate
     db.complianceItem.count({ where: { tenantId } }),
@@ -279,8 +279,10 @@ export async function getAuditEffectivenessKpis(session: Session) {
   let qaTotal = 0;
   let conforming = 0;
   for (const g of qaAssessments) {
-    qaTotal += g._count.id;
-    if (g.response === "CONFORMS") conforming = g._count.id;
+    const count =
+      typeof g._count === "number" ? g._count : ((g._count as any)._all ?? 0);
+    qaTotal += count;
+    if (g.response === "CONFORMS") conforming = count;
   }
   const qaConformanceRate = qaTotal > 0 ? (conforming / qaTotal) * 100 : 0;
 

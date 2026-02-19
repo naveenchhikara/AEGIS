@@ -77,12 +77,16 @@ export async function createComplianceItems(input: CreateComplianceItemsInput) {
         select: { observationId: true },
       });
 
-      const existingObsIds = new Set(existingItems.map((i) => i.observationId));
+      const existingObsIds = new Set(
+        (existingItems as { observationId: string }[]).map(
+          (i) => i.observationId,
+        ),
+      );
 
       // Filter to only new observations that need compliance items
-      const newObservations = observations.filter(
-        (obs) => !existingObsIds.has(obs.id),
-      );
+      const newObservations = (
+        observations as { id: string; branchId: string | null }[]
+      ).filter((obs) => !existingObsIds.has(obs.id));
 
       // Batch-create all new compliance items with createMany
       if (newObservations.length > 0) {

@@ -8,6 +8,7 @@
  */
 
 import { prismaForTenant } from "@/data-access/prisma";
+import { type NotificationType } from "@/generated/prisma/enums";
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission } from "@/lib/permissions";
 import {
@@ -201,7 +202,7 @@ export async function runEscalationJobInternal(tenantId: string) {
     const notificationsToCreate: {
       tenantId: string;
       recipientId: string;
-      type: string;
+      type: NotificationType;
       payload: object;
     }[] = [];
     const itemUpdates: {

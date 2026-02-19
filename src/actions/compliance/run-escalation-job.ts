@@ -284,19 +284,15 @@ export async function runEscalationJobInternal(tenantId: string) {
       });
     }
 
-    // Batch-create notifications in a single transaction
-    if (notificationsToCreate.length > 0) {
-      await db.notificationQueue.createMany({
-        data: notificationsToCreate,
-        skipDuplicates: true,
-      });
-    }
+    // Write state changes first, then side-effects (notifications).
+    // This ordering ensures a crash leaves items updated but unsent notifications
+    // (recoverable on next cron run) rather than duplicate emails.
 
-    // Batch-update compliance items in chunked transactions (100 per batch)
+    // Step 1: Batch-update compliance items in chunked transactions (100 per batch)
+    const ESCALATION_CHUNK_SIZE = 100;
     if (itemUpdates.length > 0) {
-      const CHUNK_SIZE = 100;
-      for (let i = 0; i < itemUpdates.length; i += CHUNK_SIZE) {
-        const chunk = itemUpdates.slice(i, i + CHUNK_SIZE);
+      for (let i = 0; i < itemUpdates.length; i += ESCALATION_CHUNK_SIZE) {
+        const chunk = itemUpdates.slice(i, i + ESCALATION_CHUNK_SIZE);
         await db.$transaction(
           chunk.map((u) =>
             db.complianceItem.update({
@@ -309,6 +305,14 @@ export async function runEscalationJobInternal(tenantId: string) {
           ),
         );
       }
+    }
+
+    // Step 2: Batch-create notifications (after state is safely written)
+    if (notificationsToCreate.length > 0) {
+      await db.notificationQueue.createMany({
+        data: notificationsToCreate,
+        skipDuplicates: true,
+      });
     }
 
     const summary = {

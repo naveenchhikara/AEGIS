@@ -163,6 +163,15 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
         throw new Error("Committee not found");
       }
 
+      // Verify user belongs to this tenant
+      const targetUser = await tx.user.findFirst({
+        where: { id: parsed.data.userId, tenantId },
+        select: { id: true },
+      });
+      if (!targetUser) {
+        throw new Error("User not found");
+      }
+
       const member = await tx.committeeMember.upsert({
         where: {
           committeeId_userId: {
@@ -191,10 +200,11 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
       data: { id: result.id },
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to manage committee member.";
+    const SAFE_MESSAGES = ["Committee not found", "User not found"];
+    const raw = error instanceof Error ? error.message : "";
+    const message = SAFE_MESSAGES.includes(raw)
+      ? raw
+      : "Failed to manage committee member.";
     logger.error(
       { error, action: "manage_committee_member", tenantId },
       message,
@@ -307,6 +317,15 @@ export async function manageCommitteeMeeting(
         });
         return updated;
       } else {
+        // Verify committee belongs to this tenant before creating meeting
+        const committee = await tx.committee.findFirst({
+          where: { id: parsed.data.committeeId, tenantId },
+          select: { id: true },
+        });
+        if (!committee) {
+          throw new Error("Committee not found");
+        }
+
         const created = await tx.committeeMeeting.create({
           data: {
             tenantId,
@@ -329,10 +348,11 @@ export async function manageCommitteeMeeting(
       data: { id: result.id },
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to manage committee meeting.";
+    const SAFE_MESSAGES = ["Committee not found"];
+    const raw = error instanceof Error ? error.message : "";
+    const message = SAFE_MESSAGES.includes(raw)
+      ? raw
+      : "Failed to manage committee meeting.";
     logger.error(
       { error, action: "manage_committee_meeting", tenantId },
       message,

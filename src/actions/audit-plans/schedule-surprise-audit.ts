@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
-import { hasPermission } from "@/lib/permissions";
+
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -77,7 +77,7 @@ export async function scheduleSurpriseAudit(
   const hasSurpriseAccess = surpriseAllowedRoles.some((role) =>
     userRoles.includes(role),
   );
-  if (!hasSurpriseAccess && !hasPermission(userRoles, "audit_plan:create")) {
+  if (!hasSurpriseAccess) {
     return {
       success: false,
       error:

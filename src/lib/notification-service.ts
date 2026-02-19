@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import type { AuthSession } from "@/lib/auth";
 
 /**
@@ -39,8 +40,9 @@ export async function queueNotification(
     });
 
     if (prefs && !prefs.emailEnabled) {
-      console.log(
-        `[notification-service] Skipping ${type} for user ${recipientId} (email disabled)`,
+      logger.info(
+        { type, recipientId },
+        "Skipping notification (email disabled)",
       );
       return;
     }

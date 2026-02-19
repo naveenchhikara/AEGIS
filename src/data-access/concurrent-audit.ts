@@ -148,7 +148,7 @@ export async function getConcurrentFindingsForDedup(session: Session) {
     take: 500,
   });
 
-  // Get RBIA observations for comparison (capped at 2000)
+  // Get RBIA observations for comparison (capped at 2000, most recent first)
   const rbiaObs = await db.observation.findMany({
     where: { tenantId, criteria: { not: { startsWith: "Concurrent Audit" } } },
     select: {
@@ -157,6 +157,7 @@ export async function getConcurrentFindingsForDedup(session: Session) {
       condition: true,
       branch: { select: { id: true } },
     },
+    orderBy: { createdAt: "desc" },
     take: 2000,
   });
 

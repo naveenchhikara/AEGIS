@@ -18,7 +18,7 @@ export async function getInvestmentRecords(
     reconciled?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.findMany({
@@ -39,7 +39,7 @@ export async function getInvestmentRecords(
 }
 
 export async function getInvestmentRecord(session: Session, recordId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.findFirst({
@@ -63,7 +63,7 @@ export async function createInvestmentRecord(
     period: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.create({
@@ -86,7 +86,7 @@ export async function updateInvestmentRecord(
     reconciled?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.update({
@@ -99,7 +99,7 @@ export async function updateInvestmentRecord(
  * Get broker concentration analysis (R94).
  */
 export async function getBrokerConcentration(session: Session, period: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const records = await db.investmentRecord.findMany({
@@ -149,7 +149,7 @@ export async function getUnreconciledInvestments(
   session: Session,
   period?: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.investmentRecord.findMany({
@@ -175,7 +175,7 @@ export async function getApplicationInventory(
     hostingType?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.applicationInventory.findMany({
@@ -194,7 +194,7 @@ export async function getApplicationInventory(
 }
 
 export async function getApplication(session: Session, appId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.applicationInventory.findFirst({
@@ -222,7 +222,7 @@ export async function createApplication(
     description?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.applicationInventory.create({
@@ -248,7 +248,7 @@ export async function updateApplication(
     description?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.applicationInventory.update({
@@ -264,7 +264,7 @@ export async function getApplicationsPendingDrTest(
   session: Session,
   monthsThreshold: number = 12,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const cutoffDate = new Date();
@@ -293,7 +293,7 @@ export async function getVendorRiskAssessments(
     applicationId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.vendorRiskAssessment.findMany({
@@ -316,7 +316,7 @@ export async function getVendorRiskAssessment(
   session: Session,
   assessmentId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.vendorRiskAssessment.findFirst({
@@ -341,7 +341,7 @@ export async function createVendorRiskAssessment(
     mitigations?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.vendorRiskAssessment.create({
@@ -364,7 +364,7 @@ export async function updateVendorRiskAssessment(
     mitigations?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.vendorRiskAssessment.update({
@@ -386,7 +386,7 @@ export async function getIsAuditChecklists(
     engagementId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.findMany({
@@ -414,7 +414,7 @@ export async function getIsAuditChecklist(
   session: Session,
   checklistId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.findFirst({
@@ -439,7 +439,7 @@ export async function createIsAuditChecklist(
     completedById?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.create({
@@ -460,7 +460,7 @@ export async function updateIsAuditChecklist(
     overallRating?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.update({
@@ -476,7 +476,7 @@ export async function getIncompleteIsChecklists(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.isAuditChecklist.findMany({

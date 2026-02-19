@@ -15,7 +15,7 @@ export async function getLoanReviewsForEngagement(
     take?: number;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const where: any = {
@@ -46,7 +46,7 @@ export async function getLoanReviewSummary(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const summary = await db.loanReview.groupBy({
@@ -69,7 +69,7 @@ export async function getSmaNpaEntriesForEngagement(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Custom category order for display
@@ -101,7 +101,7 @@ export async function getEngagementForLoanReview(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditEngagement.findFirst({

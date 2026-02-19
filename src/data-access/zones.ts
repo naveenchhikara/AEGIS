@@ -7,7 +7,7 @@ import type { Session } from "@/lib/auth";
  * Includes branch count for display.
  */
 export async function getZones(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.zone.findMany({
@@ -25,7 +25,7 @@ export async function getZones(session: Session) {
  * Get a single zone by ID.
  */
 export async function getZone(session: Session, zoneId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.zone.findFirst({

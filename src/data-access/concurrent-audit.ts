@@ -12,7 +12,7 @@ export async function getConcurrentAuditTemplates(
     isActive?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.findMany({
@@ -32,7 +32,7 @@ export async function getConcurrentAuditTemplate(
   session: Session,
   templateId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.findFirst({
@@ -52,7 +52,7 @@ export async function createConcurrentAuditTemplate(
     checklistItems: any;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.create({
@@ -77,7 +77,7 @@ export async function updateConcurrentAuditTemplate(
     isActive?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.update({
@@ -93,7 +93,7 @@ export async function deleteConcurrentAuditTemplate(
   session: Session,
   templateId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.delete({
@@ -108,7 +108,7 @@ export async function getTemplatesByScopeArea(
   session: Session,
   scopeArea: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.findMany({
@@ -129,7 +129,7 @@ export async function getTemplatesByScopeArea(
  * Get concurrent audit findings with potential RBIA duplicates for de-duplication panel (R76).
  */
 export async function getConcurrentFindingsForDedup(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Get concurrent audit observations

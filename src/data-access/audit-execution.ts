@@ -9,7 +9,7 @@ export async function getEngagementWithTeam(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditEngagement.findFirst({
@@ -37,7 +37,7 @@ export async function getEngagementSections(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditSectionInstance.findMany({
@@ -55,7 +55,7 @@ export async function getExaminationResponsesForSection(
   engagementId: string,
   areaCode: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Get the examination area
@@ -111,7 +111,7 @@ export async function getEngagementExaminationItems(
   engagementId: string,
   areaCode: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const area = await db.examinationArea.findFirst({
@@ -133,7 +133,7 @@ export async function getEvidenceForExaminationResponse(
   session: Session,
   responseId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.evidence.findMany({

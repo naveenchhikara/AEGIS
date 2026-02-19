@@ -2,15 +2,15 @@ import "server-only";
 import { prisma, prismaForTenant } from "@/lib/prisma";
 import { getRequiredSession } from "./session";
 import type { Role } from "@/lib/permissions";
-import type { Session } from "@/lib/auth";
+import type { AuthSession } from "@/lib/auth";
 
 /**
  * Get all users for the current tenant.
  * Requires admin:manage_users permission.
  */
-export async function getUsers(session?: Session) {
+export async function getUsers(session?: AuthSession) {
   const s = session || (await getRequiredSession());
-  const tenantId = (s.user as any).tenantId as string;
+  const tenantId = s.user.tenantId;
 
   return prismaForTenant(tenantId).user.findMany({
     orderBy: { createdAt: "desc" },
@@ -28,12 +28,12 @@ export async function getUsers(session?: Session) {
  * Get a specific user by ID.
  * Requires admin:manage_users permission.
  */
-export async function getUserById(userId: string, session?: Session) {
+export async function getUserById(userId: string, session?: AuthSession) {
   const s = session || (await getRequiredSession());
-  const tenantId = (s.user as any).tenantId as string;
+  const tenantId = s.user.tenantId;
 
-  const user = await prismaForTenant(tenantId).user.findUnique({
-    where: { id: userId },
+  const user = await prismaForTenant(tenantId).user.findFirst({
+    where: { id: userId, tenantId },
   });
 
   return user;
@@ -48,10 +48,10 @@ export async function updateUserRoles(
   userId: string,
   roles: Role[],
   justification: string,
-  session?: Session,
+  session?: AuthSession,
 ) {
   const s = session || (await getRequiredSession());
-  const tenantId = (s.user as any).tenantId as string;
+  const tenantId = s.user.tenantId;
 
   // Security: Prevent self-role-change
   if (s.user.id === userId) {

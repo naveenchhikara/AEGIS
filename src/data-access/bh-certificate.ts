@@ -27,7 +27,7 @@ export async function getEngagementForBhCertificate(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditEngagement.findFirst({

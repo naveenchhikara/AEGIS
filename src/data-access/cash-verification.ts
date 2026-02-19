@@ -10,7 +10,7 @@ export async function getCashCheckForEngagement(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.cashCheck.findFirst({
@@ -26,7 +26,7 @@ export async function getEngagementForCashVerification(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditEngagement.findFirst({

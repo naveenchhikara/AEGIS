@@ -10,13 +10,13 @@ type Session = {
 };
 
 function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   if (!tenantId) redirect("/dashboard?setup=required");
   return tenantId;
 }
 
 function getUserRoles(session: Session): string[] {
-  return ((session.user as any).roles ?? []) as string[];
+  return session.user.roles;
 }
 
 const REPORT_ACCESS_ROLES = ["CAE", "CCO", "CEO"];
@@ -502,7 +502,7 @@ export async function getReportStatusForEngagement(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditEngagement.findFirst({
@@ -533,7 +533,7 @@ export async function getReportStatusForEngagement(
  * Returns all BoardReport records for the tenant, sorted by generation date.
  */
 export async function getGeneratedReports(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.boardReport.findMany({

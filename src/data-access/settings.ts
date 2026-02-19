@@ -33,7 +33,7 @@ export type { TenantSettings };
 export async function getTenantSettings(): Promise<TenantSettings | null> {
   // Step 1: Get authenticated session (tenantId source)
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   // Step 2: Get tenant-scoped Prisma client (RLS layer)
   const db = prismaForTenant(tenantId);
@@ -100,7 +100,7 @@ export async function updateTenantSettingsDAL(
 ) {
   // Step 1: Get authenticated session
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
   // Step 2: Get tenant-scoped Prisma client
   const db = prismaForTenant(tenantId);

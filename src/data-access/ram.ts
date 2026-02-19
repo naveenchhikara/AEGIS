@@ -6,7 +6,7 @@ import type { Session } from "@/lib/auth";
  * Get all active RAM parameter configs for the tenant.
  */
 export async function getRamParameterConfigs(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.ramParameterConfig.findMany({
@@ -22,7 +22,7 @@ export async function getRamAssessments(
   session: Session,
   options?: { branchId?: string; assessmentYear?: string },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.ramAssessment.findMany({
@@ -47,7 +47,7 @@ export async function getRamAssessmentWithScores(
   session: Session,
   assessmentId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.ramAssessment.findFirst({
@@ -79,7 +79,7 @@ export async function getRamAssessmentWithScores(
  * Get a single RAM assessment by ID (without scores).
  */
 export async function getRamAssessment(session: Session, assessmentId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.ramAssessment.findFirst({

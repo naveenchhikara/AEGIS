@@ -16,7 +16,7 @@ export async function getIssues(
     ownerId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.issue.findMany({
@@ -71,7 +71,7 @@ export async function getIssues(
  * Get a single issue by ID.
  */
 export async function getIssue(session: Session, issueId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.issue.findFirst({
@@ -130,7 +130,7 @@ export async function getActionPlans(
     overdue?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const now = new Date();
@@ -165,7 +165,7 @@ export async function getActionPlans(
  * Get a single action plan by ID.
  */
 export async function getActionPlan(session: Session, actionPlanId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.actionPlan.findFirst({
@@ -207,7 +207,7 @@ export async function getActionPlan(session: Session, actionPlanId: string) {
  * Get open issues by source for dashboard.
  */
 export async function getIssuesBySource(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const issues = await db.issue.findMany({
@@ -247,7 +247,7 @@ export async function getIssuesBySource(session: Session) {
  * Get overdue action plans for escalation.
  */
 export async function getOverdueActionPlans(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const now = new Date();
@@ -276,7 +276,7 @@ export async function getOverdueActionPlans(session: Session) {
  * Get issues linked to a specific control for control effectiveness analysis.
  */
 export async function getIssuesByControl(session: Session, controlId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.issue.findMany({

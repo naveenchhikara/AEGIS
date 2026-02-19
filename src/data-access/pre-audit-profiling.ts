@@ -20,7 +20,7 @@ import type { Session } from "@/lib/auth";
  * @returns Branch profile data with aggregations, or null if branch not found
  */
 export async function getBranchProfileData(session: Session, branchId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // 1. Fetch branch details

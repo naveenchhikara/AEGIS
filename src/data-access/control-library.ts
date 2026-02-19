@@ -14,7 +14,7 @@ export async function getControls(
     riskRegisterId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.controlLibrary.findMany({
@@ -58,7 +58,7 @@ export async function getControls(
  * Get a single control by ID.
  */
 export async function getControl(session: Session, controlId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.controlLibrary.findFirst({
@@ -98,7 +98,7 @@ export async function getTestProcedures(
     controlId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.testProcedure.findMany({
@@ -139,7 +139,7 @@ export async function getTestProcedure(
   session: Session,
   testProcedureId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.testProcedure.findFirst({
@@ -179,7 +179,7 @@ export async function getTestProcedure(
  * Get key controls with low effectiveness scores (<60%) for risk monitoring.
  */
 export async function getIneffectiveKeyControls(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.controlLibrary.findMany({
@@ -212,7 +212,7 @@ export async function getIneffectiveKeyControls(session: Session) {
  * Get controls by process area for coverage analysis.
  */
 export async function getControlsByProcessArea(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const controls = await db.controlLibrary.findMany({

@@ -12,7 +12,7 @@ export async function createComplianceItem(
   auditId: string,
   branchId: string | null,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {
@@ -69,7 +69,7 @@ export async function getComplianceItemByObservation(
   session: Session,
   observationId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findUnique({
@@ -101,7 +101,7 @@ export async function getComplianceItemsByEngagement(
   session: Session,
   auditId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({
@@ -181,7 +181,7 @@ export async function getEscalationRecipients(
   roles: string[],
   branchId?: string | null,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // For BRANCH_HEAD, scope to branch-assigned users
@@ -223,7 +223,7 @@ export async function getEscalationRecipients(
  * Includes observation title, branch name, and current escalation level.
  */
 export async function getOpenComplianceItemsWithContext(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({
@@ -265,7 +265,7 @@ export async function getAceEligibleItems(
   session: Session,
   options?: { quarter?: string },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({
@@ -294,7 +294,7 @@ export async function getAcbEligibleItems(
   session: Session,
   options?: { quarter?: string },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({
@@ -320,7 +320,7 @@ export async function getAcbEligibleItems(
  * Dashboard metrics for ACE/ACB.
  */
 export async function getComplianceEscalationSummary(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const summary = await db.complianceItem.groupBy({

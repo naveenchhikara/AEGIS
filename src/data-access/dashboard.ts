@@ -10,7 +10,7 @@ type Session = {
 };
 
 function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   if (!tenantId) redirect("/dashboard?setup=required");
   return tenantId;
 }

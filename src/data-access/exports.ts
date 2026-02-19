@@ -25,7 +25,7 @@ type Session = {
 };
 
 function extractTenantId(session: Session): string {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   if (!tenantId) {
     redirect("/dashboard?setup=required");
   }
@@ -33,7 +33,7 @@ function extractTenantId(session: Session): string {
 }
 
 function getUserRoles(session: Session): string[] {
-  return ((session.user as any).roles ?? []) as string[];
+  return session.user.roles;
 }
 
 const FULL_ACCESS_ROLES = ["CEO", "CAE", "CCO"];

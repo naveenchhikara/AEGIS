@@ -13,7 +13,7 @@ export async function getRegulatoryObservations(
     severity?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.findMany({
@@ -43,7 +43,7 @@ export async function getRegulatoryObservation(
   session: Session,
   observationId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.findFirst({
@@ -75,7 +75,7 @@ export async function createRegulatoryObservation(
     issueId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.create({
@@ -103,7 +103,7 @@ export async function updateRegulatoryObservation(
     issueId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.update({
@@ -116,7 +116,7 @@ export async function updateRegulatoryObservation(
  * Get observations pending ATR submission.
  */
 export async function getPendingAtrObservations(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.findMany({
@@ -135,7 +135,7 @@ export async function getObservationByReference(
   session: Session,
   referenceNo: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.findFirst({

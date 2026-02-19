@@ -13,7 +13,7 @@ export async function getQaSelfAssessments(
     gapIdentified?: boolean;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.qaSelfAssessment.findMany({
@@ -38,7 +38,7 @@ export async function getQaSelfAssessment(
   session: Session,
   assessmentId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.qaSelfAssessment.findFirst({
@@ -53,7 +53,7 @@ export async function getQaAssessmentsByYear(
   session: Session,
   assessmentYear: number,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const assessments = await db.qaSelfAssessment.findMany({
@@ -86,7 +86,7 @@ export async function getQaAssessmentsByYear(
  * Get gaps identified but not yet converted to issues (R65).
  */
 export async function getUnconvertedGaps(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.qaSelfAssessment.findMany({
@@ -106,7 +106,7 @@ export async function getQaSummaryByStandard(
   session: Session,
   assessmentYear: number,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const assessments = await db.qaSelfAssessment.findMany({
@@ -155,7 +155,7 @@ export async function getQaSummaryByStandard(
  * Get QA assessment progress for current year.
  */
 export async function getQaAssessmentProgress(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const currentYear = new Date().getFullYear();
@@ -186,7 +186,7 @@ export async function getQaAssessmentProgress(session: Session) {
  * Get 10 Internal Audit Effectiveness KPIs (R66).
  */
 export async function getAuditEffectivenessKpis(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
   const currentYear = new Date().getFullYear();
 

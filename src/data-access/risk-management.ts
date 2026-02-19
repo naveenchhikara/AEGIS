@@ -12,7 +12,7 @@ export async function getAuditUniverseEntities(
     branchId?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditUniverseEntity.findMany({
@@ -47,7 +47,7 @@ export async function getAuditUniverseEntity(
   session: Session,
   entityId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditUniverseEntity.findFirst({
@@ -97,7 +97,7 @@ export async function getRiskRegisters(
     status?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.riskRegister.findMany({
@@ -136,7 +136,7 @@ export async function getRiskRegisters(
  * Get a single risk register entry by ID.
  */
 export async function getRiskRegister(session: Session, riskId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.riskRegister.findFirst({
@@ -178,7 +178,7 @@ export async function getKeyRiskIndicators(
   session: Session,
   riskRegisterId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.keyRiskIndicator.findMany({
@@ -197,7 +197,7 @@ export async function getKeyRiskIndicators(
  * Get a single KRI by ID.
  */
 export async function getKeyRiskIndicator(session: Session, kriId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.keyRiskIndicator.findFirst({
@@ -227,7 +227,7 @@ export async function getRiskAuditLinkages(
     thematicArea?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.riskAuditLinkage.findMany({
@@ -261,7 +261,7 @@ export async function getRiskAuditLinkages(
  * Get high-risk entities (residual score > 3.5) for audit planning.
  */
 export async function getHighRiskEntities(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.auditUniverseEntity.findMany({
@@ -286,7 +286,7 @@ export async function getHighRiskEntities(session: Session) {
  * Get breached KRIs for monitoring dashboard.
  */
 export async function getBreachedKRIs(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.keyRiskIndicator.findMany({

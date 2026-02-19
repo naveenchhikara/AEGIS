@@ -13,7 +13,7 @@ export async function getComplianceItems(
     escalationLevel?: number;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({
@@ -56,7 +56,7 @@ export async function getComplianceItem(
   session: Session,
   complianceItemId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findFirst({
@@ -92,7 +92,7 @@ export async function getBranchComplianceItems(
   session: Session,
   userId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Get user's assigned branches
@@ -134,7 +134,7 @@ export async function getBranchComplianceItems(
  * Returns minimal data needed by escalation engine.
  */
 export async function getOpenComplianceItemsForEscalation(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.complianceItem.findMany({

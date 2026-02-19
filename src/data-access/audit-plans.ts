@@ -109,7 +109,7 @@ export async function getBranchesForAnnualPlan(
   session: Session,
   fiscalYear: string,
 ): Promise<BranchAuditSchedule[]> {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // Fetch all branches with RAM data

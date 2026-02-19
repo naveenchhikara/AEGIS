@@ -13,7 +13,7 @@ export async function getWorkProgramItems(
     status?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.workProgramItem.findMany({
@@ -60,7 +60,7 @@ export async function getWorkProgramItems(
  * Get a single work program item by ID.
  */
 export async function getWorkProgramItem(session: Session, itemId: string) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.workProgramItem.findFirst({
@@ -112,7 +112,7 @@ export async function getWorkProgramByEngagement(
   session: Session,
   engagementId: string,
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   const items = await db.workProgramItem.findMany({
@@ -168,7 +168,7 @@ export async function getMyWorkProgramItems(
     status?: string;
   },
 ) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.workProgramItem.findMany({
@@ -210,7 +210,7 @@ export async function getMyWorkProgramItems(
  * Get completed work program items by result for effectiveness analysis.
  */
 export async function getCompletedWorkProgramByResult(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   return db.workProgramItem.findMany({

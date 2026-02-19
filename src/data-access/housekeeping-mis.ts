@@ -3,7 +3,7 @@ import { prismaForTenant } from "./prisma";
 import type { Session } from "@/lib/auth";
 
 export async function getRiskMisData(session: Session) {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   // CRAR Indicators (from housekeeping metrics or manual input)

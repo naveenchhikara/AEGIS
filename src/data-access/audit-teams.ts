@@ -35,7 +35,7 @@ export type TeamMember = {
 export async function getAssignableUsers(
   session: Session,
 ): Promise<AssignableUser[]> {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {
@@ -75,7 +75,7 @@ export async function getTeamMembers(
   session: Session,
   engagementId: string,
 ): Promise<TeamMember[]> {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {
@@ -116,7 +116,7 @@ export async function getTeamMembers(
 export async function getExaminationAreaCodes(
   session: Session,
 ): Promise<string[]> {
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
   try {

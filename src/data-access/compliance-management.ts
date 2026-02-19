@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { prismaForTenant } from "./prisma";
 
 /**
  * Compliance Management Data Access Layer
@@ -26,7 +27,8 @@ export interface CreateCustomRequirementInput {
 export async function createCustomRequirement(
   input: CreateCustomRequirementInput,
 ) {
-  return prisma.complianceRequirement.create({
+  const db = prismaForTenant(input.tenantId);
+  return db.complianceRequirement.create({
     data: {
       tenantId: input.tenantId,
       requirement: input.requirement,
@@ -51,8 +53,10 @@ export async function markRequirementNotApplicable(
   requirementId: string,
   reason: string,
 ) {
+  const db = prismaForTenant(tenantId);
+
   // Verify ownership
-  const requirement = await prisma.complianceRequirement.findFirst({
+  const requirement = await db.complianceRequirement.findFirst({
     where: { id: requirementId, tenantId },
   });
 
@@ -60,8 +64,8 @@ export async function markRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return prisma.complianceRequirement.update({
-    where: { id: requirementId },
+  return db.complianceRequirement.update({
+    where: { id: requirementId, tenantId },
     data: { notApplicableReason: reason },
   });
 }
@@ -70,7 +74,9 @@ export async function revertRequirementNotApplicable(
   tenantId: string,
   requirementId: string,
 ) {
-  const requirement = await prisma.complianceRequirement.findFirst({
+  const db = prismaForTenant(tenantId);
+
+  const requirement = await db.complianceRequirement.findFirst({
     where: { id: requirementId, tenantId },
   });
 
@@ -78,8 +84,8 @@ export async function revertRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return prisma.complianceRequirement.update({
-    where: { id: requirementId },
+  return db.complianceRequirement.update({
+    where: { id: requirementId, tenantId },
     data: {
       notApplicableReason: null,
       status: "PENDING",
@@ -138,7 +144,8 @@ export async function searchRbiCirculars(query: string) {
 // ─── Get Custom Requirements ────────────────────────────────────────────────
 
 export async function getCustomRequirements(tenantId: string) {
-  return prisma.complianceRequirement.findMany({
+  const db = prismaForTenant(tenantId);
+  return db.complianceRequirement.findMany({
     where: { tenantId, isCustom: true },
     orderBy: { createdAt: "desc" },
   });

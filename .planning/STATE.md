@@ -52,21 +52,32 @@
 | Plan | Title                                      | Status   | Commit    |
 | ---- | ------------------------------------------ | -------- | --------- |
 | 02   | Stored XSS Fix — documentUrl Protocol Val. | COMPLETE | `9689632` |
+| 03   | Typed Session Helpers — Eliminate as any   | COMPLETE | `ff4678b` |
 
 ## Commits
 
 - `dbba5c2` — planning phase complete (21 plans + seed data + reports)
 - `9689632` — fix(17-02): stored XSS fix — documentUrl protocol validation
+- `481b3be` — feat(17-03): define AuthSession type and update getRequiredSession()
+- `ebbc3e6` — refactor(17-03): remove as-any session casts from src/data-access/
+- `e472bee` — refactor(17-03): remove as-any session casts from src/actions/
+- `1ef03dc` — fix(17-03): fix tenantName bug in 3 export routes
+- `990be27` — refactor(17-03): remove as-any session casts from src/app/
+- `7c16d1a` — refactor(17-03): remove as-any casts from guards.ts and finding-detail.tsx
+- `ff4678b` — chore(17-03): governance action files from bulk update
 
 ## Last Session
 
-- **Last session:** 2026-02-19T16:54:41Z
-- **Stopped at:** Completed 17-02-PLAN.md (Stored XSS Fix)
+- **Last session:** 2026-02-19T17:03:48Z
+- **Stopped at:** Completed 17-03-PLAN.md (Typed Session Helpers)
 - **Resume file:** None
 
 ## Accumulated Decisions
 
-| Decision                                                                        | Context                                                  | Plan  |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------- | ----- |
-| Defense-in-depth URL validation: server Zod + client Zod + render guard         | documentUrl XSS fix — three-layer protection pattern     | 17-02 |
-| `.url().refine(https?://).optional().or(z.literal(""))` — Zod URL field pattern | Allows clearing field while blocking dangerous protocols | 17-02 |
+| Decision                                                                             | Context                                                        | Plan  |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ----- |
+| Defense-in-depth URL validation: server Zod + client Zod + render guard              | documentUrl XSS fix — three-layer protection pattern           | 17-02 |
+| `.url().refine(https?://).optional().or(z.literal(""))` — Zod URL field pattern      | Allows clearing field while blocking dangerous protocols       | 17-02 |
+| Single boundary cast in getRequiredSession() — all downstream gets AuthSession       | 417 as-any cast elimination — type safety without noise        | 17-03 |
+| SessionUser types tenantId: string (non-nullable), roles: Role[] (non-nullable)      | Safe for authenticated onboarded users; redirect if no session | 17-03 |
+| Export routes tenantName: DB query via prismaForTenant instead of non-existent field | Session never had tenantName — was always falling back         | 17-03 |

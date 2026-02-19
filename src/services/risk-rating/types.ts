@@ -1,6 +1,11 @@
 import type { Severity } from "@/generated/prisma/enums";
 
-export type RatingBand = "VERY_GOOD" | "GOOD" | "SATISFACTORY" | "MODERATE" | "POOR";
+export type RatingBand =
+  | "VERY_GOOD"
+  | "GOOD"
+  | "SATISFACTORY"
+  | "MODERATE"
+  | "POOR";
 
 export interface RiskRatingConfig {
   repeatFindingMultiplier: number;

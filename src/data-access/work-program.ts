@@ -11,7 +11,7 @@ export async function getWorkProgramItems(
     engagementId?: string;
     assignedToId?: string;
     status?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -52,10 +52,7 @@ export async function getWorkProgramItems(
         },
       },
     },
-    orderBy: [
-      { status: "asc" },
-      { createdAt: "asc" },
-    ],
+    orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
 }
 
@@ -113,7 +110,7 @@ export async function getWorkProgramItem(session: Session, itemId: string) {
  */
 export async function getWorkProgramByEngagement(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -169,7 +166,7 @@ export async function getMyWorkProgramItems(
   userId: string,
   options?: {
     status?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -205,10 +202,7 @@ export async function getMyWorkProgramItems(
         },
       },
     },
-    orderBy: [
-      { status: "asc" },
-      { createdAt: "asc" },
-    ],
+    orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
 }
 

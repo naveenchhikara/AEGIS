@@ -23,8 +23,13 @@ export type GenerateReportInput = z.infer<typeof GenerateReportSchema>;
 
 // ─── Report Routing Workflow (R33) ─────────────────────────────────
 
-export const REPORT_STATUSES = ["DRAFT", "REVIEWED", "APPROVED", "ISSUED"] as const;
-export type ReportStatus = typeof REPORT_STATUSES[number];
+export const REPORT_STATUSES = [
+  "DRAFT",
+  "REVIEWED",
+  "APPROVED",
+  "ISSUED",
+] as const;
+export type ReportStatus = (typeof REPORT_STATUSES)[number];
 
 // Valid transitions: DRAFT→REVIEWED, REVIEWED→APPROVED, APPROVED→ISSUED
 export const REPORT_TRANSITIONS: Record<string, ReportStatus[]> = {

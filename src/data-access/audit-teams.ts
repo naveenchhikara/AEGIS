@@ -33,7 +33,7 @@ export type TeamMember = {
  * @returns Array of users that can be assigned to audit teams
  */
 export async function getAssignableUsers(
-  session: Session
+  session: Session,
 ): Promise<AssignableUser[]> {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -60,10 +60,7 @@ export async function getAssignableUsers(
 
     return users as AssignableUser[];
   } catch (error) {
-    logger.error(
-      { error, tenantId },
-      "Failed to fetch assignable users"
-    );
+    logger.error({ error, tenantId }, "Failed to fetch assignable users");
     throw error;
   }
 }
@@ -76,7 +73,7 @@ export async function getAssignableUsers(
  */
 export async function getTeamMembers(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ): Promise<TeamMember[]> {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -105,7 +102,7 @@ export async function getTeamMembers(
   } catch (error) {
     logger.error(
       { error, tenantId, engagementId },
-      "Failed to fetch team members"
+      "Failed to fetch team members",
     );
     throw error;
   }
@@ -117,7 +114,7 @@ export async function getTeamMembers(
  * @returns Array of examination area codes (e.g., ["CASH", "ATM", "CLEARING"])
  */
 export async function getExaminationAreaCodes(
-  session: Session
+  session: Session,
 ): Promise<string[]> {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -138,10 +135,7 @@ export async function getExaminationAreaCodes(
 
     return areas.map((area) => area.code);
   } catch (error) {
-    logger.error(
-      { error, tenantId },
-      "Failed to fetch examination area codes"
-    );
+    logger.error({ error, tenantId }, "Failed to fetch examination area codes");
     throw error;
   }
 }

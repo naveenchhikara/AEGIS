@@ -56,7 +56,10 @@ export async function generateAnnualPlan(input: GenerateAnnualPlanInput) {
 
   // ─── Step 5: Fetch Branch Schedules ────────────────────────────
   try {
-    const schedules = await getBranchesForAnnualPlan(session, validated.fiscalYear);
+    const schedules = await getBranchesForAnnualPlan(
+      session,
+      validated.fiscalYear,
+    );
 
     if (schedules.length === 0) {
       return {
@@ -129,8 +132,8 @@ export async function generateAnnualPlan(input: GenerateAnnualPlanInput) {
               status: "PLANNED",
               auditType: "RBIA",
             },
-          })
-        )
+          }),
+        ),
       );
 
       return {
@@ -153,8 +156,13 @@ export async function generateAnnualPlan(input: GenerateAnnualPlanInput) {
   } catch (error) {
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
-      { error, action: "generate_annual_plan", tenantId, fiscalYear: validated.fiscalYear },
-      "Failed to generate annual audit plan"
+      {
+        error,
+        action: "generate_annual_plan",
+        tenantId,
+        fiscalYear: validated.fiscalYear,
+      },
+      "Failed to generate annual audit plan",
     );
 
     return {

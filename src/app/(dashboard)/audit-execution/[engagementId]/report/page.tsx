@@ -103,8 +103,9 @@ export default async function ReportPage({ params }: PageProps) {
             {engagement.branch?.name ?? "Branch"} — Report routing & approval
           </p>
           {engagement.auditPlan && (
-            <p className="text-sm text-muted-foreground mt-1">
-              FY {engagement.auditPlan.year}-{String(engagement.auditPlan.year + 1).slice(2)} •{" "}
+            <p className="text-muted-foreground mt-1 text-sm">
+              FY {engagement.auditPlan.year}-
+              {String(engagement.auditPlan.year + 1).slice(2)} •{" "}
               {engagement.auditPlan.quarter.replace(/_/g, " ")}
             </p>
           )}
@@ -116,7 +117,7 @@ export default async function ReportPage({ params }: PageProps) {
 
       {/* Report Generation Links */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <FileText className="h-5 w-5" />
           Report Generation
         </h2>
@@ -134,7 +135,7 @@ export default async function ReportPage({ params }: PageProps) {
             </Button>
           </Link>
         </div>
-        <p className="text-sm text-muted-foreground mt-3">
+        <p className="text-muted-foreground mt-3 text-sm">
           Generate comprehensive audit reports in PDF or Excel format.
         </p>
       </Card>

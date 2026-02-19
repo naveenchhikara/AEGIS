@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -40,13 +46,15 @@ interface ComplianceAgingProps {
 }
 
 export function ComplianceAging({ data }: ComplianceAgingProps) {
-  const [expandedBucket, setExpandedBucket] = React.useState<string | null>(null);
+  const [expandedBucket, setExpandedBucket] = React.useState<string | null>(
+    null,
+  );
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" />
+          <Clock className="text-primary h-5 w-5" />
           <CardTitle>Compliance Aging Analysis</CardTitle>
         </div>
         <CardDescription>
@@ -56,7 +64,7 @@ export function ComplianceAging({ data }: ComplianceAgingProps) {
       <CardContent>
         <div className="space-y-4">
           {/* Escalation summary */}
-          <div className="flex flex-wrap gap-2 pb-2 border-b">
+          <div className="flex flex-wrap gap-2 border-b pb-2">
             {Object.entries(data.byEscalation).map(([level, count]) => (
               <Badge key={level} variant="outline">
                 {level}: {count}
@@ -71,10 +79,10 @@ export function ComplianceAging({ data }: ComplianceAgingProps) {
                 <button
                   onClick={() =>
                     setExpandedBucket(
-                      expandedBucket === bucket.label ? null : bucket.label
+                      expandedBucket === bucket.label ? null : bucket.label,
                     )
                   }
-                  className="w-full flex items-center justify-between p-3 rounded-md border hover:bg-muted/50 transition-colors"
+                  className="hover:bg-muted/50 flex w-full items-center justify-between rounded-md border p-3 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{bucket.label}</span>
@@ -116,14 +124,16 @@ export function ComplianceAging({ data }: ComplianceAgingProps) {
                             </TableCell>
                             <TableCell>{item.daysOpen}</TableCell>
                             <TableCell>
-                              <Badge variant="outline">L{item.escalationLevel}</Badge>
+                              <Badge variant="outline">
+                                L{item.escalationLevel}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                     {bucket.items.length > 10 && (
-                      <div className="p-2 text-center text-sm text-muted-foreground border-t">
+                      <div className="text-muted-foreground border-t p-2 text-center text-sm">
                         + {bucket.items.length - 10} more items
                       </div>
                     )}

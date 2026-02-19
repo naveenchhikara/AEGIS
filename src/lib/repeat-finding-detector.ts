@@ -83,13 +83,15 @@ export async function detectRepeatFindingsForBranch(
 
   // Only check findings that don't already have explicit repeat link
   const unlinkedFindings = currentFindings.filter(
-    f => !explicitRepeats.some(r => r.id === f.id),
+    (f) => !explicitRepeats.some((r) => r.id === f.id),
   );
 
   if (unlinkedFindings.length > 0 && priorFindingsCount > 0) {
     // Check each unlinked finding against closed observations
     for (const finding of unlinkedFindings) {
-      const matches = await db.$queryRaw<Array<{ id: string; title: string; similarity_score: number }>>`
+      const matches = await db.$queryRaw<
+        Array<{ id: string; title: string; similarity_score: number }>
+      >`
         SELECT id, title, similarity(title, ${finding.title}) as similarity_score
         FROM "Observation"
         WHERE "tenantId" = ${tenantId}::uuid
@@ -113,7 +115,7 @@ export async function detectRepeatFindingsForBranch(
 
   // Combine explicit and implicit
   const allRepeats = [
-    ...explicitRepeats.map(r => ({
+    ...explicitRepeats.map((r) => ({
       currentObservationId: r.id,
       priorObservationId: r.repeatOfId!,
       title: r.title,
@@ -124,7 +126,7 @@ export async function detectRepeatFindingsForBranch(
 
   // Deduplicate by currentObservationId
   const uniqueRepeats = Array.from(
-    new Map(allRepeats.map(r => [r.currentObservationId, r])).values(),
+    new Map(allRepeats.map((r) => [r.currentObservationId, r])).values(),
   );
 
   const repeatCount = uniqueRepeats.length;

@@ -18,10 +18,12 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 ### ✅ Task 1: Server Actions — Examination Evidence Upload
 
 **Files Created/Modified:**
+
 - `src/actions/audit-execution/schemas.ts` — Added evidence upload schemas
 - `src/actions/audit-execution/upload-examination-evidence.ts` — New server actions file
 
 **What Was Done:**
+
 1. Added two Zod schemas to `schemas.ts`:
    - `RequestExamEvidenceUploadSchema` — Validates presigned URL request
    - `ConfirmExamEvidenceUploadSchema` — Validates upload confirmation
@@ -31,6 +33,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
    - `getExaminationEvidenceDownloadUrl()` — Generates S3 presigned GET URL
 
 **Patterns Followed:**
+
 - ✅ Standard server action boilerplate (auth → permission → validate → S3 → DB)
 - ✅ Uses `prismaForTenant(tenantId)` for all DB access
 - ✅ Permission check: `examination:respond` for upload, `examination:read` for download
@@ -40,6 +43,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 - ✅ Returns discriminated union: `{ success: true, data }` or `{ success: false, error }`
 
 **Verification:**
+
 ```bash
 ✓ Server actions exported and discoverable
 ✓ Uses examinationResponseId (not observationId)
@@ -51,9 +55,11 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 ### ✅ Task 2: DAL — Include Evidence in Examination Response Queries
 
 **Files Modified:**
+
 - `src/data-access/audit-execution.ts`
 
 **What Was Done:**
+
 1. Updated `getExaminationResponsesForSection()`:
    - Added `evidence` include to `responses` query
    - Evidence filtered by `deletedAt: null` (soft-delete aware)
@@ -65,12 +71,14 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
    - Same select/orderBy pattern as inline include
 
 **Patterns Followed:**
+
 - ✅ Uses `prismaForTenant(tenantId)` for all queries
 - ✅ Explicit `tenantId` in WHERE clause (belt-and-suspenders)
 - ✅ Filters out soft-deleted records (`deletedAt: null`)
 - ✅ Returns full evidence metadata (filename, size, contentType, uploader, date)
 
 **Verification:**
+
 ```bash
 ✓ Evidence included in examination response queries
 ✓ New function exported for standalone evidence queries
@@ -82,12 +90,14 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 ### ✅ Task 3: Client Components — Evidence Upload Panel + Evidence List
 
 **Files Created:**
+
 - `src/components/audit-execution/evidence-upload-panel.tsx`
 - `src/components/audit-execution/examination-evidence-list.tsx`
 
 **What Was Done:**
 
 #### 3a. `EvidenceUploadPanel` (Client Component)
+
 - File drop zone using `react-dropzone`
 - Single file upload at a time (simplified from auditee pattern)
 - Upload flow:
@@ -101,6 +111,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 - Accepted file types: PDF, JPEG, PNG, DOCX, XLSX (max 10MB)
 
 #### 3b. `ExaminationEvidenceList` (Client Component)
+
 - Displays list of attached evidence files
 - Shows file icon (Image/FileText), filename, size, type badge, uploader, date
 - Download button triggers `getExaminationEvidenceDownloadUrl()` server action
@@ -108,6 +119,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 - Loading state during download
 
 **Patterns Followed:**
+
 - ✅ Client components marked with `"use client"`
 - ✅ Uses shadcn/ui components (Button, Progress, etc.)
 - ✅ Uses `toast` from Sonner for user feedback
@@ -116,6 +128,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 - ✅ Responsive UI with Tailwind classes
 
 **Verification:**
+
 ```bash
 ✓ EvidenceUploadPanel component created and exported
 ✓ ExaminationEvidenceList component created and exported
@@ -128,9 +141,11 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 ### ✅ Task 4: UI Integration — Wire Evidence into Section Pages
 
 **Files Modified:**
+
 - `src/components/audit-execution/examination-form.tsx`
 
 **What Was Done:**
+
 1. Updated imports to include new evidence components
 2. Updated `ExaminationFormProps` type to include `evidence` array in responses
 3. Modified `ExaminationItemForm` component:
@@ -142,6 +157,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
    - Border-top separator for visual distinction
 
 **UI Flow:**
+
 1. User submits examination response → response created
 2. Evidence section appears below response form
 3. User can view existing evidence files
@@ -149,12 +165,14 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 5. Upload triggers refresh → new evidence appears in list
 
 **Patterns Followed:**
+
 - ✅ Evidence UI only shown for items with responses (evidence attaches to responses, not items)
 - ✅ Upload panel is permission-gated (`canRespond`)
 - ✅ Uses `router.refresh()` via `onUploadComplete` callback to reload data
 - ✅ Matches existing UI patterns (Card, spacing, layout)
 
 **Verification:**
+
 ```bash
 ✓ Evidence section integrated into examination items
 ✓ Components imported and wired correctly
@@ -249,6 +267,7 @@ Both use the same S3 infrastructure, same Evidence table, same soft-delete patte
 ### S3 Key Structure
 
 Evidence files are stored at:
+
 ```
 {tenantId}/evidence/{resourceId}/{uuid}.{extension}
 ```

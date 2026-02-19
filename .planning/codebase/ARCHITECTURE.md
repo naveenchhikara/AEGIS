@@ -75,6 +75,7 @@ src/app/
    - Used for: bank onboarding flow
 
 **Nested layouts:**
+
 - `(dashboard)/auditee/layout.tsx` - Additional layout for auditee-specific pages
 
 ---
@@ -182,6 +183,7 @@ export async function myAction(input: ActionInput) {
 ```
 
 **Key conventions:**
+
 - `"use server"` at top of file (not inline)
 - Return `{ success: boolean, data?, error? }` discriminated union
 - NEVER throw errors - always return error object
@@ -221,6 +223,7 @@ src/data-access/
 ### DAL Function Pattern
 
 **Every DAL function:**
+
 1. Accepts `session` object (NOT raw tenantId string)
 2. Uses `prismaForTenant(session.user.tenantId)`
 3. Adds explicit `WHERE tenantId` clauses (belt-and-suspenders)
@@ -232,10 +235,7 @@ import "server-only"; // Mark as server-only
 import { prismaForTenant } from "./prisma";
 import type { Session } from "@/lib/auth";
 
-export async function getObservation(
-  session: Session,
-  observationId: string
-) {
+export async function getObservation(session: Session, observationId: string) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 
@@ -297,6 +297,7 @@ src/lib/
 ### Key Lib Files
 
 **`prisma.ts`** - Prisma client singleton with error handling:
+
 ```typescript
 import { PrismaClient } from "@/generated/prisma";
 
@@ -318,11 +319,13 @@ if (process.env.NODE_ENV !== "production") {
 ```
 
 **`permissions.ts`** - Multi-role permission system:
+
 - `hasPermission(roles: Role[], permission: Permission): boolean`
 - `getPermissions(roles: Role[]): Permission[]`
 - `canApproveObservation(userId, observation): boolean` (maker-checker)
 
 **`guards.ts`** - Declarative guards:
+
 - `requirePermission(permission: Permission)` - Redirects if unauthorized
 - `requireAnyPermission(permissions: Permission[])` - OR check
 - `requireAllPermissions(permissions: Permission[])` - AND check
@@ -384,6 +387,7 @@ src/components/
 ### Component Patterns
 
 **Server Component (default):**
+
 ```tsx
 // No "use client" directive
 // Can directly fetch data, access session
@@ -399,6 +403,7 @@ export default async function DashboardPage() {
 ```
 
 **Client Component (interactive):**
+
 ```tsx
 "use client"; // MUST be first line
 
@@ -480,6 +485,7 @@ Renders observation detail page
 ## Multi-Tenancy: How tenantId Flows
 
 ### Critical Security Invariant
+
 **tenantId MUST come from session ONLY. NEVER from URL params, query strings, or request body.**
 
 ### Flow Diagram
@@ -537,50 +543,60 @@ export async function updateTenant(data: UpdateTenantInput) {
 ### New Feature Checklist
 
 **1. Database Model**
+
 - Add model to `prisma/schema.prisma`
 - Run `pnpm db:generate` → generates Prisma Client
 - Run `pnpm db:push` or `pnpm db:migrate` → updates database
 
 **2. Server Actions**
+
 - Create `src/actions/{feature}/` directory
 - Add `schemas.ts` for Zod validation
 - Add action files: `create.ts`, `update.ts`, etc.
 - Follow server action pattern (see above)
 
 **3. Data Access Layer**
+
 - Create `src/data-access/{feature}.ts`
 - Export query functions (accept `session` param)
 - Use `prismaForTenant()` and explicit `WHERE tenantId`
 
 **4. UI Components**
+
 - Add to `src/components/{feature}/`
 - Use `"use client"` only if interactive
 - Import from `@/components/ui/` for primitives
 
 **5. Page Route**
+
 - Add to `src/app/(dashboard)/{feature}/`
 - Create `page.tsx` (server component)
 - Fetch data directly in page component
 - Pass to client components as props
 
 **6. API Route (if needed)**
+
 - Add to `src/app/api/{feature}/`
 - Create `route.ts` with HTTP handlers
 - Use for: file downloads, webhooks, external integrations
 
 **7. Types**
+
 - Add to `src/types/index.ts` or `src/types/{feature}.ts`
 - Use `interface` for object shapes, `type` for unions/intersections
 
 **8. Constants**
+
 - Add to `src/lib/constants.ts`
 - Export as named const arrays/objects
 
 **9. Permissions**
+
 - Add permission to `Permission` type in `src/lib/permissions.ts`
 - Map permission to roles in `ROLE_PERMISSIONS`
 
 **10. Navigation**
+
 - Add route to `src/lib/nav-items.ts`
 - Assign permission for role filtering
 
@@ -651,46 +667,54 @@ CMD ["node", "server.js"]
 ## Key Architectural Decisions
 
 ### 1. Server Components by Default
+
 - All pages are server components unless interactive
 - Reduces client bundle size
 - Direct database access in components
 - Zero loading states for initial render
 
 ### 2. Server Actions for Mutations
+
 - No API routes for CRUD operations
 - Server actions live in `src/actions/`
 - Progressive enhancement (forms work without JS)
 - Type-safe end-to-end (input → validation → response)
 
 ### 3. Data Access Layer Separation
+
 - DAL functions in `src/data-access/`
 - Never call Prisma directly from actions/pages
 - Testable, reusable query logic
 - Security: tenantId from session only
 
 ### 4. Multi-Tenant Row-Level Security
+
 - `prismaForTenant()` extension wraps all queries
 - Transaction-scoped `app.current_tenant_id` parameter
 - PostgreSQL RLS policies filter rows automatically
 - Belt-and-suspenders: explicit WHERE clauses in DAL
 
 ### 5. Optimistic Locking for Concurrency
+
 - `version` field on mutable models (e.g., Observation)
 - Check-and-increment pattern in transactions
 - Prevents race conditions on status transitions
 
 ### 6. Audit Logging on All Mutations
+
 - `setAuditContext()` called in every transaction
 - PostgreSQL trigger populates `AuditLog` table
 - Immutable append-only log (10-year retention)
 
 ### 7. Role-Based Access Control (RBAC)
+
 - Multi-role support (users have `roles Role[]`)
 - Permission checks use `hasPermission(roles, permission)`
 - Guards for declarative route protection
 - Maker-checker enforcement (creator ≠ approver)
 
 ### 8. Type Safety End-to-End
+
 - Zod for runtime validation (env vars, server actions, forms)
 - TypeScript for compile-time type checking
 - Prisma for database type generation

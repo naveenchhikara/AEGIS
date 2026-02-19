@@ -39,7 +39,8 @@ export default async function IsAuditPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">IS/EDP Audit</h1>
         <p className="text-muted-foreground">
-          Information Systems audit, application inventory, and security checklists
+          Information Systems audit, application inventory, and security
+          checklists
         </p>
       </div>
 
@@ -56,7 +57,10 @@ export default async function IsAuditPage() {
         </TabsList>
 
         <TabsContent value="inventory" className="space-y-4">
-          <AppInventoryTable applications={applications as any} pendingDr={pendingDr as any} />
+          <AppInventoryTable
+            applications={applications as any}
+            pendingDr={pendingDr as any}
+          />
         </TabsContent>
 
         <TabsContent value="checklist" className="space-y-4">

@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -35,21 +41,21 @@ export function FindingTrends({ data }: FindingTrendsProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
+          <TrendingUp className="text-primary h-5 w-5" />
           <CardTitle>Finding Trends</CardTitle>
         </div>
         <CardDescription>
           Quarterly trends of observations by severity
         </CardDescription>
         {data.length >= 2 && (
-          <p className="text-sm text-muted-foreground pt-2">
+          <p className="text-muted-foreground pt-2 text-sm">
             Latest quarter: {latestTotal} findings
             {trend !== 0 && (
               <span
                 className={
                   trend > 0
-                    ? "text-red-600 font-semibold ml-2"
-                    : "text-green-600 font-semibold ml-2"
+                    ? "ml-2 font-semibold text-red-600"
+                    : "ml-2 font-semibold text-green-600"
                 }
               >
                 ({trend > 0 ? "+" : ""}
@@ -84,22 +90,22 @@ export function FindingTrends({ data }: FindingTrendsProps) {
                   <TableRow key={row.quarter}>
                     <TableCell className="font-medium">{row.quarter}</TableCell>
                     <TableCell className="text-right">
-                      <span className="text-red-600 font-semibold">
+                      <span className="font-semibold text-red-600">
                         {row.CRITICAL}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-orange-600 font-semibold">
+                      <span className="font-semibold text-orange-600">
                         {row.HIGH}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-yellow-600 font-semibold">
+                      <span className="font-semibold text-yellow-600">
                         {row.MEDIUM}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-green-600 font-semibold">
+                      <span className="font-semibold text-green-600">
                         {row.LOW}
                       </span>
                     </TableCell>

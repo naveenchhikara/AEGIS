@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { SubmitExaminationResponseSchema, type SubmitExaminationResponseInput } from "./schemas";
+import {
+  SubmitExaminationResponseSchema,
+  type SubmitExaminationResponseInput,
+} from "./schemas";
 
 /**
  * Submit or update an examination response for a specific item.
@@ -14,13 +17,18 @@ import { SubmitExaminationResponseSchema, type SubmitExaminationResponseInput } 
  * Security: Requires examination:respond permission.
  * Atomicity: Response + observation creation in single transaction.
  */
-export async function submitExaminationResponse(input: SubmitExaminationResponseInput) {
+export async function submitExaminationResponse(
+  input: SubmitExaminationResponseInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "examination:respond")) {
-    return { success: false as const, error: "You do not have permission to submit examination responses." };
+    return {
+      success: false as const,
+      error: "You do not have permission to submit examination responses.",
+    };
   }
 
   const parsed = SubmitExaminationResponseSchema.safeParse(input);
@@ -31,7 +39,10 @@ export async function submitExaminationResponse(input: SubmitExaminationResponse
 
   // NON_COMPLIANT requires observation text
   if (validated.status === "NON_COMPLIANT" && !validated.observation) {
-    return { success: false as const, error: "Observation text is required for non-compliant items." };
+    return {
+      success: false as const,
+      error: "Observation text is required for non-compliant items.",
+    };
   }
 
   const db = prismaForTenant(tenantId);
@@ -80,10 +91,14 @@ export async function submitExaminationResponse(input: SubmitExaminationResponse
             where: { id: existingResponse.observationId },
             data: {
               condition: validated.observation!,
-              severity: validated.riskRating === "CRITICAL" ? "CRITICAL"
-                : validated.riskRating === "HIGH" ? "HIGH"
-                : validated.riskRating === "MEDIUM" ? "MEDIUM"
-                : "LOW",
+              severity:
+                validated.riskRating === "CRITICAL"
+                  ? "CRITICAL"
+                  : validated.riskRating === "HIGH"
+                    ? "HIGH"
+                    : validated.riskRating === "MEDIUM"
+                      ? "MEDIUM"
+                      : "LOW",
             },
           });
           observationId = existingResponse.observationId;
@@ -98,10 +113,14 @@ export async function submitExaminationResponse(input: SubmitExaminationResponse
               cause: "Identified during examination",
               effect: "Non-compliance with audit requirements",
               recommendation: "To be determined during review",
-              severity: validated.riskRating === "CRITICAL" ? "CRITICAL"
-                : validated.riskRating === "HIGH" ? "HIGH"
-                : validated.riskRating === "MEDIUM" ? "MEDIUM"
-                : "LOW",
+              severity:
+                validated.riskRating === "CRITICAL"
+                  ? "CRITICAL"
+                  : validated.riskRating === "HIGH"
+                    ? "HIGH"
+                    : validated.riskRating === "MEDIUM"
+                      ? "MEDIUM"
+                      : "LOW",
               status: "DRAFT",
               branchId: engagement.branchId,
               auditAreaId: item.area.id,
@@ -157,7 +176,9 @@ export async function submitExaminationResponse(input: SubmitExaminationResponse
       return {
         responseId: response.id,
         observationId,
-        autoCreatedObservation: validated.status === "NON_COMPLIANT" && !existingResponse?.observationId,
+        autoCreatedObservation:
+          validated.status === "NON_COMPLIANT" &&
+          !existingResponse?.observationId,
       };
     });
 
@@ -165,8 +186,14 @@ export async function submitExaminationResponse(input: SubmitExaminationResponse
     revalidatePath("/findings");
     return { success: true as const, data: result };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to submit examination response.";
-    logger.error({ error, action: "submit_examination_response", tenantId }, message);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to submit examination response.";
+    logger.error(
+      { error, action: "submit_examination_response", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

@@ -76,11 +76,13 @@ Replace mock data arrays with real DAL calls:
    - `getBreachedKRIs()`
 
 2. Replace `const risks: any[] = [];` with:
+
    ```typescript
    const risks = await getRiskRegisters(session);
    ```
 
 3. Replace `const kriData: any[] = [];` with:
+
    ```typescript
    const kriData = await getBreachedKRIs(session);
    ```
@@ -90,18 +92,22 @@ Replace mock data arrays with real DAL calls:
 5. Ensure types match DAL return types (no `any[]`)
 
 **Pattern:** Follow server component pattern from CONVENTIONS.md:
+
 - Direct async data fetching in server component
 - Pass data as props to client components
 - Use `getRequiredSession()` for tenant context
   </action>
   <verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false | grep -E "risk-management/page.tsx|error TS"
 ```
+
 Exit code 0 = TypeScript clean.
 
 Navigate to http://localhost:3000/risk-management and verify:
+
 - Page loads without 500 error
 - No mock data placeholders visible
 - Empty state shows if no risk entries exist
@@ -113,7 +119,7 @@ Navigate to http://localhost:3000/risk-management and verify:
 - Page renders without runtime errors
 - Real database data displayed (or empty state if no data)
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Wire client components to server actions</name>
@@ -125,7 +131,9 @@ Navigate to http://localhost:3000/risk-management and verify:
 Wire interactive features to existing server actions:
 
 **In risk-register-table.tsx:**
+
 1. Import actions:
+
    ```typescript
    import { manageRisk } from "@/actions/risk-management/manage-risk";
    import { acceptRisk } from "@/actions/issues/accept-risk";
@@ -142,14 +150,16 @@ Wire interactive features to existing server actions:
 5. Ensure proper revalidation after mutations (actions already call `revalidatePath`)
 
 **In kri-dashboard.tsx:**
+
 - Display `breachStatus` field from KRI records
 - Color-code breach levels (WARNING=yellow, BREACH=red)
 - Show currentValue vs threshold with visual indicator
 - No mutations needed (read-only dashboard)
 
 **Pattern:** Follow client component + server action pattern from CONVENTIONS.md.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 # TypeScript check
 cd /root/.openclaw/workspace/AEGIS
@@ -157,20 +167,22 @@ pnpm exec tsc --noEmit --pretty false | grep -E "risk-register-table.tsx|kri-das
 ```
 
 Manual testing:
+
 1. Create a new risk entry via form
 2. Verify toast notification appears
 3. Refresh page → new risk appears in table
 4. Edit a risk → changes persist
 5. KRI dashboard shows breach status with correct color coding
-  </verify>
-  <done>
+   </verify>
+   <done>
+
 - Risk register table has working create/edit forms calling `manageRisk()`
 - Accept risk button calls `acceptRisk()` action
 - Toast notifications display success/error feedback
 - KRI dashboard renders breach status with color indicators
 - All TypeScript errors resolved
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -178,6 +190,7 @@ Manual testing:
 **Overall checks:**
 
 1. TypeScript compilation:
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit
@@ -199,9 +212,10 @@ pnpm exec tsc --noEmit
 4. Tenant isolation:
    - DAL calls use `prismaForTenant(tenantId)`
    - No cross-tenant data leakage
-</verification>
+     </verification>
 
 <success_criteria>
+
 - ✅ `/risk-management` page replaced mock arrays with DAL calls
 - ✅ Risk register displays real database entries
 - ✅ KRI dashboard shows actual breach monitoring data
@@ -211,7 +225,7 @@ pnpm exec tsc --noEmit
 - ✅ Page loads without errors
 - ✅ Toast notifications for user feedback
 - ✅ R49-R51 requirements marked as implemented
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

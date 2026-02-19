@@ -53,13 +53,13 @@ export async function computeEscalationForAllItems() {
     const now = new Date();
     const updates = computeBatchEscalation(
       items as ComplianceItemForEscalation[],
-      now
+      now,
     );
 
     if (updates.length === 0) {
       logger.info(
         { tenantId, itemCount: items.length },
-        "Escalation computation: no changes"
+        "Escalation computation: no changes",
       );
       return {
         success: true as const,
@@ -101,7 +101,7 @@ export async function computeEscalationForAllItems() {
           level: u.newEscalationLevel,
         })),
       },
-      "Escalation computation completed"
+      "Escalation computation completed",
     );
 
     revalidatePath("/compliance");
@@ -120,9 +120,7 @@ export async function computeEscalationForAllItems() {
     };
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to compute escalations.";
+      error instanceof Error ? error.message : "Failed to compute escalations.";
     logger.error({ error, action: "compute_escalation", tenantId }, message);
     return { success: false as const, error: message };
   }

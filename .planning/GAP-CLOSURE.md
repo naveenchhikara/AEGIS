@@ -12,6 +12,7 @@
 ## Execution Order (Module-by-Module)
 
 ### Module A: Phase 1 Gap Closure (Core Audit — the foundation)
+
 **Gaps:** R9, R10-R13, R16, R18-R21, R23-R27
 **Priority:** P0 — everything else depends on this
 
@@ -24,6 +25,7 @@ Plan A6: BH Certificate Workflow (R26) — digital sign-off with state transitio
 Plan A7: Tenant-configurable RAM thresholds (R4, R8) — admin UI for parameter management
 
 ### Module B: Phase 2 Gap Closure (Reporting & Compliance)
+
 **Gaps:** R30, R33, R35, R37-R40, R46, R48
 **Priority:** P1
 
@@ -35,6 +37,7 @@ Plan B5: Repeat Finding RAM Integration (R40) — feed repeat findings into next
 Plan B6: Template Admin UI + NPA Waterfall Widget (R46, R48)
 
 ### Module C: Phase 3 Gap Closure (GRC & Issue Management)
+
 **Gaps:** R49-R67 (all ⚠️ — actions exist, pages are mock)
 **Priority:** P1
 
@@ -44,6 +47,7 @@ Plan C3: Wire Issues UI (R59-R63) — real data, action plans, board consolidate
 Plan C4: Wire QA Assessment UI (R64-R67) — real questionnaires, gap-to-issue, KPI dashboard
 
 ### Module D: Phase 4 Gap Closure (UCB Regulatory & Governance)
+
 **Gaps:** R69-R80 (all ⚠️ — actions exist, pages are mock)
 **Priority:** P2
 
@@ -52,6 +56,7 @@ Plan D2: Wire Governance UI (R69-R71, R80) — audit universe, calendar integrat
 Plan D3: Concurrent Audit UI (R73-R76) — templates, rapid entry, de-duplication
 
 ### Module E: Phase 6 Gap Closure (Specialized Regulatory)
+
 **Gaps:** R93-R104 (all ⚠️)
 **Priority:** P2
 
@@ -71,12 +76,12 @@ For each module:
 
 ## Execution Timeline
 
-| Module | Plans | Est. Time | Depends On |
-|--------|-------|-----------|------------|
-| A (Phase 1) | A1-A7 | 60-90 min | — |
-| B (Phase 2) | B1-B6 | 45-60 min | A |
-| C (Phase 3) | C1-C4 | 30-45 min | — |
-| D (Phase 4) | D1-D3 | 30-45 min | — |
-| E (Phase 6) | E1-E2 | 20-30 min | — |
+| Module      | Plans | Est. Time | Depends On |
+| ----------- | ----- | --------- | ---------- |
+| A (Phase 1) | A1-A7 | 60-90 min | —          |
+| B (Phase 2) | B1-B6 | 45-60 min | A          |
+| C (Phase 3) | C1-C4 | 30-45 min | —          |
+| D (Phase 4) | D1-D3 | 30-45 min | —          |
+| E (Phase 6) | E1-E2 | 20-30 min | —          |
 
 Modules C, D, E can run parallel to A+B since they're mostly wiring existing actions to UI.

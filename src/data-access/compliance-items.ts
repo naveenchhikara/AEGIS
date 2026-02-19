@@ -10,7 +10,7 @@ export async function createComplianceItem(
   session: Session,
   observationId: string,
   auditId: string,
-  branchId: string | null
+  branchId: string | null,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -24,7 +24,7 @@ export async function createComplianceItem(
     if (existing) {
       logger.warn(
         { observationId, tenantId },
-        "ComplianceItem already exists for observation"
+        "ComplianceItem already exists for observation",
       );
       return existing;
     }
@@ -49,14 +49,14 @@ export async function createComplianceItem(
 
     logger.info(
       { complianceItemId: complianceItem.id, observationId, tenantId },
-      "ComplianceItem created"
+      "ComplianceItem created",
     );
 
     return complianceItem;
   } catch (error) {
     logger.error(
       { error, observationId, tenantId },
-      "Failed to create ComplianceItem"
+      "Failed to create ComplianceItem",
     );
     throw error;
   }
@@ -67,7 +67,7 @@ export async function createComplianceItem(
  */
 export async function getComplianceItemByObservation(
   session: Session,
-  observationId: string
+  observationId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -99,7 +99,7 @@ export async function getComplianceItemByObservation(
  */
 export async function getComplianceItemsByEngagement(
   session: Session,
-  auditId: string
+  auditId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -149,7 +149,7 @@ export async function updateDaysOpenForOpenItems(tenantId: string) {
 
     for (const item of openItems) {
       const daysOpen = Math.floor(
-        (now.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        (now.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24),
       );
 
       await db.complianceItem.update({
@@ -160,12 +160,12 @@ export async function updateDaysOpenForOpenItems(tenantId: string) {
 
     logger.info(
       { tenantId, count: openItems.length },
-      "Updated daysOpen for compliance items"
+      "Updated daysOpen for compliance items",
     );
   } catch (error) {
     logger.error(
       { error, tenantId },
-      "Failed to update daysOpen for compliance items"
+      "Failed to update daysOpen for compliance items",
     );
     throw error;
   }
@@ -179,7 +179,7 @@ export async function updateDaysOpenForOpenItems(tenantId: string) {
 export async function getEscalationRecipients(
   session: Session,
   roles: string[],
-  branchId?: string | null
+  branchId?: string | null,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -263,7 +263,7 @@ export async function getOpenComplianceItemsWithContext(session: Session) {
  */
 export async function getAceEligibleItems(
   session: Session,
-  options?: { quarter?: string }
+  options?: { quarter?: string },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -292,7 +292,7 @@ export async function getAceEligibleItems(
  */
 export async function getAcbEligibleItems(
   session: Session,
-  options?: { quarter?: string }
+  options?: { quarter?: string },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -300,10 +300,7 @@ export async function getAcbEligibleItems(
   return db.complianceItem.findMany({
     where: {
       tenantId,
-      OR: [
-        { escalationLevel: { gte: 4 } },
-        { status: "ACE_REVIEW" },
-      ],
+      OR: [{ escalationLevel: { gte: 4 } }, { status: "ACE_REVIEW" }],
       status: { not: "CLOSED" },
       ...(options?.quarter && { aceQuarter: options.quarter }),
     },
@@ -314,10 +311,7 @@ export async function getAcbEligibleItems(
       branch: { select: { id: true, code: true, name: true } },
       audit: { select: { id: true, auditNumber: true } },
     },
-    orderBy: [
-      { observation: { severity: "desc" } },
-      { daysOpen: "desc" },
-    ],
+    orderBy: [{ observation: { severity: "desc" } }, { daysOpen: "desc" }],
   });
 }
 

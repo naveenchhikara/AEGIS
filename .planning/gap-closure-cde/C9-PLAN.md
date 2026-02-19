@@ -87,14 +87,18 @@ Wire the `/is-audit` page to real database and build IS/EDP audit module with ch
 Replace mock data with real DAL calls and expand tabs:
 
 1. Import DAL functions:
+
    ```typescript
    import {
-     getApplicationInventory, getApplicationsPendingDrTest,
-     getIsAuditChecklists, getVendorRiskAssessments,
+     getApplicationInventory,
+     getApplicationsPendingDrTest,
+     getIsAuditChecklists,
+     getVendorRiskAssessments,
    } from "@/data-access/investment";
    ```
 
 2. Replace `const applications: any[] = [];`:
+
    ```typescript
    const applications = await getApplicationInventory(session);
    const pendingDr = await getApplicationsPendingDrTest(session);
@@ -103,6 +107,7 @@ Replace mock data with real DAL calls and expand tabs:
    ```
 
 3. Expand to 6 tabs:
+
    ```typescript
    <Tabs defaultValue="inventory" className="space-y-4">
      <TabsList>
@@ -135,15 +140,16 @@ Replace mock data with real DAL calls and expand tabs:
    ```
 
 4. Permission check: IS_AUDITOR role or admin:system
-  </action>
-  <verify>
-TypeScript clean, IS audit page loads with 6 tabs and real data.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   TypeScript clean, IS audit page loads with 6 tabs and real data.
+   </verify>
+   <done>
+
 - IS Audit page fetches real ApplicationInventory, Checklist, VendorRisk data
 - 6-tab layout: Inventory, Checklists, Vendor Risk, CBS, Cyber, Evidence
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Wire AppInventoryTable and ChecklistForm</name>
@@ -160,6 +166,7 @@ TypeScript clean, IS audit page loads with 6 tabs and real data.
 5. Filters: criticality, hosting type, DR tested
 
 **ChecklistForm:**
+
 1. Update to work with real IsAuditChecklist data
 2. Category selector: CBS, CHANNELS, ACCESS_CONTROL, BCP_DR, VENDOR, CHANGE_MGMT, CYBER_SECURITY
 3. Display checklists grouped by category with completion status
@@ -173,8 +180,12 @@ TypeScript clean, IS audit page loads with 6 tabs and real data.
 7. Mark checklist as completed (with completedBy and timestamp)
 
 ```typescript
-import { manageApplicationInventory, manageIsAuditChecklist } from "@/actions/investment/manage-is-audit";
+import {
+  manageApplicationInventory,
+  manageIsAuditChecklist,
+} from "@/actions/investment/manage-is-audit";
 ```
+
   </action>
   <verify>
 App inventory CRUD and checklist form save responses.
@@ -218,6 +229,7 @@ Create vendor risk tracking with SLA compliance (R100):
 ```typescript
 import { manageVendorRiskAssessment } from "@/actions/investment/manage-is-audit";
 ```
+
   </action>
   <verify>
 Vendor risk panel shows SLA compliance and contract alerts.
@@ -238,35 +250,120 @@ Vendor risk panel shows SLA compliance and contract alerts.
 Create CBS (Core Banking Solution) parameter audit items (R101):
 
 1. CBS parameter audit questionnaire:
+
    ```typescript
    const CBS_PARAMETER_CHECKS = {
      INTEREST_RATES: [
-       { id: "ir01", question: "Interest rates on deposits match approved rate chart", riskLevel: "HIGH" },
-       { id: "ir02", question: "Interest rates on advances match sanction terms", riskLevel: "HIGH" },
-       { id: "ir03", question: "Penal interest rates correctly configured", riskLevel: "MEDIUM" },
-       { id: "ir04", question: "Interest calculation methodology (360/365 days) correct", riskLevel: "HIGH" },
-       { id: "ir05", question: "NPA interest reversal/non-accrual configured per IRAC norms", riskLevel: "CRITICAL" },
+       {
+         id: "ir01",
+         question: "Interest rates on deposits match approved rate chart",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "ir02",
+         question: "Interest rates on advances match sanction terms",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "ir03",
+         question: "Penal interest rates correctly configured",
+         riskLevel: "MEDIUM",
+       },
+       {
+         id: "ir04",
+         question: "Interest calculation methodology (360/365 days) correct",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "ir05",
+         question:
+           "NPA interest reversal/non-accrual configured per IRAC norms",
+         riskLevel: "CRITICAL",
+       },
      ],
      PRODUCT_MASTERS: [
-       { id: "pm01", question: "Loan product codes match approved product menu", riskLevel: "HIGH" },
-       { id: "pm02", question: "Deposit product parameters match policy", riskLevel: "HIGH" },
-       { id: "pm03", question: "Tenor/maturity limits correctly set per product", riskLevel: "MEDIUM" },
-       { id: "pm04", question: "Auto-renewal parameters for deposits correctly configured", riskLevel: "MEDIUM" },
-       { id: "pm05", question: "Charge/fee master matches approved schedule", riskLevel: "MEDIUM" },
+       {
+         id: "pm01",
+         question: "Loan product codes match approved product menu",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "pm02",
+         question: "Deposit product parameters match policy",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "pm03",
+         question: "Tenor/maturity limits correctly set per product",
+         riskLevel: "MEDIUM",
+       },
+       {
+         id: "pm04",
+         question: "Auto-renewal parameters for deposits correctly configured",
+         riskLevel: "MEDIUM",
+       },
+       {
+         id: "pm05",
+         question: "Charge/fee master matches approved schedule",
+         riskLevel: "MEDIUM",
+       },
      ],
      PRIVILEGES: [
-       { id: "pr01", question: "Maker-checker controls active for all financial transactions", riskLevel: "CRITICAL" },
-       { id: "pr02", question: "User access matrix matches role-based access policy", riskLevel: "CRITICAL" },
-       { id: "pr03", question: "Dormant user accounts disabled (>90 days inactive)", riskLevel: "HIGH" },
-       { id: "pr04", question: "Super-user/admin access restricted and logged", riskLevel: "CRITICAL" },
-       { id: "pr05", question: "Branch-level access controls prevent cross-branch operations", riskLevel: "HIGH" },
+       {
+         id: "pr01",
+         question:
+           "Maker-checker controls active for all financial transactions",
+         riskLevel: "CRITICAL",
+       },
+       {
+         id: "pr02",
+         question: "User access matrix matches role-based access policy",
+         riskLevel: "CRITICAL",
+       },
+       {
+         id: "pr03",
+         question: "Dormant user accounts disabled (>90 days inactive)",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "pr04",
+         question: "Super-user/admin access restricted and logged",
+         riskLevel: "CRITICAL",
+       },
+       {
+         id: "pr05",
+         question:
+           "Branch-level access controls prevent cross-branch operations",
+         riskLevel: "HIGH",
+       },
      ],
      DAY_END: [
-       { id: "de01", question: "Day-end batch processes complete successfully with reconciliation", riskLevel: "HIGH" },
-       { id: "de02", question: "EOD reports generated and reviewed daily", riskLevel: "MEDIUM" },
-       { id: "de03", question: "Exception reports generated for out-of-policy transactions", riskLevel: "HIGH" },
-       { id: "de04", question: "Backup procedures executed post day-end", riskLevel: "HIGH" },
-       { id: "de05", question: "Inter-branch reconciliation automated and monitored", riskLevel: "MEDIUM" },
+       {
+         id: "de01",
+         question:
+           "Day-end batch processes complete successfully with reconciliation",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "de02",
+         question: "EOD reports generated and reviewed daily",
+         riskLevel: "MEDIUM",
+       },
+       {
+         id: "de03",
+         question: "Exception reports generated for out-of-policy transactions",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "de04",
+         question: "Backup procedures executed post day-end",
+         riskLevel: "HIGH",
+       },
+       {
+         id: "de05",
+         question: "Inter-branch reconciliation automated and monitored",
+         riskLevel: "MEDIUM",
+       },
      ],
    };
    ```
@@ -278,16 +375,17 @@ Create CBS (Core Banking Solution) parameter audit items (R101):
 
 3. Summary: compliant/non-compliant/partial counts per category
 4. Overall CBS audit opinion (auto-calculated from responses)
-  </action>
-  <verify>
-CBS parameter audit checklist renders and saves responses.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   CBS parameter audit checklist renders and saves responses.
+   </verify>
+   <done>
+
 - 20 CBS parameter audit items across 4 categories
 - Checklist with compliance capture
 - Saved via IS audit checklist action
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Cyber Security Checklist</name>
@@ -298,36 +396,40 @@ CBS parameter audit checklist renders and saves responses.
 Create comprehensive cyber security checklist (R103):
 
 1. Structure: 25 baseline controls with expanded questionnaires (simplified to key items):
+
    ```typescript
    const CYBER_BASELINE_CONTROLS = [
      {
-       id: "BC01", control: "Inventory of Business Assets",
+       id: "BC01",
+       control: "Inventory of Business Assets",
        questions: [
          "Maintain updated inventory of authorized hardware/software",
          "Identify and document data classification for all critical systems",
          "Track asset lifecycle from procurement to disposal",
          "Periodic verification of inventory accuracy",
-       ]
+       ],
      },
      {
-       id: "BC02", control: "Access Control Management",
+       id: "BC02",
+       control: "Access Control Management",
        questions: [
          "Role-based access control (RBAC) implemented",
          "Multi-factor authentication for critical systems",
          "Privileged access management with logging",
          "Access review conducted quarterly",
          "Vendor/third-party access through secure gateway",
-       ]
+       ],
      },
      {
-       id: "BC03", control: "Network Security",
+       id: "BC03",
+       control: "Network Security",
        questions: [
          "Firewall rules reviewed and updated quarterly",
          "IDS/IPS deployed and monitored",
          "Network segmentation between critical/non-critical zones",
          "Wireless network security controls",
          "VPN for remote access with encryption",
-       ]
+       ],
      },
      // ... Continue for all 25 baseline controls (BC04-BC25):
      // BC04: Secure Configuration, BC05: Patch Management,
@@ -359,17 +461,18 @@ Create comprehensive cyber security checklist (R103):
 5. Save via `manageIsAuditChecklist()` with category="CYBER_SECURITY"
 
 6. Gap summary: list all non-compliant items with recommendations
-  </action>
-  <verify>
-Cyber security checklist renders 25 controls with ~122 questions.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Cyber security checklist renders 25 controls with ~122 questions.
+   </verify>
+   <done>
+
 - 25 baseline controls with ~122 questionnaire items
 - Accordion UI with per-question compliance capture
 - Overall and per-control compliance percentages
 - Gap summary for non-compliant items
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Technology Control Evidence & Gap Analysis</name>
@@ -406,17 +509,18 @@ Create technology control evidence collection and gap analysis (R104):
 6. Remediation tracking:
    - Open gaps count, in-progress, closed
    - Aging of open gaps
-  </action>
-  <verify>
-Evidence collection and gap analysis render from checklist data.
-  </verify>
-  <done>
+     </action>
+     <verify>
+     Evidence collection and gap analysis render from checklist data.
+     </verify>
+     <done>
+
 - Technology control evidence collection UI
 - Gap analysis dashboard with heat map data
 - Gap detail table with remediation tracking
 - Category-wise gap matrix
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -432,6 +536,7 @@ Evidence collection and gap analysis render from checklist data.
 </verification>
 
 <success_criteria>
+
 - ✅ `/is-audit` page uses real DAL instead of mock data
 - ✅ IS audit checklists: CBS, channels, access, BCP/DR, vendor, change mgmt
 - ✅ Vendor risk tracking with SLA compliance
@@ -440,7 +545,7 @@ Evidence collection and gap analysis render from checklist data.
 - ✅ Technology control evidence collection + gap analysis
 - ✅ TypeScript compilation clean
 - ✅ R98-R104 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

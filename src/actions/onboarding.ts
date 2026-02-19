@@ -38,7 +38,10 @@ export async function saveWizardStep(
     await saveOnboardingProgress(tenantId, step, data);
     return { success: true, error: null };
   } catch (error) {
-    logger.error({ error, action: "save_onboarding_step", tenantId, step }, "Failed to save onboarding step");
+    logger.error(
+      { error, action: "save_onboarding_step", tenantId, step },
+      "Failed to save onboarding step",
+    );
     return { success: false, error: "Failed to save progress." };
   }
 }
@@ -57,7 +60,10 @@ export async function getWizardProgress() {
     const progress = await getOnboardingProgressFromDb(tenantId);
     return { success: true, data: progress, error: null };
   } catch (error) {
-    logger.error({ error, action: "get_onboarding_progress", tenantId }, "Failed to get onboarding progress");
+    logger.error(
+      { error, action: "get_onboarding_progress", tenantId },
+      "Failed to get onboarding progress",
+    );
     return { success: false, data: null, error: "Failed to load progress." };
   }
 }
@@ -141,7 +147,10 @@ export async function completeOnboarding(input: CompleteOnboardingInput) {
       data: result,
     };
   } catch (error) {
-    logger.error({ error, action: "complete_onboarding", tenantId }, "Failed to complete onboarding");
+    logger.error(
+      { error, action: "complete_onboarding", tenantId },
+      "Failed to complete onboarding",
+    );
     return {
       success: false,
       error: "Failed to complete onboarding. Please try again.",

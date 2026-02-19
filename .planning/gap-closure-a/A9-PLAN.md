@@ -56,6 +56,7 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
 **Purpose:** Enable the ACE (Audit Committee of Executives) to process quarterly compliance escalations and prepare consolidated reports for the ACB (Audit Committee of the Board) — the final tier of the compliance escalation pipeline per SDD p.40.
 
 **Output:**
+
 - ACE quarterly processing action (filter L3+ items, review, annotate)
 - ACB report consolidation action (aggregate for board pack)
 - ACE review page with filterable compliance queue
@@ -86,67 +87,72 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   Add to existing `src/data-access/compliance-items.ts`:
 
-  **`getAceEligibleItems(session, quarter?: string)`:**
-  - Query ComplianceItem where:
-    - tenantId matches
-    - escalationLevel >= 3 (90+ days overdue — L3 threshold)
-    - status NOT in ["CLOSED", "ACB_REVIEW"] (not already processed to ACB)
-    - Optionally filter by aceQuarter
-  - Include: observation (title, severity), branch (name, code), audit engagement (auditNumber)
-  - Order by: daysOpen DESC (most overdue first)
-  - Return with computed fields (daysOverdue from dueDate)
+**`getAceEligibleItems(session, quarter?: string)`:**
 
+- Query ComplianceItem where:
+  - tenantId matches
+  - escalationLevel >= 3 (90+ days overdue — L3 threshold)
+  - status NOT in ["CLOSED", "ACB_REVIEW"] (not already processed to ACB)
+  - Optionally filter by aceQuarter
+- Include: observation (title, severity), branch (name, code), audit engagement (auditNumber)
+- Order by: daysOpen DESC (most overdue first)
+- Return with computed fields (daysOverdue from dueDate)
+
+```typescript
+export async function getAceEligibleItems(
+  session: Session,
+  options?: { quarter?: string },
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceItem.findMany({
+    where: {
+      tenantId,
+      escalationLevel: { gte: 3 },
+      status: { notIn: ["CLOSED", "ACB_REVIEW"] },
+      ...(options?.quarter && { aceQuarter: options.quarter }),
+    },
+    include: {
+      observation: {
+        select: { id: true, title: true, severity: true, status: true },
+      },
+      branch: { select: { id: true, code: true, name: true } },
+      audit: { select: { id: true, auditNumber: true } },
+    },
+    orderBy: { daysOpen: "desc" },
+  });
+}
+```
+
+**`getAcbEligibleItems(session, quarter?: string)`:**
+
+- Query ComplianceItem where:
+  - tenantId matches
+  - escalationLevel >= 4 OR status = "ACE_REVIEW" (items ACE has reviewed and forwarded)
+  - status NOT in ["CLOSED"]
+  - Optionally filter by aceQuarter
+- Include same relations
+- Order by severity (CRITICAL first), then daysOpen DESC
+
+**`getComplianceEscalationSummary(session)`:**
+
+- Aggregate query for dashboard cards:
   ```typescript
-  export async function getAceEligibleItems(
-    session: Session,
-    options?: { quarter?: string },
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
-
-    return db.complianceItem.findMany({
-      where: {
-        tenantId,
-        escalationLevel: { gte: 3 },
-        status: { notIn: ["CLOSED", "ACB_REVIEW"] },
-        ...(options?.quarter && { aceQuarter: options.quarter }),
-      },
-      include: {
-        observation: {
-          select: { id: true, title: true, severity: true, status: true },
-        },
-        branch: { select: { id: true, code: true, name: true } },
-        audit: { select: { id: true, auditNumber: true } },
-      },
-      orderBy: { daysOpen: "desc" },
-    });
-  }
+  const summary = await db.complianceItem.groupBy({
+    by: ["escalationLevel"],
+    where: { tenantId, status: { notIn: ["CLOSED"] } },
+    _count: true,
+  });
   ```
-
-  **`getAcbEligibleItems(session, quarter?: string)`:**
-  - Query ComplianceItem where:
-    - tenantId matches
-    - escalationLevel >= 4 OR status = "ACE_REVIEW" (items ACE has reviewed and forwarded)
-    - status NOT in ["CLOSED"]
-    - Optionally filter by aceQuarter
-  - Include same relations
-  - Order by severity (CRITICAL first), then daysOpen DESC
-
-  **`getComplianceEscalationSummary(session)`:**
-  - Aggregate query for dashboard cards:
-    ```typescript
-    const summary = await db.complianceItem.groupBy({
-      by: ["escalationLevel"],
-      where: { tenantId, status: { notIn: ["CLOSED"] } },
-      _count: true,
-    });
-    ```
-  - Return `{ l0: n, l1: n, l2: n, l3: n, l4: n, total: n }`
+- Return `{ l0: n, l1: n, l2: n, l3: n, l4: n, total: n }`
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/compliance-items.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/compliance-items.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `getAceEligibleItems` filters escalation ≥ 3
@@ -163,31 +169,34 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   Add to existing `src/actions/compliance/schemas.ts`:
 
-  ```typescript
-  // ─── ACE Processing ───────────────────────────────────────────
-  export const ReviewAceItemSchema = z.object({
-    complianceItemId: z.string().uuid(),
-    decision: z.enum(["FORWARD_TO_ACB", "MONITOR", "CLOSE"]),
-    comments: z.string().min(1, "Comments are required").max(2000),
-    quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
-  });
+```typescript
+// ─── ACE Processing ───────────────────────────────────────────
+export const ReviewAceItemSchema = z.object({
+  complianceItemId: z.string().uuid(),
+  decision: z.enum(["FORWARD_TO_ACB", "MONITOR", "CLOSE"]),
+  comments: z.string().min(1, "Comments are required").max(2000),
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+});
 
-  export const ProcessAceQuarterlySchema = z.object({
-    quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
-  });
+export const ProcessAceQuarterlySchema = z.object({
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+});
 
-  export type ReviewAceItemInput = z.infer<typeof ReviewAceItemSchema>;
-  export type ProcessAceQuarterlyInput = z.infer<typeof ProcessAceQuarterlySchema>;
+export type ReviewAceItemInput = z.infer<typeof ReviewAceItemSchema>;
+export type ProcessAceQuarterlyInput = z.infer<
+  typeof ProcessAceQuarterlySchema
+>;
 
-  // ─── ACB Reporting ────────────────────────────────────────────
-  export const GenerateAcbReportSchema = z.object({
-    quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
-    title: z.string().min(1).max(200),
-    executiveCommentary: z.string().max(5000).optional(),
-  });
+// ─── ACB Reporting ────────────────────────────────────────────
+export const GenerateAcbReportSchema = z.object({
+  quarter: z.string().regex(/^\d{4}-Q[1-4]$/, "Format: YYYY-Q1..Q4"),
+  title: z.string().min(1).max(200),
+  executiveCommentary: z.string().max(5000).optional(),
+});
 
-  export type GenerateAcbReportInput = z.infer<typeof GenerateAcbReportSchema>;
-  ```
+export type GenerateAcbReportInput = z.infer<typeof GenerateAcbReportSchema>;
+```
+
   </action>
   <verify>
   ```bash
@@ -208,49 +217,55 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   Create `src/actions/compliance/ace-processing.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`processAceQuarterly(input: ProcessAceQuarterlyInput)`:**
-  1. Auth + permission check: user must have `ACE_OFFICER` or `CAE` role
-  2. Validate quarter format
-  3. Fetch all L3+ items via getAceEligibleItems
-  4. Tag them with the quarter:
-     ```typescript
-     await db.$transaction(async (tx: any) => {
-       await setAuditContext(tx, { actionType: "ace.quarterly_processed", ... });
+**`processAceQuarterly(input: ProcessAceQuarterlyInput)`:**
 
-       for (const item of eligibleItems) {
-         if (!item.aceQuarter) {
-           await tx.complianceItem.update({
-             where: { id: item.id },
-             data: {
-               aceQuarter: validated.quarter,
-               status: "ACE_REVIEW",
-             },
-           });
-         }
+1. Auth + permission check: user must have `ACE_OFFICER` or `CAE` role
+2. Validate quarter format
+3. Fetch all L3+ items via getAceEligibleItems
+4. Tag them with the quarter:
+
+   ```typescript
+   await db.$transaction(async (tx: any) => {
+     await setAuditContext(tx, { actionType: "ace.quarterly_processed", ... });
+
+     for (const item of eligibleItems) {
+       if (!item.aceQuarter) {
+         await tx.complianceItem.update({
+           where: { id: item.id },
+           data: {
+             aceQuarter: validated.quarter,
+             status: "ACE_REVIEW",
+           },
+         });
        }
-     });
-     ```
-  5. Return `{ success: true, data: { processed: count, quarter } }`
+     }
+   });
+   ```
 
-  **`reviewAceItem(input: ReviewAceItemInput)`:**
-  1. Auth + permission check: ACE_OFFICER or CAE
-  2. Validate input
-  3. Fetch compliance item, verify it's in ACE_REVIEW status
-  4. Transaction based on decision:
-     - **FORWARD_TO_ACB:** Set status to "ACB_REVIEW", set aceReviewedById/At
-     - **MONITOR:** Keep status as "ACE_REVIEW", record review comment (update daysOpen, add comment to a field)
-     - **CLOSE:** Set status to "CLOSED", set closedAt/closedById
-  5. revalidatePath("/compliance")
-  6. Return success with updated status
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/ace-processing.ts 2>&1 | head -20
-  ```
+5. Return `{ success: true, data: { processed: count, quarter } }`
+
+**`reviewAceItem(input: ReviewAceItemInput)`:**
+
+1. Auth + permission check: ACE_OFFICER or CAE
+2. Validate input
+3. Fetch compliance item, verify it's in ACE_REVIEW status
+4. Transaction based on decision:
+   - **FORWARD_TO_ACB:** Set status to "ACB_REVIEW", set aceReviewedById/At
+   - **MONITOR:** Keep status as "ACE_REVIEW", record review comment (update daysOpen, add comment to a field)
+   - **CLOSE:** Set status to "CLOSED", set closedAt/closedById
+5. revalidatePath("/compliance")
+6. Return success with updated status
+   </action>
+   <verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/ace-processing.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `processAceQuarterly` tags eligible items with quarter and ACE_REVIEW status
@@ -267,69 +282,74 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   Create `src/actions/compliance/acb-reporting.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`generateAcbReport(input: GenerateAcbReportInput)`:**
-  1. Auth + permission check: user must have `CAE` or `ACB_MEMBER` role
-  2. Validate input
-  3. Fetch all ACB-eligible items via getAcbEligibleItems(session, quarter)
-  4. Aggregate data for board pack:
-     ```typescript
-     const consolidated = {
-       quarter: validated.quarter,
-       totalItems: items.length,
-       bySeverity: {
-         critical: items.filter(i => i.observation?.severity === "CRITICAL").length,
-         high: items.filter(i => i.observation?.severity === "HIGH").length,
-         medium: items.filter(i => i.observation?.severity === "MEDIUM").length,
-         low: items.filter(i => i.observation?.severity === "LOW").length,
-       },
-       byBranch: groupByBranch(items),
-       byEscalationLevel: groupByLevel(items),
-       agingSummary: computeAgingSummary(items),
-     };
-     ```
-  5. Create BoardReport record:
-     ```typescript
-     const report = await tx.boardReport.create({
+**`generateAcbReport(input: GenerateAcbReportInput)`:**
+
+1. Auth + permission check: user must have `CAE` or `ACB_MEMBER` role
+2. Validate input
+3. Fetch all ACB-eligible items via getAcbEligibleItems(session, quarter)
+4. Aggregate data for board pack:
+   ```typescript
+   const consolidated = {
+     quarter: validated.quarter,
+     totalItems: items.length,
+     bySeverity: {
+       critical: items.filter((i) => i.observation?.severity === "CRITICAL")
+         .length,
+       high: items.filter((i) => i.observation?.severity === "HIGH").length,
+       medium: items.filter((i) => i.observation?.severity === "MEDIUM").length,
+       low: items.filter((i) => i.observation?.severity === "LOW").length,
+     },
+     byBranch: groupByBranch(items),
+     byEscalationLevel: groupByLevel(items),
+     agingSummary: computeAgingSummary(items),
+   };
+   ```
+5. Create BoardReport record:
+   ```typescript
+   const report = await tx.boardReport.create({
+     data: {
+       tenantId,
+       year: parseInt(validated.quarter.split("-Q")[0]),
+       quarter: mapQuarterToEnum(validated.quarter), // "2025-Q3" → "Q3_OCT_DEC"
+       title: validated.title,
+       executiveCommentary: validated.executiveCommentary ?? null,
+       generatedById: session.user.id,
+       metricsSnapshot: consolidated,
+     },
+   });
+   ```
+6. Mark compliance items as ACB-reported:
+   ```typescript
+   for (const item of items) {
+     await tx.complianceItem.update({
+       where: { id: item.id },
        data: {
-         tenantId,
-         year: parseInt(validated.quarter.split("-Q")[0]),
-         quarter: mapQuarterToEnum(validated.quarter), // "2025-Q3" → "Q3_OCT_DEC"
-         title: validated.title,
-         executiveCommentary: validated.executiveCommentary ?? null,
-         generatedById: session.user.id,
-         metricsSnapshot: consolidated,
+         acbReportedAt: new Date(),
+         acbMeetingRef: `ACB-${validated.quarter}`,
        },
      });
-     ```
-  6. Mark compliance items as ACB-reported:
-     ```typescript
-     for (const item of items) {
-       await tx.complianceItem.update({
-         where: { id: item.id },
-         data: {
-           acbReportedAt: new Date(),
-           acbMeetingRef: `ACB-${validated.quarter}`,
-         },
-       });
-     }
-     ```
-  7. revalidatePath
-  8. Return `{ success: true, data: { reportId, itemCount, consolidated } }`
+   }
+   ```
+7. revalidatePath
+8. Return `{ success: true, data: { reportId, itemCount, consolidated } }`
 
-  **Helper functions (local to this file):**
-  - `groupByBranch(items)` — group and count by branch name
-  - `groupByLevel(items)` — group by escalation level
-  - `computeAgingSummary(items)` — buckets: 30-60d, 60-90d, 90-180d, 180d+
-  - `mapQuarterToEnum(q)` — "2025-Q1" → "Q1_APR_JUN"
+**Helper functions (local to this file):**
+
+- `groupByBranch(items)` — group and count by branch name
+- `groupByLevel(items)` — group by escalation level
+- `computeAgingSummary(items)` — buckets: 30-60d, 60-90d, 90-180d, 180d+
+- `mapQuarterToEnum(q)` — "2025-Q1" → "Q1_APR_JUN"
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/acb-reporting.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/acb-reporting.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `generateAcbReport` consolidates and creates BoardReport
@@ -346,36 +366,40 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   **5a. Create `src/components/compliance/ace-quarterly-review.tsx`:**
 
-  "use client" — ACE quarterly review queue:
-  - Props: `{ items: AceItem[]; currentQuarter: string }`
-  - Table with columns: Branch, Observation, Severity, Days Overdue, Escalation Level, Status, Actions
-  - Severity column: colored badges
-  - Actions column: "Review" button opens a sheet/dialog with:
-    - Item details
-    - Decision select: Forward to ACB / Continue Monitoring / Close
-    - Comments textarea (required)
-    - Submit button
-  - "Process Quarter" button at top: calls processAceQuarterly to batch-tag items
-  - Quarter selector (dropdown with current/previous quarters)
-  - Stat cards at top: Total items, Critical, High, Avg days overdue
+"use client" — ACE quarterly review queue:
 
-  **5b. Create `src/components/compliance/acb-report-builder.tsx`:**
+- Props: `{ items: AceItem[]; currentQuarter: string }`
+- Table with columns: Branch, Observation, Severity, Days Overdue, Escalation Level, Status, Actions
+- Severity column: colored badges
+- Actions column: "Review" button opens a sheet/dialog with:
+  - Item details
+  - Decision select: Forward to ACB / Continue Monitoring / Close
+  - Comments textarea (required)
+  - Submit button
+- "Process Quarter" button at top: calls processAceQuarterly to batch-tag items
+- Quarter selector (dropdown with current/previous quarters)
+- Stat cards at top: Total items, Critical, High, Avg days overdue
 
-  "use client" — ACB report preparation:
-  - Props: `{ items: AcbItem[]; existingReports: BoardReport[] }`
-  - Summary cards: Total items, By severity, By branch
-  - Consolidated table showing all ACB-eligible items
-  - "Generate Board Report" section:
-    - Title input
-    - Executive commentary textarea
-    - Quarter selector
-    - Generate button → calls generateAcbReport
-  - Previous reports list (from existing BoardReport records)
+**5b. Create `src/components/compliance/acb-report-builder.tsx`:**
+
+"use client" — ACB report preparation:
+
+- Props: `{ items: AcbItem[]; existingReports: BoardReport[] }`
+- Summary cards: Total items, By severity, By branch
+- Consolidated table showing all ACB-eligible items
+- "Generate Board Report" section:
+  - Title input
+  - Executive commentary textarea
+  - Quarter selector
+  - Generate button → calls generateAcbReport
+- Previous reports list (from existing BoardReport records)
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/compliance/ace-quarterly-review.tsx src/components/compliance/acb-report-builder.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/compliance/ace-quarterly-review.tsx src/components/compliance/acb-report-builder.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - AceQuarterlyReview renders filterable queue with review actions
@@ -391,26 +415,30 @@ Implement R37 (ACE quarterly cycle processing) and R38 (ACB board reporting cons
   <action>
   **6a. Create ACE page** (`/compliance/ace`):
 
-  Server component:
-  - Check user has ACE_OFFICER or CAE role
-  - Compute current quarter using fiscal year helpers
-  - Fetch ACE-eligible items via getAceEligibleItems
-  - Fetch escalation summary via getComplianceEscalationSummary
-  - Convert Decimal fields to numbers
-  - Render AceQuarterlyReview component
+Server component:
 
-  **6b. Create ACB page** (`/compliance/acb`):
+- Check user has ACE_OFFICER or CAE role
+- Compute current quarter using fiscal year helpers
+- Fetch ACE-eligible items via getAceEligibleItems
+- Fetch escalation summary via getComplianceEscalationSummary
+- Convert Decimal fields to numbers
+- Render AceQuarterlyReview component
 
-  Server component:
-  - Check user has CAE or ACB_MEMBER role
-  - Fetch ACB-eligible items via getAcbEligibleItems
-  - Fetch existing BoardReport records for this tenant
-  - Render AcbReportBuilder component
+**6b. Create ACB page** (`/compliance/acb`):
+
+Server component:
+
+- Check user has CAE or ACB_MEMBER role
+- Fetch ACB-eligible items via getAcbEligibleItems
+- Fetch existing BoardReport records for this tenant
+- Render AcbReportBuilder component
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/compliance/ace/page.tsx src/app/\(dashboard\)/compliance/acb/page.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/compliance/ace/page.tsx src/app/\(dashboard\)/compliance/acb/page.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - ACE page at /compliance/ace with role-gated access

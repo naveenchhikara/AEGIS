@@ -6,8 +6,16 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { computeRam, computeRamWithUplift, computeCompositeScore, type RamScoreInput } from "@/lib/ram-engine";
-import { detectRepeatFindingsForBranch, computeRepeatUplift } from "@/lib/repeat-finding-detector";
+import {
+  computeRam,
+  computeRamWithUplift,
+  computeCompositeScore,
+  type RamScoreInput,
+} from "@/lib/ram-engine";
+import {
+  detectRepeatFindingsForBranch,
+  computeRepeatUplift,
+} from "@/lib/repeat-finding-detector";
 import { AssessmentIdSchema } from "./schemas";
 
 /**
@@ -22,7 +30,10 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "ram:create")) {
-    return { success: false as const, error: "You do not have permission to compute RAM assessments." };
+    return {
+      success: false as const,
+      error: "You do not have permission to compute RAM assessments.",
+    };
   }
 
   const parsed = AssessmentIdSchema.safeParse(input);
@@ -60,7 +71,9 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
         throw new Error("Cannot re-compute an approved assessment");
       }
       if (assessment.scores.length === 0) {
-        throw new Error("No scores entered. Please score all parameters before computing.");
+        throw new Error(
+          "No scores entered. Please score all parameters before computing.",
+        );
       }
 
       // Prepare score inputs for engine
@@ -134,8 +147,14 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
       },
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to compute RAM assessment.";
-    logger.error({ error, action: "compute_ram_assessment", tenantId }, message);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to compute RAM assessment.";
+    logger.error(
+      { error, action: "compute_ram_assessment", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

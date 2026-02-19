@@ -31,7 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createLoanReview, updateLoanReview } from "@/actions/audit-execution/loan-review";
+import {
+  createLoanReview,
+  updateLoanReview,
+} from "@/actions/audit-execution/loan-review";
 
 const ASSET_CLASSES = [
   "STANDARD",
@@ -58,8 +61,12 @@ const formSchema = z.object({
   accountNo: z.string().min(1, "Account number is required").max(50),
   borrowerName: z.string().min(1, "Borrower name is required").max(200),
   productType: z.string().min(1, "Product type is required"),
-  sanctionAmount: z.coerce.number().positive("Sanction amount must be positive"),
-  outstandingAmount: z.coerce.number().min(0, "Outstanding amount must be non-negative"),
+  sanctionAmount: z.coerce
+    .number()
+    .positive("Sanction amount must be positive"),
+  outstandingAmount: z.coerce
+    .number()
+    .min(0, "Outstanding amount must be non-negative"),
   assetClass: z.enum(ASSET_CLASSES),
   dpd: z.coerce.number().int().min(0).default(0),
   auditObservation: z.string().max(2000).optional(),
@@ -166,7 +173,10 @@ export function LoanReviewForm({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit as any)}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -311,8 +321,8 @@ export function LoanReviewForm({
                 {form.formState.isSubmitting
                   ? "Saving..."
                   : isEditMode
-                  ? "Update"
-                  : "Create"}
+                    ? "Update"
+                    : "Create"}
               </Button>
             </DialogFooter>
           </form>

@@ -39,7 +39,14 @@ export async function updatePreferences(
     ) {
       return { success: false as const, error: error.message };
     }
-    logger.error({ error, action: "update_notification_preferences", userId: session.user.id }, "Failed to update notification preferences");
+    logger.error(
+      {
+        error,
+        action: "update_notification_preferences",
+        userId: session.user.id,
+      },
+      "Failed to update notification preferences",
+    );
     return {
       success: false as const,
       error: "Failed to update preferences. Please try again.",

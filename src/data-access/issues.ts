@@ -14,7 +14,7 @@ export async function getIssues(
     status?: string;
     riskTheme?: string;
     ownerId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -63,11 +63,7 @@ export async function getIssues(
         orderBy: { dueDate: "asc" },
       },
     },
-    orderBy: [
-      { status: "asc" },
-      { severity: "desc" },
-      { createdAt: "desc" },
-    ],
+    orderBy: [{ status: "asc" }, { severity: "desc" }, { createdAt: "desc" }],
   });
 }
 
@@ -132,7 +128,7 @@ export async function getActionPlans(
     assignedToId?: string;
     status?: string;
     overdue?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -161,10 +157,7 @@ export async function getActionPlans(
         },
       },
     },
-    orderBy: [
-      { status: "asc" },
-      { dueDate: "asc" },
-    ],
+    orderBy: [{ status: "asc" }, { dueDate: "asc" }],
   });
 }
 

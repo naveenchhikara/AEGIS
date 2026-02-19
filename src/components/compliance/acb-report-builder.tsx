@@ -72,11 +72,14 @@ export function AcbReportBuilder({
     low: items.filter((i) => i.observation?.severity === "LOW").length,
   };
 
-  const byBranch = items.reduce((acc, item) => {
-    const branchName = item.branch?.name ?? "Unknown";
-    acc[branchName] = (acc[branchName] ?? 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byBranch = items.reduce(
+    (acc, item) => {
+      const branchName = item.branch?.name ?? "Unknown";
+      acc[branchName] = (acc[branchName] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -111,7 +114,7 @@ export function AcbReportBuilder({
 
     if (result.success) {
       toast.success(
-        `Board report generated: ${result.data.itemCount} items included`
+        `Board report generated: ${result.data.itemCount} items included`,
       );
       setReportTitle("");
       setExecutiveCommentary("");
@@ -126,10 +129,10 @@ export function AcbReportBuilder({
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Total Items
             </CardTitle>
           </CardHeader>
@@ -140,7 +143,7 @@ export function AcbReportBuilder({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Critical
             </CardTitle>
           </CardHeader>
@@ -153,7 +156,7 @@ export function AcbReportBuilder({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               High
             </CardTitle>
           </CardHeader>
@@ -166,7 +169,7 @@ export function AcbReportBuilder({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Medium
             </CardTitle>
           </CardHeader>
@@ -179,7 +182,7 @@ export function AcbReportBuilder({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Low
             </CardTitle>
           </CardHeader>
@@ -197,13 +200,13 @@ export function AcbReportBuilder({
           <CardTitle>Items by Branch</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Object.entries(byBranch)
               .sort(([, a], [, b]) => b - a)
               .map(([branch, count]) => (
                 <div
                   key={branch}
-                  className="flex justify-between items-center p-2 border rounded"
+                  className="flex items-center justify-between rounded border p-2"
                 >
                   <span className="text-sm font-medium">{branch}</span>
                   <Badge variant="secondary">{count}</Badge>
@@ -227,9 +230,7 @@ export function AcbReportBuilder({
                   <TableHead>Observation</TableHead>
                   <TableHead>Severity</TableHead>
                   <TableHead className="text-right">Days Overdue</TableHead>
-                  <TableHead className="text-right">
-                    Escalation Level
-                  </TableHead>
+                  <TableHead className="text-right">Escalation Level</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -238,7 +239,7 @@ export function AcbReportBuilder({
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
                       {item.branch?.name ?? "N/A"}
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {item.branch?.code}
                       </div>
                     </TableCell>
@@ -250,7 +251,7 @@ export function AcbReportBuilder({
                     <TableCell>
                       <Badge
                         className={getSeverityColor(
-                          item.observation?.severity ?? "MEDIUM"
+                          item.observation?.severity ?? "MEDIUM",
                         )}
                       >
                         {item.observation?.severity ?? "N/A"}
@@ -271,7 +272,7 @@ export function AcbReportBuilder({
                   <TableRow>
                     <TableCell
                       colSpan={6}
-                      className="text-center text-muted-foreground h-24"
+                      className="text-muted-foreground h-24 text-center"
                     >
                       No items eligible for ACB reporting
                     </TableCell>
@@ -289,7 +290,7 @@ export function AcbReportBuilder({
           <CardTitle>Generate Board Report</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="quarter">Quarter (YYYY-Q1..Q4) *</Label>
               <Input
@@ -373,7 +374,7 @@ export function AcbReportBuilder({
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center text-muted-foreground h-24"
+                      className="text-muted-foreground h-24 text-center"
                     >
                       No board reports generated yet
                     </TableCell>

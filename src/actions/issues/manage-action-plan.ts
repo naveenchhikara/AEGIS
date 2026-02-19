@@ -16,9 +16,7 @@ const ManageActionPlanSchema = z.object({
   milestone: z.string().optional(),
   dueDate: z.coerce.date(),
   assignedToId: z.string().uuid().optional(),
-  status: z
-    .enum(["PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE"])
-    .optional(),
+  status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE"]).optional(),
   evidence: z.array(z.string()).optional(), // S3 keys
   completionPct: z.number().int().min(0).max(100).optional(),
 });
@@ -136,7 +134,7 @@ export async function manageActionPlan(input: ManageActionPlanInput) {
  */
 export async function completeActionPlan(
   actionPlanId: string,
-  evidence?: string[]
+  evidence?: string[],
 ) {
   if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
   const session = await getRequiredSession();
@@ -209,7 +207,7 @@ export async function completeActionPlan(
  */
 export async function updateActionPlanProgress(
   actionPlanId: string,
-  completionPct: number
+  completionPct: number,
 ) {
   if (!z.string().uuid().safeParse(actionPlanId).success) return { success: false as const, error: "Invalid ID." };
   if (completionPct < 0 || completionPct > 100) return { success: false as const, error: "Invalid percentage." };
@@ -284,7 +282,7 @@ export async function updateActionPlanProgress(
         : "Failed to update action plan progress.";
     logger.error(
       { error, action: "update_action_plan_progress", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

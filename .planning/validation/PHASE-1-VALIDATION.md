@@ -3,6 +3,7 @@
 Validated against actual code in `src/` + Prisma schema + seed data.
 
 Legend:
+
 - ✅ PASS = implemented end-to-end (schema/DAL/actions/UI as applicable)
 - ⚠️ PARTIAL = present but incomplete (stub UI, missing configurability, or wiring issues)
 - ❌ FAIL = requirement not met (missing/incorrect behavior or seed counts don’t match)
@@ -30,15 +31,17 @@ R9: ✅ PASS | Annual plan generator exists with preview + commit flow (`src/act
 R10: ✅ PASS | `AuditTeamMember` join model exists with `assignedSections String[]` (schema) + assignment actions validate with Zod and use tenant-scoped Prisma (`src/actions/audit-execution/assign-team.ts`).
 
 R11: ⚠️ PARTIAL (wiring/validation issues) | Schema includes required engagement fields (audit metadata + BH cert fields). However:
+
 - Create engagement flow appears broken/inconsistent: `CreateEngagementSchema` requires fields not present in the UI (`completionDate`) and marks `scheduledStartDate` required while UI treats it optional (`src/actions/audit-execution/schemas.ts`, `src/components/audit-execution/engagement-form.tsx`).
 - Engagement header expects `periodStart/periodEnd` but model uses `periodFrom/periodTo`, so displayed audit period may be blank (`src/components/audit-execution/engagement-header.tsx`).
 
 R12: ✅ PASS | Pre-audit profiling page uses real, tenant-scoped DAL aggregations (RAM + last audit + prior findings summary) (`src/data-access/pre-audit-profiling.ts`, `src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx`).
 
 R13: ❌ FAIL | Team assignment UI is a stub and section allocation isn’t implemented:
+
 - User picker is hard-coded placeholder (not wired to DB users)
 - `assignedSections` always sent as `[]` with no UI to allocate sections
-(`src/components/audit-execution/team-panel.tsx`).
+  (`src/components/audit-execution/team-panel.tsx`).
 
 R14: ❌ FAIL (seed/count mismatch) | `ExaminationArea` model exists, but requirement is **25 areas**; seed JSON contains **39** areas (length=39) and initialization/UI will create/show all active areas (`prisma/seed.ts`, `src/data/seed/examination-areas.json`, `src/actions/audit-execution/initialize-sections.ts`, `src/components/audit-execution/section-tabs.tsx`).
 
@@ -69,15 +72,16 @@ R26: ✅ PASS | BH Certificate sign + countersign workflow implemented with role
 R27: ✅ PASS | Evidence model supports attachments on examination responses (and observations) and upload/download actions use tenant scoping (`prisma/schema.prisma` Evidence model; `src/actions/audit-execution/upload-examination-evidence.ts`).
 
 R28: ❌ FAIL | Seed data does not match required counts:
+
 - RAM params: ✅ 19 (OK)
 - Exam areas: ❌ 39 (expected 25)
 - Exam items: ❌ 568 (expected 239)
-(verified via `node` JSON length counts; seeded in `prisma/seed.ts`).
+  (verified via `node` JSON length counts; seeded in `prisma/seed.ts`).
 
 ---
 
 ## Notable cross-cutting issues (impact Phase 1 usability)
 
-1) **Audit engagement creation likely blocked** due to schema/UI mismatch (`CreateEngagementSchema` vs `EngagementForm`).
-2) **Team assignment is not functional** (no real user list; no section allocation UI).
-3) **Exam framework counts don’t match requirements**, and the UI will reflect the seeded counts (39 areas / 568 items), causing requirement drift.
+1. **Audit engagement creation likely blocked** due to schema/UI mismatch (`CreateEngagementSchema` vs `EngagementForm`).
+2. **Team assignment is not functional** (no real user list; no section allocation UI).
+3. **Exam framework counts don’t match requirements**, and the UI will reflect the seeded counts (39 areas / 568 items), causing requirement drift.

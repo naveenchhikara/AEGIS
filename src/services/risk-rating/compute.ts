@@ -16,19 +16,17 @@ export class RiskRatingService {
 
   /**
    * Compute risk rating for an engagement based on its observations.
-   * 
+   *
    * Algorithm (R31):
    * 1. Each observation gets a weighted score = severity_weight × repeat_multiplier
    * 2. Total score = sum of all weighted scores
    * 3. Max possible score = count × CRITICAL_weight × repeat_multiplier
    * 4. Percentage = (max_possible - total) / max_possible × 100
    * 5. Map percentage to rating band per R32
-   * 
+   *
    * Inverted scale: fewer/lower findings = higher percentage = better rating
    */
-  computeEngagementRating(
-    observations: ObservationInput[]
-  ): RiskRatingResult {
+  computeEngagementRating(observations: ObservationInput[]): RiskRatingResult {
     if (observations.length === 0) {
       return {
         totalScore: 0,
@@ -102,7 +100,10 @@ export class RiskRatingService {
    */
   getRatingBand(percentageScore: number): RatingBand {
     for (const band of this.config.ratingBands) {
-      if (percentageScore >= band.minScore && percentageScore <= band.maxScore) {
+      if (
+        percentageScore >= band.minScore &&
+        percentageScore <= band.maxScore
+      ) {
         return band.band;
       }
     }
@@ -114,7 +115,7 @@ export class RiskRatingService {
    * Compute aggregate rating for multiple engagements (e.g., quarterly).
    */
   computeAggregateRating(
-    engagementRatings: RiskRatingResult[]
+    engagementRatings: RiskRatingResult[],
   ): RiskRatingResult {
     if (engagementRatings.length === 0) {
       return {
@@ -151,7 +152,7 @@ export class RiskRatingService {
         mediumCount: 0,
         lowCount: 0,
         repeatFindingCount: 0,
-      }
+      },
     );
 
     const percentageScore =

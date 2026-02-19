@@ -64,6 +64,7 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
 **Purpose:** Enable auditors to review individual loan accounts during audit execution, import loan data in bulk from CBS extracts, and capture SMA/NPA category summaries — core sections of the bank audit format.
 
 **Output:**
+
 - LoanReview CRUD + bulk CSV import action
 - SmaNpaEntry batch save action
 - Loan review table with add/edit/delete + CSV import UI
@@ -92,45 +93,51 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Create `src/data-access/loan-review.ts`:
 
+```typescript
+import "server-only";
+import { prismaForTenant } from "./prisma";
+import type { Session } from "@/lib/auth";
+```
+
+**Functions:**
+
+**`getLoanReviewsForEngagement(session, engagementId, options?)`:**
+
+- Query LoanReview where engagementId + tenantId
+- Optional filters: `assetClass`, `productType`
+- Order by: `accountNo` ascending
+- Return full records (no select subset — data table needs all fields)
+- Support pagination via `skip`/`take` if options provided
+
+**`getLoanReviewSummary(session, engagementId)`:**
+
+- Aggregate query:
   ```typescript
-  import "server-only";
-  import { prismaForTenant } from "./prisma";
-  import type { Session } from "@/lib/auth";
+  const summary = await db.loanReview.groupBy({
+    by: ["assetClass"],
+    where: { engagementId, tenantId },
+    _count: true,
+    _sum: { outstandingAmount: true, sanctionAmount: true },
+  });
   ```
+- Return aggregated counts and totals per asset class
 
-  **Functions:**
+**`getSmaNpaEntriesForEngagement(session, engagementId)`:**
 
-  **`getLoanReviewsForEngagement(session, engagementId, options?)`:**
-  - Query LoanReview where engagementId + tenantId
-  - Optional filters: `assetClass`, `productType`
-  - Order by: `accountNo` ascending
-  - Return full records (no select subset — data table needs all fields)
-  - Support pagination via `skip`/`take` if options provided
+- Query SmaNpaEntry where engagementId + tenantId
+- Order by: custom category order (SMA0, SMA1, SMA2, NPA_SUB_STANDARD, NPA_DOUBTFUL, NPA_LOSS)
+- Return all entries
 
-  **`getLoanReviewSummary(session, engagementId)`:**
-  - Aggregate query:
-    ```typescript
-    const summary = await db.loanReview.groupBy({
-      by: ["assetClass"],
-      where: { engagementId, tenantId },
-      _count: true,
-      _sum: { outstandingAmount: true, sanctionAmount: true },
-    });
-    ```
-  - Return aggregated counts and totals per asset class
+**`getEngagementForLoanReview(session, engagementId)`:**
 
-  **`getSmaNpaEntriesForEngagement(session, engagementId)`:**
-  - Query SmaNpaEntry where engagementId + tenantId
-  - Order by: custom category order (SMA0, SMA1, SMA2, NPA_SUB_STANDARD, NPA_DOUBTFUL, NPA_LOSS)
-  - Return all entries
-
-  **`getEngagementForLoanReview(session, engagementId)`:**
-  - Get engagement with branch select (for context display)
+- Get engagement with branch select (for context display)
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/loan-review.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/loan-review.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - All four functions exported
@@ -146,58 +153,75 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Add to existing schemas file:
 
-  ```typescript
-  // ─── Loan Review ──────────────────────────────────────────────
-  const ASSET_CLASSES = [
-    "STANDARD", "SMA0", "SMA1", "SMA2",
-    "NPA_SUB", "NPA_DOUBTFUL", "NPA_LOSS",
-  ] as const;
+```typescript
+// ─── Loan Review ──────────────────────────────────────────────
+const ASSET_CLASSES = [
+  "STANDARD",
+  "SMA0",
+  "SMA1",
+  "SMA2",
+  "NPA_SUB",
+  "NPA_DOUBTFUL",
+  "NPA_LOSS",
+] as const;
 
-  export const CreateLoanReviewSchema = z.object({
-    engagementId: z.string().uuid(),
-    accountNo: z.string().min(1, "Account number is required").max(50),
-    borrowerName: z.string().min(1, "Borrower name is required").max(200),
-    productType: z.string().min(1, "Product type is required"),
-    sanctionAmount: z.number().positive("Sanction amount must be positive"),
-    outstandingAmount: z.number().min(0, "Outstanding amount must be non-negative"),
-    assetClass: z.enum(ASSET_CLASSES),
-    dpd: z.number().int().min(0).default(0),
-    auditObservation: z.string().max(2000).optional(),
-  });
+export const CreateLoanReviewSchema = z.object({
+  engagementId: z.string().uuid(),
+  accountNo: z.string().min(1, "Account number is required").max(50),
+  borrowerName: z.string().min(1, "Borrower name is required").max(200),
+  productType: z.string().min(1, "Product type is required"),
+  sanctionAmount: z.number().positive("Sanction amount must be positive"),
+  outstandingAmount: z
+    .number()
+    .min(0, "Outstanding amount must be non-negative"),
+  assetClass: z.enum(ASSET_CLASSES),
+  dpd: z.number().int().min(0).default(0),
+  auditObservation: z.string().max(2000).optional(),
+});
 
-  export const UpdateLoanReviewSchema = CreateLoanReviewSchema.extend({
-    id: z.string().uuid(),
-  });
+export const UpdateLoanReviewSchema = CreateLoanReviewSchema.extend({
+  id: z.string().uuid(),
+});
 
-  export type CreateLoanReviewInput = z.infer<typeof CreateLoanReviewSchema>;
-  export type UpdateLoanReviewInput = z.infer<typeof UpdateLoanReviewSchema>;
+export type CreateLoanReviewInput = z.infer<typeof CreateLoanReviewSchema>;
+export type UpdateLoanReviewInput = z.infer<typeof UpdateLoanReviewSchema>;
 
-  // ─── CSV Import ───────────────────────────────────────────────
-  export const ImportLoanCsvSchema = z.object({
-    engagementId: z.string().uuid(),
-    rows: z.array(CreateLoanReviewSchema.omit({ engagementId: true })).min(1).max(5000),
-  });
+// ─── CSV Import ───────────────────────────────────────────────
+export const ImportLoanCsvSchema = z.object({
+  engagementId: z.string().uuid(),
+  rows: z
+    .array(CreateLoanReviewSchema.omit({ engagementId: true }))
+    .min(1)
+    .max(5000),
+});
 
-  export type ImportLoanCsvInput = z.infer<typeof ImportLoanCsvSchema>;
+export type ImportLoanCsvInput = z.infer<typeof ImportLoanCsvSchema>;
 
-  // ─── SMA/NPA Entries ──────────────────────────────────────────
-  const SMA_NPA_CATEGORIES = [
-    "SMA0", "SMA1", "SMA2",
-    "NPA_SUB_STANDARD", "NPA_DOUBTFUL", "NPA_LOSS",
-  ] as const;
+// ─── SMA/NPA Entries ──────────────────────────────────────────
+const SMA_NPA_CATEGORIES = [
+  "SMA0",
+  "SMA1",
+  "SMA2",
+  "NPA_SUB_STANDARD",
+  "NPA_DOUBTFUL",
+  "NPA_LOSS",
+] as const;
 
-  export const SaveSmaNpaEntriesSchema = z.object({
-    engagementId: z.string().uuid(),
-    entries: z.array(z.object({
+export const SaveSmaNpaEntriesSchema = z.object({
+  engagementId: z.string().uuid(),
+  entries: z.array(
+    z.object({
       category: z.enum(SMA_NPA_CATEGORIES),
       accountCount: z.number().int().min(0),
       totalAmount: z.number().min(0),
       remarks: z.string().max(500).optional(),
-    })),
-  });
+    }),
+  ),
+});
 
-  export type SaveSmaNpaEntriesInput = z.infer<typeof SaveSmaNpaEntriesSchema>;
-  ```
+export type SaveSmaNpaEntriesInput = z.infer<typeof SaveSmaNpaEntriesSchema>;
+```
+
   </action>
   <verify>
   ```bash
@@ -219,40 +243,45 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Create `src/actions/audit-execution/loan-review.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`createLoanReview(input: CreateLoanReviewInput)`:**
-  - Auth + permission: `examination:respond`
-  - Validate with CreateLoanReviewSchema
-  - Verify engagement exists + belongs to tenant
-  - Create LoanReview record with `tenantId`
-  - Set audit context: `loan_review.created`
-  - revalidatePath
-  - Return `{ success: true, data: { id } }`
+**`createLoanReview(input: CreateLoanReviewInput)`:**
 
-  **`updateLoanReview(input: UpdateLoanReviewInput)`:**
-  - Auth + permission: `examination:respond`
-  - Validate with UpdateLoanReviewSchema
-  - Verify LoanReview exists + belongs to tenant (findFirst with id + tenantId)
-  - Update record
-  - Set audit context: `loan_review.updated`
-  - revalidatePath
-  - Return `{ success: true, data: { id } }`
+- Auth + permission: `examination:respond`
+- Validate with CreateLoanReviewSchema
+- Verify engagement exists + belongs to tenant
+- Create LoanReview record with `tenantId`
+- Set audit context: `loan_review.created`
+- revalidatePath
+- Return `{ success: true, data: { id } }`
 
-  **`deleteLoanReview(input: { id: string; engagementId: string })`:**
-  - Auth + permission: `examination:respond`
-  - Verify record exists with tenantId
-  - Delete record
-  - Set audit context: `loan_review.deleted`
-  - revalidatePath
-  - Return `{ success: true }`
+**`updateLoanReview(input: UpdateLoanReviewInput)`:**
+
+- Auth + permission: `examination:respond`
+- Validate with UpdateLoanReviewSchema
+- Verify LoanReview exists + belongs to tenant (findFirst with id + tenantId)
+- Update record
+- Set audit context: `loan_review.updated`
+- revalidatePath
+- Return `{ success: true, data: { id } }`
+
+**`deleteLoanReview(input: { id: string; engagementId: string })`:**
+
+- Auth + permission: `examination:respond`
+- Verify record exists with tenantId
+- Delete record
+- Set audit context: `loan_review.deleted`
+- revalidatePath
+- Return `{ success: true }`
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/loan-review.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/loan-review.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - All three CRUD actions exported
@@ -269,44 +298,49 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Create `src/actions/audit-execution/import-loan-csv.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`importLoanReviewCsv(input: ImportLoanCsvInput)`:**
-  1. Auth + permission: `examination:respond`
-  2. Validate with ImportLoanCsvSchema
-  3. Verify engagement exists + belongs to tenant
-  4. Use transaction to batch-create LoanReview records:
-     ```typescript
-     await db.$transaction(async (tx: any) => {
-       await setAuditContext(tx, { actionType: "loan_review.csv_imported", ... });
+**`importLoanReviewCsv(input: ImportLoanCsvInput)`:**
 
-       // Delete existing records for this engagement (replace mode)
-       await tx.loanReview.deleteMany({
-         where: { engagementId: validated.engagementId, tenantId },
-       });
+1. Auth + permission: `examination:respond`
+2. Validate with ImportLoanCsvSchema
+3. Verify engagement exists + belongs to tenant
+4. Use transaction to batch-create LoanReview records:
 
-       // Create all rows
-       await tx.loanReview.createMany({
-         data: validated.rows.map(row => ({
-           tenantId,
-           engagementId: validated.engagementId,
-           ...row,
-         })),
-       });
+   ```typescript
+   await db.$transaction(async (tx: any) => {
+     await setAuditContext(tx, { actionType: "loan_review.csv_imported", ... });
+
+     // Delete existing records for this engagement (replace mode)
+     await tx.loanReview.deleteMany({
+       where: { engagementId: validated.engagementId, tenantId },
      });
-     ```
-  5. revalidatePath
-  6. Return `{ success: true, data: { imported: validated.rows.length } }`
 
-  **Note:** CSV parsing happens client-side (using PapaParse or manual split). The server action receives pre-parsed rows.
-  The delete-and-recreate approach is intentional — CSV imports are full replacements.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/import-loan-csv.ts 2>&1 | head -20
-  ```
+     // Create all rows
+     await tx.loanReview.createMany({
+       data: validated.rows.map(row => ({
+         tenantId,
+         engagementId: validated.engagementId,
+         ...row,
+       })),
+     });
+   });
+   ```
+
+5. revalidatePath
+6. Return `{ success: true, data: { imported: validated.rows.length } }`
+
+**Note:** CSV parsing happens client-side (using PapaParse or manual split). The server action receives pre-parsed rows.
+The delete-and-recreate approach is intentional — CSV imports are full replacements.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/import-loan-csv.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `importLoanReviewCsv` exported
@@ -323,48 +357,51 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Create `src/actions/audit-execution/sma-npa.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`saveSmaNpaEntries(input: SaveSmaNpaEntriesInput)`:**
-  1. Auth + permission: `examination:respond`
-  2. Validate with SaveSmaNpaEntriesSchema
-  3. Verify engagement exists + belongs to tenant
-  4. Transaction: upsert each entry using @@unique([engagementId, category]):
-     ```typescript
-     for (const entry of validated.entries) {
-       await tx.smaNpaEntry.upsert({
-         where: {
-           engagementId_category: {
-             engagementId: validated.engagementId,
-             category: entry.category,
-           },
-         },
-         update: {
-           accountCount: entry.accountCount,
-           totalAmount: entry.totalAmount,
-           remarks: entry.remarks ?? null,
-         },
-         create: {
-           tenantId,
+**`saveSmaNpaEntries(input: SaveSmaNpaEntriesInput)`:**
+
+1. Auth + permission: `examination:respond`
+2. Validate with SaveSmaNpaEntriesSchema
+3. Verify engagement exists + belongs to tenant
+4. Transaction: upsert each entry using @@unique([engagementId, category]):
+   ```typescript
+   for (const entry of validated.entries) {
+     await tx.smaNpaEntry.upsert({
+       where: {
+         engagementId_category: {
            engagementId: validated.engagementId,
            category: entry.category,
-           accountCount: entry.accountCount,
-           totalAmount: entry.totalAmount,
-           remarks: entry.remarks ?? null,
          },
-       });
-     }
-     ```
-  5. Set audit context: `sma_npa.saved`
-  6. revalidatePath
-  7. Return `{ success: true, data: { saved: entries.length } }`
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/sma-npa.ts 2>&1 | head -20
-  ```
+       },
+       update: {
+         accountCount: entry.accountCount,
+         totalAmount: entry.totalAmount,
+         remarks: entry.remarks ?? null,
+       },
+       create: {
+         tenantId,
+         engagementId: validated.engagementId,
+         category: entry.category,
+         accountCount: entry.accountCount,
+         totalAmount: entry.totalAmount,
+         remarks: entry.remarks ?? null,
+       },
+     });
+   }
+   ```
+5. Set audit context: `sma_npa.saved`
+6. revalidatePath
+7. Return `{ success: true, data: { saved: entries.length } }`
+   </action>
+   <verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/sma-npa.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `saveSmaNpaEntries` exported
@@ -381,40 +418,45 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   **6a. Create `src/components/audit-execution/loan-review-table.tsx`:**
 
-  "use client" — Data table for loan reviews:
-  - Columns: Account No, Borrower, Product, Sanction (₹), Outstanding (₹), Asset Class, DPD, Actions
-  - Asset class shown as colored badge (STANDARD=green, SMA*=amber, NPA*=red)
-  - Actions: Edit (opens form dialog), Delete (confirmation dialog)
-  - Footer row: Total sanction, Total outstanding
-  - Use shadcn Table component
-  - Props: `{ loanReviews: LoanReview[]; engagementId: string }`
+"use client" — Data table for loan reviews:
 
-  **6b. Create `src/components/audit-execution/loan-review-form.tsx`:**
+- Columns: Account No, Borrower, Product, Sanction (₹), Outstanding (₹), Asset Class, DPD, Actions
+- Asset class shown as colored badge (STANDARD=green, SMA*=amber, NPA*=red)
+- Actions: Edit (opens form dialog), Delete (confirmation dialog)
+- Footer row: Total sanction, Total outstanding
+- Use shadcn Table component
+- Props: `{ loanReviews: LoanReview[]; engagementId: string }`
 
-  "use client" — Dialog form for add/edit:
-  - Uses react-hook-form + zodResolver with CreateLoanReviewSchema
-  - Fields: accountNo, borrowerName, productType (select: Term Loan, CC, OD, Gold Loan, etc.), sanctionAmount, outstandingAmount, assetClass (select), dpd, auditObservation (textarea)
-  - Submit calls createLoanReview or updateLoanReview based on edit mode
-  - Rendered inside Dialog/Sheet from shadcn
-  - Props: `{ engagementId: string; existingData?: LoanReview; onClose: () => void }`
+**6b. Create `src/components/audit-execution/loan-review-form.tsx`:**
 
-  **6c. Create `src/components/audit-execution/loan-csv-import.tsx`:**
+"use client" — Dialog form for add/edit:
 
-  "use client" — CSV import component:
-  - File input for CSV file (accept=".csv")
-  - Parse CSV client-side using manual split (no PapaParse dependency) or simple parser:
-    - Expected columns: account_no, borrower_name, product_type, sanction_amount, outstanding_amount, asset_class, dpd
-    - First row = headers, subsequent rows = data
-  - Preview table showing first 10 rows
-  - "Import" button calls `importLoanReviewCsv` with parsed rows
-  - Show row count + success/error counts
-  - Warn: "This will replace all existing loan reviews for this engagement"
-  - Props: `{ engagementId: string; onImportComplete: () => void }`
+- Uses react-hook-form + zodResolver with CreateLoanReviewSchema
+- Fields: accountNo, borrowerName, productType (select: Term Loan, CC, OD, Gold Loan, etc.), sanctionAmount, outstandingAmount, assetClass (select), dpd, auditObservation (textarea)
+- Submit calls createLoanReview or updateLoanReview based on edit mode
+- Rendered inside Dialog/Sheet from shadcn
+- Props: `{ engagementId: string; existingData?: LoanReview; onClose: () => void }`
+
+**6c. Create `src/components/audit-execution/loan-csv-import.tsx`:**
+
+"use client" — CSV import component:
+
+- File input for CSV file (accept=".csv")
+- Parse CSV client-side using manual split (no PapaParse dependency) or simple parser:
+  - Expected columns: account_no, borrower_name, product_type, sanction_amount, outstanding_amount, asset_class, dpd
+  - First row = headers, subsequent rows = data
+- Preview table showing first 10 rows
+- "Import" button calls `importLoanReviewCsv` with parsed rows
+- Show row count + success/error counts
+- Warn: "This will replace all existing loan reviews for this engagement"
+- Props: `{ engagementId: string; onImportComplete: () => void }`
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/loan-review-table.tsx src/components/audit-execution/loan-review-form.tsx src/components/audit-execution/loan-csv-import.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/loan-review-table.tsx src/components/audit-execution/loan-review-form.tsx src/components/audit-execution/loan-csv-import.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - LoanReviewTable shows data with edit/delete actions
@@ -431,33 +473,36 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   Create `src/components/audit-execution/sma-npa-summary.tsx`:
 
-  "use client" — Category-wise SMA/NPA entry form:
-  - Fixed rows for 6 categories: SMA-0, SMA-1, SMA-2, NPA Sub-Standard, NPA Doubtful, NPA Loss
-  - Columns: Category, Account Count, Total Amount (₹), Remarks
-  - Account Count and Total Amount are editable number inputs
-  - Remarks is a short text input
-  - Total row at bottom (sum of all amounts)
-  - "Save" button calls `saveSmaNpaEntries` with all entries
-  - Pre-fill with existing data
-  - Props:
-    ```typescript
-    interface SmaNpaSummaryProps {
-      engagementId: string;
-      existingEntries: Array<{
-        category: string;
-        accountCount: number;
-        totalAmount: number;
-        remarks: string | null;
-      }>;
-    }
-    ```
-  - Use a local state array with useForm or useState for the 6 rows
-  - Toast on save success/error
+"use client" — Category-wise SMA/NPA entry form:
+
+- Fixed rows for 6 categories: SMA-0, SMA-1, SMA-2, NPA Sub-Standard, NPA Doubtful, NPA Loss
+- Columns: Category, Account Count, Total Amount (₹), Remarks
+- Account Count and Total Amount are editable number inputs
+- Remarks is a short text input
+- Total row at bottom (sum of all amounts)
+- "Save" button calls `saveSmaNpaEntries` with all entries
+- Pre-fill with existing data
+- Props:
+  ```typescript
+  interface SmaNpaSummaryProps {
+    engagementId: string;
+    existingEntries: Array<{
+      category: string;
+      accountCount: number;
+      totalAmount: number;
+      remarks: string | null;
+    }>;
+  }
+  ```
+- Use a local state array with useForm or useState for the 6 rows
+- Toast on save success/error
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/sma-npa-summary.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/sma-npa-summary.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - SmaNpaSummary renders 6 category rows with editable fields
@@ -474,25 +519,29 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
   <action>
   **8a. Create loan review page** (`/audit-execution/[id]/loan-review`):
 
-  Server component:
-  - Fetch engagement context + loan reviews via DAL
-  - Fetch summary (getLoanReviewSummary) for stats display
-  - Render header with branch name + stats (total loans, total outstanding)
-  - Render LoanReviewTable + Add button + LoanCsvImport
-  - Layout: Card with tabs "Manual Entry" / "CSV Import"
+Server component:
 
-  **8b. Create SMA/NPA page** (`/audit-execution/[id]/sma-npa`):
+- Fetch engagement context + loan reviews via DAL
+- Fetch summary (getLoanReviewSummary) for stats display
+- Render header with branch name + stats (total loans, total outstanding)
+- Render LoanReviewTable + Add button + LoanCsvImport
+- Layout: Card with tabs "Manual Entry" / "CSV Import"
 
-  Server component:
-  - Fetch engagement context + SMA/NPA entries
-  - Convert Decimal types to numbers for client
-  - Render SmaNpaSummary component
-  - Also show auto-computed summary from loan reviews (getLoanReviewSummary) if available, for comparison
+**8b. Create SMA/NPA page** (`/audit-execution/[id]/sma-npa`):
+
+Server component:
+
+- Fetch engagement context + SMA/NPA entries
+- Convert Decimal types to numbers for client
+- Render SmaNpaSummary component
+- Also show auto-computed summary from loan reviews (getLoanReviewSummary) if available, for comparison
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/audit-execution/\[id\]/loan-review/page.tsx src/app/\(dashboard\)/audit-execution/\[id\]/sma-npa/page.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/audit-execution/\[id\]/loan-review/page.tsx src/app/\(dashboard\)/audit-execution/\[id\]/sma-npa/page.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - Both pages exist at correct route paths

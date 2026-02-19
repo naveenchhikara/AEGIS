@@ -23,7 +23,8 @@ must_haves:
   artifacts:
     - path: "src/actions/audit-execution/upload-examination-evidence.ts"
       provides: "Server actions for requesting and confirming examination evidence uploads"
-      exports: ["requestExaminationEvidenceUpload", "confirmExaminationEvidenceUpload"]
+      exports:
+        ["requestExaminationEvidenceUpload", "confirmExaminationEvidenceUpload"]
     - path: "src/components/audit-execution/evidence-upload-panel.tsx"
       provides: "Client component for uploading evidence to examination responses"
       contains: "requestExaminationEvidenceUpload"
@@ -52,6 +53,7 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
 **Purpose:** Close the evidence pipeline gap so auditors can attach documentary proof to each examination item response during audit execution.
 
 **Output:**
+
 - Server actions for requesting presigned URLs and confirming uploads for examination evidence
 - Client upload component reusable across all 25 section tabs
 - Evidence list component showing attached files per examination item
@@ -81,91 +83,113 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
   <action>
   **1a. Update `src/actions/audit-execution/schemas.ts` — add evidence schemas:**
 
-  Add to existing schemas file:
-  ```typescript
-  export const RequestExamEvidenceUploadSchema = z.object({
-    engagementId: z.string().uuid(),
-    responseId: z.string().uuid(),
-    fileHeader: z.string().min(1, "File header is required"),
-    fileName: z.string().min(1, "File name is required"),
-    fileSize: z.number().int().positive().max(10 * 1024 * 1024, "File must be under 10MB"),
-  });
+Add to existing schemas file:
 
-  export const ConfirmExamEvidenceUploadSchema = z.object({
-    engagementId: z.string().uuid(),
-    responseId: z.string().uuid(),
-    s3Key: z.string().min(1),
-    filename: z.string().min(1),
-    fileSize: z.number().int().positive(),
-    contentType: z.string().min(1),
-    description: z.string().optional(),
-  });
+```typescript
+export const RequestExamEvidenceUploadSchema = z.object({
+  engagementId: z.string().uuid(),
+  responseId: z.string().uuid(),
+  fileHeader: z.string().min(1, "File header is required"),
+  fileName: z.string().min(1, "File name is required"),
+  fileSize: z
+    .number()
+    .int()
+    .positive()
+    .max(10 * 1024 * 1024, "File must be under 10MB"),
+});
 
-  export type RequestExamEvidenceUploadInput = z.infer<typeof RequestExamEvidenceUploadSchema>;
-  export type ConfirmExamEvidenceUploadInput = z.infer<typeof ConfirmExamEvidenceUploadSchema>;
-  ```
+export const ConfirmExamEvidenceUploadSchema = z.object({
+  engagementId: z.string().uuid(),
+  responseId: z.string().uuid(),
+  s3Key: z.string().min(1),
+  filename: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  contentType: z.string().min(1),
+  description: z.string().optional(),
+});
 
-  **1b. Create `src/actions/audit-execution/upload-examination-evidence.ts`:**
+export type RequestExamEvidenceUploadInput = z.infer<
+  typeof RequestExamEvidenceUploadSchema
+>;
+export type ConfirmExamEvidenceUploadInput = z.infer<
+  typeof ConfirmExamEvidenceUploadSchema
+>;
+```
 
-  Follow the auditee.ts evidence upload pattern but scoped to examination responses:
+**1b. Create `src/actions/audit-execution/upload-examination-evidence.ts`:**
 
-  ```typescript
-  "use server";
+Follow the auditee.ts evidence upload pattern but scoped to examination responses:
 
-  import { getRequiredSession } from "@/data-access/session";
-  import { prismaForTenant } from "@/data-access/prisma";
-  import { setAuditContext } from "@/data-access/audit-context";
-  import { hasPermission, type Role } from "@/lib/permissions";
-  import { validateFileType, generateS3Key, generateUploadUrl, verifyUpload } from "@/lib/s3";
-  import { logger } from "@/lib/logger";
-  import { RequestExamEvidenceUploadSchema, ConfirmExamEvidenceUploadSchema } from "./schemas";
-  ```
+```typescript
+"use server";
 
-  **`requestExaminationEvidenceUpload(input)`:**
-  1. Auth + permission check: `examination:respond`
-  2. Validate input with RequestExamEvidenceUploadSchema
-  3. Validate file type via `validateFileType(fileHeader)`
-  4. Verify engagement + response exist and belong to tenant
-  5. Generate S3 key: `generateS3Key(tenantId, responseId, extension)` — Note: reuse generateS3Key but pass responseId instead of observationId (the function just builds a path)
-  6. Generate presigned URL: `generateUploadUrl(s3Key, mimeType, fileSize)`
-  7. Return `{ success: true, data: { uploadUrl, s3Key, contentType: mimeType } }`
+import { getRequiredSession } from "@/data-access/session";
+import { prismaForTenant } from "@/data-access/prisma";
+import { setAuditContext } from "@/data-access/audit-context";
+import { hasPermission, type Role } from "@/lib/permissions";
+import {
+  validateFileType,
+  generateS3Key,
+  generateUploadUrl,
+  verifyUpload,
+} from "@/lib/s3";
+import { logger } from "@/lib/logger";
+import {
+  RequestExamEvidenceUploadSchema,
+  ConfirmExamEvidenceUploadSchema,
+} from "./schemas";
+```
 
-  **`confirmExaminationEvidenceUpload(input)`:**
-  1. Auth + permission check: `examination:respond`
-  2. Validate input with ConfirmExamEvidenceUploadSchema
-  3. Verify upload exists in S3: `verifyUpload(s3Key)`
-  4. Create Evidence record in transaction:
-     ```typescript
-     await tx.evidence.create({
-       data: {
-         tenantId,
-         examinationResponseId: validated.responseId,
-         filename: validated.filename,
-         s3Key: validated.s3Key,
-         fileSize: validated.fileSize,
-         contentType: validated.contentType,
-         description: validated.description ?? null,
-         uploadedById: session.user.id,
-       },
-     });
-     ```
-  5. revalidatePath("/audit-execution")
-  6. Return `{ success: true, data: { evidenceId } }`
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/upload-examination-evidence.ts 2>&1 | head -20
-  ```
-  Must compile without errors. Both functions must be exported.
-  </verify>
-  <done>
-  - `upload-examination-evidence.ts` exports `requestExaminationEvidenceUpload` and `confirmExaminationEvidenceUpload`
-  - Both actions follow server action boilerplate (auth → permission → validate → S3 → DB)
-  - Evidence records use `examinationResponseId` (not `observationId`)
-  - S3 key uses tenant-scoped path
-  - TypeScript compiles
+**`requestExaminationEvidenceUpload(input)`:**
+
+1. Auth + permission check: `examination:respond`
+2. Validate input with RequestExamEvidenceUploadSchema
+3. Validate file type via `validateFileType(fileHeader)`
+4. Verify engagement + response exist and belong to tenant
+5. Generate S3 key: `generateS3Key(tenantId, responseId, extension)` — Note: reuse generateS3Key but pass responseId instead of observationId (the function just builds a path)
+6. Generate presigned URL: `generateUploadUrl(s3Key, mimeType, fileSize)`
+7. Return `{ success: true, data: { uploadUrl, s3Key, contentType: mimeType } }`
+
+**`confirmExaminationEvidenceUpload(input)`:**
+
+1. Auth + permission check: `examination:respond`
+2. Validate input with ConfirmExamEvidenceUploadSchema
+3. Verify upload exists in S3: `verifyUpload(s3Key)`
+4. Create Evidence record in transaction:
+   ```typescript
+   await tx.evidence.create({
+     data: {
+       tenantId,
+       examinationResponseId: validated.responseId,
+       filename: validated.filename,
+       s3Key: validated.s3Key,
+       fileSize: validated.fileSize,
+       contentType: validated.contentType,
+       description: validated.description ?? null,
+       uploadedById: session.user.id,
+     },
+   });
+   ```
+5. revalidatePath("/audit-execution")
+6. Return `{ success: true, data: { evidenceId } }`
+   </action>
+   <verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/upload-examination-evidence.ts 2>&1 | head -20
+```
+
+Must compile without errors. Both functions must be exported.
+</verify>
+<done>
+
+- `upload-examination-evidence.ts` exports `requestExaminationEvidenceUpload` and `confirmExaminationEvidenceUpload`
+- Both actions follow server action boilerplate (auth → permission → validate → S3 → DB)
+- Evidence records use `examinationResponseId` (not `observationId`)
+- S3 key uses tenant-scoped path
+- TypeScript compiles
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Task 2: DAL — Include evidence in examination response queries</name>
@@ -173,10 +197,41 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
   <action>
   Update `getExaminationResponsesForSection()` in `src/data-access/audit-execution.ts` to include evidence in the query:
 
-  In the `include` clause of the `auditExaminationResponse` query, add:
-  ```typescript
-  evidence: {
-    where: { deletedAt: null },
+In the `include` clause of the `auditExaminationResponse` query, add:
+
+```typescript
+evidence: {
+  where: { deletedAt: null },
+  select: {
+    id: true,
+    filename: true,
+    s3Key: true,
+    fileSize: true,
+    contentType: true,
+    description: true,
+    createdAt: true,
+    uploadedBy: { select: { id: true, name: true } },
+  },
+  orderBy: { createdAt: "asc" },
+},
+```
+
+Also add a new function `getEvidenceForExaminationResponse()`:
+
+```typescript
+export async function getEvidenceForExaminationResponse(
+  session: Session,
+  responseId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.evidence.findMany({
+    where: {
+      examinationResponseId: responseId,
+      tenantId,
+      deletedAt: null,
+    },
     select: {
       id: true,
       filename: true,
@@ -188,38 +243,10 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
       uploadedBy: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "asc" },
-  },
-  ```
+  });
+}
+```
 
-  Also add a new function `getEvidenceForExaminationResponse()`:
-  ```typescript
-  export async function getEvidenceForExaminationResponse(
-    session: Session,
-    responseId: string,
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
-
-    return db.evidence.findMany({
-      where: {
-        examinationResponseId: responseId,
-        tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        filename: true,
-        s3Key: true,
-        fileSize: true,
-        contentType: true,
-        description: true,
-        createdAt: true,
-        uploadedBy: { select: { id: true, name: true } },
-      },
-      orderBy: { createdAt: "asc" },
-    });
-  }
-  ```
   </action>
   <verify>
   ```bash
@@ -241,71 +268,77 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
   <action>
   **3a. Create `src/components/audit-execution/evidence-upload-panel.tsx`:**
 
-  Mirror the pattern from `src/components/auditee/evidence-uploader.tsx` but adapted for examination evidence:
+Mirror the pattern from `src/components/auditee/evidence-uploader.tsx` but adapted for examination evidence:
 
-  ```typescript
-  "use client";
-  ```
+```typescript
+"use client";
+```
 
-  Props:
-  ```typescript
-  interface EvidenceUploadPanelProps {
-    engagementId: string;
-    responseId: string;
-    onUploadComplete?: () => void;
-  }
-  ```
+Props:
 
-  Implementation:
-  - Use `useDropzone` from react-dropzone for file selection
-  - On file drop: call `requestExaminationEvidenceUpload({ engagementId, responseId, fileHeader, fileName, fileSize })`
-  - On presigned URL received: PUT file to S3 via XHR with progress tracking
-  - On PUT complete: call `confirmExaminationEvidenceUpload({ engagementId, responseId, s3Key, filename, fileSize, contentType })`
-  - Show upload progress bar, success/error states
-  - Accepted file types: PDF, JPEG, PNG, DOCX, XLSX (same as existing uploader)
-  - Max file size: 10MB
+```typescript
+interface EvidenceUploadPanelProps {
+  engagementId: string;
+  responseId: string;
+  onUploadComplete?: () => void;
+}
+```
 
-  Keep it compact — reuse the same queue/retry pattern from evidence-uploader.tsx but simplified (single file at a time is OK).
+Implementation:
 
-  **3b. Create `src/components/audit-execution/examination-evidence-list.tsx`:**
+- Use `useDropzone` from react-dropzone for file selection
+- On file drop: call `requestExaminationEvidenceUpload({ engagementId, responseId, fileHeader, fileName, fileSize })`
+- On presigned URL received: PUT file to S3 via XHR with progress tracking
+- On PUT complete: call `confirmExaminationEvidenceUpload({ engagementId, responseId, s3Key, filename, fileSize, contentType })`
+- Show upload progress bar, success/error states
+- Accepted file types: PDF, JPEG, PNG, DOCX, XLSX (same as existing uploader)
+- Max file size: 10MB
 
-  ```typescript
-  "use client";
+Keep it compact — reuse the same queue/retry pattern from evidence-uploader.tsx but simplified (single file at a time is OK).
 
-  import { generateDownloadUrl } from "@/lib/s3"; // Note: this is server-only
-  ```
+**3b. Create `src/components/audit-execution/examination-evidence-list.tsx`:**
 
-  Actually, this should be a server component or use a download action. Create it as:
+```typescript
+"use client";
 
-  Props:
-  ```typescript
-  interface EvidenceListProps {
-    evidence: Array<{
-      id: string;
-      filename: string;
-      fileSize: number;
-      contentType: string;
-      description: string | null;
-      createdAt: Date;
-      uploadedBy: { id: string; name: string };
-    }>;
-    engagementId: string;
-    responseId: string;
-  }
-  ```
+import { generateDownloadUrl } from "@/lib/s3"; // Note: this is server-only
+```
 
-  Display:
-  - List of attached files with icon (PDF/image/doc), filename, size, uploader name, date
-  - Download link (use a server action `getEvidenceDownloadUrl(evidenceId)` that calls `generateDownloadUrl`)
-  - Empty state: "No evidence attached"
-  - Use FileText/Image icons from lucide-react based on contentType
+Actually, this should be a server component or use a download action. Create it as:
 
-  **3c. Add download action** in `upload-examination-evidence.ts`:
-  ```typescript
-  export async function getExaminationEvidenceDownloadUrl(evidenceId: string) {
-    // Auth, verify evidence belongs to tenant, call generateDownloadUrl
-  }
-  ```
+Props:
+
+```typescript
+interface EvidenceListProps {
+  evidence: Array<{
+    id: string;
+    filename: string;
+    fileSize: number;
+    contentType: string;
+    description: string | null;
+    createdAt: Date;
+    uploadedBy: { id: string; name: string };
+  }>;
+  engagementId: string;
+  responseId: string;
+}
+```
+
+Display:
+
+- List of attached files with icon (PDF/image/doc), filename, size, uploader name, date
+- Download link (use a server action `getEvidenceDownloadUrl(evidenceId)` that calls `generateDownloadUrl`)
+- Empty state: "No evidence attached"
+- Use FileText/Image icons from lucide-react based on contentType
+
+**3c. Add download action** in `upload-examination-evidence.ts`:
+
+```typescript
+export async function getExaminationEvidenceDownloadUrl(evidenceId: string) {
+  // Auth, verify evidence belongs to tenant, call generateDownloadUrl
+}
+```
+
   </action>
   <verify>
   ```bash
@@ -327,39 +360,42 @@ Implement R16 (evidence_refs on AuditExaminationResponse) and R27 (generalized E
   <action>
   Update the section page to render evidence components for each examination item:
 
-  1. The page already renders examination items with response forms
-  2. For each item that has a response (or is being responded to), add:
-     - `<ExaminationEvidenceList evidence={response.evidence} engagementId={engagementId} responseId={response.id} />`
-     - `<EvidenceUploadPanel engagementId={engagementId} responseId={response.id} />`
-  3. Position the evidence section below the response form for each item
-  4. Wrap in a collapsible section (use Collapsible from shadcn/ui or an Accordion):
-     ```tsx
-     <div className="mt-2 border-t pt-2">
-       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-         <Paperclip className="h-4 w-4" />
-         <span>Evidence ({response.evidence?.length ?? 0})</span>
-       </div>
-       <ExaminationEvidenceList evidence={response.evidence ?? []} ... />
-       <EvidenceUploadPanel engagementId={engagementId} responseId={response.id} />
+1. The page already renders examination items with response forms
+2. For each item that has a response (or is being responded to), add:
+   - `<ExaminationEvidenceList evidence={response.evidence} engagementId={engagementId} responseId={response.id} />`
+   - `<EvidenceUploadPanel engagementId={engagementId} responseId={response.id} />`
+3. Position the evidence section below the response form for each item
+4. Wrap in a collapsible section (use Collapsible from shadcn/ui or an Accordion):
+   ```tsx
+   <div className="mt-2 border-t pt-2">
+     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+       <Paperclip className="h-4 w-4" />
+       <span>Evidence ({response.evidence?.length ?? 0})</span>
      </div>
-     ```
+     <ExaminationEvidenceList evidence={response.evidence ?? []} ... />
+     <EvidenceUploadPanel engagementId={engagementId} responseId={response.id} />
+   </div>
+   ```
 
-  **IMPORTANT:** The evidence upload panel should only show if the user has `examination:respond` permission. Check this in the server component and pass a `canUpload` prop.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/audit-execution/\[id\]/sections/\[code\]/page.tsx 2>&1 | head -20
-  ```
-  Must compile without errors.
-  </verify>
-  <done>
-  - Section page renders EvidenceUploadPanel and ExaminationEvidenceList per examination item
-  - Evidence is loaded from the DAL query (included in response data)
-  - Upload panel is permission-gated
-  - Evidence count shown per item
-  - TypeScript compiles
+**IMPORTANT:** The evidence upload panel should only show if the user has `examination:respond` permission. Check this in the server component and pass a `canUpload` prop.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/\(dashboard\)/audit-execution/\[id\]/sections/\[code\]/page.tsx 2>&1 | head -20
+```
+
+Must compile without errors.
+</verify>
+<done>
+
+- Section page renders EvidenceUploadPanel and ExaminationEvidenceList per examination item
+- Evidence is loaded from the DAL query (included in response data)
+- Upload panel is permission-gated
+- Evidence count shown per item
+- TypeScript compiles
   </done>
-</task>
+  </task>
 
 ## Verification
 

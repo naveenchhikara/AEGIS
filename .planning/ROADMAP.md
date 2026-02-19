@@ -6,9 +6,11 @@
 ---
 
 ## Phase 1: Core Audit Domain (Foundation)
+
 **Goal:** Auditors can plan RAM-based audits, assign teams, and execute structured section-based examinations at branches with 239 value statements.
 
 **Success Criteria:**
+
 1. RAM assessment can be created for any branch with 19 configurable parameters, producing a composite score and risk category
 2. Annual audit plan generates engagement schedule based on RAM scores and frequency rules (6/9/12/15/18 months)
 3. Audit engagement has a team (lead + members) with section assignments
@@ -25,9 +27,11 @@
 ---
 
 ## Phase 2: Reporting & Compliance Lifecycle
+
 **Goal:** Completed audits produce standardized reports matching bank format, and every observation flows through a tracked compliance lifecycle from Branch → ZAC → ACE → ACB with SLA enforcement.
 
 **Success Criteria:**
+
 1. Multi-sheet XLSX report generates with 13+ tabs matching existing bank audit format
 2. PDF summary report with executive summary, key findings, and BH Certificate
 3. Risk rating computed from weighted observation scores (repeat findings get 1.5× multiplier)
@@ -44,9 +48,11 @@
 ---
 
 ## Phase 3: GRC & Issue Management
+
 **Goal:** Enterprise risk register links risks to controls and audits. Unified issue management tracks findings from all assurance sources. Quality assessment measures the audit function itself.
 
 **Success Criteria:**
+
 1. Risk register with risk statements, inherent/residual scores, and KRI tracking per entity
 2. Control library with test procedures and auto-generated work programs per engagement
 3. Unified issue model ingests from internal audit, regulatory, external audit, and self-assessment
@@ -62,9 +68,11 @@
 ---
 
 ## Phase 4: UCB Regulatory & Governance
+
 **Goal:** Unified audit universe covers all mandated audit types (RBIA, concurrent, IS/EDP, statutory). Concurrent audit workbench enables daily/weekly checks. Governance module supports ACB agenda building and RBI inspection readiness.
 
 **Success Criteria:**
+
 1. Audit universe registry with branches, departments, processes, vendors as auditable entities
 2. Unified calendar showing all audit types with periodicity compliance
 3. Concurrent audit rapid entry workbench with scope templates (cash, investments, advances, off-BS)
@@ -82,6 +90,7 @@
 ---
 
 ## Phase 5: DEFERRED — Advanced Analytics & AI
+
 **Goal:** Data connectors + rule-based analytics engine + AI anomaly detection.
 **Modules:** M10 (Continuous Auditing), M11 (AI Analytics)
 **Status:** Deferred — requires CBS data feeds and ML infrastructure
@@ -89,9 +98,11 @@
 ---
 
 ## Phase 6: Specialized Regulatory Modules
+
 **Goal:** Investment/treasury audit controls and EDP/IS audit module with application inventory and IS checklists.
 
 **Success Criteria:**
+
 1. SGL/CSGL reconciliation tracking and broker compliance (5% cap) analytics
 2. Non-SLR investment cap monitoring with drill-down
 3. Quarterly auditor certification workflow for investments
@@ -107,6 +118,7 @@
 ---
 
 ## DEFERRED: M16 IRAC Engine
+
 **Status:** Deferred — complex computation engine requiring CBS loan data pipeline
 
 ---

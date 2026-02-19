@@ -13,7 +13,7 @@ export async function getPolicyDocuments(
   options?: {
     category?: string;
     status?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -28,10 +28,7 @@ export async function getPolicyDocuments(
   });
 }
 
-export async function getPolicyDocument(
-  session: Session,
-  policyId: string
-) {
+export async function getPolicyDocument(session: Session, policyId: string) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 
@@ -51,7 +48,7 @@ export async function createPolicyDocument(
     status?: string;
     documentUrl?: string;
     summary?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -77,7 +74,7 @@ export async function updatePolicyDocument(
     status?: string;
     documentUrl?: string;
     summary?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -88,10 +85,7 @@ export async function updatePolicyDocument(
   });
 }
 
-export async function deletePolicyDocument(
-  session: Session,
-  policyId: string
-) {
+export async function deletePolicyDocument(session: Session, policyId: string) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 
@@ -105,7 +99,7 @@ export async function deletePolicyDocument(
  */
 export async function getPoliciesDueForReview(
   session: Session,
-  withinDays: number = 30
+  withinDays: number = 30,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -135,7 +129,7 @@ export async function getCommittees(
   session: Session,
   options?: {
     isActive?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -161,10 +155,7 @@ export async function getCommittees(
   });
 }
 
-export async function getCommittee(
-  session: Session,
-  committeeId: string
-) {
+export async function getCommittee(session: Session, committeeId: string) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 
@@ -192,7 +183,7 @@ export async function createCommittee(
     name: string;
     description?: string;
     isActive?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -213,7 +204,7 @@ export async function updateCommittee(
     name?: string;
     description?: string;
     isActive?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -236,7 +227,7 @@ export async function addCommitteeMember(
     committeeId: string;
     userId: string;
     role: string;
-  }
+  },
 ) {
   const db = prismaForTenant((session.user as any).tenantId as string);
 
@@ -247,7 +238,7 @@ export async function addCommitteeMember(
 
 export async function removeCommitteeMember(
   session: Session,
-  memberId: string
+  memberId: string,
 ) {
   const db = prismaForTenant((session.user as any).tenantId as string);
 
@@ -259,7 +250,7 @@ export async function removeCommitteeMember(
 export async function updateCommitteeMemberRole(
   session: Session,
   memberId: string,
-  role: string
+  role: string,
 ) {
   const db = prismaForTenant((session.user as any).tenantId as string);
 
@@ -282,7 +273,7 @@ export async function getCommitteeMeetings(
     status?: string;
     fromDate?: Date;
     toDate?: Date;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -304,10 +295,7 @@ export async function getCommitteeMeetings(
   });
 }
 
-export async function getCommitteeMeeting(
-  session: Session,
-  meetingId: string
-) {
+export async function getCommitteeMeeting(session: Session, meetingId: string) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 
@@ -336,7 +324,7 @@ export async function createCommitteeMeeting(
     meetingDate: Date;
     agendaItems?: any;
     attendees?: string[];
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -359,7 +347,7 @@ export async function updateCommitteeMeeting(
     minutesRef?: string;
     status?: string;
     attendees?: string[];
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -382,7 +370,7 @@ export async function getHousekeepingMetrics(
     branchId?: string;
     metricType?: string;
     period?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -405,7 +393,7 @@ export async function getHousekeepingMetrics(
 
 export async function getHousekeepingMetric(
   session: Session,
-  metricId: string
+  metricId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -429,7 +417,7 @@ export async function createHousekeepingMetric(
     entriesCount?: number;
     agingDays?: number;
     remarks?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -452,7 +440,7 @@ export async function updateHousekeepingMetric(
     entriesCount?: number;
     agingDays?: number;
     remarks?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -468,7 +456,7 @@ export async function updateHousekeepingMetric(
  */
 export async function getHighRiskHousekeepingMetrics(
   session: Session,
-  thresholdDays: number = 90
+  thresholdDays: number = 90,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);

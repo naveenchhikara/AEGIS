@@ -5,6 +5,7 @@
 ### Types vs Interfaces
 
 **Use `type` for:**
+
 - Union types
 - Intersection types
 - Mapped types
@@ -28,6 +29,7 @@ type ActionResult<T> =
 ```
 
 **Use `interface` for:**
+
 - Object shapes (especially for props)
 - Extending other interfaces
 - Declaration merging (rare)
@@ -402,7 +404,7 @@ type FormState = {
 
 async function submitAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     title: formData.get("title") as string,
@@ -489,7 +491,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function ObservationForm({ onSubmit }: { onSubmit: (data: FormValues) => void }) {
+export function ObservationForm({
+  onSubmit,
+}: {
+  onSubmit: (data: FormValues) => void;
+}) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -502,10 +508,7 @@ export function ObservationForm({ onSubmit }: { onSubmit: (data: FormValues) => 
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <div>
         <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          {...form.register("title")}
-        />
+        <Input id="title" {...form.register("title")} />
         {form.formState.errors.title && (
           <p className="text-sm text-destructive">
             {form.formState.errors.title.message}
@@ -536,11 +539,15 @@ type FormState = {
 
 async function submitAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     title: formData.get("title") as string,
-    severity: formData.get("severity") as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+    severity: formData.get("severity") as
+      | "LOW"
+      | "MEDIUM"
+      | "HIGH"
+      | "CRITICAL",
   };
 
   return createObservation(input);
@@ -588,10 +595,7 @@ export async function myAction(input: Input) {
     return { success: true, data: result };
   } catch (error) {
     // Log error with context
-    logger.error(
-      { error, action: "my_action", tenantId },
-      "Action failed"
-    );
+    logger.error({ error, action: "my_action", tenantId }, "Action failed");
 
     // Return user-friendly error message
     return {
@@ -780,7 +784,7 @@ export function Button({ className, ...props }: ButtonProps) {
     <button
       className={cn(
         "rounded-md bg-primary px-4 py-2 text-white", // Base classes
-        className // Override classes
+        className, // Override classes
       )}
       {...props}
     />
@@ -826,8 +830,8 @@ test.describe("Observation Lifecycle", () => {
     await page.goto("/findings/new");
 
     // Fill form
-    await page.fill('input#title', "Test Observation");
-    await page.selectOption('select#severity', "HIGH");
+    await page.fill("input#title", "Test Observation");
+    await page.selectOption("select#severity", "HIGH");
 
     // Submit
     await page.click('button[type="submit"]');
@@ -836,7 +840,7 @@ test.describe("Observation Lifecycle", () => {
     await page.waitForURL(/\/findings\/[a-f0-9-]+$/);
 
     // Assert success toast
-    await expect(page.locator('text=created successfully')).toBeVisible();
+    await expect(page.locator("text=created successfully")).toBeVisible();
   });
 });
 ```
@@ -849,14 +853,19 @@ test.describe("Observation Lifecycle", () => {
 import { test as setup } from "@playwright/test";
 
 const users = [
-  { role: "auditor", email: "auditor@test.com", password: "...", file: "playwright/.auth/auditor.json" },
+  {
+    role: "auditor",
+    email: "auditor@test.com",
+    password: "...",
+    file: "playwright/.auth/auditor.json",
+  },
 ];
 
 for (const user of users) {
   setup(`authenticate as ${user.role}`, async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input#email', user.email);
-    await page.fill('input#password', user.password);
+    await page.fill("input#email", user.email);
+    await page.fill("input#password", user.password);
     await page.click('button[type="submit"]');
     await page.waitForURL("**/dashboard**");
     await page.context().storageState({ path: user.file });

@@ -77,10 +77,10 @@ export function EngagementHeader({ engagement }: EngagementHeaderProps) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Branch info */}
             <div className="flex items-start gap-3">
-              <Building2 className="mt-0.5 h-5 w-5 text-muted-foreground" />
+              <Building2 className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
                 <p className="text-sm font-medium">Branch</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {engagement.branch?.code} — {engagement.branch?.city}
                 </p>
               </div>
@@ -88,10 +88,10 @@ export function EngagementHeader({ engagement }: EngagementHeaderProps) {
 
             {/* Period */}
             <div className="flex items-start gap-3">
-              <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
                 <p className="text-sm font-medium">Audit Period</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {formatDate(engagement.periodStart)} to{" "}
                   {formatDate(engagement.periodEnd)}
                 </p>
@@ -100,10 +100,10 @@ export function EngagementHeader({ engagement }: EngagementHeaderProps) {
 
             {/* Scheduled dates */}
             <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
+              <Clock className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
                 <p className="text-sm font-medium">Scheduled Dates</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {formatDate(engagement.scheduledStartDate)} to{" "}
                   {formatDate(engagement.scheduledEndDate)}
                 </p>
@@ -117,7 +117,7 @@ export function EngagementHeader({ engagement }: EngagementHeaderProps) {
               {engagement.actualStartDate && (
                 <div>
                   <p className="text-sm font-medium">Actual Dates</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {formatDate(engagement.actualStartDate)} to{" "}
                     {formatDate(engagement.actualEndDate)}
                   </p>

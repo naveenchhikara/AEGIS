@@ -35,10 +35,10 @@ function daysBetween(startDate: Date, endDate: Date): number {
  */
 function getEscalationLevelFromDays(daysOverdue: number): EscalationLevel {
   if (daysOverdue >= 180) return 4; // L4: ACB
-  if (daysOverdue >= 90) return 3;  // L3: ACE
-  if (daysOverdue >= 30) return 2;  // L2: ZAC
-  if (daysOverdue >= 15) return 1;  // L1: Email
-  return 0;                         // L0: Within grace period
+  if (daysOverdue >= 90) return 3; // L3: ACE
+  if (daysOverdue >= 30) return 2; // L2: ZAC
+  if (daysOverdue >= 15) return 1; // L1: Email
+  return 0; // L0: Within grace period
 }
 
 /**
@@ -54,7 +54,7 @@ export function computeEscalation(
   createdAt: Date,
   dueDate: Date,
   currentEscalationLevel: EscalationLevel,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): EscalationResult {
   // Days since item was created
   const daysOpen = daysBetween(createdAt, now);
@@ -140,7 +140,7 @@ export function getEscalationRouting(level: EscalationLevel): {
 
 export function computeBatchEscalation(
   items: ComplianceItemForEscalation[],
-  now: Date = new Date()
+  now: Date = new Date(),
 ): EscalationUpdate[] {
   const updates: EscalationUpdate[] = [];
 
@@ -149,7 +149,7 @@ export function computeBatchEscalation(
       item.createdAt,
       item.dueDate,
       item.escalationLevel,
-      now
+      now,
     );
 
     // Only include if escalation level changed or daysOpen changed

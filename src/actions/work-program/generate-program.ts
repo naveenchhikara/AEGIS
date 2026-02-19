@@ -68,7 +68,10 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
 
       // Get test procedures to include
       let testProcedures;
-      if (parsed.data.testProcedureIds && parsed.data.testProcedureIds.length > 0) {
+      if (
+        parsed.data.testProcedureIds &&
+        parsed.data.testProcedureIds.length > 0
+      ) {
         // Use specified test procedures
         testProcedures = await tx.testProcedure.findMany({
           where: {
@@ -109,7 +112,7 @@ export async function generateWorkProgram(input: GenerateWorkProgramInput) {
           let assignedToId = undefined;
           if (parsed.data.autoAssign) {
             const leadAuditor = engagement.teamMembers.find(
-              (tm: any) => tm.roleInEngagement === "LEAD_AUDITOR"
+              (tm: any) => tm.roleInEngagement === "LEAD_AUDITOR",
             );
             assignedToId = leadAuditor?.userId;
           }

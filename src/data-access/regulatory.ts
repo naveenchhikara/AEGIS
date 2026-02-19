@@ -11,7 +11,7 @@ export async function getRegulatoryObservations(
     source?: string;
     atrStatus?: string;
     severity?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -41,7 +41,7 @@ export async function getRegulatoryObservations(
  */
 export async function getRegulatoryObservation(
   session: Session,
-  observationId: string
+  observationId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -73,7 +73,7 @@ export async function createRegulatoryObservation(
     severity: string;
     atrStatus?: string;
     issueId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -101,7 +101,7 @@ export async function updateRegulatoryObservation(
     submittedAt?: Date;
     acceptedAt?: Date;
     issueId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -133,7 +133,7 @@ export async function getPendingAtrObservations(session: Session) {
  */
 export async function getObservationByReference(
   session: Session,
-  referenceNo: string
+  referenceNo: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);

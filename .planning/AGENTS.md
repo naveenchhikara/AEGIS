@@ -2,35 +2,35 @@
 
 ## Pipeline Roles
 
-| GSD Agent | Primary Model | Fallback 1 | Fallback 2 | Skills | Spawns |
-|-----------|--------------|------------|------------|--------|--------|
-| **Orchestrator** | Opus 4.6 | GPT-5.2 | GLM-5 | architecture-patterns, cc-godmode | All agents |
-| **gsd-roadmapper** | Opus 4.6 | GPT-5.2 | GLM-5 | architecture-patterns, idea-coach | Once at init |
-| **gsd-codebase-mapper** | Sonnet 4.5 | GLM-5 | GPT-4.2 | nextjs-expert, senior-backend | Once + on-demand |
-| **gsd-planner** | Opus 4.6 | GPT-5.2 | GLM-5 | architecture-patterns, nextjs-expert | Per phase |
-| **gsd-plan-checker** | GPT-5.2 | GLM-5 | Opus 4.6 | test-patterns, security-audit | Per phase |
-| **gsd-executor:schema** | Sonnet 4.5 | GLM-5 | GPT-4.2 | prisma, sql-toolkit, data-validation | Schema tasks |
-| **gsd-executor:backend** | Sonnet 4.5 | GLM-5 | GPT-4.2 | senior-backend, nodejs-patterns, api-dev | Server actions |
-| **gsd-executor:frontend** | Sonnet 4.5 | GLM-5 | GPT-4.2 | nextjs-expert, ui-ux-pro-max, anthropic-frontend-design | Pages/components |
-| **gsd-executor:seed** | Sonnet 4.5 | GLM-5 | GPT-4.2 | data-validation, sql-toolkit | Seed data scripts |
-| **gsd-verifier** | GPT-5.2 | GLM-5 | Opus 4.6 | test-patterns, typescript-pro, security-audit | Per phase |
-| **gsd-debugger** | Opus 4.6 | GPT-5.2 | GLM-5 | senior-backend, nextjs-expert | On failure |
-| **gsd-integration-checker** | GPT-5.2 | GLM-5 | Sonnet 4.5 | test-patterns, architecture-patterns | Phase boundaries |
+| GSD Agent                   | Primary Model | Fallback 1 | Fallback 2 | Skills                                                  | Spawns            |
+| --------------------------- | ------------- | ---------- | ---------- | ------------------------------------------------------- | ----------------- |
+| **Orchestrator**            | Opus 4.6      | GPT-5.2    | GLM-5      | architecture-patterns, cc-godmode                       | All agents        |
+| **gsd-roadmapper**          | Opus 4.6      | GPT-5.2    | GLM-5      | architecture-patterns, idea-coach                       | Once at init      |
+| **gsd-codebase-mapper**     | Sonnet 4.5    | GLM-5      | GPT-4.2    | nextjs-expert, senior-backend                           | Once + on-demand  |
+| **gsd-planner**             | Opus 4.6      | GPT-5.2    | GLM-5      | architecture-patterns, nextjs-expert                    | Per phase         |
+| **gsd-plan-checker**        | GPT-5.2       | GLM-5      | Opus 4.6   | test-patterns, security-audit                           | Per phase         |
+| **gsd-executor:schema**     | Sonnet 4.5    | GLM-5      | GPT-4.2    | prisma, sql-toolkit, data-validation                    | Schema tasks      |
+| **gsd-executor:backend**    | Sonnet 4.5    | GLM-5      | GPT-4.2    | senior-backend, nodejs-patterns, api-dev                | Server actions    |
+| **gsd-executor:frontend**   | Sonnet 4.5    | GLM-5      | GPT-4.2    | nextjs-expert, ui-ux-pro-max, anthropic-frontend-design | Pages/components  |
+| **gsd-executor:seed**       | Sonnet 4.5    | GLM-5      | GPT-4.2    | data-validation, sql-toolkit                            | Seed data scripts |
+| **gsd-verifier**            | GPT-5.2       | GLM-5      | Opus 4.6   | test-patterns, typescript-pro, security-audit           | Per phase         |
+| **gsd-debugger**            | Opus 4.6      | GPT-5.2    | GLM-5      | senior-backend, nextjs-expert                           | On failure        |
+| **gsd-integration-checker** | GPT-5.2       | GLM-5      | Sonnet 4.5 | test-patterns, architecture-patterns                    | Phase boundaries  |
 
 ## Specialist GSD Agents (from `.claude/agents/`)
 
-| Agent File | Use For | Model |
-|-----------|---------|-------|
-| `database-administrator.md` | Schema design, migration strategy, indexing | Opus (planning), Sonnet (execution) |
-| `nextjs-developer.md` | App Router pages, layouts, server components | Sonnet |
-| `react-specialist.md` | Complex UI components, forms, state management | Sonnet |
-| `fintech-engineer.md` | Banking domain logic (RAM, compliance, IRAC) | Opus |
-| `risk-manager.md` | Risk assessment models, scoring algorithms | Opus |
-| `business-analyst.md` | Requirement validation, domain accuracy | GPT-5.2 |
-| `security-engineer.md` | RBAC, RLS policies, data isolation | GPT-5.2 |
-| `sql-pro.md` | Complex queries, analytics views, performance | Sonnet |
-| `typescript-pro.md` | Type safety, generic patterns, validation | GPT-5.2 (verification) |
-| `documentation-engineer.md` | API docs, seed data documentation | Sonnet |
+| Agent File                  | Use For                                        | Model                               |
+| --------------------------- | ---------------------------------------------- | ----------------------------------- |
+| `database-administrator.md` | Schema design, migration strategy, indexing    | Opus (planning), Sonnet (execution) |
+| `nextjs-developer.md`       | App Router pages, layouts, server components   | Sonnet                              |
+| `react-specialist.md`       | Complex UI components, forms, state management | Sonnet                              |
+| `fintech-engineer.md`       | Banking domain logic (RAM, compliance, IRAC)   | Opus                                |
+| `risk-manager.md`           | Risk assessment models, scoring algorithms     | Opus                                |
+| `business-analyst.md`       | Requirement validation, domain accuracy        | GPT-5.2                             |
+| `security-engineer.md`      | RBAC, RLS policies, data isolation             | GPT-5.2                             |
+| `sql-pro.md`                | Complex queries, analytics views, performance  | Sonnet                              |
+| `typescript-pro.md`         | Type safety, generic patterns, validation      | GPT-5.2 (verification)              |
+| `documentation-engineer.md` | API docs, seed data documentation              | Sonnet                              |
 
 ## Why Different Models
 
@@ -96,6 +96,7 @@ Phase Start
 ```
 
 ### Validation Rules
+
 - Plans validated by **different model family** than planner (Opus plans → GPT-5.2 checks)
 - Code verified by **different model family** than executor (Sonnet writes → GPT-5.2 verifies)
 - Max **2 revision rounds** per gate before escalating to orchestrator
@@ -104,14 +105,15 @@ Phase Start
 
 ## Fallback Strategy
 
-| Scenario | Action |
-|----------|--------|
-| Sonnet fails/timeout | → GLM-5 (z.ai, fast, good code gen) → GPT-4.2 |
-| Opus fails/timeout | → GPT-5.2 (Codex OAuth) → GLM-5 |
+| Scenario              | Action                                                               |
+| --------------------- | -------------------------------------------------------------------- |
+| Sonnet fails/timeout  | → GLM-5 (z.ai, fast, good code gen) → GPT-4.2                        |
+| Opus fails/timeout    | → GPT-5.2 (Codex OAuth) → GLM-5                                      |
 | GPT-5.2 fails/timeout | → GLM-5 (different perspective) → Opus (same family ok for fallback) |
-| All providers down | → Queue task, retry on next heartbeat |
+| All providers down    | → Queue task, retry on next heartbeat                                |
 
 **Provider diversity ensures resilience:**
+
 - Anthropic: Opus 4.6, Sonnet 4.5
 - OpenAI Codex: GPT-5.2, GPT-4.2
 - Z.AI: GLM-5
@@ -129,7 +131,9 @@ Three independent providers = at least one always available.
 ## Lessons Learned (RBIAS Build — 2026-02-18)
 
 ### Executor Prompt Template (Required Footer)
+
 Every executor sub-agent MUST receive this conventions block:
+
 ```
 CONVENTIONS:
 - Icons: import from `@/lib/icons` (Pencil not Edit, CheckCircle, AlertTriangle)
@@ -144,20 +148,23 @@ CONVENTIONS:
 ```
 
 ### Model Selection Rules (Validated)
-| Role | Model | Why |
-|------|-------|-----|
-| Planner | Opus | Deep reasoning, sees dependencies |
-| Executor | **Sonnet** (NOT Opus) | Opus fails within ~1min on file-heavy executor tasks |
-| Validator | GPT-5.2 | Different model family catches blind spots |
-| Security | GLM-5 | Third perspective on tenant isolation |
+
+| Role      | Model                 | Why                                                  |
+| --------- | --------------------- | ---------------------------------------------------- |
+| Planner   | Opus                  | Deep reasoning, sees dependencies                    |
+| Executor  | **Sonnet** (NOT Opus) | Opus fails within ~1min on file-heavy executor tasks |
+| Validator | GPT-5.2               | Different model family catches blind spots           |
+| Security  | GLM-5                 | Third perspective on tenant isolation                |
 
 ### Batch Execution Rules
+
 - **maxChildrenPerAgent = 6** (not 8 — hard limit)
 - Fill slots as agents complete, don't wait for full batch
 - Main agent handles ALL cross-agent TS fixes after each wave
 - Never restart gateway while sub-agents have active exec sessions
 
 ### Validation Discipline (NON-NEGOTIABLE)
+
 1. Wave executes → sub-agents write code
 2. Main agent runs `tsc --noEmit` → fixes cross-agent conflicts
 3. **Spawn per-phase GPT-5.2 validator** → wait for results
@@ -166,6 +173,7 @@ CONVENTIONS:
 6. ❌ NEVER: commit → then validate → then fix in next commit
 
 ### Common Cross-Agent TS Errors (Fix Checklist)
+
 - [ ] Missing Permission type values → add to `src/lib/permissions.ts`
 - [ ] Missing icon exports → add alias to `src/lib/icons.ts`
 - [ ] Missing UI components → create in `src/components/ui/`
@@ -175,6 +183,7 @@ CONVENTIONS:
 - [ ] EscalationLevel type cast → `as ComplianceItemForEscalation["escalationLevel"]`
 
 ### What Went Wrong This Build
+
 1. **Deferred validation** — Committed 2 waves without validation. Naveen called it out.
 2. **Wrong field names in plans** — Plans copied SDD field names, not actual Prisma fields.
 3. **Opus as executor** — Failed 3 times, wasted slots. Should've used Sonnet from start.
@@ -183,6 +192,7 @@ CONVENTIONS:
 6. **Global prisma leaks** — Some DAL/action files use raw prisma. Security vulnerability.
 
 ### What Went Right
+
 1. **Parallel sub-agents** — 6 agents × 3 waves = 21 plans executed, 31K+ lines in ~45 min wall time.
 2. **Cross-agent TS fix pattern** — Main agent consolidating fixes after each wave works well.
 3. **Separate validator model** — GPT-5.2 catches things Sonnet/Opus miss.

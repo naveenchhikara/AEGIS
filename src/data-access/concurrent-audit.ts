@@ -10,7 +10,7 @@ export async function getConcurrentAuditTemplates(
   options?: {
     scopeArea?: string;
     isActive?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -30,7 +30,7 @@ export async function getConcurrentAuditTemplates(
  */
 export async function getConcurrentAuditTemplate(
   session: Session,
-  templateId: string
+  templateId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -50,7 +50,7 @@ export async function createConcurrentAuditTemplate(
     name: string;
     description?: string;
     checklistItems: any;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -75,7 +75,7 @@ export async function updateConcurrentAuditTemplate(
     description?: string;
     checklistItems?: any;
     isActive?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -91,7 +91,7 @@ export async function updateConcurrentAuditTemplate(
  */
 export async function deleteConcurrentAuditTemplate(
   session: Session,
-  templateId: string
+  templateId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -106,7 +106,7 @@ export async function deleteConcurrentAuditTemplate(
  */
 export async function getTemplatesByScopeArea(
   session: Session,
-  scopeArea: string
+  scopeArea: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -150,7 +150,12 @@ export async function getConcurrentFindingsForDedup(session: Session) {
   // Get RBIA observations for comparison
   const rbiaObs = await db.observation.findMany({
     where: { tenantId, criteria: { not: { startsWith: "Concurrent Audit" } } },
-    select: { id: true, title: true, condition: true, branch: { select: { id: true } } },
+    select: {
+      id: true,
+      title: true,
+      condition: true,
+      branch: { select: { id: true } },
+    },
   });
 
   // Simple title-based duplicate detection
@@ -158,18 +163,18 @@ export async function getConcurrentFindingsForDedup(session: Session) {
     const matches = rbiaObs.filter((ro) => {
       // Same branch check
       if (ro.branch?.id !== co.branch?.id) return false;
-      
+
       // Title similarity check (simple substring match)
       const coTitle = co.title.toLowerCase();
       const roTitle = ro.title.toLowerCase();
       const searchLen = Math.min(20, coTitle.length);
-      
+
       return (
         roTitle.includes(coTitle.substring(0, searchLen)) ||
         coTitle.includes(roTitle.substring(0, searchLen))
       );
     });
-    
+
     return { ...co, potentialRbiaDuplicates: matches };
   });
 

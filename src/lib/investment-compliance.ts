@@ -1,10 +1,10 @@
 /**
  * Investment Compliance Monitoring Logic (R94-R95)
- * 
+ *
  * Pure functions for UCB regulatory compliance:
  * - Non-SLR cap monitoring (10% of deposits) — R95
  * - Broker concentration monitoring (5% cap per broker) — R94
- * 
+ *
  * These are pure computation functions with no side effects.
  * Call from server actions for real-time compliance checks.
  */
@@ -20,7 +20,7 @@ export async function checkBrokerConcentration(
   tx: PrismaTransactionClient,
   tenantId: string,
   period: string,
-  brokerName: string
+  brokerName: string,
 ): Promise<{ compliant: boolean; percentage: number; message: string }> {
   // Get all investment records for the period
   const allRecords = await tx.investmentRecord.findMany({
@@ -44,13 +44,18 @@ export async function checkBrokerConcentration(
 
   // Calculate totals
   const totalInvestment = allRecords.reduce(
-    (sum: number, r: { faceValue: number | string }) => sum + Number(r.faceValue),
-    0
+    (sum: number, r: { faceValue: number | string }) =>
+      sum + Number(r.faceValue),
+    0,
   );
 
   const brokerTotal = allRecords
     .filter((r: { brokerName: string | null }) => r.brokerName === brokerName)
-    .reduce((sum: number, r: { faceValue: number | string }) => sum + Number(r.faceValue), 0);
+    .reduce(
+      (sum: number, r: { faceValue: number | string }) =>
+        sum + Number(r.faceValue),
+      0,
+    );
 
   const percentage = (brokerTotal / totalInvestment) * 100;
   const compliant = percentage <= 5;
@@ -67,7 +72,7 @@ export async function checkBrokerConcentration(
 /**
  * Check non-SLR investment cap (10% of deposits) — R95.
  * RBI regulation: Non-SLR investments cannot exceed 10% of total deposits.
- * 
+ *
  * Note: This requires deposit data. In absence of deposit records,
  * we return a warning. Integration point: fetch deposit balance from
  * core banking system or manual entry in housekeeping metrics.
@@ -75,7 +80,7 @@ export async function checkBrokerConcentration(
 export async function checkNonSlrCap(
   tx: PrismaTransactionClient,
   tenantId: string,
-  period: string
+  period: string,
 ): Promise<{ compliant: boolean; percentage: number | null; message: string }> {
   // Get total non-SLR investments
   const nonSlrRecords = await tx.investmentRecord.findMany({
@@ -90,8 +95,9 @@ export async function checkNonSlrCap(
   });
 
   const totalNonSlr = nonSlrRecords.reduce(
-    (sum: number, r: { faceValue: number | string }) => sum + Number(r.faceValue),
-    0
+    (sum: number, r: { faceValue: number | string }) =>
+      sum + Number(r.faceValue),
+    0,
   );
 
   if (totalNonSlr === 0) {
@@ -125,8 +131,9 @@ export async function checkNonSlrCap(
   }
 
   const totalDeposits = depositMetrics.reduce(
-    (sum: number, m: { closingBalance: number | string }) => sum + Number(m.closingBalance),
-    0
+    (sum: number, m: { closingBalance: number | string }) =>
+      sum + Number(m.closingBalance),
+    0,
   );
 
   const percentage = (totalNonSlr / totalDeposits) * 100;
@@ -148,7 +155,7 @@ export async function checkNonSlrCap(
 export async function getInvestmentPortfolioSummary(
   tx: PrismaTransactionClient,
   tenantId: string,
-  period: string
+  period: string,
 ) {
   const records = await tx.investmentRecord.findMany({
     where: { tenantId, period },
@@ -162,33 +169,59 @@ export async function getInvestmentPortfolioSummary(
   });
 
   // Group by security type
-  const byType: Record<string, { count: number; totalFaceValue: number; totalBookValue: number }> = {};
-  
-  records.forEach((r: { securityType: string; faceValue: number | string; bookValue: number | string }) => {
-    if (!byType[r.securityType]) {
-      byType[r.securityType] = { count: 0, totalFaceValue: 0, totalBookValue: 0 };
-    }
-    byType[r.securityType].count += 1;
-    byType[r.securityType].totalFaceValue += Number(r.faceValue);
-    byType[r.securityType].totalBookValue += Number(r.bookValue);
-  });
+  const byType: Record<
+    string,
+    { count: number; totalFaceValue: number; totalBookValue: number }
+  > = {};
+
+  records.forEach(
+    (r: {
+      securityType: string;
+      faceValue: number | string;
+      bookValue: number | string;
+    }) => {
+      if (!byType[r.securityType]) {
+        byType[r.securityType] = {
+          count: 0,
+          totalFaceValue: 0,
+          totalBookValue: 0,
+        };
+      }
+      byType[r.securityType].count += 1;
+      byType[r.securityType].totalFaceValue += Number(r.faceValue);
+      byType[r.securityType].totalBookValue += Number(r.bookValue);
+    },
+  );
 
   // Group by classification
-  const byClassification: Record<string, { count: number; totalFaceValue: number }> = {};
-  
-  records.forEach((r: { classification: string; faceValue: number | string }) => {
-    if (!byClassification[r.classification]) {
-      byClassification[r.classification] = { count: 0, totalFaceValue: 0 };
-    }
-    byClassification[r.classification].count += 1;
-    byClassification[r.classification].totalFaceValue += Number(r.faceValue);
-  });
+  const byClassification: Record<
+    string,
+    { count: number; totalFaceValue: number }
+  > = {};
+
+  records.forEach(
+    (r: { classification: string; faceValue: number | string }) => {
+      if (!byClassification[r.classification]) {
+        byClassification[r.classification] = { count: 0, totalFaceValue: 0 };
+      }
+      byClassification[r.classification].count += 1;
+      byClassification[r.classification].totalFaceValue += Number(r.faceValue);
+    },
+  );
 
   return {
     byType,
     byClassification,
     totalRecords: records.length,
-    totalFaceValue: records.reduce((sum: number, r: { faceValue: number | string }) => sum + Number(r.faceValue), 0),
-    totalBookValue: records.reduce((sum: number, r: { bookValue: number | string }) => sum + Number(r.bookValue), 0),
+    totalFaceValue: records.reduce(
+      (sum: number, r: { faceValue: number | string }) =>
+        sum + Number(r.faceValue),
+      0,
+    ),
+    totalBookValue: records.reduce(
+      (sum: number, r: { bookValue: number | string }) =>
+        sum + Number(r.bookValue),
+      0,
+    ),
   };
 }

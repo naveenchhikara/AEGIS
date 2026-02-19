@@ -179,7 +179,14 @@ export async function transitionObservation(input: TransitionObservationInput) {
         }
       } catch (e) {
         // Non-blocking: log but don't fail the transition
-        logger.error({ error: e, action: "queue_assignment_notification", observationId: validated.observationId }, "Failed to queue assignment notification");
+        logger.error(
+          {
+            error: e,
+            action: "queue_assignment_notification",
+            observationId: validated.observationId,
+          },
+          "Failed to queue assignment notification",
+        );
       }
     }
 
@@ -188,7 +195,15 @@ export async function transitionObservation(input: TransitionObservationInput) {
       data: { id: validated.observationId, newStatus: targetStatus },
     };
   } catch (error) {
-    logger.error({ error, action: "transition_observation", tenantId, observationId: validated.observationId }, "Failed to transition observation");
+    logger.error(
+      {
+        error,
+        action: "transition_observation",
+        tenantId,
+        observationId: validated.observationId,
+      },
+      "Failed to transition observation",
+    );
     return {
       success: false as const,
       error: "Failed to update observation status. Please try again.",

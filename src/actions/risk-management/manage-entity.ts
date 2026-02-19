@@ -10,13 +10,7 @@ import { logger } from "@/lib/logger";
 
 const ManageEntitySchema = z.object({
   id: z.string().uuid().optional(),
-  entityType: z.enum([
-    "BRANCH",
-    "DEPARTMENT",
-    "PROCESS",
-    "CHANNEL",
-    "VENDOR",
-  ]),
+  entityType: z.enum(["BRANCH", "DEPARTMENT", "PROCESS", "CHANNEL", "VENDOR"]),
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   branchId: z.string().uuid().optional(),
@@ -106,7 +100,7 @@ export async function manageAuditUniverseEntity(input: ManageEntityInput) {
         : "Failed to manage audit universe entity.";
     logger.error(
       { error, action: "manage_audit_universe_entity", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }
@@ -158,7 +152,7 @@ export async function deleteAuditUniverseEntity(entityId: string) {
         : "Failed to delete audit universe entity.";
     logger.error(
       { error, action: "delete_audit_universe_entity", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

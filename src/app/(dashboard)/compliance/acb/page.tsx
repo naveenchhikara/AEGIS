@@ -1,7 +1,5 @@
 import { requirePermission } from "@/lib/guards";
-import {
-  getAcbEligibleItems,
-} from "@/data-access/compliance-items";
+import { getAcbEligibleItems } from "@/data-access/compliance-items";
 import { getBoardReports } from "@/data-access/reports";
 import { getCurrentFiscalYear, getCurrentQuarter } from "@/lib/fiscal-year";
 import { AcbReportBuilder } from "@/components/compliance/acb-report-builder";
@@ -45,7 +43,7 @@ export default async function AcbPage() {
     : [];
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           ACB Report Builder

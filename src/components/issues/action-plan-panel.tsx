@@ -67,7 +67,7 @@ type FormState = {
 
 async function createActionPlanAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     issueId: formData.get("issueId") as string,
@@ -88,12 +88,12 @@ export function ActionPlanPanel({
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [updatingProgress, setUpdatingProgress] = React.useState<string | null>(
-    null
+    null,
   );
 
   const [createState, createFormAction, isCreating] = useActionState(
     createActionPlanAction,
-    {}
+    {},
   );
 
   React.useEffect(() => {
@@ -108,7 +108,7 @@ export function ActionPlanPanel({
 
   const handleUpdateProgress = async (
     actionPlanId: string,
-    completionPct: number
+    completionPct: number,
   ) => {
     setUpdatingProgress(actionPlanId);
     const result = await updateActionPlanProgress(actionPlanId, completionPct);
@@ -205,7 +205,9 @@ export function ActionPlanPanel({
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isCreating}>
-                    {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isCreating && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create
                   </Button>
                 </DialogFooter>
@@ -218,7 +220,7 @@ export function ActionPlanPanel({
       {actionPlans.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
+            <p className="text-muted-foreground text-center">
               No action plans yet.
               {canManage && " Click 'Add Action Plan' to create one."}
             </p>
@@ -232,7 +234,7 @@ export function ActionPlanPanel({
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-base">{plan.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Due: {format(new Date(plan.dueDate), "MMM d, yyyy")}
                     </p>
                   </div>
@@ -269,7 +271,7 @@ export function ActionPlanPanel({
                         variant="outline"
                         onClick={() => {
                           const input = document.getElementById(
-                            `progress-${plan.id}`
+                            `progress-${plan.id}`,
                           ) as HTMLInputElement;
                           const value = parseInt(input.value);
                           if (value >= 0 && value <= 100) {

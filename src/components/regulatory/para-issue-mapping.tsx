@@ -12,7 +12,13 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +38,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link as LinkIcon, Unlink, Loader2, Plus, AlertCircle } from "@/lib/icons";
+import {
+  Link as LinkIcon,
+  Unlink,
+  Loader2,
+  Plus,
+  AlertCircle,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { manageRegulatoryObservation } from "@/actions/regulatory/manage-observation";
 import { manageIssue } from "@/actions/issues/manage-issue";
@@ -78,11 +90,19 @@ const SEVERITY_COLORS: Record<string, string> = {
   LOW: "bg-green-100 text-green-800 border-green-300",
 };
 
-export function ParaIssueMapping({ observations, allObservations, issues, canManage }: ParaIssueMappingProps) {
+export function ParaIssueMapping({
+  observations,
+  allObservations,
+  issues,
+  canManage,
+}: ParaIssueMappingProps) {
   const router = useRouter();
   const [mappingDialogOpen, setMappingDialogOpen] = React.useState(false);
-  const [selectedObservation, setSelectedObservation] = React.useState<RegulatoryObservation | null>(null);
-  const [mappingMode, setMappingMode] = React.useState<"existing" | "new">("existing");
+  const [selectedObservation, setSelectedObservation] =
+    React.useState<RegulatoryObservation | null>(null);
+  const [mappingMode, setMappingMode] = React.useState<"existing" | "new">(
+    "existing",
+  );
   const [selectedIssueId, setSelectedIssueId] = React.useState("");
   const [newIssueForm, setNewIssueForm] = React.useState({
     title: "",
@@ -92,14 +112,14 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
   });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const unmappedObservations = allObservations.filter(obs => !obs.issueId);
+  const unmappedObservations = allObservations.filter((obs) => !obs.issueId);
 
   function handleMapToIssue(observation: RegulatoryObservation) {
     setSelectedObservation(observation);
     setMappingMode("existing");
     setSelectedIssueId("");
     setNewIssueForm({
-      title: `Regulatory: ${observation.referenceNo}${observation.paraNo ? ` Para ${observation.paraNo}` : ''}`,
+      title: `Regulatory: ${observation.referenceNo}${observation.paraNo ? ` Para ${observation.paraNo}` : ""}`,
       description: observation.description,
       issueType: "OBSERVATION",
       riskTheme: "COMPLIANCE",
@@ -108,7 +128,11 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
   }
 
   async function handleUnlink(observation: RegulatoryObservation) {
-    if (!confirm("Are you sure you want to unlink this observation from the issue?")) {
+    if (
+      !confirm(
+        "Are you sure you want to unlink this observation from the issue?",
+      )
+    ) {
       return;
     }
 
@@ -195,7 +219,7 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
       toast.success(
         mappingMode === "new"
           ? "New issue created and linked to observation"
-          : "Observation linked to issue"
+          : "Observation linked to issue",
       );
       setMappingDialogOpen(false);
       setSelectedObservation(null);
@@ -222,10 +246,13 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
           {observations.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Mapped Observations</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Regulatory observations that are linked to internal issues will appear here.
+                <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
+                <h3 className="mb-2 text-lg font-semibold">
+                  No Mapped Observations
+                </h3>
+                <p className="text-muted-foreground max-w-md text-center text-sm">
+                  Regulatory observations that are linked to internal issues
+                  will appear here.
                 </p>
               </CardContent>
             </Card>
@@ -254,7 +281,9 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                         <div className="space-y-1">
                           <div className="font-medium">{obs.referenceNo}</div>
                           {obs.paraNo && (
-                            <div className="text-xs text-muted-foreground">Para {obs.paraNo}</div>
+                            <div className="text-muted-foreground text-xs">
+                              Para {obs.paraNo}
+                            </div>
                           )}
                         </div>
                       </TableCell>
@@ -264,14 +293,20 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={SEVERITY_COLORS[obs.severity] ?? ""}>
+                        <Badge
+                          variant="outline"
+                          className={SEVERITY_COLORS[obs.severity] ?? ""}
+                        >
                           {obs.severity}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         {obs.issue && (
                           <div className="space-y-1">
-                            <div className="font-medium line-clamp-1" title={obs.issue.title}>
+                            <div
+                              className="line-clamp-1 font-medium"
+                              title={obs.issue.title}
+                            >
                               {obs.issue.title}
                             </div>
                             <Badge variant="outline" className="text-xs">
@@ -305,17 +340,22 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
           {unmappedObservations.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <LinkIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">All Observations Mapped</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Great! All regulatory observations are linked to internal issues.
+                <LinkIcon className="text-muted-foreground mb-4 h-12 w-12" />
+                <h3 className="mb-2 text-lg font-semibold">
+                  All Observations Mapped
+                </h3>
+                <p className="text-muted-foreground max-w-md text-center text-sm">
+                  Great! All regulatory observations are linked to internal
+                  issues.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                {unmappedObservations.length} observation{unmappedObservations.length !== 1 ? 's' : ''} not linked to internal issues
+              <div className="text-muted-foreground text-sm">
+                {unmappedObservations.length} observation
+                {unmappedObservations.length !== 1 ? "s" : ""} not linked to
+                internal issues
               </div>
 
               <div className="grid gap-4">
@@ -323,18 +363,26 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                   <Card key={obs.id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <div className="space-y-1 flex-1">
+                        <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">
                               {SOURCE_LABELS[obs.source] || obs.source}
                             </Badge>
-                            <Badge variant="outline" className={SEVERITY_COLORS[obs.severity] ?? ""}>
+                            <Badge
+                              variant="outline"
+                              className={SEVERITY_COLORS[obs.severity] ?? ""}
+                            >
                               {obs.severity}
                             </Badge>
                           </div>
                           <CardTitle className="text-lg">
                             {obs.referenceNo}
-                            {obs.paraNo && <span className="text-muted-foreground"> - Para {obs.paraNo}</span>}
+                            {obs.paraNo && (
+                              <span className="text-muted-foreground">
+                                {" "}
+                                - Para {obs.paraNo}
+                              </span>
+                            )}
                           </CardTitle>
                           <CardDescription>{obs.description}</CardDescription>
                         </div>
@@ -365,26 +413,34 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
             <DialogHeader>
               <DialogTitle>Map to Issue</DialogTitle>
               <DialogDescription>
-                Link regulatory observation to an internal issue for tracking and resolution.
+                Link regulatory observation to an internal issue for tracking
+                and resolution.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmitMapping} className="space-y-4 py-4">
               {/* Observation Summary */}
-              <div className="rounded-md border p-3 bg-muted/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="bg-muted/50 rounded-md border p-3">
+                <div className="mb-2 flex items-center gap-2">
                   <Badge variant="outline">
-                    {SOURCE_LABELS[selectedObservation.source] || selectedObservation.source}
+                    {SOURCE_LABELS[selectedObservation.source] ||
+                      selectedObservation.source}
                   </Badge>
-                  <Badge variant="outline" className={SEVERITY_COLORS[selectedObservation.severity] ?? ""}>
+                  <Badge
+                    variant="outline"
+                    className={
+                      SEVERITY_COLORS[selectedObservation.severity] ?? ""
+                    }
+                  >
                     {selectedObservation.severity}
                   </Badge>
                 </div>
                 <p className="font-medium">
                   {selectedObservation.referenceNo}
-                  {selectedObservation.paraNo && ` - Para ${selectedObservation.paraNo}`}
+                  {selectedObservation.paraNo &&
+                    ` - Para ${selectedObservation.paraNo}`}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm">
                   {selectedObservation.description}
                 </p>
               </div>
@@ -392,15 +448,23 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
               {/* Mapping Mode Selection */}
               <div className="space-y-2">
                 <Label>Mapping Option</Label>
-                <Tabs value={mappingMode} onValueChange={(v) => setMappingMode(v as any)}>
+                <Tabs
+                  value={mappingMode}
+                  onValueChange={(v) => setMappingMode(v as any)}
+                >
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="existing">Link to Existing Issue</TabsTrigger>
+                    <TabsTrigger value="existing">
+                      Link to Existing Issue
+                    </TabsTrigger>
                     <TabsTrigger value="new">Create New Issue</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="existing" className="space-y-2 mt-4">
+                  <TabsContent value="existing" className="mt-4 space-y-2">
                     <Label htmlFor="issueId">Select Issue *</Label>
-                    <Select value={selectedIssueId} onValueChange={setSelectedIssueId}>
+                    <Select
+                      value={selectedIssueId}
+                      onValueChange={setSelectedIssueId}
+                    >
                       <SelectTrigger id="issueId">
                         <SelectValue placeholder="Choose an issue..." />
                       </SelectTrigger>
@@ -420,14 +484,17 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                     </Select>
                   </TabsContent>
 
-                  <TabsContent value="new" className="space-y-4 mt-4">
+                  <TabsContent value="new" className="mt-4 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="new-title">Issue Title *</Label>
                       <Input
                         id="new-title"
                         value={newIssueForm.title}
                         onChange={(e) =>
-                          setNewIssueForm({ ...newIssueForm, title: e.target.value })
+                          setNewIssueForm({
+                            ...newIssueForm,
+                            title: e.target.value,
+                          })
                         }
                         placeholder="Enter issue title..."
                         required
@@ -440,7 +507,10 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                         id="new-description"
                         value={newIssueForm.description}
                         onChange={(e) =>
-                          setNewIssueForm({ ...newIssueForm, description: e.target.value })
+                          setNewIssueForm({
+                            ...newIssueForm,
+                            description: e.target.value,
+                          })
                         }
                         rows={4}
                         required
@@ -453,7 +523,10 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                         <Select
                           value={newIssueForm.issueType}
                           onValueChange={(value) =>
-                            setNewIssueForm({ ...newIssueForm, issueType: value })
+                            setNewIssueForm({
+                              ...newIssueForm,
+                              issueType: value,
+                            })
                           }
                         >
                           <SelectTrigger id="new-issueType">
@@ -461,9 +534,13 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="FINDING">Finding</SelectItem>
-                            <SelectItem value="OBSERVATION">Observation</SelectItem>
+                            <SelectItem value="OBSERVATION">
+                              Observation
+                            </SelectItem>
                             <SelectItem value="EXCEPTION">Exception</SelectItem>
-                            <SelectItem value="DEFICIENCY">Deficiency</SelectItem>
+                            <SelectItem value="DEFICIENCY">
+                              Deficiency
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -473,7 +550,10 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                         <Select
                           value={newIssueForm.riskTheme}
                           onValueChange={(value) =>
-                            setNewIssueForm({ ...newIssueForm, riskTheme: value })
+                            setNewIssueForm({
+                              ...newIssueForm,
+                              riskTheme: value,
+                            })
                           }
                         >
                           <SelectTrigger id="new-riskTheme">
@@ -481,17 +561,25 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="CREDIT">Credit Risk</SelectItem>
-                            <SelectItem value="OPERATIONAL">Operational Risk</SelectItem>
-                            <SelectItem value="COMPLIANCE">Compliance Risk</SelectItem>
+                            <SelectItem value="OPERATIONAL">
+                              Operational Risk
+                            </SelectItem>
+                            <SelectItem value="COMPLIANCE">
+                              Compliance Risk
+                            </SelectItem>
                             <SelectItem value="IT">IT Risk</SelectItem>
-                            <SelectItem value="GOVERNANCE">Governance Risk</SelectItem>
+                            <SelectItem value="GOVERNANCE">
+                              Governance Risk
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
 
-                    <div className="text-sm text-muted-foreground">
-                      <strong>Note:</strong> Severity ({selectedObservation.severity}) and source (REGULATORY) will be inherited from the observation.
+                    <div className="text-muted-foreground text-sm">
+                      <strong>Note:</strong> Severity (
+                      {selectedObservation.severity}) and source (REGULATORY)
+                      will be inherited from the observation.
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -507,8 +595,12 @@ export function ParaIssueMapping({ observations, allObservations, issues, canMan
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {mappingMode === "new" ? "Create & Link Issue" : "Link to Issue"}
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {mappingMode === "new"
+                    ? "Create & Link Issue"
+                    : "Link to Issue"}
                 </Button>
               </DialogFooter>
             </form>

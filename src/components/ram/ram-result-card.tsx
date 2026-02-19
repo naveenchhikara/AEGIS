@@ -62,10 +62,10 @@ export function RamResultCard({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Composite Score */}
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Composite Score</p>
+            <p className="text-muted-foreground text-sm">Composite Score</p>
             <p className="text-3xl font-bold">{compositeScore.toFixed(2)}</p>
             {repeatUpliftApplied && rawCompositeScore && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 (Base: {rawCompositeScore.toFixed(2)})
               </p>
             )}
@@ -73,15 +73,18 @@ export function RamResultCard({
 
           {/* Risk Category */}
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Risk Category</p>
-            <Badge variant="outline" className={`text-lg ${RISK_COLORS[riskCategory] ?? ""}`}>
+            <p className="text-muted-foreground text-sm">Risk Category</p>
+            <Badge
+              variant="outline"
+              className={`text-lg ${RISK_COLORS[riskCategory] ?? ""}`}
+            >
               {riskCategory}
             </Badge>
           </div>
 
           {/* Audit Frequency */}
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Derived Audit Frequency
             </p>
             <p className="text-2xl font-semibold">

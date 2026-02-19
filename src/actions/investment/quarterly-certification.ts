@@ -19,7 +19,7 @@ const CertificationSchema = z.object({
       checkId: z.string(),
       compliant: z.boolean(),
       remarks: z.string().optional(),
-    })
+    }),
   ),
   overallOpinion: z.enum(["SATISFACTORY", "QUALIFIED", "ADVERSE"]),
   remarks: z.string().optional(),
@@ -97,7 +97,10 @@ export async function submitQuarterlyCertification(input: CertificationInput) {
       error instanceof Error
         ? error.message
         : "Failed to submit quarterly certification.";
-    logger.error({ error, action: "submit_quarterly_certification", tenantId }, message);
+    logger.error(
+      { error, action: "submit_quarterly_certification", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }
@@ -126,8 +129,13 @@ export async function getInvestmentCertifications() {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to fetch certifications.";
-    logger.error({ error, action: "get_investment_certifications", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch certifications.";
+    logger.error(
+      { error, action: "get_investment_certifications", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

@@ -31,9 +31,12 @@ export default async function InvestmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Investment & Treasury</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Investment & Treasury
+        </h1>
         <p className="text-muted-foreground">
-          Investment portfolio monitoring, broker management, and treasury compliance
+          Investment portfolio monitoring, broker management, and treasury
+          compliance
         </p>
       </div>
 
@@ -54,7 +57,10 @@ export default async function InvestmentsPage() {
         </TabsContent>
 
         <TabsContent value="reconciliation">
-          <SglReconciliation investments={investments} unreconciled={unreconciled} />
+          <SglReconciliation
+            investments={investments}
+            unreconciled={unreconciled}
+          />
         </TabsContent>
 
         <TabsContent value="broker">

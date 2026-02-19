@@ -388,7 +388,10 @@ async function main() {
 
   console.log("  Seeding RAM parameters...");
 
-  const ramParametersData = await import("../src/data/seed/ram-parameters.json", { with: { type: "json" } }).then(m => m.default);
+  const ramParametersData = await import(
+    "../src/data/seed/ram-parameters.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
 
   for (const tenantId of [tenantA.id, tenantB.id]) {
     for (const param of ramParametersData) {
@@ -419,14 +422,22 @@ async function main() {
     }
   }
 
-  console.log(`    ✓ ${ramParametersData.length} RAM parameters seeded for both tenants`);
+  console.log(
+    `    ✓ ${ramParametersData.length} RAM parameters seeded for both tenants`,
+  );
 
   // ─── 4c. Seed Examination Areas + Items ─────────────────────────────
 
   console.log("  Seeding examination areas and items...");
 
-  const examinationAreasData = await import("../src/data/seed/examination-areas.json", { with: { type: "json" } }).then(m => m.default);
-  const examinationItemsData = await import("../src/data/seed/examination-items.json", { with: { type: "json" } }).then(m => m.default);
+  const examinationAreasData = await import(
+    "../src/data/seed/examination-areas.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
+  const examinationItemsData = await import(
+    "../src/data/seed/examination-items.json",
+    { with: { type: "json" } }
+  ).then((m) => m.default);
 
   for (const tid of [tenantA.id, tenantB.id]) {
     const areaIdMap = new Map<string, string>();
@@ -502,7 +513,9 @@ async function main() {
     }
 
     if (tid === tenantA.id) {
-      console.log(`    ✓ ${examinationAreasData.length} areas, ${itemCount} items seeded for Tenant A`);
+      console.log(
+        `    ✓ ${examinationAreasData.length} areas, ${itemCount} items seeded for Tenant A`,
+      );
     }
   }
 
@@ -939,14 +952,17 @@ async function main() {
 
   // ─── Phase 3: Audit Universe Entities ────────────────────────────────────────
   console.log("  Seeding audit universe entities...");
-  const auditUniverseData = await import("../src/data/seed/audit-universe.json", {
-    with: { type: "json" },
-  }).then((m) => m.default);
+  const auditUniverseData = await import(
+    "../src/data/seed/audit-universe.json",
+    {
+      with: { type: "json" },
+    }
+  ).then((m) => m.default);
 
   const entityIdMap = new Map<string, string>();
   for (const entity of auditUniverseData) {
     const branchId = entity.branchCode
-      ? branchMap.get(entity.branchCode) ?? null
+      ? (branchMap.get(entity.branchCode) ?? null)
       : null;
 
     const created = await prisma.auditUniverseEntity.create({
@@ -967,13 +983,18 @@ async function main() {
     });
     entityIdMap.set(entity.id, created.id);
   }
-  console.log(`    ✓ Created ${auditUniverseData.length} audit universe entities`);
+  console.log(
+    `    ✓ Created ${auditUniverseData.length} audit universe entities`,
+  );
 
   // ─── Phase 3: Risk Registers with KRIs ──────────────────────────────────────
   console.log("  Seeding risk registers...");
-  const riskRegistersData = await import("../src/data/seed/risk-registers.json", {
-    with: { type: "json" },
-  }).then((m) => m.default);
+  const riskRegistersData = await import(
+    "../src/data/seed/risk-registers.json",
+    {
+      with: { type: "json" },
+    }
+  ).then((m) => m.default);
 
   let riskCount = 0;
   let kriCount = 0;
@@ -1015,7 +1036,9 @@ async function main() {
       }
     }
   }
-  console.log(`    ✓ Created ${riskCount} risk registers with ${kriCount} KRIs`);
+  console.log(
+    `    ✓ Created ${riskCount} risk registers with ${kriCount} KRIs`,
+  );
 
   // ─── Phase 3: Control Library with Test Procedures ──────────────────────────
   console.log("  Seeding control library...");
@@ -1124,9 +1147,12 @@ async function main() {
 
   // ─── Phase 3: QA Self-Assessment ────────────────────────────────────────────
   console.log("  Seeding QA self-assessments...");
-  const qaAssessmentData = await import("../src/data/seed/qa-assessment-seed.json", {
-    with: { type: "json" },
-  }).then((m) => m.default);
+  const qaAssessmentData = await import(
+    "../src/data/seed/qa-assessment-seed.json",
+    {
+      with: { type: "json" },
+    }
+  ).then((m) => m.default);
 
   for (const qa of qaAssessmentData) {
     await prisma.qaSelfAssessment.create({
@@ -1147,9 +1173,12 @@ async function main() {
 
   // ─── Phase 2: Report Templates ───────────────────────────────────────────────
   console.log("  Seeding report templates...");
-  const reportTemplatesData = await import("../src/data/seed/report-templates.json", {
-    with: { type: "json" },
-  }).then((m) => m.default);
+  const reportTemplatesData = await import(
+    "../src/data/seed/report-templates.json",
+    {
+      with: { type: "json" },
+    }
+  ).then((m) => m.default);
 
   for (const template of reportTemplatesData) {
     await prisma.reportTemplate.create({
@@ -1169,13 +1198,16 @@ async function main() {
 
   // ─── Phase 2: Calendar Events ────────────────────────────────────────────────
   console.log("  Seeding calendar events...");
-  const calendarEventsData = await import("../src/data/seed/calendar-events.json", {
-    with: { type: "json" },
-  }).then((m) => m.default);
+  const calendarEventsData = await import(
+    "../src/data/seed/calendar-events.json",
+    {
+      with: { type: "json" },
+    }
+  ).then((m) => m.default);
 
   for (const event of calendarEventsData) {
     const branchId = event.branchCode
-      ? branchMap.get(event.branchCode) ?? null
+      ? (branchMap.get(event.branchCode) ?? null)
       : null;
 
     await prisma.auditCalendar.create({
@@ -1215,7 +1247,9 @@ async function main() {
       },
     });
   }
-  console.log(`    ✓ Created ${concurrentTemplatesData.length} concurrent audit templates`);
+  console.log(
+    `    ✓ Created ${concurrentTemplatesData.length} concurrent audit templates`,
+  );
 
   // ─── Phase 4: Regulatory Observations ────────────────────────────────────────
   console.log("  Seeding regulatory observations...");
@@ -1241,7 +1275,9 @@ async function main() {
       },
     });
   }
-  console.log(`    ✓ Created ${regulatoryObsData.length} regulatory observations`);
+  console.log(
+    `    ✓ Created ${regulatoryObsData.length} regulatory observations`,
+  );
 
   // ─── Phase 4: Policy Documents ───────────────────────────────────────────────
   console.log("  Seeding policy documents...");
@@ -1256,7 +1292,9 @@ async function main() {
         tenantId: tenantA.id,
         name: policy.name,
         category: policy.category,
-        approvalDate: policy.approvalDate ? new Date(policy.approvalDate) : null,
+        approvalDate: policy.approvalDate
+          ? new Date(policy.approvalDate)
+          : null,
         reviewDueDate: policy.reviewDueDate
           ? new Date(policy.reviewDueDate)
           : null,
@@ -1379,7 +1417,9 @@ async function main() {
         hostingType: app.hostingType,
         criticality: app.criticality,
         drTested: app.drTested,
-        lastDrTestDate: app.lastDrTestDate ? new Date(app.lastDrTestDate) : null,
+        lastDrTestDate: app.lastDrTestDate
+          ? new Date(app.lastDrTestDate)
+          : null,
         lastIsAuditDate: app.lastIsAuditDate
           ? new Date(app.lastIsAuditDate)
           : null,
@@ -1388,7 +1428,9 @@ async function main() {
       },
     });
   }
-  console.log(`    ✓ Created ${appInventoryData.length} application inventory entries`);
+  console.log(
+    `    ✓ Created ${appInventoryData.length} application inventory entries`,
+  );
 
   // ─── Phase 6: IS Audit Checklists ────────────────────────────────────────────
   console.log("  Seeding IS audit checklists...");

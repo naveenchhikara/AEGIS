@@ -52,6 +52,7 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
 **Purpose:** Enable the Branch Head to formally acknowledge audit completion and findings via a digital sign-off, with the signed certificate included in the final PDF report — a mandatory regulatory requirement per SDD p.28.
 
 **Output:**
+
 - Server actions for sign and countersign with role-based access
 - Sign-off capture UI with declaration text and digital signature
 - PDF certificate section updated with actual signature data
@@ -80,68 +81,69 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   Create `src/data-access/bh-certificate.ts`:
 
-  ```typescript
-  import "server-only";
-  import { prismaForTenant } from "./prisma";
-  import type { Session } from "@/lib/auth";
+```typescript
+import "server-only";
+import { prismaForTenant } from "./prisma";
+import type { Session } from "@/lib/auth";
 
-  export type BhCertificateStatus = "PENDING" | "SIGNED" | "COUNTERSIGNED";
+export type BhCertificateStatus = "PENDING" | "SIGNED" | "COUNTERSIGNED";
 
-  /**
-   * Derive BH certificate status from engagement fields.
-   * Since we don't have a dedicated status field, derive from data:
-   * - bhCertSignedAt is null → PENDING
-   * - bhCertSignedAt set, no countersign → SIGNED
-   * - Both set → COUNTERSIGNED (use a new field or convention)
-   */
-  export function deriveBhCertStatus(engagement: {
-    bhCertSignedAt: Date | null;
-    bhCertCountersignedAt?: Date | null;
-  }): BhCertificateStatus {
-    if (engagement.bhCertCountersignedAt) return "COUNTERSIGNED";
-    if (engagement.bhCertSignedAt) return "SIGNED";
-    return "PENDING";
-  }
+/**
+ * Derive BH certificate status from engagement fields.
+ * Since we don't have a dedicated status field, derive from data:
+ * - bhCertSignedAt is null → PENDING
+ * - bhCertSignedAt set, no countersign → SIGNED
+ * - Both set → COUNTERSIGNED (use a new field or convention)
+ */
+export function deriveBhCertStatus(engagement: {
+  bhCertSignedAt: Date | null;
+  bhCertCountersignedAt?: Date | null;
+}): BhCertificateStatus {
+  if (engagement.bhCertCountersignedAt) return "COUNTERSIGNED";
+  if (engagement.bhCertSignedAt) return "SIGNED";
+  return "PENDING";
+}
 
-  /**
-   * Get engagement with BH certificate fields + audit context.
-   */
-  export async function getEngagementForBhCertificate(
-    session: Session,
-    engagementId: string,
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
+/**
+ * Get engagement with BH certificate fields + audit context.
+ */
+export async function getEngagementForBhCertificate(
+  session: Session,
+  engagementId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
-    return db.auditEngagement.findFirst({
-      where: { id: engagementId, tenantId },
-      select: {
-        id: true,
-        status: true,
-        auditNumber: true,
-        bhCertSignedById: true,
-        bhCertSignedAt: true,
-        bhCertComments: true,
-        branch: { select: { id: true, code: true, name: true } },
-        auditPlan: { select: { year: true, quarter: true } },
-        teamMembers: {
-          include: {
-            user: { select: { id: true, name: true, email: true, roles: true } },
-          },
-        },
-        // Include observation summary for certificate content
-        observations: {
-          select: {
-            id: true,
-            title: true,
-            severity: true,
-            status: true,
-          },
+  return db.auditEngagement.findFirst({
+    where: { id: engagementId, tenantId },
+    select: {
+      id: true,
+      status: true,
+      auditNumber: true,
+      bhCertSignedById: true,
+      bhCertSignedAt: true,
+      bhCertComments: true,
+      branch: { select: { id: true, code: true, name: true } },
+      auditPlan: { select: { year: true, quarter: true } },
+      teamMembers: {
+        include: {
+          user: { select: { id: true, name: true, email: true, roles: true } },
         },
       },
-    });
-  }
-  ```
+      // Include observation summary for certificate content
+      observations: {
+        select: {
+          id: true,
+          title: true,
+          severity: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+```
+
   </action>
   <verify>
   ```bash
@@ -161,40 +163,44 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   **2a. Note on schema extension:**
 
-  The current AuditEngagement has `bhCertSignedById`, `bhCertSignedAt`, `bhCertComments` for BH sign-off. For the countersign workflow, we need additional fields. Two approaches:
+The current AuditEngagement has `bhCertSignedById`, `bhCertSignedAt`, `bhCertComments` for BH sign-off. For the countersign workflow, we need additional fields. Two approaches:
 
-  **Option A (preferred — no migration):** Store countersign data in bhCertComments as structured JSON, or use a convention where bhCertComments contains both BH comments and countersign metadata.
+**Option A (preferred — no migration):** Store countersign data in bhCertComments as structured JSON, or use a convention where bhCertComments contains both BH comments and countersign metadata.
 
-  **Option B (clean — requires migration):** Add `bhCertCountersignedById`, `bhCertCountersignedAt` fields to AuditEngagement.
+**Option B (clean — requires migration):** Add `bhCertCountersignedById`, `bhCertCountersignedAt` fields to AuditEngagement.
 
-  **Choose Option B** for clean data modeling. Add to schema:
-  ```prisma
-  bhCertCountersignedById String?   @db.Uuid
-  bhCertCountersignedAt   DateTime?
-  ```
+**Choose Option B** for clean data modeling. Add to schema:
 
-  Then run `pnpm prisma db push` (dev) or create migration.
+```prisma
+bhCertCountersignedById String?   @db.Uuid
+bhCertCountersignedAt   DateTime?
+```
 
-  **2b. Add to schemas.ts:**
+Then run `pnpm prisma db push` (dev) or create migration.
 
-  ```typescript
-  // ─── BH Certificate ───────────────────────────────────────────
-  export const SignBhCertificateSchema = z.object({
-    engagementId: z.string().uuid(),
-    comments: z.string().min(1, "Please add acknowledgment comments").max(2000),
-    declarationAccepted: z.literal(true, {
-      errorMap: () => ({ message: "You must accept the declaration to sign" }),
-    }),
-  });
+**2b. Add to schemas.ts:**
 
-  export const CountersignBhCertificateSchema = z.object({
-    engagementId: z.string().uuid(),
-    comments: z.string().max(2000).optional(),
-  });
+```typescript
+// ─── BH Certificate ───────────────────────────────────────────
+export const SignBhCertificateSchema = z.object({
+  engagementId: z.string().uuid(),
+  comments: z.string().min(1, "Please add acknowledgment comments").max(2000),
+  declarationAccepted: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the declaration to sign" }),
+  }),
+});
 
-  export type SignBhCertificateInput = z.infer<typeof SignBhCertificateSchema>;
-  export type CountersignBhCertificateInput = z.infer<typeof CountersignBhCertificateSchema>;
-  ```
+export const CountersignBhCertificateSchema = z.object({
+  engagementId: z.string().uuid(),
+  comments: z.string().max(2000).optional(),
+});
+
+export type SignBhCertificateInput = z.infer<typeof SignBhCertificateSchema>;
+export type CountersignBhCertificateInput = z.infer<
+  typeof CountersignBhCertificateSchema
+>;
+```
+
   </action>
   <verify>
   ```bash
@@ -214,56 +220,64 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   Create `src/actions/audit-execution/bh-certificate.ts`:
 
-  ```typescript
-  "use server";
-  ```
+```typescript
+"use server";
+```
 
-  **`signBhCertificate(input: SignBhCertificateInput)`:**
-  1. Auth + extract roles
-  2. **Role check:** User must have `BRANCH_HEAD` role (not permission-based — this is a specific role requirement)
+**`signBhCertificate(input: SignBhCertificateInput)`:**
+
+1. Auth + extract roles
+2. **Role check:** User must have `BRANCH_HEAD` role (not permission-based — this is a specific role requirement)
+   ```typescript
+   if (!userRoles.includes("BRANCH_HEAD")) {
+     return {
+       success: false as const,
+       error: "Only Branch Heads can sign the BH Certificate.",
+     };
+   }
+   ```
+3. Validate input with SignBhCertificateSchema
+4. Verify engagement exists, belongs to tenant, and bhCertSignedAt is null (not already signed)
+5. Transaction:
+   - Set audit context: `bh_certificate.signed`
+   - Update engagement:
      ```typescript
-     if (!userRoles.includes("BRANCH_HEAD")) {
-       return { success: false as const, error: "Only Branch Heads can sign the BH Certificate." };
-     }
+     await tx.auditEngagement.update({
+       where: { id: validated.engagementId },
+       data: {
+         bhCertSignedById: session.user.id,
+         bhCertSignedAt: new Date(),
+         bhCertComments: validated.comments,
+       },
+     });
      ```
-  3. Validate input with SignBhCertificateSchema
-  4. Verify engagement exists, belongs to tenant, and bhCertSignedAt is null (not already signed)
-  5. Transaction:
-     - Set audit context: `bh_certificate.signed`
-     - Update engagement:
-       ```typescript
-       await tx.auditEngagement.update({
-         where: { id: validated.engagementId },
-         data: {
-           bhCertSignedById: session.user.id,
-           bhCertSignedAt: new Date(),
-           bhCertComments: validated.comments,
-         },
-       });
-       ```
-  6. revalidatePath
-  7. Return `{ success: true, data: { signedAt: now, signedBy: session.user.name } }`
+6. revalidatePath
+7. Return `{ success: true, data: { signedAt: now, signedBy: session.user.name } }`
 
-  **`countersignBhCertificate(input: CountersignBhCertificateInput)`:**
-  1. Auth + extract roles
-  2. **Role check:** User must have `LEAD_AUDITOR` or `AUDIT_MANAGER` role
-  3. Validate input
-  4. Verify engagement is already signed (bhCertSignedAt not null) but not countersigned
-  5. Transaction:
-     - Set audit context: `bh_certificate.countersigned`
-     - Update engagement: set bhCertCountersignedById + bhCertCountersignedAt
-       (If Option A chosen: append to bhCertComments as structured text)
-  6. revalidatePath
-  7. Return success
+**`countersignBhCertificate(input: CountersignBhCertificateInput)`:**
 
-  **`getBhCertificateStatus(engagementId: string)`:**
-  - Read-only action to fetch current BH cert state
-  - Return `{ status, signedBy, signedAt, comments, countersignedBy, countersignedAt }`
+1. Auth + extract roles
+2. **Role check:** User must have `LEAD_AUDITOR` or `AUDIT_MANAGER` role
+3. Validate input
+4. Verify engagement is already signed (bhCertSignedAt not null) but not countersigned
+5. Transaction:
+   - Set audit context: `bh_certificate.countersigned`
+   - Update engagement: set bhCertCountersignedById + bhCertCountersignedAt
+     (If Option A chosen: append to bhCertComments as structured text)
+6. revalidatePath
+7. Return success
+
+**`getBhCertificateStatus(engagementId: string)`:**
+
+- Read-only action to fetch current BH cert state
+- Return `{ status, signedBy, signedAt, comments, countersignedBy, countersignedAt }`
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/bh-certificate.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/bh-certificate.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `signBhCertificate` enforces BRANCH_HEAD role
@@ -280,50 +294,61 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   **4a. Create `src/components/audit-execution/bh-signature-capture.tsx`:**
 
-  "use client" — Simple signature capture component:
-  - **Not** a canvas drawing pad (too complex for v1) — instead, use a declaration + checkbox pattern:
-    - Full declaration text displayed:
-      > "I, [Branch Head Name], hereby certify that I have reviewed the audit observations listed in this report. The information provided herein is true and correct to the best of my knowledge. I acknowledge the findings and commit to implementing the remedial actions as agreed."
-    - Checkbox: "I accept this declaration"
-    - Comments textarea: mandatory
-    - "Sign Certificate" button
-  - Props: `{ signerName: string; onSign: (comments: string) => void; disabled?: boolean }`
-  - Button disabled until checkbox checked and comments entered
+"use client" — Simple signature capture component:
 
-  **4b. Create `src/components/audit-execution/bh-certificate-workflow.tsx`:**
+- **Not** a canvas drawing pad (too complex for v1) — instead, use a declaration + checkbox pattern:
+  - Full declaration text displayed:
+    > "I, [Branch Head Name], hereby certify that I have reviewed the audit observations listed in this report. The information provided herein is true and correct to the best of my knowledge. I acknowledge the findings and commit to implementing the remedial actions as agreed."
+  - Checkbox: "I accept this declaration"
+  - Comments textarea: mandatory
+  - "Sign Certificate" button
+- Props: `{ signerName: string; onSign: (comments: string) => void; disabled?: boolean }`
+- Button disabled until checkbox checked and comments entered
 
-  "use client" — Main workflow component:
+**4b. Create `src/components/audit-execution/bh-certificate-workflow.tsx`:**
 
-  Props:
-  ```typescript
-  interface BhCertificateWorkflowProps {
-    engagementId: string;
-    currentStatus: "PENDING" | "SIGNED" | "COUNTERSIGNED";
-    signedBy: { name: string; signedAt: string } | null;
-    countersignedBy: { name: string; signedAt: string } | null;
-    comments: string | null;
-    currentUserRole: string[];
-    currentUserName: string;
-    observationSummary: { total: number; critical: number; high: number; medium: number; low: number };
-  }
-  ```
+"use client" — Main workflow component:
 
-  Implementation:
-  - **Step indicator:** Three steps (PENDING → SIGNED → COUNTERSIGNED) with visual progress
-  - **Observation summary card:** Show finding counts by severity
-  - **Status-based rendering:**
-    - PENDING + user is BRANCH_HEAD: Show BhSignatureCapture
-    - PENDING + user is not BRANCH_HEAD: "Awaiting Branch Head signature"
-    - SIGNED + user is LEAD_AUDITOR: Show countersign button + optional comments
-    - SIGNED + user is not LEAD_AUDITOR: "Awaiting Lead Auditor countersign"
-    - COUNTERSIGNED: Show completed state with all details (who signed, when, comments)
-  - Toast on success/error
-  - Use Card + Badge + Alert components
+Props:
+
+```typescript
+interface BhCertificateWorkflowProps {
+  engagementId: string;
+  currentStatus: "PENDING" | "SIGNED" | "COUNTERSIGNED";
+  signedBy: { name: string; signedAt: string } | null;
+  countersignedBy: { name: string; signedAt: string } | null;
+  comments: string | null;
+  currentUserRole: string[];
+  currentUserName: string;
+  observationSummary: {
+    total: number;
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
+```
+
+Implementation:
+
+- **Step indicator:** Three steps (PENDING → SIGNED → COUNTERSIGNED) with visual progress
+- **Observation summary card:** Show finding counts by severity
+- **Status-based rendering:**
+  - PENDING + user is BRANCH_HEAD: Show BhSignatureCapture
+  - PENDING + user is not BRANCH_HEAD: "Awaiting Branch Head signature"
+  - SIGNED + user is LEAD_AUDITOR: Show countersign button + optional comments
+  - SIGNED + user is not LEAD_AUDITOR: "Awaiting Lead Auditor countersign"
+  - COUNTERSIGNED: Show completed state with all details (who signed, when, comments)
+- Toast on success/error
+- Use Card + Badge + Alert components
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/bh-certificate-workflow.tsx src/components/audit-execution/bh-signature-capture.tsx 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/audit-execution/bh-certificate-workflow.tsx src/components/audit-execution/bh-signature-capture.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - BhSignatureCapture has declaration text + checkbox + comments
@@ -340,45 +365,49 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   Update or create `src/components/pdf-report/bh-certificate-section.tsx`:
 
-  Using @react-pdf/renderer components (the project already uses this library):
+Using @react-pdf/renderer components (the project already uses this library):
 
-  ```typescript
-  import { View, Text, StyleSheet } from "@react-pdf/renderer";
-  ```
+```typescript
+import { View, Text, StyleSheet } from "@react-pdf/renderer";
+```
 
-  Render a certificate block with:
-  - Title: "BRANCH HEAD CERTIFICATE"
-  - Declaration text (same as UI)
-  - If signed:
-    - "Signed by: [Name]"
-    - "Date: [formatted date]"
-    - "Comments: [bhCertComments]"
-    - Horizontal line as "signature line"
-  - If countersigned:
-    - "Countersigned by: [Lead Auditor Name]"
-    - "Date: [formatted date]"
-  - If not signed:
-    - "Certificate pending signature"
+Render a certificate block with:
 
-  Props:
-  ```typescript
-  interface BhCertificateSectionProps {
-    branchName: string;
-    auditPeriod: string;
-    signedBy: string | null;
-    signedAt: Date | null;
-    comments: string | null;
-    countersignedBy: string | null;
-    countersignedAt: Date | null;
-  }
-  ```
+- Title: "BRANCH HEAD CERTIFICATE"
+- Declaration text (same as UI)
+- If signed:
+  - "Signed by: [Name]"
+  - "Date: [formatted date]"
+  - "Comments: [bhCertComments]"
+  - Horizontal line as "signature line"
+- If countersigned:
+  - "Countersigned by: [Lead Auditor Name]"
+  - "Date: [formatted date]"
+- If not signed:
+  - "Certificate pending signature"
 
-  Wire this into the existing `AuditSummaryDocument` component so it renders as the final section of the PDF.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/pdf-report/bh-certificate-section.tsx 2>&1 | head -20
-  ```
+Props:
+
+```typescript
+interface BhCertificateSectionProps {
+  branchName: string;
+  auditPeriod: string;
+  signedBy: string | null;
+  signedAt: Date | null;
+  comments: string | null;
+  countersignedBy: string | null;
+  countersignedAt: Date | null;
+}
+```
+
+Wire this into the existing `AuditSummaryDocument` component so it renders as the final section of the PDF.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/pdf-report/bh-certificate-section.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - BhCertificateSection renders signature block in PDF
@@ -394,53 +423,54 @@ Implement R26: BH Certificate digital sign-off workflow. The AuditEngagement mod
   <action>
   Create server component page:
 
-  1. Fetch engagement via `getEngagementForBhCertificate(session, engagementId)`
-  2. Derive BH cert status via `deriveBhCertStatus()`
-  3. Resolve signer names from User model if bhCertSignedById is set
-  4. Compute observation summary from engagement.observations
-  5. Pass current user's roles and name for role-based rendering
-  6. Render BhCertificateWorkflow with all props
+1. Fetch engagement via `getEngagementForBhCertificate(session, engagementId)`
+2. Derive BH cert status via `deriveBhCertStatus()`
+3. Resolve signer names from User model if bhCertSignedById is set
+4. Compute observation summary from engagement.observations
+5. Pass current user's roles and name for role-based rendering
+6. Render BhCertificateWorkflow with all props
 
-  ```typescript
-  export default async function BhCertificatePage({ params }: PageProps) {
-    const { id: engagementId } = await params;
-    const session = await getRequiredSession();
-    const engagement = await getEngagementForBhCertificate(session, engagementId);
-    if (!engagement) notFound();
+```typescript
+export default async function BhCertificatePage({ params }: PageProps) {
+  const { id: engagementId } = await params;
+  const session = await getRequiredSession();
+  const engagement = await getEngagementForBhCertificate(session, engagementId);
+  if (!engagement) notFound();
 
-    const status = deriveBhCertStatus(engagement);
-    const userRoles = ((session.user as any).roles ?? []) as string[];
+  const status = deriveBhCertStatus(engagement);
+  const userRoles = ((session.user as any).roles ?? []) as string[];
 
-    const observationSummary = {
-      total: engagement.observations.length,
-      critical: engagement.observations.filter(o => o.severity === "CRITICAL").length,
-      high: engagement.observations.filter(o => o.severity === "HIGH").length,
-      medium: engagement.observations.filter(o => o.severity === "MEDIUM").length,
-      low: engagement.observations.filter(o => o.severity === "LOW").length,
-    };
+  const observationSummary = {
+    total: engagement.observations.length,
+    critical: engagement.observations.filter(o => o.severity === "CRITICAL").length,
+    high: engagement.observations.filter(o => o.severity === "HIGH").length,
+    medium: engagement.observations.filter(o => o.severity === "MEDIUM").length,
+    low: engagement.observations.filter(o => o.severity === "LOW").length,
+  };
 
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">BH Certificate</h1>
-          <p className="text-muted-foreground">
-            {engagement.branch?.name} — Digital sign-off
-          </p>
-        </div>
-        <BhCertificateWorkflow
-          engagementId={engagementId}
-          currentStatus={status}
-          signedBy={...}
-          countersignedBy={...}
-          comments={engagement.bhCertComments}
-          currentUserRole={userRoles}
-          currentUserName={session.user.name}
-          observationSummary={observationSummary}
-        />
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">BH Certificate</h1>
+        <p className="text-muted-foreground">
+          {engagement.branch?.name} — Digital sign-off
+        </p>
       </div>
-    );
-  }
-  ```
+      <BhCertificateWorkflow
+        engagementId={engagementId}
+        currentStatus={status}
+        signedBy={...}
+        countersignedBy={...}
+        comments={engagement.bhCertComments}
+        currentUserRole={userRoles}
+        currentUserName={session.user.name}
+        observationSummary={observationSummary}
+      />
+    </div>
+  );
+}
+```
+
   </action>
   <verify>
   ```bash

@@ -19,7 +19,10 @@ export async function approveRamAssessment(input: { assessmentId: string }) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "ram:approve")) {
-    return { success: false as const, error: "You do not have permission to approve RAM assessments." };
+    return {
+      success: false as const,
+      error: "You do not have permission to approve RAM assessments.",
+    };
   }
 
   const parsed = AssessmentIdSchema.safeParse(input);
@@ -50,7 +53,9 @@ export async function approveRamAssessment(input: { assessmentId: string }) {
       }
       // Maker-checker: approver ≠ computer
       if (assessment.computedById === session.user.id) {
-        throw new Error("The person who computed the assessment cannot approve it");
+        throw new Error(
+          "The person who computed the assessment cannot approve it",
+        );
       }
 
       return tx.ramAssessment.update({
@@ -64,10 +69,19 @@ export async function approveRamAssessment(input: { assessmentId: string }) {
     });
 
     revalidatePath("/ram");
-    return { success: true as const, data: { id: result.id, status: "APPROVED" } };
+    return {
+      success: true as const,
+      data: { id: result.id, status: "APPROVED" },
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to approve RAM assessment.";
-    logger.error({ error, action: "approve_ram_assessment", tenantId }, message);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to approve RAM assessment.";
+    logger.error(
+      { error, action: "approve_ram_assessment", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

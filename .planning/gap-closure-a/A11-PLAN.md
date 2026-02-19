@@ -47,6 +47,7 @@ Implement R40: Repeat finding 1.5× risk weight in next RAM computation. The rep
 **Purpose:** Branches with recurring audit findings should be flagged as higher risk and audited more frequently — a core RBIA principle per SDD p.40 and RBIA Policy §8.9.
 
 **Output:**
+
 - Repeat finding detection module for RAM context (branch-level, not observation-level)
 - RAM engine enhanced with repeat uplift factor
 - RAM compute action integrates repeat check before score finalization
@@ -76,194 +77,197 @@ Implement R40: Repeat finding 1.5× risk weight in next RAM computation. The rep
   <action>
   Create `src/lib/repeat-finding-detector.ts`:
 
-  This is a data-fetching module (not pure — it queries the database) that detects repeat findings for a branch across audit periods.
+This is a data-fetching module (not pure — it queries the database) that detects repeat findings for a branch across audit periods.
 
-  ```typescript
-  import "server-only";
-  import { prismaForTenant } from "@/data-access/prisma";
+```typescript
+import "server-only";
+import { prismaForTenant } from "@/data-access/prisma";
 
-  export interface RepeatFindingSummary {
-    branchId: string;
-    hasRepeatFindings: boolean;
-    repeatCount: number;
-    totalPriorFindings: number;
-    repeatRatio: number; // 0.0 to 1.0
-    repeatFindings: Array<{
-      currentObservationId: string;
-      priorObservationId: string;
-      title: string;
-      severity: string;
-    }>;
-  }
+export interface RepeatFindingSummary {
+  branchId: string;
+  hasRepeatFindings: boolean;
+  repeatCount: number;
+  totalPriorFindings: number;
+  repeatRatio: number; // 0.0 to 1.0
+  repeatFindings: Array<{
+    currentObservationId: string;
+    priorObservationId: string;
+    title: string;
+    severity: string;
+  }>;
+}
 
-  /**
-   * Detect repeat findings for a branch by checking current audit observations
-   * against closed observations from prior audits at the same branch.
-   *
-   * Two methods of detection:
-   * 1. Explicit: Observation.repeatOfId is set (user confirmed repeat)
-   * 2. Implicit: Title similarity > 0.5 via pg_trgm (same as detect.ts)
-   *
-   * For RAM purposes, we use BOTH methods.
-   *
-   * @param tenantId - Tenant ID
-   * @param branchId - Branch being assessed
-   * @param currentEngagementId - Current audit engagement (to exclude from "prior" query)
-   * @returns RepeatFindingSummary
-   */
-  export async function detectRepeatFindingsForBranch(
-    tenantId: string,
-    branchId: string,
-    currentEngagementId?: string,
-  ): Promise<RepeatFindingSummary> {
-    const db = prismaForTenant(tenantId);
+/**
+ * Detect repeat findings for a branch by checking current audit observations
+ * against closed observations from prior audits at the same branch.
+ *
+ * Two methods of detection:
+ * 1. Explicit: Observation.repeatOfId is set (user confirmed repeat)
+ * 2. Implicit: Title similarity > 0.5 via pg_trgm (same as detect.ts)
+ *
+ * For RAM purposes, we use BOTH methods.
+ *
+ * @param tenantId - Tenant ID
+ * @param branchId - Branch being assessed
+ * @param currentEngagementId - Current audit engagement (to exclude from "prior" query)
+ * @returns RepeatFindingSummary
+ */
+export async function detectRepeatFindingsForBranch(
+  tenantId: string,
+  branchId: string,
+  currentEngagementId?: string,
+): Promise<RepeatFindingSummary> {
+  const db = prismaForTenant(tenantId);
 
-    // Get explicitly linked repeat findings
-    const explicitRepeats = await db.observation.findMany({
-      where: {
-        tenantId,
-        branchId,
-        repeatOfId: { not: null },
-        ...(currentEngagementId && { engagementId: currentEngagementId }),
-      },
-      select: {
-        id: true,
-        title: true,
-        severity: true,
-        repeatOfId: true,
-      },
-    });
+  // Get explicitly linked repeat findings
+  const explicitRepeats = await db.observation.findMany({
+    where: {
+      tenantId,
+      branchId,
+      repeatOfId: { not: null },
+      ...(currentEngagementId && { engagementId: currentEngagementId }),
+    },
+    select: {
+      id: true,
+      title: true,
+      severity: true,
+      repeatOfId: true,
+    },
+  });
 
-    // Get current audit findings (from most recent engagement or specified one)
-    const currentFindings = await db.observation.findMany({
-      where: {
-        tenantId,
-        branchId,
-        status: { in: ["DRAFT", "SUBMITTED", "REVIEWED", "ISSUED"] },
-        ...(currentEngagementId && { engagementId: currentEngagementId }),
-      },
-      select: { id: true, title: true, severity: true },
-    });
+  // Get current audit findings (from most recent engagement or specified one)
+  const currentFindings = await db.observation.findMany({
+    where: {
+      tenantId,
+      branchId,
+      status: { in: ["DRAFT", "SUBMITTED", "REVIEWED", "ISSUED"] },
+      ...(currentEngagementId && { engagementId: currentEngagementId }),
+    },
+    select: { id: true, title: true, severity: true },
+  });
 
-    // Get total prior findings (CLOSED observations at this branch)
-    const priorFindingsCount = await db.observation.count({
-      where: {
-        tenantId,
-        branchId,
-        status: "CLOSED",
-      },
-    });
+  // Get total prior findings (CLOSED observations at this branch)
+  const priorFindingsCount = await db.observation.count({
+    where: {
+      tenantId,
+      branchId,
+      status: "CLOSED",
+    },
+  });
 
-    // Implicit detection via pg_trgm for findings without explicit repeatOfId
-    let implicitRepeats: Array<{
-      currentObservationId: string;
-      priorObservationId: string;
-      title: string;
-      severity: string;
-    }> = [];
+  // Implicit detection via pg_trgm for findings without explicit repeatOfId
+  let implicitRepeats: Array<{
+    currentObservationId: string;
+    priorObservationId: string;
+    title: string;
+    severity: string;
+  }> = [];
 
-    // Only check findings that don't already have explicit repeat link
-    const unlinkedFindings = currentFindings.filter(
-      f => !explicitRepeats.some(r => r.id === f.id),
-    );
+  // Only check findings that don't already have explicit repeat link
+  const unlinkedFindings = currentFindings.filter(
+    (f) => !explicitRepeats.some((r) => r.id === f.id),
+  );
 
-    if (unlinkedFindings.length > 0 && priorFindingsCount > 0) {
-      // Check each unlinked finding against closed observations
-      for (const finding of unlinkedFindings) {
-        const matches = await db.$queryRaw<Array<{ id: string; title: string; similarity_score: number }>>`
-          SELECT id, title, similarity(title, ${finding.title}) as similarity_score
-          FROM "Observation"
-          WHERE "tenantId" = ${tenantId}::uuid
-            AND "branchId" = ${branchId}::uuid
-            AND status = 'CLOSED'
-            AND similarity(title, ${finding.title}) > 0.5
-          ORDER BY similarity_score DESC
-          LIMIT 1
-        `;
+  if (unlinkedFindings.length > 0 && priorFindingsCount > 0) {
+    // Check each unlinked finding against closed observations
+    for (const finding of unlinkedFindings) {
+      const matches = await db.$queryRaw<
+        Array<{ id: string; title: string; similarity_score: number }>
+      >`
+        SELECT id, title, similarity(title, ${finding.title}) as similarity_score
+        FROM "Observation"
+        WHERE "tenantId" = ${tenantId}::uuid
+          AND "branchId" = ${branchId}::uuid
+          AND status = 'CLOSED'
+          AND similarity(title, ${finding.title}) > 0.5
+        ORDER BY similarity_score DESC
+        LIMIT 1
+      `;
 
-        if (matches.length > 0) {
-          implicitRepeats.push({
-            currentObservationId: finding.id,
-            priorObservationId: matches[0].id,
-            title: finding.title,
-            severity: finding.severity,
-          });
-        }
+      if (matches.length > 0) {
+        implicitRepeats.push({
+          currentObservationId: finding.id,
+          priorObservationId: matches[0].id,
+          title: finding.title,
+          severity: finding.severity,
+        });
       }
     }
+  }
 
-    // Combine explicit and implicit
-    const allRepeats = [
-      ...explicitRepeats.map(r => ({
-        currentObservationId: r.id,
-        priorObservationId: r.repeatOfId!,
-        title: r.title,
-        severity: r.severity,
-      })),
-      ...implicitRepeats,
-    ];
+  // Combine explicit and implicit
+  const allRepeats = [
+    ...explicitRepeats.map((r) => ({
+      currentObservationId: r.id,
+      priorObservationId: r.repeatOfId!,
+      title: r.title,
+      severity: r.severity,
+    })),
+    ...implicitRepeats,
+  ];
 
-    // Deduplicate by currentObservationId
-    const uniqueRepeats = Array.from(
-      new Map(allRepeats.map(r => [r.currentObservationId, r])).values(),
-    );
+  // Deduplicate by currentObservationId
+  const uniqueRepeats = Array.from(
+    new Map(allRepeats.map((r) => [r.currentObservationId, r])).values(),
+  );
 
-    const repeatCount = uniqueRepeats.length;
-    const totalCurrent = currentFindings.length;
+  const repeatCount = uniqueRepeats.length;
+  const totalCurrent = currentFindings.length;
 
+  return {
+    branchId,
+    hasRepeatFindings: repeatCount > 0,
+    repeatCount,
+    totalPriorFindings: priorFindingsCount,
+    repeatRatio: totalCurrent > 0 ? repeatCount / totalCurrent : 0,
+    repeatFindings: uniqueRepeats,
+  };
+}
+
+/**
+ * Compute the repeat uplift factor for RAM scoring.
+ *
+ * Per RBIA Policy §8.9:
+ * - If branch has repeat findings → apply 1.5× multiplier to composite score
+ * - The multiplier is applied to the final composite, not individual params
+ * - Score is capped at 5.0 (max score)
+ *
+ * @param compositeScore - Raw composite score from RAM engine
+ * @param repeatSummary - Repeat finding detection result
+ * @returns { adjustedScore, upliftApplied, upliftFactor }
+ */
+export function computeRepeatUplift(
+  compositeScore: number,
+  repeatSummary: RepeatFindingSummary,
+): {
+  adjustedScore: number;
+  upliftApplied: boolean;
+  upliftFactor: number;
+  repeatCount: number;
+} {
+  const REPEAT_MULTIPLIER = 1.5;
+  const MAX_SCORE = 5.0;
+
+  if (!repeatSummary.hasRepeatFindings) {
     return {
-      branchId,
-      hasRepeatFindings: repeatCount > 0,
-      repeatCount,
-      totalPriorFindings: priorFindingsCount,
-      repeatRatio: totalCurrent > 0 ? repeatCount / totalCurrent : 0,
-      repeatFindings: uniqueRepeats,
+      adjustedScore: compositeScore,
+      upliftApplied: false,
+      upliftFactor: 1.0,
+      repeatCount: 0,
     };
   }
 
-  /**
-   * Compute the repeat uplift factor for RAM scoring.
-   *
-   * Per RBIA Policy §8.9:
-   * - If branch has repeat findings → apply 1.5× multiplier to composite score
-   * - The multiplier is applied to the final composite, not individual params
-   * - Score is capped at 5.0 (max score)
-   *
-   * @param compositeScore - Raw composite score from RAM engine
-   * @param repeatSummary - Repeat finding detection result
-   * @returns { adjustedScore, upliftApplied, upliftFactor }
-   */
-  export function computeRepeatUplift(
-    compositeScore: number,
-    repeatSummary: RepeatFindingSummary,
-  ): {
-    adjustedScore: number;
-    upliftApplied: boolean;
-    upliftFactor: number;
-    repeatCount: number;
-  } {
-    const REPEAT_MULTIPLIER = 1.5;
-    const MAX_SCORE = 5.0;
+  const adjustedScore = Math.min(compositeScore * REPEAT_MULTIPLIER, MAX_SCORE);
 
-    if (!repeatSummary.hasRepeatFindings) {
-      return {
-        adjustedScore: compositeScore,
-        upliftApplied: false,
-        upliftFactor: 1.0,
-        repeatCount: 0,
-      };
-    }
+  return {
+    adjustedScore: Math.round(adjustedScore * 100) / 100,
+    upliftApplied: true,
+    upliftFactor: REPEAT_MULTIPLIER,
+    repeatCount: repeatSummary.repeatCount,
+  };
+}
+```
 
-    const adjustedScore = Math.min(compositeScore * REPEAT_MULTIPLIER, MAX_SCORE);
-
-    return {
-      adjustedScore: Math.round(adjustedScore * 100) / 100,
-      upliftApplied: true,
-      upliftFactor: REPEAT_MULTIPLIER,
-      repeatCount: repeatSummary.repeatCount,
-    };
-  }
-  ```
   </action>
   <verify>
   ```bash
@@ -284,73 +288,82 @@ Implement R40: Repeat finding 1.5× risk weight in next RAM computation. The rep
   <action>
   Update the existing `src/lib/ram-engine.ts` to include repeat uplift awareness:
 
-  **Add new types:**
-  ```typescript
-  export interface RamComputationResultWithUplift extends RamComputationResult {
-    rawCompositeScore: number;     // Score before uplift
-    repeatUpliftApplied: boolean;  // Whether 1.5× was applied
-    repeatUpliftFactor: number;    // 1.0 or 1.5
-    repeatFindingCount: number;    // Number of repeat findings detected
+**Add new types:**
+
+```typescript
+export interface RamComputationResultWithUplift extends RamComputationResult {
+  rawCompositeScore: number; // Score before uplift
+  repeatUpliftApplied: boolean; // Whether 1.5× was applied
+  repeatUpliftFactor: number; // 1.0 or 1.5
+  repeatFindingCount: number; // Number of repeat findings detected
+}
+```
+
+**Add new function:**
+
+```typescript
+/**
+ * Compute RAM assessment with repeat finding uplift.
+ *
+ * Pipeline:
+ * 1. Compute raw composite score (weighted average)
+ * 2. Apply repeat finding uplift if applicable (1.5×)
+ * 3. Derive risk category from ADJUSTED score
+ * 4. Derive audit frequency from risk category
+ *
+ * @param scores - Individual parameter scores
+ * @param repeatUplift - Optional uplift from repeat detection
+ * @returns Full computation result with uplift metadata
+ */
+export function computeRamWithUplift(
+  scores: RamScoreInput[],
+  repeatUplift?: {
+    adjustedScore: number;
+    upliftApplied: boolean;
+    upliftFactor: number;
+    repeatCount: number;
+  },
+): RamComputationResultWithUplift {
+  const rawComposite = computeCompositeScore(scores);
+
+  const finalScore = repeatUplift?.upliftApplied
+    ? repeatUplift.adjustedScore
+    : rawComposite;
+
+  const riskCategory = deriveRiskCategory(finalScore);
+  const auditFrequency = deriveAuditFrequency(riskCategory);
+
+  return {
+    compositeScore: finalScore,
+    riskCategory,
+    auditFrequency,
+    rawCompositeScore: rawComposite,
+    repeatUpliftApplied: repeatUplift?.upliftApplied ?? false,
+    repeatUpliftFactor: repeatUplift?.upliftFactor ?? 1.0,
+    repeatFindingCount: repeatUplift?.repeatCount ?? 0,
+  };
+}
+```
+
+**Keep existing functions unchanged** for backward compatibility. The new `computeRamWithUplift` is an enhanced version that wraps the existing pure functions.
+
+Also export `deriveAuditFrequency` if not already exported:
+
+```typescript
+export function deriveAuditFrequency(
+  category: "HIGH" | "MEDIUM" | "LOW",
+): number {
+  switch (category) {
+    case "HIGH":
+      return 12;
+    case "MEDIUM":
+      return 18;
+    case "LOW":
+      return 24;
   }
-  ```
+}
+```
 
-  **Add new function:**
-  ```typescript
-  /**
-   * Compute RAM assessment with repeat finding uplift.
-   *
-   * Pipeline:
-   * 1. Compute raw composite score (weighted average)
-   * 2. Apply repeat finding uplift if applicable (1.5×)
-   * 3. Derive risk category from ADJUSTED score
-   * 4. Derive audit frequency from risk category
-   *
-   * @param scores - Individual parameter scores
-   * @param repeatUplift - Optional uplift from repeat detection
-   * @returns Full computation result with uplift metadata
-   */
-  export function computeRamWithUplift(
-    scores: RamScoreInput[],
-    repeatUplift?: {
-      adjustedScore: number;
-      upliftApplied: boolean;
-      upliftFactor: number;
-      repeatCount: number;
-    },
-  ): RamComputationResultWithUplift {
-    const rawComposite = computeCompositeScore(scores);
-
-    const finalScore = repeatUplift?.upliftApplied
-      ? repeatUplift.adjustedScore
-      : rawComposite;
-
-    const riskCategory = deriveRiskCategory(finalScore);
-    const auditFrequency = deriveAuditFrequency(riskCategory);
-
-    return {
-      compositeScore: finalScore,
-      riskCategory,
-      auditFrequency,
-      rawCompositeScore: rawComposite,
-      repeatUpliftApplied: repeatUplift?.upliftApplied ?? false,
-      repeatUpliftFactor: repeatUplift?.upliftFactor ?? 1.0,
-      repeatFindingCount: repeatUplift?.repeatCount ?? 0,
-    };
-  }
-  ```
-
-  **Keep existing functions unchanged** for backward compatibility. The new `computeRamWithUplift` is an enhanced version that wraps the existing pure functions.
-
-  Also export `deriveAuditFrequency` if not already exported:
-  ```typescript
-  export function deriveAuditFrequency(category: "HIGH" | "MEDIUM" | "LOW"): number {
-    switch (category) {
-      case "HIGH": return 12;
-      case "MEDIUM": return 18;
-      case "LOW": return 24;
-    }
-  }
-  ```
   </action>
   <verify>
   ```bash
@@ -372,72 +385,79 @@ Implement R40: Repeat finding 1.5× risk weight in next RAM computation. The rep
   <action>
   Update the existing RAM compute action to include repeat finding detection:
 
-  Find the existing `computeRamAssessment` action (or similar) and modify the computation step:
+Find the existing `computeRamAssessment` action (or similar) and modify the computation step:
 
-  **Before (existing):**
-  ```typescript
-  const result = computeCompositeScore(scoreInputs);
-  const riskCategory = deriveRiskCategory(result);
-  ```
+**Before (existing):**
 
-  **After (updated):**
-  ```typescript
-  import { detectRepeatFindingsForBranch, computeRepeatUplift } from "@/lib/repeat-finding-detector";
-  import { computeRamWithUplift } from "@/lib/ram-engine";
+```typescript
+const result = computeCompositeScore(scoreInputs);
+const riskCategory = deriveRiskCategory(result);
+```
 
-  // ... inside the action, after collecting score inputs ...
+**After (updated):**
 
-  // Step: Detect repeat findings for this branch
-  const repeatSummary = await detectRepeatFindingsForBranch(
-    tenantId,
-    assessment.branchId,
-    undefined, // No current engagement filter — check all recent audits
-  );
+```typescript
+import {
+  detectRepeatFindingsForBranch,
+  computeRepeatUplift,
+} from "@/lib/repeat-finding-detector";
+import { computeRamWithUplift } from "@/lib/ram-engine";
 
-  // Step: Compute uplift
-  const rawComposite = computeCompositeScore(scoreInputs);
-  const uplift = computeRepeatUplift(rawComposite, repeatSummary);
+// ... inside the action, after collecting score inputs ...
 
-  // Step: Full computation with uplift
-  const result = computeRamWithUplift(scoreInputs, uplift);
+// Step: Detect repeat findings for this branch
+const repeatSummary = await detectRepeatFindingsForBranch(
+  tenantId,
+  assessment.branchId,
+  undefined, // No current engagement filter — check all recent audits
+);
 
-  // Step: Update assessment with enriched result
-  await tx.ramAssessment.update({
-    where: { id: assessmentId },
-    data: {
-      compositeScore: result.compositeScore,
-      riskCategory: result.riskCategory,
-      auditFrequency: result.auditFrequency,
-      status: "COMPUTED",
-      computedById: session.user.id,
-      computedAt: new Date(),
-    },
-  });
+// Step: Compute uplift
+const rawComposite = computeCompositeScore(scoreInputs);
+const uplift = computeRepeatUplift(rawComposite, repeatSummary);
 
-  // Step: Update branch cached score
-  await tx.branch.update({
-    where: { id: assessment.branchId },
-    data: {
-      ramScore: result.compositeScore,
-      auditFrequency: result.auditFrequency,
-    },
-  });
-  ```
+// Step: Full computation with uplift
+const result = computeRamWithUplift(scoreInputs, uplift);
 
-  Also store repeat uplift metadata in the return value so the UI can display it:
-  ```typescript
-  return {
-    success: true as const,
-    data: {
-      compositeScore: result.compositeScore,
-      riskCategory: result.riskCategory,
-      auditFrequency: result.auditFrequency,
-      repeatUpliftApplied: result.repeatUpliftApplied,
-      repeatFindingCount: result.repeatFindingCount,
-      rawCompositeScore: result.rawCompositeScore,
-    },
-  };
-  ```
+// Step: Update assessment with enriched result
+await tx.ramAssessment.update({
+  where: { id: assessmentId },
+  data: {
+    compositeScore: result.compositeScore,
+    riskCategory: result.riskCategory,
+    auditFrequency: result.auditFrequency,
+    status: "COMPUTED",
+    computedById: session.user.id,
+    computedAt: new Date(),
+  },
+});
+
+// Step: Update branch cached score
+await tx.branch.update({
+  where: { id: assessment.branchId },
+  data: {
+    ramScore: result.compositeScore,
+    auditFrequency: result.auditFrequency,
+  },
+});
+```
+
+Also store repeat uplift metadata in the return value so the UI can display it:
+
+```typescript
+return {
+  success: true as const,
+  data: {
+    compositeScore: result.compositeScore,
+    riskCategory: result.riskCategory,
+    auditFrequency: result.auditFrequency,
+    repeatUpliftApplied: result.repeatUpliftApplied,
+    repeatFindingCount: result.repeatFindingCount,
+    rawCompositeScore: result.rawCompositeScore,
+  },
+};
+```
+
   </action>
   <verify>
   ```bash
@@ -460,59 +480,64 @@ Implement R40: Repeat finding 1.5× risk weight in next RAM computation. The rep
   <action>
   Find the existing RAM assessment result display component and add repeat uplift indicator.
 
-  Add a section that shows:
-  ```tsx
-  {repeatUpliftApplied && (
+Add a section that shows:
+
+```tsx
+{
+  repeatUpliftApplied && (
     <Alert variant="warning" className="mt-4">
       <AlertTriangle className="h-4 w-4" />
       <AlertTitle>Repeat Finding Uplift Applied</AlertTitle>
       <AlertDescription>
-        {repeatFindingCount} repeat finding(s) detected from prior audits.
-        A 1.5× risk multiplier has been applied.
+        {repeatFindingCount} repeat finding(s) detected from prior audits. A
+        1.5× risk multiplier has been applied.
         <br />
         Raw score: {rawCompositeScore} → Adjusted score: {compositeScore}
       </AlertDescription>
     </Alert>
-  )}
-  ```
+  );
+}
+```
 
-  If the component doesn't exist in a straightforward place, create a new one:
+If the component doesn't exist in a straightforward place, create a new one:
 
-  ```typescript
-  // src/components/ram/repeat-uplift-indicator.tsx
-  "use client";
+```typescript
+// src/components/ram/repeat-uplift-indicator.tsx
+"use client";
 
-  interface RepeatUpliftIndicatorProps {
-    applied: boolean;
-    repeatCount: number;
-    rawScore: number;
-    adjustedScore: number;
-  }
+interface RepeatUpliftIndicatorProps {
+  applied: boolean;
+  repeatCount: number;
+  rawScore: number;
+  adjustedScore: number;
+}
 
-  export function RepeatUpliftIndicator({ applied, repeatCount, rawScore, adjustedScore }: RepeatUpliftIndicatorProps) {
-    if (!applied) return null;
+export function RepeatUpliftIndicator({ applied, repeatCount, rawScore, adjustedScore }: RepeatUpliftIndicatorProps) {
+  if (!applied) return null;
 
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Repeat Finding Risk Uplift (1.5×)</AlertTitle>
-        <AlertDescription>
-          <p>{repeatCount} repeat finding(s) detected from prior audits at this branch.</p>
-          <p className="mt-1 font-mono text-sm">
-            Raw Score: {rawScore.toFixed(2)} × 1.5 = {adjustedScore.toFixed(2)}
-          </p>
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  ```
+  return (
+    <Alert variant="destructive">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Repeat Finding Risk Uplift (1.5×)</AlertTitle>
+      <AlertDescription>
+        <p>{repeatCount} repeat finding(s) detected from prior audits at this branch.</p>
+        <p className="mt-1 font-mono text-sm">
+          Raw Score: {rawScore.toFixed(2)} × 1.5 = {adjustedScore.toFixed(2)}
+        </p>
+      </AlertDescription>
+    </Alert>
+  );
+}
+```
 
-  Wire this into the RAM assessment detail page (`/ram/[assessmentId]`).
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/ram/repeat-uplift-indicator.tsx 2>&1 | head -20
-  ```
+Wire this into the RAM assessment detail page (`/ram/[assessmentId]`).
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/ram/repeat-uplift-indicator.tsx 2>&1 | head -20
+```
+
   </verify>
   <done>
   - RepeatUpliftIndicator component shows when uplift is applied

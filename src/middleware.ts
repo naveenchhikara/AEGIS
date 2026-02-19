@@ -19,22 +19,14 @@ import type { NextRequest } from "next/server";
  * - Static assets (_next/static, _next/image, favicon.ico)
  */
 
-const PUBLIC_ROUTES = [
-  "/login",
-  "/accept-invite",
-  "/api/health",
-  "/",
-];
+const PUBLIC_ROUTES = ["/login", "/accept-invite", "/api/health", "/"];
 
-const PUBLIC_ROUTE_PATTERNS = [
-  /^\/api\/auth\/.*/,
-  /^\/api\/health/,
-];
+const PUBLIC_ROUTE_PATTERNS = [/^\/api\/auth\/.*/, /^\/api\/health/];
 
 /** Better Auth session cookie names (with and without __Secure- prefix) */
 const SESSION_COOKIES = [
-  "__Secure-better-auth.session_token",  // Production (useSecureCookies: true)
-  "better-auth.session_token",           // Development (useSecureCookies: false)
+  "__Secure-better-auth.session_token", // Production (useSecureCookies: true)
+  "better-auth.session_token", // Development (useSecureCookies: false)
 ];
 
 function isPublicRoute(pathname: string): boolean {
@@ -52,7 +44,9 @@ export async function middleware(request: NextRequest) {
 
   // Check for session cookie (lightweight Edge-safe check)
   // Full session validation happens server-side in pages/API routes
-  const hasSession = SESSION_COOKIES.some(name => request.cookies.get(name)?.value);
+  const hasSession = SESSION_COOKIES.some(
+    (name) => request.cookies.get(name)?.value,
+  );
   if (!hasSession) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);

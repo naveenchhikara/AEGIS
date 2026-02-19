@@ -82,15 +82,19 @@ export function RamScoreForm({
   }, [existingScores]);
 
   // Group parameters by category
-  const businessParams = allParams.filter((p) => p.category === "BUSINESS_RISK");
+  const businessParams = allParams.filter(
+    (p) => p.category === "BUSINESS_RISK",
+  );
   const controlParams = allParams.filter((p) => p.category === "CONTROL_RISK");
 
   async function handleSave() {
-    const scoreInputs = Object.entries(scores).map(([paramConfigId, score]) => ({
-      paramConfigId,
-      score,
-      remarks: remarks[paramConfigId] || undefined,
-    }));
+    const scoreInputs = Object.entries(scores).map(
+      ([paramConfigId, score]) => ({
+        paramConfigId,
+        score,
+        remarks: remarks[paramConfigId] || undefined,
+      }),
+    );
 
     if (scoreInputs.length === 0) {
       toast.error("Please score at least one parameter");
@@ -146,15 +150,18 @@ export function RamScoreForm({
       <Card>
         <CardHeader>
           <CardTitle>{title}</CardTitle>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground text-sm">{description}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           {params.map((param) => (
-            <div key={param.id} className="space-y-3 border-b pb-4 last:border-0">
+            <div
+              key={param.id}
+              className="space-y-3 border-b pb-4 last:border-0"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <Label className="text-base font-medium">{param.name}</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Weight: {Number(param.weight).toFixed(2)} | Max Score:{" "}
                     {Number(param.maxScore)}
                   </p>
@@ -169,7 +176,7 @@ export function RamScoreForm({
                       View Scoring Criteria
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="rounded-md bg-muted p-3 text-sm">
+                      <div className="bg-muted rounded-md p-3 text-sm">
                         {typeof param.scoringCriteria === "string"
                           ? param.scoringCriteria
                           : JSON.stringify(param.scoringCriteria)}
@@ -257,7 +264,11 @@ export function RamScoreForm({
         )}
 
         {canCompute && status === "DRAFT" && (
-          <Button onClick={handleCompute} disabled={isComputing} variant="secondary">
+          <Button
+            onClick={handleCompute}
+            disabled={isComputing}
+            variant="secondary"
+          >
             {isComputing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Compute Assessment
           </Button>

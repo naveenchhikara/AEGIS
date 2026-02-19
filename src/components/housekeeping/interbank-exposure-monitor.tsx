@@ -46,7 +46,7 @@ export function InterbankExposureMonitor({ metrics }: Props) {
 
   // Extract inter-bank exposure metrics
   const exposureMetrics = metrics.filter(
-    (m) => m.metricType === "INTERBANK_EXPOSURE"
+    (m) => m.metricType === "INTERBANK_EXPOSURE",
   );
 
   // Parse exposure data from metrics
@@ -59,7 +59,7 @@ export function InterbankExposureMonitor({ metrics }: Props) {
   // Calculate totals
   const totalExposure = exposureEntries.reduce(
     (sum, entry) => sum + entry.exposureAmount,
-    0
+    0,
   );
 
   // Regulatory limits
@@ -72,15 +72,21 @@ export function InterbankExposureMonitor({ metrics }: Props) {
   const totalUtilizationPercent = (totalExposure / totalLimit) * 100;
 
   // Per-bank aggregation
-  const perBankExposure = exposureEntries.reduce((acc, entry) => {
-    const existing = acc.find((e) => e.bank === entry.counterpartyBank);
-    if (existing) {
-      existing.exposure += entry.exposureAmount;
-    } else {
-      acc.push({ bank: entry.counterpartyBank, exposure: entry.exposureAmount });
-    }
-    return acc;
-  }, [] as { bank: string; exposure: number }[]);
+  const perBankExposure = exposureEntries.reduce(
+    (acc, entry) => {
+      const existing = acc.find((e) => e.bank === entry.counterpartyBank);
+      if (existing) {
+        existing.exposure += entry.exposureAmount;
+      } else {
+        acc.push({
+          bank: entry.counterpartyBank,
+          exposure: entry.exposureAmount,
+        });
+      }
+      return acc;
+    },
+    [] as { bank: string; exposure: number }[],
+  );
 
   // Sort by exposure (descending)
   perBankExposure.sort((a, b) => b.exposure - a.exposure);
@@ -118,7 +124,7 @@ export function InterbankExposureMonitor({ metrics }: Props) {
               onChange={(e) => setNetWorth(Number(e.target.value))}
               placeholder="Enter net worth"
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Used to calculate exposure limits. Update this value to reflect
               current net worth.
             </p>
@@ -138,30 +144,32 @@ export function InterbankExposureMonitor({ metrics }: Props) {
               <AlertTitle>No Exposure Data</AlertTitle>
               <AlertDescription>
                 Add inter-bank exposure entries via Metrics Capture. Use metric
-                type: INTERBANK_EXPOSURE. Bank name goes in Remarks field, exposure
-                amount in Closing Balance.
+                type: INTERBANK_EXPOSURE. Bank name goes in Remarks field,
+                exposure amount in Closing Balance.
               </AlertDescription>
             </Alert>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Exposure</p>
+                  <p className="text-muted-foreground text-sm">
+                    Total Exposure
+                  </p>
                   <p className="text-2xl font-bold">
                     ₹{totalExposure.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Limit</p>
+                  <p className="text-muted-foreground text-sm">Total Limit</p>
                   <p className="text-2xl font-bold">
                     ₹{totalLimit.toLocaleString()}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     ({totalLimitPercent}% of net worth)
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Utilization</p>
+                  <p className="text-muted-foreground text-sm">Utilization</p>
                   <p className="text-2xl font-bold">
                     {totalUtilizationPercent.toFixed(2)}%
                   </p>
@@ -182,13 +190,13 @@ export function InterbankExposureMonitor({ metrics }: Props) {
               </div>
 
               <div>
-                <div className="flex justify-between mb-2">
+                <div className="mb-2 flex justify-between">
                   <span className="text-sm font-medium">
                     Total Exposure Utilization
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {totalUtilizationPercent.toFixed(1)}% of {totalLimitPercent}%
-                    limit
+                  <span className="text-muted-foreground text-sm">
+                    {totalUtilizationPercent.toFixed(1)}% of {totalLimitPercent}
+                    % limit
                   </span>
                 </div>
                 <Progress
@@ -197,8 +205,8 @@ export function InterbankExposureMonitor({ metrics }: Props) {
                     totalStatus === "BREACH"
                       ? "[&>div]:bg-red-500"
                       : totalStatus === "WARNING"
-                      ? "[&>div]:bg-yellow-500"
-                      : "[&>div]:bg-green-500"
+                        ? "[&>div]:bg-yellow-500"
+                        : "[&>div]:bg-green-500"
                   }`}
                 />
               </div>
@@ -208,9 +216,9 @@ export function InterbankExposureMonitor({ metrics }: Props) {
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Regulatory Breach</AlertTitle>
                   <AlertDescription>
-                    Total inter-bank exposure exceeds 20% of net worth. Immediate
-                    reduction required to comply with RBI Master Circular on
-                    Exposure Norms.
+                    Total inter-bank exposure exceeds 20% of net worth.
+                    Immediate reduction required to comply with RBI Master
+                    Circular on Exposure Norms.
                   </AlertDescription>
                 </Alert>
               )}
@@ -237,16 +245,16 @@ export function InterbankExposureMonitor({ metrics }: Props) {
             <CardTitle>Per-Bank Exposure Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-4 bg-muted rounded-md">
+            <div className="bg-muted mb-4 rounded-md p-4">
               <p className="text-sm">
                 <strong>Regulatory Reference:</strong> Total inter-bank exposure
                 shall not exceed 20% of net worth. Exposure to any single bank
-                shall not exceed 5% of net worth (RBI Master Circular on Exposure
-                Norms).
+                shall not exceed 5% of net worth (RBI Master Circular on
+                Exposure Norms).
               </p>
-              <p className="text-sm mt-2">
-                Per-bank limit: ₹{perBankLimit.toLocaleString()} ({perBankLimitPercent}
-                % of net worth)
+              <p className="mt-2 text-sm">
+                Per-bank limit: ₹{perBankLimit.toLocaleString()} (
+                {perBankLimitPercent}% of net worth)
               </p>
             </div>
 
@@ -267,7 +275,9 @@ export function InterbankExposureMonitor({ metrics }: Props) {
 
                   return (
                     <TableRow key={idx}>
-                      <TableCell className="font-medium">{entry.bank}</TableCell>
+                      <TableCell className="font-medium">
+                        {entry.bank}
+                      </TableCell>
                       <TableCell className="text-right">
                         ₹{entry.exposure.toLocaleString()}
                       </TableCell>
@@ -278,10 +288,10 @@ export function InterbankExposureMonitor({ metrics }: Props) {
                         <span
                           className={
                             status === "BREACH"
-                              ? "text-red-600 font-semibold"
+                              ? "font-semibold text-red-600"
                               : status === "WARNING"
-                              ? "text-yellow-600 font-semibold"
-                              : ""
+                                ? "font-semibold text-yellow-600"
+                                : ""
                           }
                         >
                           {utilization.toFixed(2)}%
@@ -307,7 +317,7 @@ export function InterbankExposureMonitor({ metrics }: Props) {
             </Table>
 
             {perBankExposure.some(
-              (e) => getPerBankStatus(e.exposure) === "BREACH"
+              (e) => getPerBankStatus(e.exposure) === "BREACH",
             ) && (
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />

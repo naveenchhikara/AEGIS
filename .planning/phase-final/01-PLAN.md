@@ -34,33 +34,36 @@ The code already uses optional chaining on line 487 (`evidence.observation?.bran
   <action>
   Line 489 uses `evidence.observation.branchId` inside a block that already checked `evidence.observation?.branchId` on line 487. The issue is TypeScript doesn't narrow through the `&&` with optional chaining.
 
-  **Fix:** Add explicit null check before accessing:
+**Fix:** Add explicit null check before accessing:
 
-  ```typescript
-  // Replace lines 487-491:
-  if (userRoles.includes("AUDITEE") && evidence.observation?.branchId) {
-    const branchIds = await getUserBranches(session);
-    const obsBranchId = evidence.observation.branchId;
-    if (obsBranchId && !branchIds.includes(obsBranchId)) {
-      return { success: false as const, error: "Evidence not found." };
-    }
+```typescript
+// Replace lines 487-491:
+if (userRoles.includes("AUDITEE") && evidence.observation?.branchId) {
+  const branchIds = await getUserBranches(session);
+  const obsBranchId = evidence.observation.branchId;
+  if (obsBranchId && !branchIds.includes(obsBranchId)) {
+    return { success: false as const, error: "Evidence not found." };
   }
-  ```
+}
+```
 
-  This stores the branchId in a local variable after the optional chain narrows, giving TypeScript proper type narrowing.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -c "error TS"
-  ```
-  Must output `0`.
-  </verify>
-  <done>
-  - `pnpm exec tsc --noEmit` produces zero errors
-  - evidence.observation access is properly null-guarded
-  - No behavioral change — same logic, just type-safe
+This stores the branchId in a local variable after the optional chain narrows, giving TypeScript proper type narrowing.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -c "error TS"
+```
+
+Must output `0`.
+</verify>
+<done>
+
+- `pnpm exec tsc --noEmit` produces zero errors
+- evidence.observation access is properly null-guarded
+- No behavioral change — same logic, just type-safe
   </done>
-</task>
+  </task>
 
 ## Success Criteria
 

@@ -13,7 +13,9 @@ const createTemplateSchema = z.object({
   templateData: z.looseObject({}),
 });
 
-export async function createReportTemplate(input: z.infer<typeof createTemplateSchema>) {
+export async function createReportTemplate(
+  input: z.infer<typeof createTemplateSchema>,
+) {
   const session = await getRequiredSession();
   const user = session.user as any;
   if (!user.tenantId) return { success: false as const, error: "No tenant" };
@@ -21,7 +23,8 @@ export async function createReportTemplate(input: z.infer<typeof createTemplateS
     return { success: false as const, error: "Forbidden" };
 
   const parsed = createTemplateSchema.safeParse(input);
-  if (!parsed.success) return { success: false as const, error: parsed.error.message };
+  if (!parsed.success)
+    return { success: false as const, error: parsed.error.message };
 
   try {
     const db = prismaForTenant(user.tenantId);
@@ -54,7 +57,10 @@ export async function createReportTemplate(input: z.infer<typeof createTemplateS
       },
     });
 
-    logger.info({ templateId: template.id, version: nextVersion }, "Template created");
+    logger.info(
+      { templateId: template.id, version: nextVersion },
+      "Template created",
+    );
     revalidatePath("/admin/templates");
     return { success: true as const, data: template };
   } catch (error) {

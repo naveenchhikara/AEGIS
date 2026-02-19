@@ -35,8 +35,7 @@ export default async function RamAssessmentDetailPage({ params }: PageProps) {
   const canCompute =
     hasPermission(userRoles, "ram:create") && assessment.scores.length > 0;
   const canApprove =
-    hasPermission(userRoles, "ram:approve") &&
-    assessment.status === "COMPUTED";
+    hasPermission(userRoles, "ram:approve") && assessment.status === "COMPUTED";
 
   return (
     <div className="space-y-6">

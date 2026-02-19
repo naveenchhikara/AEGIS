@@ -36,9 +36,11 @@ export default async function BhCertificatePage({ params }: PageProps) {
   // Compute observation summary
   const observationSummary = {
     total: engagement.observations.length,
-    critical: engagement.observations.filter((o) => o.severity === "CRITICAL").length,
+    critical: engagement.observations.filter((o) => o.severity === "CRITICAL")
+      .length,
     high: engagement.observations.filter((o) => o.severity === "HIGH").length,
-    medium: engagement.observations.filter((o) => o.severity === "MEDIUM").length,
+    medium: engagement.observations.filter((o) => o.severity === "MEDIUM")
+      .length,
     low: engagement.observations.filter((o) => o.severity === "LOW").length,
   };
 
@@ -56,7 +58,10 @@ export default async function BhCertificatePage({ params }: PageProps) {
     const signedAtDate = engagement.bhCertSignedAt;
     signedBy = {
       name: signer?.name || "Unknown",
-      signedAt: signedAtDate instanceof Date ? signedAtDate.toISOString() : signedAtDate,
+      signedAt:
+        signedAtDate instanceof Date
+          ? signedAtDate.toISOString()
+          : signedAtDate,
     };
   }
 
@@ -68,7 +73,10 @@ export default async function BhCertificatePage({ params }: PageProps) {
     const countersignedAtDate = engagement.bhCertCountersignedAt;
     countersignedBy = {
       name: countersigner?.name || "Unknown",
-      signedAt: countersignedAtDate instanceof Date ? countersignedAtDate.toISOString() : countersignedAtDate,
+      signedAt:
+        countersignedAtDate instanceof Date
+          ? countersignedAtDate.toISOString()
+          : countersignedAtDate,
     };
   }
 
@@ -80,7 +88,7 @@ export default async function BhCertificatePage({ params }: PageProps) {
           {engagement.branch?.name || "Branch"} — Digital sign-off
         </p>
         {engagement.auditNumber && (
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Audit: {engagement.auditNumber}
           </p>
         )}

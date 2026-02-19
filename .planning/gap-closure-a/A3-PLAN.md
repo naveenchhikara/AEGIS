@@ -46,6 +46,7 @@ Implement R12: Pre-audit branch profiling page showing last audit data, current 
 **Purpose:** Enable auditors to review branch context before starting an engagement, replacing any placeholder/mock data with real aggregations.
 
 **Output:**
+
 - DAL function to aggregate branch profile data (last audit, RAM, findings, compliance)
 - Server component page at `/pre-audit-profiling/[branchId]`
 - Presentational components for displaying profile sections
@@ -73,170 +74,182 @@ Implement R12: Pre-audit branch profiling page showing last audit data, current 
   <action>
   Create `src/data-access/pre-audit-profiling.ts` with `getBranchProfileData(session: Session, branchId: string)` function:
 
-  **1a. Fetch branch details:**
-  ```typescript
-  const branch = await db.branch.findFirst({
-    where: { id: branchId, tenantId },
-    select: {
-      id: true,
-      code: true,
-      name: true,
-      city: true,
-      state: true,
-      category: true,
-      businessSize: true,
-      staffStrength: true,
-      ramScore: true,
-      auditFrequency: true,
-      lastAuditDate: true,
-      lastAuditRating: true,
-    },
-  });
-  ```
+**1a. Fetch branch details:**
 
-  **1b. Fetch last audit engagement:**
-  ```typescript
-  const lastAudit = await db.auditEngagement.findFirst({
-    where: { branchId, tenantId },
-    orderBy: { actualEndDate: 'desc' },
-    select: {
-      id: true,
-      auditNumber: true,
-      auditType: true,
-      actualStartDate: true,
-      actualEndDate: true,
-      overallRiskRating: true,
-    },
-  });
-  ```
+```typescript
+const branch = await db.branch.findFirst({
+  where: { id: branchId, tenantId },
+  select: {
+    id: true,
+    code: true,
+    name: true,
+    city: true,
+    state: true,
+    category: true,
+    businessSize: true,
+    staffStrength: true,
+    ramScore: true,
+    auditFrequency: true,
+    lastAuditDate: true,
+    lastAuditRating: true,
+  },
+});
+```
 
-  **1c. Fetch latest RAM assessment with breakdown:**
-  ```typescript
-  const ramAssessment = await db.ramAssessment.findFirst({
-    where: { branchId, tenantId, status: 'APPROVED' },
-    orderBy: { approvedAt: 'desc' },
-    include: {
-      scores: {
-        include: {
-          paramConfig: {
-            select: { code: true, name: true, category: true, weight: true },
-          },
+**1b. Fetch last audit engagement:**
+
+```typescript
+const lastAudit = await db.auditEngagement.findFirst({
+  where: { branchId, tenantId },
+  orderBy: { actualEndDate: "desc" },
+  select: {
+    id: true,
+    auditNumber: true,
+    auditType: true,
+    actualStartDate: true,
+    actualEndDate: true,
+    overallRiskRating: true,
+  },
+});
+```
+
+**1c. Fetch latest RAM assessment with breakdown:**
+
+```typescript
+const ramAssessment = await db.ramAssessment.findFirst({
+  where: { branchId, tenantId, status: "APPROVED" },
+  orderBy: { approvedAt: "desc" },
+  include: {
+    scores: {
+      include: {
+        paramConfig: {
+          select: { code: true, name: true, category: true, weight: true },
         },
       },
     },
-  });
-  ```
+  },
+});
+```
 
-  **Compute RAM breakdown:**
-  ```typescript
-  const businessRiskScore = ramAssessment?.scores
-    .filter(s => s.paramConfig.category === 'BUSINESS_RISK')
-    .reduce((sum, s) => sum + (s.score * s.paramConfig.weight), 0) ?? 0;
+**Compute RAM breakdown:**
 
-  const controlRiskScore = ramAssessment?.scores
-    .filter(s => s.paramConfig.category === 'CONTROL_RISK')
-    .reduce((sum, s) => sum + (s.score * s.paramConfig.weight), 0) ?? 0;
-  ```
+```typescript
+const businessRiskScore =
+  ramAssessment?.scores
+    .filter((s) => s.paramConfig.category === "BUSINESS_RISK")
+    .reduce((sum, s) => sum + s.score * s.paramConfig.weight, 0) ?? 0;
 
-  **1d. Fetch prior findings summary:**
-  ```typescript
-  const findingsSummary = await db.observation.groupBy({
-    by: ['severity'],
-    where: {
-      branchId,
-      tenantId,
-      status: { in: ['ISSUED', 'RESPONSE', 'COMPLIANCE', 'CLOSED'] },
-    },
-    _count: { id: true },
-  });
+const controlRiskScore =
+  ramAssessment?.scores
+    .filter((s) => s.paramConfig.category === "CONTROL_RISK")
+    .reduce((sum, s) => sum + s.score * s.paramConfig.weight, 0) ?? 0;
+```
 
-  const topFindings = await db.observation.findMany({
-    where: { branchId, tenantId, severity: { in: ['CRITICAL', 'HIGH'] } },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    select: {
-      id: true,
-      title: true,
-      severity: true,
-      status: true,
-      createdAt: true,
-    },
-  });
-  ```
+**1d. Fetch prior findings summary:**
 
-  **1e. Fetch compliance status summary:**
-  ```typescript
-  const complianceSummary = await db.complianceItem.groupBy({
-    by: ['status'],
-    where: { branchId, tenantId },
-    _count: { id: true },
-  });
-  ```
+```typescript
+const findingsSummary = await db.observation.groupBy({
+  by: ["severity"],
+  where: {
+    branchId,
+    tenantId,
+    status: { in: ["ISSUED", "RESPONSE", "COMPLIANCE", "CLOSED"] },
+  },
+  _count: { id: true },
+});
 
-  **Return type:**
-  ```typescript
-  export type BranchProfileData = {
-    branch: {
-      id: string;
-      code: string;
-      name: string;
-      city: string;
-      state: string;
-      category: string | null;
-      businessSize: number | null;
-      staffStrength: number | null;
-      ramScore: number | null;
-      auditFrequency: number | null;
-      lastAuditDate: Date | null;
-      lastAuditRating: string | null;
-    } | null;
-    lastAudit: {
-      id: string;
-      auditNumber: string | null;
-      auditType: string | null;
-      actualStartDate: Date | null;
-      actualEndDate: Date | null;
-      overallRiskRating: string | null;
-    } | null;
-    ramBreakdown: {
-      compositeScore: number;
-      businessRiskScore: number;
-      controlRiskScore: number;
-      assessmentYear: string | null;
-      riskCategory: string | null;
-    };
-    findingsSummary: {
-      bySeverity: Array<{ severity: string; count: number }>;
-      topFindings: Array<{
-        id: string;
-        title: string;
-        severity: string;
-        status: string;
-        createdAt: Date;
-      }>;
-    };
-    complianceSummary: Array<{ status: string; count: number }>;
+const topFindings = await db.observation.findMany({
+  where: { branchId, tenantId, severity: { in: ["CRITICAL", "HIGH"] } },
+  orderBy: { createdAt: "desc" },
+  take: 5,
+  select: {
+    id: true,
+    title: true,
+    severity: true,
+    status: true,
+    createdAt: true,
+  },
+});
+```
+
+**1e. Fetch compliance status summary:**
+
+```typescript
+const complianceSummary = await db.complianceItem.groupBy({
+  by: ["status"],
+  where: { branchId, tenantId },
+  _count: { id: true },
+});
+```
+
+**Return type:**
+
+```typescript
+export type BranchProfileData = {
+  branch: {
+    id: string;
+    code: string;
+    name: string;
+    city: string;
+    state: string;
+    category: string | null;
+    businessSize: number | null;
+    staffStrength: number | null;
+    ramScore: number | null;
+    auditFrequency: number | null;
+    lastAuditDate: Date | null;
+    lastAuditRating: string | null;
+  } | null;
+  lastAudit: {
+    id: string;
+    auditNumber: string | null;
+    auditType: string | null;
+    actualStartDate: Date | null;
+    actualEndDate: Date | null;
+    overallRiskRating: string | null;
+  } | null;
+  ramBreakdown: {
+    compositeScore: number;
+    businessRiskScore: number;
+    controlRiskScore: number;
+    assessmentYear: string | null;
+    riskCategory: string | null;
   };
-  ```
+  findingsSummary: {
+    bySeverity: Array<{ severity: string; count: number }>;
+    topFindings: Array<{
+      id: string;
+      title: string;
+      severity: string;
+      status: string;
+      createdAt: Date;
+    }>;
+  };
+  complianceSummary: Array<{ status: string; count: number }>;
+};
+```
 
-  **IMPORTANT:** Use `prismaForTenant(tenantId)`, follow existing DAL patterns, handle null cases gracefully (branch may not have RAM assessment yet).
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/pre-audit-profiling.ts 2>&1 | head -20
-  ```
-  Must compile without errors. Must export getBranchProfileData and BranchProfileData type.
-  </verify>
-  <done>
-  - `src/data-access/pre-audit-profiling.ts` exists with ≥60 lines
-  - `getBranchProfileData()` aggregates data from 5 sources: Branch, AuditEngagement, RamAssessment, Observation, ComplianceItem
-  - Function computes RAM breakdown (businessRiskScore vs controlRiskScore)
-  - Function uses groupBy for findings summary and compliance summary
-  - Return type BranchProfileData is exported
-  - All queries use tenantId filtering
-  - TypeScript compiles successfully
+**IMPORTANT:** Use `prismaForTenant(tenantId)`, follow existing DAL patterns, handle null cases gracefully (branch may not have RAM assessment yet).
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/pre-audit-profiling.ts 2>&1 | head -20
+```
+
+Must compile without errors. Must export getBranchProfileData and BranchProfileData type.
+</verify>
+<done>
+
+- `src/data-access/pre-audit-profiling.ts` exists with ≥60 lines
+- `getBranchProfileData()` aggregates data from 5 sources: Branch, AuditEngagement, RamAssessment, Observation, ComplianceItem
+- Function computes RAM breakdown (businessRiskScore vs controlRiskScore)
+- Function uses groupBy for findings summary and compliance summary
+- Return type BranchProfileData is exported
+- All queries use tenantId filtering
+- TypeScript compiles successfully
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Task 2: Presentational Component — Branch profile sections</name>
@@ -244,85 +257,106 @@ Implement R12: Pre-audit branch profiling page showing last audit data, current 
   <action>
   Create `src/components/pre-audit/branch-profile.tsx` as a **server component** (NO "use client"):
 
-  **Props:**
-  ```typescript
-  type BranchProfileProps = {
-    data: BranchProfileData;
-  };
-  ```
+**Props:**
 
-  **Component structure (4 sections in a grid):**
+```typescript
+type BranchProfileProps = {
+  data: BranchProfileData;
+};
+```
 
-  **Section 1: Branch Details Card**
-  - Display: code, name, city, state, category, businessSize, staffStrength
-  - Use Card component from shadcn/ui
-  - Format businessSize with Indian lakhs formatting (if non-null)
+**Component structure (4 sections in a grid):**
 
-  **Section 2: Last Audit Card**
-  - Display: auditNumber, auditType, dates (actualStartDate, actualEndDate), overallRiskRating
-  - If lastAudit is null, show "No prior audit found"
-  - Use Badge component for risk rating with color coding
+**Section 1: Branch Details Card**
 
-  **Section 3: RAM Score Card**
-  - Display composite score (large text)
-  - Show risk category badge
-  - Display breakdown:
-    - Business Risk Score: X.XX
-    - Control Risk Score: X.XX
-  - Show assessment year
-  - If ramBreakdown.compositeScore is 0 or null, show "RAM assessment pending"
-  - Use Progress bar component to visualize breakdown
+- Display: code, name, city, state, category, businessSize, staffStrength
+- Use Card component from shadcn/ui
+- Format businessSize with Indian lakhs formatting (if non-null)
 
-  **Section 4A: Prior Findings Card**
-  - Display findings count by severity (table or stat cards)
-  - List top 5 findings (title, severity badge, status, date)
-  - If no findings, show "No prior findings"
+**Section 2: Last Audit Card**
 
-  **Section 4B: Compliance Status Card**
-  - Display compliance summary by status (table or stat cards)
-  - Use color coding for statuses (OPEN=red, CLOSED=green, etc.)
-  - If no compliance items, show "No compliance items"
+- Display: auditNumber, auditType, dates (actualStartDate, actualEndDate), overallRiskRating
+- If lastAudit is null, show "No prior audit found"
+- Use Badge component for risk rating with color coding
 
-  **Layout:**
-  ```tsx
-  <div className="grid gap-6 md:grid-cols-2">
-    <Card>
-      <CardHeader><CardTitle>Branch Details</CardTitle></CardHeader>
-      <CardContent>{/* branch info */}</CardContent>
-    </Card>
+**Section 3: RAM Score Card**
 
-    <Card>
-      <CardHeader><CardTitle>Last Audit</CardTitle></CardHeader>
-      <CardContent>{/* last audit info */}</CardContent>
-    </Card>
+- Display composite score (large text)
+- Show risk category badge
+- Display breakdown:
+  - Business Risk Score: X.XX
+  - Control Risk Score: X.XX
+- Show assessment year
+- If ramBreakdown.compositeScore is 0 or null, show "RAM assessment pending"
+- Use Progress bar component to visualize breakdown
 
-    <Card>
-      <CardHeader><CardTitle>RAM Score</CardTitle></CardHeader>
-      <CardContent>{/* RAM breakdown */}</CardContent>
-    </Card>
+**Section 4A: Prior Findings Card**
 
-    <Card>
-      <CardHeader><CardTitle>Prior Findings</CardTitle></CardHeader>
-      <CardContent>{/* findings summary */}</CardContent>
-    </Card>
+- Display findings count by severity (table or stat cards)
+- List top 5 findings (title, severity badge, status, date)
+- If no findings, show "No prior findings"
 
-    <Card className="md:col-span-2">
-      <CardHeader><CardTitle>Compliance Status</CardTitle></CardHeader>
-      <CardContent>{/* compliance summary */}</CardContent>
-    </Card>
-  </div>
-  ```
+**Section 4B: Compliance Status Card**
 
-  **IMPORTANT:** This is a **server component** for rendering only. Use shadcn/ui components (Card, Badge, Progress, Table). Use `format` from `date-fns` for date formatting.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/pre-audit/branch-profile.tsx 2>&1 | head -20
-  ```
-  Must compile without errors. Check that it does NOT have "use client" directive:
-  ```bash
-  grep -L '"use client"' src/components/pre-audit/branch-profile.tsx && echo "PASS: Server component" || echo "FAIL: Should be server component"
-  ```
+- Display compliance summary by status (table or stat cards)
+- Use color coding for statuses (OPEN=red, CLOSED=green, etc.)
+- If no compliance items, show "No compliance items"
+
+**Layout:**
+
+```tsx
+<div className="grid gap-6 md:grid-cols-2">
+  <Card>
+    <CardHeader>
+      <CardTitle>Branch Details</CardTitle>
+    </CardHeader>
+    <CardContent>{/* branch info */}</CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader>
+      <CardTitle>Last Audit</CardTitle>
+    </CardHeader>
+    <CardContent>{/* last audit info */}</CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader>
+      <CardTitle>RAM Score</CardTitle>
+    </CardHeader>
+    <CardContent>{/* RAM breakdown */}</CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader>
+      <CardTitle>Prior Findings</CardTitle>
+    </CardHeader>
+    <CardContent>{/* findings summary */}</CardContent>
+  </Card>
+
+  <Card className="md:col-span-2">
+    <CardHeader>
+      <CardTitle>Compliance Status</CardTitle>
+    </CardHeader>
+    <CardContent>{/* compliance summary */}</CardContent>
+  </Card>
+</div>
+```
+
+**IMPORTANT:** This is a **server component** for rendering only. Use shadcn/ui components (Card, Badge, Progress, Table). Use `format` from `date-fns` for date formatting.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/components/pre-audit/branch-profile.tsx 2>&1 | head -20
+```
+
+Must compile without errors. Check that it does NOT have "use client" directive:
+
+```bash
+grep -L '"use client"' src/components/pre-audit/branch-profile.tsx && echo "PASS: Server component" || echo "FAIL: Should be server component"
+```
+
   </verify>
   <done>
   - branch-profile.tsx exists as server component (no "use client" directive)
@@ -341,62 +375,68 @@ Implement R12: Pre-audit branch profiling page showing last audit data, current 
   <action>
   Create `src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx` as a **server component**:
 
-  **Implementation:**
-  ```typescript
-  import { notFound } from "next/navigation";
-  import { getRequiredSession } from "@/data-access/session";
-  import { getBranchProfileData } from "@/data-access/pre-audit-profiling";
-  import { BranchProfile } from "@/components/pre-audit/branch-profile";
+**Implementation:**
 
-  type PageProps = {
-    params: Promise<{ branchId: string }>;
-  };
+```typescript
+import { notFound } from "next/navigation";
+import { getRequiredSession } from "@/data-access/session";
+import { getBranchProfileData } from "@/data-access/pre-audit-profiling";
+import { BranchProfile } from "@/components/pre-audit/branch-profile";
 
-  export default async function PreAuditProfilingPage({ params }: PageProps) {
-    const resolvedParams = await params;
-    const session = await getRequiredSession();
+type PageProps = {
+  params: Promise<{ branchId: string }>;
+};
 
-    const data = await getBranchProfileData(session, resolvedParams.branchId);
+export default async function PreAuditProfilingPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const session = await getRequiredSession();
 
-    if (!data.branch) {
-      notFound();
-    }
+  const data = await getBranchProfileData(session, resolvedParams.branchId);
 
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Pre-Audit Branch Profiling</h1>
-          <p className="text-muted-foreground">
-            Review branch context before starting engagement
-          </p>
-        </div>
+  if (!data.branch) {
+    notFound();
+  }
 
-        <BranchProfile data={data} />
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Pre-Audit Branch Profiling</h1>
+        <p className="text-muted-foreground">
+          Review branch context before starting engagement
+        </p>
       </div>
-    );
-  }
-  ```
 
-  **Metadata export:**
-  ```typescript
-  export async function generateMetadata({ params }: PageProps) {
-    const resolvedParams = await params;
-    return {
-      title: `Pre-Audit Profiling - Branch ${resolvedParams.branchId}`,
-    };
-  }
-  ```
+      <BranchProfile data={data} />
+    </div>
+  );
+}
+```
 
-  **IMPORTANT:** This is a server component. Use notFound() for invalid branchId. Follow Next.js 15 App Router conventions (params is a Promise).
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx 2>&1 | head -20
-  ```
-  Must compile without errors. Check that page uses DAL:
-  ```bash
-  grep "getBranchProfileData" src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx && echo "PASS: Uses DAL" || echo "FAIL: Missing DAL call"
-  ```
+**Metadata export:**
+
+```typescript
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params;
+  return {
+    title: `Pre-Audit Profiling - Branch ${resolvedParams.branchId}`,
+  };
+}
+```
+
+**IMPORTANT:** This is a server component. Use notFound() for invalid branchId. Follow Next.js 15 App Router conventions (params is a Promise).
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx 2>&1 | head -20
+```
+
+Must compile without errors. Check that page uses DAL:
+
+```bash
+grep "getBranchProfileData" src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx && echo "PASS: Uses DAL" || echo "FAIL: Missing DAL call"
+```
+
   </verify>
   <done>
   - Page exists at correct route: `src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx`
@@ -448,6 +488,7 @@ grep -E "groupBy|findFirst.*orderBy" src/data-access/pre-audit-profiling.ts && e
 ## Output
 
 After completion, create `.planning/gap-closure-a/A3-SUMMARY.md` documenting:
+
 - What aggregations are performed
 - How RAM breakdown is computed
 - How findings and compliance summaries are calculated

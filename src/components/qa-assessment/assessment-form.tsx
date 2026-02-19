@@ -2,10 +2,23 @@
 
 import * as React from "react";
 import { useActionState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -16,7 +29,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Loader2, Plus } from "@/lib/icons";
 import { toast } from "sonner";
-import { manageQaAssessment, createQaAssessmentsFromTemplate } from "@/actions/qa-assessment/manage-assessment";
+import {
+  manageQaAssessment,
+  createQaAssessmentsFromTemplate,
+} from "@/actions/qa-assessment/manage-assessment";
 
 interface AssessmentFormProps {
   assessments: Array<{
@@ -45,47 +61,61 @@ interface AssessmentFormProps {
 const IIA_STANDARDS_TEMPLATE = [
   {
     iiaStandard: "1000",
-    question: "Is the internal audit charter documented and approved by senior management and the board?",
+    question:
+      "Is the internal audit charter documented and approved by senior management and the board?",
   },
   {
     iiaStandard: "1000",
-    question: "Does the charter define the internal audit activity's position within the organization?",
+    question:
+      "Does the charter define the internal audit activity's position within the organization?",
   },
   {
     iiaStandard: "1100",
-    question: "Does the internal audit activity remain free from interference in determining scope, performing work, and communicating results?",
+    question:
+      "Does the internal audit activity remain free from interference in determining scope, performing work, and communicating results?",
   },
   {
     iiaStandard: "1100",
-    question: "Do internal auditors refrain from auditing operations for which they were previously responsible?",
+    question:
+      "Do internal auditors refrain from auditing operations for which they were previously responsible?",
   },
   {
     iiaStandard: "1200",
-    question: "Does the internal audit activity collectively possess the knowledge, skills, and competencies needed?",
+    question:
+      "Does the internal audit activity collectively possess the knowledge, skills, and competencies needed?",
   },
   {
     iiaStandard: "1200",
-    question: "Do internal auditors apply the care and skill expected of a reasonably prudent and competent internal auditor?",
+    question:
+      "Do internal auditors apply the care and skill expected of a reasonably prudent and competent internal auditor?",
   },
   {
     iiaStandard: "1300",
-    question: "Has a quality assurance and improvement program been developed and maintained?",
+    question:
+      "Has a quality assurance and improvement program been developed and maintained?",
   },
   {
     iiaStandard: "2000",
-    question: "Does the CAE effectively manage the internal audit activity to ensure it adds value to the organization?",
+    question:
+      "Does the CAE effectively manage the internal audit activity to ensure it adds value to the organization?",
   },
   {
     iiaStandard: "2100",
-    question: "Does the internal audit activity evaluate and contribute to the improvement of governance processes?",
+    question:
+      "Does the internal audit activity evaluate and contribute to the improvement of governance processes?",
   },
   {
     iiaStandard: "2200",
-    question: "Are engagements performed with proficiency and due professional care?",
+    question:
+      "Are engagements performed with proficiency and due professional care?",
   },
 ];
 
-export function AssessmentForm({ assessments, summary, canManage }: AssessmentFormProps) {
+export function AssessmentForm({
+  assessments,
+  summary,
+  canManage,
+}: AssessmentFormProps) {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editResponse, setEditResponse] = React.useState<string>("");
   const [editEvidence, setEditEvidence] = React.useState<string>("");
@@ -104,13 +134,13 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
     return groups;
   }, [assessments]);
 
-  const handleEdit = (assessment: typeof assessments[0]) => {
+  const handleEdit = (assessment: (typeof assessments)[0]) => {
     setEditingId(assessment.id);
     setEditResponse(assessment.response || "");
     setEditEvidence(assessment.evidence || "");
   };
 
-  const handleSave = async (assessment: typeof assessments[0]) => {
+  const handleSave = async (assessment: (typeof assessments)[0]) => {
     const result = await manageQaAssessment({
       id: assessment.id,
       assessmentYear: assessment.assessmentYear,
@@ -131,10 +161,10 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
   const handleInitialize = async () => {
     setIsInitializing(true);
     const currentYear = new Date().getFullYear();
-    
+
     const result = await createQaAssessmentsFromTemplate(
       currentYear,
-      IIA_STANDARDS_TEMPLATE
+      IIA_STANDARDS_TEMPLATE,
     );
 
     if (result.success) {
@@ -145,9 +175,10 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
     setIsInitializing(false);
   };
 
-  const conformanceRate = summary.total > 0
-    ? Math.round((summary.conforms / summary.total) * 100)
-    : 0;
+  const conformanceRate =
+    summary.total > 0
+      ? Math.round((summary.conforms / summary.total) * 100)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -155,7 +186,9 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Questions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Questions
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.total}</div>
@@ -164,7 +197,9 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Conformance Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Conformance Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{conformanceRate}%</div>
@@ -172,10 +207,10 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
               variant="outline"
               className={
                 conformanceRate >= 80
-                  ? "mt-2 bg-green-100 text-green-800 border-green-300"
+                  ? "mt-2 border-green-300 bg-green-100 text-green-800"
                   : conformanceRate >= 60
-                    ? "mt-2 bg-amber-100 text-amber-800 border-amber-300"
-                    : "mt-2 bg-red-100 text-red-800 border-red-300"
+                    ? "mt-2 border-amber-300 bg-amber-100 text-amber-800"
+                    : "mt-2 border-red-300 bg-red-100 text-red-800"
               }
             >
               {conformanceRate >= 80
@@ -189,11 +224,13 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Gaps Identified</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Gaps Identified
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.gapsIdentified}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               {summary.issuesCreated} converted to issues
             </p>
           </CardContent>
@@ -212,144 +249,166 @@ export function AssessmentForm({ assessments, summary, canManage }: AssessmentFo
                 size="sm"
                 className="w-full"
               >
-                {isInitializing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isInitializing && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 <Plus className="mr-2 h-4 w-4" />
                 Initialize from Template
               </Button>
             )}
             {assessments.length === 0 && !canManage && (
-              <p className="text-xs text-muted-foreground">No assessments yet</p>
+              <p className="text-muted-foreground text-xs">
+                No assessments yet
+              </p>
             )}
           </CardContent>
         </Card>
       </div>
 
       {/* Assessment Table by Standard Category */}
-      {Object.entries(groupedAssessments).map(([category, categoryAssessments]) => (
-        <Card key={category}>
-          <CardHeader>
-            <CardTitle className="text-lg">IIA Standard {category}</CardTitle>
-            <CardDescription>
-              {categoryAssessments.length} questions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Standard</TableHead>
-                  <TableHead>Question</TableHead>
-                  <TableHead className="w-[180px]">Response</TableHead>
-                  <TableHead className="w-[200px]">Evidence</TableHead>
-                  <TableHead className="w-[80px]">Gap?</TableHead>
-                  <TableHead className="w-[80px]">Issue?</TableHead>
-                  {canManage && <TableHead className="w-[100px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categoryAssessments.map((assessment) => {
-                  const isEditing = editingId === assessment.id;
-                  return (
-                    <TableRow key={assessment.id}>
-                      <TableCell className="font-mono text-xs">
-                        {assessment.iiaStandard}
-                      </TableCell>
-                      <TableCell className="text-sm">{assessment.question}</TableCell>
-                      <TableCell>
-                        {isEditing ? (
-                          <Select value={editResponse} onValueChange={setEditResponse}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select response" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="CONFORMS">Conforms</SelectItem>
-                              <SelectItem value="PARTIALLY_CONFORMS">Partially Conforms</SelectItem>
-                              <SelectItem value="DOES_NOT_CONFORM">Does Not Conform</SelectItem>
-                              <SelectItem value="NOT_APPLICABLE">Not Applicable</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">
-                            {assessment.response
-                              ? assessment.response.replace(/_/g, " ")
-                              : "Not Answered"}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {isEditing ? (
-                          <Textarea
-                            value={editEvidence}
-                            onChange={(e) => setEditEvidence(e.target.value)}
-                            rows={2}
-                            className="text-xs"
-                          />
-                        ) : (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {assessment.evidence || "—"}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {assessment.gapIdentified && (
-                          <Badge variant="destructive" className="text-xs">
-                            Yes
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {assessment.issueCreated && (
-                          <Badge variant="secondary" className="text-xs">
-                            Created
-                          </Badge>
-                        )}
-                      </TableCell>
-                      {canManage && (
+      {Object.entries(groupedAssessments).map(
+        ([category, categoryAssessments]) => (
+          <Card key={category}>
+            <CardHeader>
+              <CardTitle className="text-lg">IIA Standard {category}</CardTitle>
+              <CardDescription>
+                {categoryAssessments.length} questions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Standard</TableHead>
+                    <TableHead>Question</TableHead>
+                    <TableHead className="w-[180px]">Response</TableHead>
+                    <TableHead className="w-[200px]">Evidence</TableHead>
+                    <TableHead className="w-[80px]">Gap?</TableHead>
+                    <TableHead className="w-[80px]">Issue?</TableHead>
+                    {canManage && (
+                      <TableHead className="w-[100px]">Actions</TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categoryAssessments.map((assessment) => {
+                    const isEditing = editingId === assessment.id;
+                    return (
+                      <TableRow key={assessment.id}>
+                        <TableCell className="font-mono text-xs">
+                          {assessment.iiaStandard}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {assessment.question}
+                        </TableCell>
                         <TableCell>
                           {isEditing ? (
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleSave(assessment)}
-                              >
-                                <Save className="h-3 w-3" />
-                              </Button>
+                            <Select
+                              value={editResponse}
+                              onValueChange={setEditResponse}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select response" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="CONFORMS">
+                                  Conforms
+                                </SelectItem>
+                                <SelectItem value="PARTIALLY_CONFORMS">
+                                  Partially Conforms
+                                </SelectItem>
+                                <SelectItem value="DOES_NOT_CONFORM">
+                                  Does Not Conform
+                                </SelectItem>
+                                <SelectItem value="NOT_APPLICABLE">
+                                  Not Applicable
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              {assessment.response
+                                ? assessment.response.replace(/_/g, " ")
+                                : "Not Answered"}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Textarea
+                              value={editEvidence}
+                              onChange={(e) => setEditEvidence(e.target.value)}
+                              rows={2}
+                              className="text-xs"
+                            />
+                          ) : (
+                            <p className="text-muted-foreground truncate text-xs">
+                              {assessment.evidence || "—"}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {assessment.gapIdentified && (
+                            <Badge variant="destructive" className="text-xs">
+                              Yes
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {assessment.issueCreated && (
+                            <Badge variant="secondary" className="text-xs">
+                              Created
+                            </Badge>
+                          )}
+                        </TableCell>
+                        {canManage && (
+                          <TableCell>
+                            {isEditing ? (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleSave(assessment)}
+                                >
+                                  <Save className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setEditingId(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : (
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => setEditingId(null)}
+                                onClick={() => handleEdit(assessment)}
                               >
-                                Cancel
+                                Edit
                               </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(assessment)}
-                            >
-                              Edit
-                            </Button>
-                          )}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ))}
+                            )}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ),
+      )}
 
       {assessments.length === 0 && (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground py-8 text-center">
             <p>No QA assessments found for the current year.</p>
             {canManage && (
               <p className="mt-2 text-sm">
-                Click "Initialize from Template" to create the standard assessment questions.
+                Click "Initialize from Template" to create the standard
+                assessment questions.
               </p>
             )}
           </CardContent>

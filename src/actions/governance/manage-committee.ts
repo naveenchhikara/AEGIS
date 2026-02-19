@@ -28,10 +28,14 @@ const ManageCommitteeMeetingSchema = z.object({
   meetingId: z.string().uuid().optional(),
   committeeId: z.string().uuid(),
   meetingDate: z.coerce.date(),
-  agendaItems: z.array(z.object({
-    title: z.string(),
-    description: z.string().optional(),
-  })).optional(),
+  agendaItems: z
+    .array(
+      z.object({
+        title: z.string(),
+        description: z.string().optional(),
+      }),
+    )
+    .optional(),
   minutesRef: z.string().optional(),
   status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED"]).optional(),
   attendees: z.array(z.string().uuid()).optional(),
@@ -178,8 +182,13 @@ export async function manageCommitteeMember(input: ManageCommitteeMemberInput) {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage committee member.";
-    logger.error({ error, action: "manage_committee_member", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to manage committee member.";
+    logger.error(
+      { error, action: "manage_committee_member", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }
@@ -223,8 +232,13 @@ export async function removeCommitteeMember(memberId: string) {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to remove committee member.";
-    logger.error({ error, action: "remove_committee_member", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to remove committee member.";
+    logger.error(
+      { error, action: "remove_committee_member", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }
@@ -232,7 +246,9 @@ export async function removeCommitteeMember(memberId: string) {
 /**
  * Create or update committee meeting (R85).
  */
-export async function manageCommitteeMeeting(input: ManageCommitteeMeetingInput) {
+export async function manageCommitteeMeeting(
+  input: ManageCommitteeMeetingInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -301,8 +317,13 @@ export async function manageCommitteeMeeting(input: ManageCommitteeMeetingInput)
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage committee meeting.";
-    logger.error({ error, action: "manage_committee_meeting", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to manage committee meeting.";
+    logger.error(
+      { error, action: "manage_committee_meeting", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

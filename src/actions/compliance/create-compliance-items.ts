@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { CreateComplianceItemsSchema, type CreateComplianceItemsInput } from "./schemas";
+import {
+  CreateComplianceItemsSchema,
+  type CreateComplianceItemsInput,
+} from "./schemas";
 
 /**
  * Auto-create compliance items for all issued observations in an engagement.
@@ -108,7 +111,10 @@ export async function createComplianceItems(input: CreateComplianceItemsInput) {
       error instanceof Error
         ? error.message
         : "Failed to create compliance items.";
-    logger.error({ error, action: "create_compliance_items", tenantId }, message);
+    logger.error(
+      { error, action: "create_compliance_items", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

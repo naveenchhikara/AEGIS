@@ -10,14 +10,14 @@ interface PageProps {
 
 /**
  * Pre-audit branch profiling page (R12)
- * 
+ *
  * Displays comprehensive branch context before starting an audit engagement:
  * - Branch details and metadata
  * - Last audit engagement summary
  * - Current RAM score with category breakdown
  * - Prior findings summary
  * - Compliance status overview
- * 
+ *
  * All data comes from real database aggregations.
  */
 export default async function PreAuditProfilingPage({ params }: PageProps) {
@@ -36,7 +36,7 @@ export default async function PreAuditProfilingPage({ params }: PageProps) {
       <div className="space-y-2">
         <a
           href="/branches"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Branches
@@ -47,7 +47,8 @@ export default async function PreAuditProfilingPage({ params }: PageProps) {
             Pre-Audit Branch Profiling
           </h1>
           <p className="text-muted-foreground">
-            Review branch context before starting engagement: {data.branch.name} ({data.branch.code})
+            Review branch context before starting engagement: {data.branch.name}{" "}
+            ({data.branch.code})
           </p>
         </div>
       </div>
@@ -63,7 +64,7 @@ export default async function PreAuditProfilingPage({ params }: PageProps) {
  */
 export async function generateMetadata({ params }: PageProps) {
   const resolvedParams = await params;
-  
+
   return {
     title: `Pre-Audit Profiling - Branch ${resolvedParams.branchId}`,
     description: "Branch context review for audit planning",

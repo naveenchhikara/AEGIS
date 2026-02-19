@@ -105,7 +105,10 @@ export async function createObservation(input: CreateObservationInput) {
       data: { id: result.id },
     };
   } catch (error) {
-    logger.error({ error, action: "create_observation", tenantId }, "Failed to create observation");
+    logger.error(
+      { error, action: "create_observation", tenantId },
+      "Failed to create observation",
+    );
     return {
       success: false as const,
       error: "Failed to create observation. Please try again.",

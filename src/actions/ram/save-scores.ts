@@ -19,7 +19,10 @@ export async function saveRamScores(input: SaveRamScoresInput) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "ram:create")) {
-    return { success: false as const, error: "You do not have permission to score RAM assessments." };
+    return {
+      success: false as const,
+      error: "You do not have permission to score RAM assessments.",
+    };
   }
 
   const parsed = SaveRamScoresSchema.safeParse(input);
@@ -74,9 +77,13 @@ export async function saveRamScores(input: SaveRamScoresInput) {
     });
 
     revalidatePath("/ram");
-    return { success: true as const, data: { assessmentId: validated.assessmentId } };
+    return {
+      success: true as const,
+      data: { assessmentId: validated.assessmentId },
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to save RAM scores.";
+    const message =
+      error instanceof Error ? error.message : "Failed to save RAM scores.";
     logger.error({ error, action: "save_ram_scores", tenantId }, message);
     return { success: false as const, error: message };
   }

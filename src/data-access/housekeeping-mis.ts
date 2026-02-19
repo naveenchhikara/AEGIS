@@ -34,7 +34,9 @@ export async function getRiskMisData(session: Session) {
   const liquidity = await db.housekeepingMetric.findMany({
     where: {
       tenantId,
-      metricType: { in: ["SLR_MAINTAINED", "CRR_MAINTAINED", "LCR", "CD_RATIO"] },
+      metricType: {
+        in: ["SLR_MAINTAINED", "CRR_MAINTAINED", "LCR", "CD_RATIO"],
+      },
     },
     orderBy: { period: "desc" },
     take: 8,

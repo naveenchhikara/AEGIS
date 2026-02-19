@@ -90,7 +90,11 @@ export async function zacReviewCompliance(input: ZacReviewInput) {
 
     return {
       success: true as const,
-      data: { id: result.id, status: result.status, decision: parsed.data.decision },
+      data: {
+        id: result.id,
+        status: result.status,
+        decision: parsed.data.decision,
+      },
     };
   } catch (error) {
     const message =

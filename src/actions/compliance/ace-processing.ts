@@ -96,10 +96,7 @@ export async function processAceQuarterly(input: ProcessAceQuarterlyInput) {
       error instanceof Error
         ? error.message
         : "Failed to process ACE quarterly review.";
-    logger.error(
-      { error, action: "process_ace_quarterly", tenantId },
-      message
-    );
+    logger.error({ error, action: "process_ace_quarterly", tenantId }, message);
     return { success: false as const, error: message };
   }
 }

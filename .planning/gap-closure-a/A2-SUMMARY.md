@@ -24,6 +24,7 @@ Three functions provide tenant-scoped data access:
 - **`getExaminationAreaCodes(session)`** — Returns active examination area codes (e.g., CASH, ATM, CLEARING) for section allocation dropdowns
 
 All functions:
+
 - Extract tenantId from session for security
 - Use `prismaForTenant(tenantId)` for multi-tenancy
 - Include error handling with logger
@@ -31,7 +32,8 @@ All functions:
 
 ### 2. Server Actions
 
-**Files:** 
+**Files:**
+
 - `src/actions/audit-execution/schemas.ts` — Zod validation schemas
 - `src/actions/audit-execution/create-engagement.ts` — Engagement creation action
 - `src/actions/audit-execution/assign-team.ts` — Team member management actions
@@ -39,21 +41,25 @@ All functions:
 #### Schemas
 
 **`CreateEngagementSchema`** — Validates engagement data:
+
 - `auditPlanId`, `branchId`, `auditAreaId` (optional)
 - `auditNumber`, `auditType`, `visitNumber`
 - `periodFrom`, `periodTo`, `scheduledStartDate` (optional)
 
 **`AssignTeamMemberSchema`** — Validates team assignment:
+
 - `engagementId`, `userId`
 - `roleInEngagement`: LEAD_AUDITOR or FIELD_AUDITOR
 - `assignedSections`: Array of examination area codes
 
 **`RemoveTeamMemberSchema`** — Validates team member removal:
+
 - `engagementId`, `userId`
 
 #### Actions
 
 **`createEngagement(input)`** — Creates audit engagement:
+
 1. ✅ Requires `audit_execution:create` permission
 2. ✅ Validates input with CreateEngagementSchema
 3. ✅ Uses transaction with audit context (`audit_engagement.created`)
@@ -62,6 +68,7 @@ All functions:
 6. ✅ Returns engagement ID on success
 
 **`assignTeamMember(input)`** — Assigns team member:
+
 1. ✅ Requires `audit_execution:manage_team` permission
 2. ✅ Validates input with AssignTeamMemberSchema
 3. ✅ Uses transaction with audit context (`audit_team.assigned`)
@@ -71,6 +78,7 @@ All functions:
 7. ✅ Returns team member ID on success
 
 **`removeTeamMember(input)`** — Removes team member:
+
 1. ✅ Requires `audit_execution:manage_team` permission
 2. ✅ Validates input with RemoveTeamMemberSchema
 3. ✅ Uses transaction with audit context (`audit_team.removed`)
@@ -79,6 +87,7 @@ All functions:
 6. ✅ Returns success confirmation
 
 All actions follow standard boilerplate from CONVENTIONS.md:
+
 - Session authentication via `getRequiredSession()`
 - Permission checks via `hasPermission()`
 - Input validation with Zod schemas (using `as any` cast for resolver compatibility)
@@ -94,6 +103,7 @@ All actions follow standard boilerplate from CONVENTIONS.md:
 **File:** `src/components/audit-execution/engagement-form.tsx` (client component)
 
 **Features:**
+
 - ✅ React Hook Form with zodResolver(CreateEngagementSchema)
 - ✅ Audit Plan selector (dropdown of active/planned plans)
 - ✅ Branch selector (dropdown with code + name)
@@ -108,6 +118,7 @@ All actions follow standard boilerplate from CONVENTIONS.md:
 - ✅ Error handling with toast notifications
 
 **UI Pattern:**
+
 - 2-column grid layout for compact form
 - Disabled state during submission
 - Loading spinner on submit button
@@ -119,6 +130,7 @@ All actions follow standard boilerplate from CONVENTIONS.md:
 **File:** `src/components/audit-execution/team-assignment-panel.tsx` (client component)
 
 **Features:**
+
 - ✅ Current team members table with:
   - Name, Email, Role (badge)
   - Assigned Sections (badges for each code)
@@ -134,6 +146,7 @@ All actions follow standard boilerplate from CONVENTIONS.md:
 - ✅ Toast notifications for success/error
 
 **Section Allocation:**
+
 - Multi-select checkboxes for all active examination areas
 - Stored as `assignedSections: string[]` in AuditTeamMember
 - Example codes: CASH, ATM, CLEARING, ADVANCES, DEPOSITS, etc.
@@ -144,6 +157,7 @@ All actions follow standard boilerplate from CONVENTIONS.md:
 **File:** `src/app/(dashboard)/audit-execution/create/page.tsx` (server component)
 
 **Features:**
+
 - ✅ Fetches branches, audit areas, audit plans via `prismaForTenant()`
 - ✅ Renders EngagementForm with data passed as props
 - ✅ Card layout with title/description
@@ -243,6 +257,7 @@ model AuditTeamMember {
 ### Section Allocation Storage
 
 **Example:**
+
 ```json
 {
   "assignedSections": ["CASH", "ATM", "CLEARING", "ADVANCES"]
@@ -250,6 +265,7 @@ model AuditTeamMember {
 ```
 
 This allows:
+
 - Granular work distribution (Lead Auditor on CASH/ATM, Field Auditor on ADVANCES)
 - Progress tracking per section (future: section status by assigned user)
 - Reporting on team member workload
@@ -311,18 +327,23 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ### Export Verification
 
 **DAL Exports:**
+
 ```bash
 grep -E "export.*(getAssignableUsers|getTeamMembers|getExaminationAreaCodes)" src/data-access/audit-teams.ts
 ```
+
 **Result:** ✅ All 3 functions exported
 
 **Action Exports:**
+
 ```bash
 grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)" src/actions/audit-execution/*.ts
 ```
+
 **Result:** ✅ All 3 actions exported
 
 **Component Files:**
+
 - ✅ `src/components/audit-execution/engagement-form.tsx` exists
 - ✅ `src/components/audit-execution/team-assignment-panel.tsx` exists
 - ✅ `src/app/(dashboard)/audit-execution/create/page.tsx` exists
@@ -336,6 +357,7 @@ grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)"
 **Requirement:** AuditTeamMember join model: engagement_id, user_id, role_in_engagement, assigned_sections (SDD p.15)
 
 **Implementation:**
+
 - ✅ Model exists with all required fields
 - ✅ `assignTeamMember()` action creates records
 - ✅ `removeTeamMember()` action deletes records
@@ -349,6 +371,7 @@ grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)"
 **Requirement:** Extend AuditEngagement: audit_number, audit_type, visit_number, period_from/to, actual_start/end, overall_risk_rating, bh_cert fields (SDD p.14)
 
 **Implementation:**
+
 - ✅ Schema has all fields (auditNumber, auditType, visitNumber, periodFrom/To, scheduledStartDate)
 - ✅ `createEngagement()` action populates fields
 - ✅ EngagementForm UI captures all inputs
@@ -362,6 +385,7 @@ grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)"
 **Requirement:** Pre-audit team assignment with section allocation (SDD p.51)
 
 **Implementation:**
+
 - ✅ TeamAssignmentPanel allows team member assignment
 - ✅ Real user selection via DAL (getAssignableUsers)
 - ✅ Role selection (LEAD_AUDITOR or FIELD_AUDITOR)

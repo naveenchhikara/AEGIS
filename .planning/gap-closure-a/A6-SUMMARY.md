@@ -12,9 +12,11 @@ Implement R20 (LoanReview CRUD + CSV import), R21 (SmaNpaEntry category-wise sum
 ## Tasks Completed
 
 ### ✅ Task 1: DAL — Loan review and SMA/NPA data access
+
 **File:** `src/data-access/loan-review.ts`
 
 Implemented 4 DAL functions:
+
 - `getLoanReviewsForEngagement()` - Query loan reviews with optional filters (assetClass, productType, pagination)
 - `getLoanReviewSummary()` - Aggregate query using `groupBy` for asset class summary
 - `getSmaNpaEntriesForEngagement()` - Query SMA/NPA entries with custom category ordering
@@ -23,18 +25,22 @@ Implemented 4 DAL functions:
 All functions use `prismaForTenant(tenantId)` for tenant isolation.
 
 ### ✅ Task 2: Schemas — Loan review and SMA/NPA validation
+
 **File:** `src/actions/audit-execution/schemas.ts`
 
 Added validation schemas:
+
 - `CreateLoanReviewSchema` - Full validation for loan review creation (7 asset classes)
 - `UpdateLoanReviewSchema` - Extends create schema with ID field
 - `ImportLoanCsvSchema` - Bulk import validation (1-5000 rows)
 - `SaveSmaNpaEntriesSchema` - Category-wise SMA/NPA entries (6 categories)
 
 ### ✅ Task 3: Server actions — LoanReview CRUD
+
 **File:** `src/actions/audit-execution/loan-review.ts`
 
 Implemented 3 CRUD actions:
+
 - `createLoanReview()` - Create single loan review with audit context
 - `updateLoanReview()` - Update existing loan review with tenant verification
 - `deleteLoanReview()` - Delete loan review with tenant verification
@@ -42,9 +48,11 @@ Implemented 3 CRUD actions:
 All actions follow standard boilerplate: auth → permission → validation → transaction → revalidate → return.
 
 ### ✅ Task 4: Server action — CSV import
+
 **File:** `src/actions/audit-execution/import-loan-csv.ts`
 
 Implemented `importLoanReviewCsv()`:
+
 - Replace mode: deletes existing loan reviews for engagement, then bulk creates all rows
 - Uses `createMany` for efficiency
 - Client-side CSV parsing (no server-side dependencies)
@@ -52,16 +60,20 @@ Implemented `importLoanReviewCsv()`:
 - Supports up to 5000 rows per import
 
 ### ✅ Task 5: Server action — SMA/NPA batch save
+
 **File:** `src/actions/audit-execution/sma-npa.ts`
 
 Implemented `saveSmaNpaEntries()`:
+
 - Upsert pattern using compound unique key `[engagementId, category]`
 - Handles all 6 SMA/NPA categories
 - Transaction ensures all entries saved atomically
 - Supports partial updates (only submitted categories)
 
 ### ✅ Task 6: Client components — Loan review table, form, CSV import
+
 **Files:**
+
 - `src/components/audit-execution/loan-review-table.tsx` - Data table with edit/delete actions, asset class badges, footer totals
 - `src/components/audit-execution/loan-review-form.tsx` - Dialog form for add/edit with react-hook-form + zod validation
 - `src/components/audit-execution/loan-csv-import.tsx` - CSV upload, preview, and import with client-side parsing
@@ -69,9 +81,11 @@ Implemented `saveSmaNpaEntries()`:
 All components are "use client" and follow shadcn/ui patterns.
 
 ### ✅ Task 7: Client component — SMA/NPA summary form
+
 **File:** `src/components/audit-execution/sma-npa-summary.tsx`
 
 Implemented category-wise editable form:
+
 - 6 fixed rows for SMA0/SMA1/SMA2/NPA_SUB_STANDARD/NPA_DOUBTFUL/NPA_LOSS
 - Editable account count, total amount, and remarks
 - Total row computed from all categories
@@ -79,7 +93,9 @@ Implemented category-wise editable form:
 - Batch save via `saveSmaNpaEntries()`
 
 ### ✅ Task 8: Pages — Loan review and SMA/NPA
+
 **Files:**
+
 - `src/app/(dashboard)/audit-execution/[id]/loan-review/page.tsx` - Server component with tabs for manual entry and CSV import
 - `src/app/(dashboard)/audit-execution/[id]/sma-npa/page.tsx` - Server component with summary form and auto-computed comparison
 - `src/components/audit-execution/loan-review-table-wrapper.tsx` - Client wrapper for table with Add button and form state
@@ -100,6 +116,7 @@ Both pages fetch data via DAL, convert Decimal to number, and display summary st
 ## Patterns Followed
 
 ✅ **Convention compliance:**
+
 - All database access uses `prismaForTenant(tenantId)` - never raw `prisma`
 - Server actions follow standard boilerplate (auth → permission → validate → transaction → revalidate)
 - All mutations set audit context via `setAuditContext()`
@@ -119,11 +136,13 @@ Both pages fetch data via DAL, convert Decimal to number, and display summary st
 ## Asset Classes & Categories Supported
 
 **7 Asset Classes (LoanReview):**
+
 - STANDARD
 - SMA0, SMA1, SMA2
 - NPA_SUB, NPA_DOUBTFUL, NPA_LOSS
 
 **6 SMA/NPA Categories (SmaNpaEntry):**
+
 - SMA0, SMA1, SMA2
 - NPA_SUB_STANDARD, NPA_DOUBTFUL, NPA_LOSS
 
@@ -140,11 +159,13 @@ Both pages fetch data via DAL, convert Decimal to number, and display summary st
 ## CSV Format Specification
 
 Expected columns (case-insensitive, flexible naming):
+
 ```
 account_no,borrower_name,product_type,sanction_amount,outstanding_amount,asset_class,dpd,audit_observation
 ```
 
 Example:
+
 ```
 LA001,John Doe,Term Loan,1000000,850000,STANDARD,0,No issues
 LA002,Jane Smith,Cash Credit,500000,520000,SMA1,45,Payment delays noted
@@ -175,6 +196,7 @@ Both accessible from audit execution engagement detail.
 ## Files Created/Modified
 
 **Created (13 files):**
+
 1. `src/data-access/loan-review.ts` (116 lines)
 2. `src/actions/audit-execution/loan-review.ts` (222 lines)
 3. `src/actions/audit-execution/import-loan-csv.ts` (99 lines)
@@ -189,6 +211,7 @@ Both accessible from audit execution engagement detail.
 12. `.planning/gap-closure-a/A6-SUMMARY.md` (this file)
 
 **Modified (1 file):**
+
 1. `src/actions/audit-execution/schemas.ts` (+59 lines)
 
 **Total:** ~1,878 new lines of code

@@ -15,16 +15,16 @@ import {
 
 /**
  * Sign BH Certificate
- * 
+ *
  * Security:
  * - Only users with BRANCH_HEAD role can sign
  * - TenantId sourced from session (cannot be spoofed)
  * - Engagement must not already be signed
- * 
+ *
  * Atomicity:
  * - Sets bhCertSignedById, bhCertSignedAt, bhCertComments
  * - Records audit context: bh_certificate.signed
- * 
+ *
  * Returns: { success, data?, error? }
  */
 export async function signBhCertificate(input: SignBhCertificateInput) {
@@ -118,10 +118,13 @@ export async function signBhCertificate(input: SignBhCertificateInput) {
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, engagementId: validated.engagementId, tenantId },
-      "Failed to sign BH Certificate"
+      "Failed to sign BH Certificate",
     );
 
-    const message = error instanceof Error ? error.message : "Failed to sign BH Certificate. Please try again.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to sign BH Certificate. Please try again.";
     return {
       success: false as const,
       error: message,
@@ -131,29 +134,35 @@ export async function signBhCertificate(input: SignBhCertificateInput) {
 
 /**
  * Countersign BH Certificate
- * 
+ *
  * Security:
  * - Only users with LEAD_AUDITOR or AUDIT_MANAGER role can countersign
  * - TenantId sourced from session (cannot be spoofed)
  * - Certificate must already be signed but not countersigned
- * 
+ *
  * Atomicity:
  * - Sets bhCertCountersignedById, bhCertCountersignedAt
  * - Records audit context: bh_certificate.countersigned
- * 
+ *
  * Returns: { success, data?, error? }
  */
-export async function countersignBhCertificate(input: CountersignBhCertificateInput) {
+export async function countersignBhCertificate(
+  input: CountersignBhCertificateInput,
+) {
   // ─── Step 1: Authentication ────────────────────────────────────
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
   // ─── Step 2: Role Check ──────────────────────────────────────
-  if (!userRoles.includes("LEAD_AUDITOR") && !userRoles.includes("AUDIT_MANAGER")) {
+  if (
+    !userRoles.includes("LEAD_AUDITOR") &&
+    !userRoles.includes("AUDIT_MANAGER")
+  ) {
     return {
       success: false as const,
-      error: "Only Lead Auditors or Audit Managers can countersign the BH Certificate.",
+      error:
+        "Only Lead Auditors or Audit Managers can countersign the BH Certificate.",
     };
   }
 
@@ -238,10 +247,13 @@ export async function countersignBhCertificate(input: CountersignBhCertificateIn
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, engagementId: validated.engagementId, tenantId },
-      "Failed to countersign BH Certificate"
+      "Failed to countersign BH Certificate",
     );
 
-    const message = error instanceof Error ? error.message : "Failed to countersign BH Certificate. Please try again.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to countersign BH Certificate. Please try again.";
     return {
       success: false as const,
       error: message,
@@ -251,9 +263,9 @@ export async function countersignBhCertificate(input: CountersignBhCertificateIn
 
 /**
  * Get BH Certificate Status
- * 
+ *
  * Read-only action to fetch current BH certificate state.
- * 
+ *
  * Returns: { status, signedBy, signedAt, comments, countersignedBy, countersignedAt }
  */
 export async function getBhCertificateStatus(engagementId: string) {
@@ -305,7 +317,7 @@ export async function getBhCertificateStatus(engagementId: string) {
   } catch (error) {
     logger.error(
       { error, engagementId, tenantId },
-      "Failed to get BH certificate status"
+      "Failed to get BH certificate status",
     );
 
     return {

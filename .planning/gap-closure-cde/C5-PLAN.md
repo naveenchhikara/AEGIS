@@ -93,6 +93,7 @@ Create routes and UI for concurrent audit module including scope template manage
 Create new route structure for concurrent audit:
 
 **1. Hub page (`/concurrent-audit/page.tsx`):**
+
 ```typescript
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
@@ -154,16 +155,23 @@ export default async function ConcurrentAuditPage() {
 ```
 
 **2. Templates sub-page (optional direct route)** — redirect to hub:
+
 ```typescript
 import { redirect } from "next/navigation";
-export default function TemplatesPage() { redirect("/concurrent-audit"); }
+export default function TemplatesPage() {
+  redirect("/concurrent-audit");
+}
 ```
 
 **3. Rapid entry sub-page (optional direct route)** — redirect to hub:
+
 ```typescript
 import { redirect } from "next/navigation";
-export default function RapidEntryPage() { redirect("/concurrent-audit"); }
+export default function RapidEntryPage() {
+  redirect("/concurrent-audit");
+}
 ```
+
   </action>
   <verify>
 ```bash
@@ -208,9 +216,14 @@ Create client component for concurrent audit scope template CRUD (R73):
 7. Empty state per scope area with "Create Template" CTA
 
 Wire all actions from `@/actions/concurrent-audit/manage-template`:
+
 ```typescript
-import { manageTemplate, deleteTemplate } from "@/actions/concurrent-audit/manage-template";
+import {
+  manageTemplate,
+  deleteTemplate,
+} from "@/actions/concurrent-audit/manage-template";
 ```
+
   </action>
   <verify>
 Template CRUD operations work end-to-end.
@@ -259,6 +272,7 @@ Create rapid observation entry workbench for concurrent auditors (R74):
 ```typescript
 import { rapidEntryObservations } from "@/actions/concurrent-audit/rapid-entry";
 ```
+
   </action>
   <verify>
 Batch creation of observations works. Template pre-population works.
@@ -300,6 +314,7 @@ Create serious irregularity escalation dialog (R75):
 ```typescript
 import { escalateIrregularity } from "@/actions/concurrent-audit/escalate-irregularity";
 ```
+
   </action>
   <verify>
 Escalation creates notifications for correct recipients.
@@ -321,6 +336,7 @@ Escalation creates notifications for correct recipients.
 Create de-duplication panel for concurrent findings surfacing in RBIA (R76):
 
 1. Add DAL function to `src/data-access/concurrent-audit.ts`:
+
    ```typescript
    export async function getConcurrentFindingsForDedup(session: Session) {
      const tenantId = (session.user as any).tenantId as string;
@@ -330,25 +346,42 @@ Create de-duplication panel for concurrent findings surfacing in RBIA (R76):
      const concurrentObs = await db.observation.findMany({
        where: { tenantId, criteria: { startsWith: "Concurrent Audit" } },
        select: {
-         id: true, title: true, condition: true, severity: true,
+         id: true,
+         title: true,
+         condition: true,
+         severity: true,
          branch: { select: { id: true, name: true } },
-         createdAt: true, status: true,
+         createdAt: true,
+         status: true,
        },
        orderBy: { createdAt: "desc" },
      });
 
      // Get RBIA observations for comparison
      const rbiaObs = await db.observation.findMany({
-       where: { tenantId, criteria: { not: { startsWith: "Concurrent Audit" } } },
-       select: { id: true, title: true, condition: true, branch: { select: { id: true } } },
+       where: {
+         tenantId,
+         criteria: { not: { startsWith: "Concurrent Audit" } },
+       },
+       select: {
+         id: true,
+         title: true,
+         condition: true,
+         branch: { select: { id: true } },
+       },
      });
 
      // Simple title-based duplicate detection
-     const potentialDuplicates = concurrentObs.map(co => {
-       const matches = rbiaObs.filter(ro =>
-         ro.branch?.id === co.branch?.id &&
-         (ro.title.toLowerCase().includes(co.title.toLowerCase().substring(0, 20)) ||
-          co.title.toLowerCase().includes(ro.title.toLowerCase().substring(0, 20)))
+     const potentialDuplicates = concurrentObs.map((co) => {
+       const matches = rbiaObs.filter(
+         (ro) =>
+           ro.branch?.id === co.branch?.id &&
+           (ro.title
+             .toLowerCase()
+             .includes(co.title.toLowerCase().substring(0, 20)) ||
+             co.title
+               .toLowerCase()
+               .includes(ro.title.toLowerCase().substring(0, 20))),
        );
        return { ...co, potentialRbiaDuplicates: matches };
      });
@@ -364,16 +397,17 @@ Create de-duplication panel for concurrent findings surfacing in RBIA (R76):
    - "Link to RBIA" button to associate findings
    - "Mark Unique" button to clear duplicate flag
    - Summary stats: total concurrent findings, potential duplicates count
-  </action>
-  <verify>
-De-dup panel identifies potential duplicates between concurrent and RBIA findings.
-  </verify>
-  <done>
+     </action>
+     <verify>
+     De-dup panel identifies potential duplicates between concurrent and RBIA findings.
+     </verify>
+     <done>
+
 - De-dup panel displays concurrent findings with duplicate indicators
 - Potential RBIA matches shown per finding
 - DAL function for cross-referencing added
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -381,6 +415,7 @@ De-dup panel identifies potential duplicates between concurrent and RBIA finding
 **Overall checks:**
 
 1. TypeScript compilation:
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit
@@ -397,9 +432,10 @@ pnpm exec tsc --noEmit
    - Rapid entry → rapidEntryObservations action → creates Observations
    - Escalation → escalateIrregularity action → creates notifications
    - Tenant isolation via prismaForTenant
-</verification>
+     </verification>
 
 <success_criteria>
+
 - ✅ `/concurrent-audit` route created with scope template management
 - ✅ Template CRUD for 7 scope areas (CASH, INVESTMENTS, etc.)
 - ✅ Rapid observation entry workbench with batch creation
@@ -407,7 +443,7 @@ pnpm exec tsc --noEmit
 - ✅ De-duplication panel for concurrent findings in RBIA planning
 - ✅ TypeScript compilation clean
 - ✅ R72-R76 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

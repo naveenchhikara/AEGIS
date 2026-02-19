@@ -54,9 +54,8 @@ export async function generateAcbReport(input: GenerateAcbReportInput) {
       quarter: validated.quarter,
       totalItems: items.length,
       bySeverity: {
-        critical: items.filter(
-          (i) => i.observation?.severity === "CRITICAL"
-        ).length,
+        critical: items.filter((i) => i.observation?.severity === "CRITICAL")
+          .length,
         high: items.filter((i) => i.observation?.severity === "HIGH").length,
         medium: items.filter((i) => i.observation?.severity === "MEDIUM")
           .length,
@@ -122,9 +121,7 @@ export async function generateAcbReport(input: GenerateAcbReportInput) {
     };
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to generate ACB report.";
+      error instanceof Error ? error.message : "Failed to generate ACB report.";
     logger.error({ error, action: "generate_acb_report", tenantId }, message);
     return { success: false as const, error: message };
   }
@@ -151,10 +148,10 @@ function groupByBranch(items: any[]): Record<string, number> {
  */
 function groupByLevel(items: any[]): Record<string, number> {
   const grouped: Record<string, number> = {
-    "L0": 0,
-    "L1": 0,
-    "L2": 0,
-    "L3": 0,
+    L0: 0,
+    L1: 0,
+    L2: 0,
+    L3: 0,
     "L4+": 0,
   };
 

@@ -1,18 +1,18 @@
 /**
  * Housekeeping Risk Metrics Computation Engine (R80)
- * 
+ *
  * Pure functions for computing housekeeping risk scores based on:
  * - Inter-branch account balances
  * - Suspense account aging
  * - Clearing entry delays
  * - Sundry creditor/debtor aging
- * 
+ *
  * Risk scoring methodology:
  * - Aging < 30 days: LOW risk
  * - Aging 30-90 days: MEDIUM risk
  * - Aging 90-180 days: HIGH risk
  * - Aging > 180 days: CRITICAL risk
- * 
+ *
  * Balance thresholds (UCB-specific):
  * - < ₹1 lakh: LOW
  * - ₹1-5 lakhs: MEDIUM
@@ -39,17 +39,17 @@ export function computeHousekeepingRisk(
   metricType: string,
   closingBalance: number,
   agingDays: number | null,
-  entriesCount: number
+  entriesCount: number,
 ): HousekeepingRiskScore {
   const agingRisk = getAgingRiskLevel(agingDays);
   const balanceRisk = getBalanceRiskLevel(closingBalance);
-  
+
   // Composite risk: take the higher of the two
   const compositeRisk = getHigherRisk(agingRisk, balanceRisk);
-  
+
   // Numeric score (0-100)
   const score = calculateRiskScore(agingRisk, balanceRisk, entriesCount);
-  
+
   // Generate recommendations
   const recommendations = generateRecommendations(
     metricType,
@@ -57,7 +57,7 @@ export function computeHousekeepingRisk(
     balanceRisk,
     closingBalance,
     agingDays,
-    entriesCount
+    entriesCount,
   );
 
   return {
@@ -73,7 +73,9 @@ export function computeHousekeepingRisk(
 /**
  * Get aging-based risk level.
  */
-function getAgingRiskLevel(agingDays: number | null): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
+function getAgingRiskLevel(
+  agingDays: number | null,
+): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
   if (agingDays === null || agingDays === 0) return "LOW";
   if (agingDays < 30) return "LOW";
   if (agingDays < 90) return "MEDIUM";
@@ -84,9 +86,11 @@ function getAgingRiskLevel(agingDays: number | null): "LOW" | "MEDIUM" | "HIGH" 
 /**
  * Get balance-based risk level (in rupees).
  */
-function getBalanceRiskLevel(balance: number): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
+function getBalanceRiskLevel(
+  balance: number,
+): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
   const balanceInLakhs = balance / 100000;
-  
+
   if (balanceInLakhs < 1) return "LOW";
   if (balanceInLakhs < 5) return "MEDIUM";
   if (balanceInLakhs < 10) return "HIGH";
@@ -98,7 +102,7 @@ function getBalanceRiskLevel(balance: number): "LOW" | "MEDIUM" | "HIGH" | "CRIT
  */
 function getHigherRisk(
   risk1: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-  risk2: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+  risk2: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
 ): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
   const riskOrder = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
   return riskOrder[risk1] > riskOrder[risk2] ? risk1 : risk2;
@@ -111,7 +115,7 @@ function getHigherRisk(
 function calculateRiskScore(
   agingRisk: string,
   balanceRisk: string,
-  entriesCount: number
+  entriesCount: number,
 ): number {
   const riskToScore: Record<string, number> = {
     LOW: 10,
@@ -122,17 +126,17 @@ function calculateRiskScore(
 
   const agingScore = riskToScore[agingRisk] || 0;
   const balanceScore = riskToScore[balanceRisk] || 0;
-  
+
   // Weight: 60% aging, 40% balance
   let score = agingScore * 0.6 + balanceScore * 0.4;
-  
+
   // Penalty for high entry count (indicates poor housekeeping)
   if (entriesCount > 100) {
     score += 5;
   } else if (entriesCount > 50) {
     score += 3;
   }
-  
+
   return Math.min(100, Math.round(score));
 }
 
@@ -145,44 +149,44 @@ function generateRecommendations(
   balanceRisk: string,
   closingBalance: number,
   agingDays: number | null,
-  entriesCount: number
+  entriesCount: number,
 ): string[] {
   const recommendations: string[] = [];
 
   // Aging-based recommendations
   if (agingRisk === "CRITICAL") {
     recommendations.push(
-      `URGENT: Entries aged >180 days require immediate resolution. Escalate to branch manager.`
+      `URGENT: Entries aged >180 days require immediate resolution. Escalate to branch manager.`,
     );
   } else if (agingRisk === "HIGH") {
     recommendations.push(
-      `High priority: Entries aged >90 days. Set 30-day action plan for closure.`
+      `High priority: Entries aged >90 days. Set 30-day action plan for closure.`,
     );
   } else if (agingRisk === "MEDIUM") {
     recommendations.push(
-      `Moderate aging detected. Review entries and close before 90-day mark.`
+      `Moderate aging detected. Review entries and close before 90-day mark.`,
     );
   }
 
   // Balance-based recommendations
   if (balanceRisk === "CRITICAL") {
     recommendations.push(
-      `Significant balance (₹${(closingBalance / 100000).toFixed(2)} lakhs). Requires ZAC/CAE review.`
+      `Significant balance (₹${(closingBalance / 100000).toFixed(2)} lakhs). Requires ZAC/CAE review.`,
     );
   } else if (balanceRisk === "HIGH") {
     recommendations.push(
-      `Material balance. Ensure proper documentation and approval for outstanding entries.`
+      `Material balance. Ensure proper documentation and approval for outstanding entries.`,
     );
   }
 
   // Entry count recommendations
   if (entriesCount > 100) {
     recommendations.push(
-      `High entry count (${entriesCount}). Consider bulk closure drive or system cleanup.`
+      `High entry count (${entriesCount}). Consider bulk closure drive or system cleanup.`,
     );
   } else if (entriesCount > 50) {
     recommendations.push(
-      `Entry count trending high. Monitor for accumulation.`
+      `Entry count trending high. Monitor for accumulation.`,
     );
   }
 
@@ -190,22 +194,22 @@ function generateRecommendations(
   switch (metricType) {
     case "INTER_BRANCH":
       recommendations.push(
-        "Reconcile with counterpart branches. Investigate unmatched entries."
+        "Reconcile with counterpart branches. Investigate unmatched entries.",
       );
       break;
     case "SUSPENSE":
       recommendations.push(
-        "Suspense accounts should be temporary. Classify and transfer to proper GL codes."
+        "Suspense accounts should be temporary. Classify and transfer to proper GL codes.",
       );
       break;
     case "CLEARING":
       recommendations.push(
-        "Outstanding clearing entries may indicate delayed check realization or return items."
+        "Outstanding clearing entries may indicate delayed check realization or return items.",
       );
       break;
     case "SUNDRY":
       recommendations.push(
-        "Sundry accounts require regular review. Ensure all items are properly documented."
+        "Sundry accounts require regular review. Ensure all items are properly documented.",
       );
       break;
   }
@@ -219,11 +223,15 @@ function generateRecommendations(
 export async function aggregateHousekeepingRisk(
   tx: PrismaTransactionClient,
   tenantId: string,
-  period: string
+  period: string,
 ): Promise<{
   totalMetrics: number;
   riskBreakdown: Record<string, number>;
-  highRiskBranches: Array<{ branchId: string; branchName: string; riskCount: number }>;
+  highRiskBranches: Array<{
+    branchId: string;
+    branchName: string;
+    riskCount: number;
+  }>;
   averageScore: number;
 }> {
   const metrics = await tx.housekeepingMetric.findMany({
@@ -242,7 +250,7 @@ export async function aggregateHousekeepingRisk(
       metric.metricType,
       Number(metric.closingBalance),
       metric.agingDays,
-      metric.entriesCount
+      metric.entriesCount,
     );
 
     riskBreakdown[risk.compositeRisk] += 1;
@@ -270,7 +278,8 @@ export async function aggregateHousekeepingRisk(
     totalMetrics: metrics.length,
     riskBreakdown,
     highRiskBranches,
-    averageScore: metrics.length > 0 ? Math.round(totalScore / metrics.length) : 0,
+    averageScore:
+      metrics.length > 0 ? Math.round(totalScore / metrics.length) : 0,
   };
 }
 
@@ -280,7 +289,7 @@ export async function aggregateHousekeepingRisk(
 export async function getHousekeepingDashboard(
   tx: PrismaTransactionClient,
   tenantId: string,
-  period: string
+  period: string,
 ) {
   const metrics = await tx.housekeepingMetric.findMany({
     where: { tenantId, period },
@@ -290,25 +299,30 @@ export async function getHousekeepingDashboard(
     orderBy: [{ agingDays: "desc" }, { closingBalance: "desc" }],
   });
 
-  const scoredMetrics = metrics.map((m: {
-    metricType: string;
-    closingBalance: number | string;
-    agingDays: number | null;
-    entriesCount: number;
-    [key: string]: unknown;
-  }) => ({
-    ...m,
-    risk: computeHousekeepingRisk(
-      m.metricType,
-      Number(m.closingBalance),
-      m.agingDays,
-      m.entriesCount
-    ),
-  }));
+  const scoredMetrics = metrics.map(
+    (m: {
+      metricType: string;
+      closingBalance: number | string;
+      agingDays: number | null;
+      entriesCount: number;
+      [key: string]: unknown;
+    }) => ({
+      ...m,
+      risk: computeHousekeepingRisk(
+        m.metricType,
+        Number(m.closingBalance),
+        m.agingDays,
+        m.entriesCount,
+      ),
+    }),
+  );
 
   // Top 10 highest risk
   const topRisks = scoredMetrics
-    .sort((a: { risk: { score: number } }, b: { risk: { score: number } }) => b.risk.score - a.risk.score)
+    .sort(
+      (a: { risk: { score: number } }, b: { risk: { score: number } }) =>
+        b.risk.score - a.risk.score,
+    )
     .slice(0, 10);
 
   // Aggregate stats

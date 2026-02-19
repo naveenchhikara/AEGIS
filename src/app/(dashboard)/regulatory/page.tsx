@@ -1,5 +1,8 @@
 import { getRequiredSession } from "@/data-access/session";
-import { getRegulatoryObservations, getPendingAtrObservations } from "@/data-access/regulatory";
+import {
+  getRegulatoryObservations,
+  getPendingAtrObservations,
+} from "@/data-access/regulatory";
 import { getIssues } from "@/data-access/issues";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -28,9 +31,12 @@ export default async function RegulatoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Regulatory Observations</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Regulatory Observations
+        </h1>
         <p className="text-muted-foreground">
-          RBI/NABARD/Statutory observations tracking and Action Taken Report (ATR) management
+          RBI/NABARD/Statutory observations tracking and Action Taken Report
+          (ATR) management
         </p>
       </div>
 
@@ -43,13 +49,13 @@ export default async function RegulatoryPage() {
             Pending ATR ({pendingAtr.length})
           </TabsTrigger>
           <TabsTrigger value="mapped">
-            Issue Mapping ({observations.filter(o => o.issueId).length})
+            Issue Mapping ({observations.filter((o) => o.issueId).length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <RegulatoryTable 
-            observations={observations} 
+          <RegulatoryTable
+            observations={observations}
             canManage={canManage}
             canSubmitAtr={canSubmitAtr}
             issues={issues}
@@ -57,7 +63,7 @@ export default async function RegulatoryPage() {
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
-          <AtrWorkflowPanel 
+          <AtrWorkflowPanel
             observations={pendingAtr}
             canManage={canManage}
             canSubmitAtr={canSubmitAtr}
@@ -66,7 +72,7 @@ export default async function RegulatoryPage() {
 
         <TabsContent value="mapped" className="space-y-4">
           <ParaIssueMapping
-            observations={observations.filter(o => o.issueId)}
+            observations={observations.filter((o) => o.issueId)}
             allObservations={observations}
             issues={issues}
             canManage={canManage}

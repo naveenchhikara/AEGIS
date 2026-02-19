@@ -96,12 +96,14 @@ const VendorRiskSchema = z.object({
 
 type VendorRiskValues = z.infer<typeof VendorRiskSchema>;
 
-export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelProps) {
+export function VendorRiskPanel({
+  assessments,
+  applications,
+}: VendorRiskPanelProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [editingAssessment, setEditingAssessment] = React.useState<VendorAssessment | null>(
-    null
-  );
+  const [editingAssessment, setEditingAssessment] =
+    React.useState<VendorAssessment | null>(null);
 
   const form = useForm<VendorRiskValues>({
     resolver: zodResolver(VendorRiskSchema as any),
@@ -143,15 +145,21 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
     // Convert string dates to Date objects if present
     const submitData = {
       ...data,
-      contractStart: data.contractStart ? new Date(data.contractStart) : undefined,
+      contractStart: data.contractStart
+        ? new Date(data.contractStart)
+        : undefined,
       contractEnd: data.contractEnd ? new Date(data.contractEnd) : undefined,
-      lastAssessmentDate: data.lastAssessmentDate ? new Date(data.lastAssessmentDate) : undefined,
+      lastAssessmentDate: data.lastAssessmentDate
+        ? new Date(data.lastAssessmentDate)
+        : undefined,
     } as any;
 
     const result = await manageVendorRiskAssessment(submitData);
 
     if (result.success) {
-      toast.success(editingAssessment ? "Assessment updated" : "Assessment created");
+      toast.success(
+        editingAssessment ? "Assessment updated" : "Assessment created",
+      );
       setDialogOpen(false);
       setEditingAssessment(null);
       form.reset();
@@ -174,7 +182,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
 
   // Calculate summary stats
   const totalVendors = new Set(assessments.map((a) => a.vendorName)).size;
-  const highRiskCount = assessments.filter((a) => a.riskRating === "HIGH").length;
+  const highRiskCount = assessments.filter(
+    (a) => a.riskRating === "HIGH",
+  ).length;
   const expiringContracts = assessments.filter((a) => {
     if (!a.contractEnd) return false;
     const daysUntilExpiry = differenceInDays(a.contractEnd, new Date());
@@ -182,8 +192,10 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
   });
   const avgSlaCompliance =
     assessments.filter((a) => a.slaCompliance !== null).length > 0
-      ? assessments.reduce((sum, a) => sum + (Number(a.slaCompliance) || 0), 0) /
-        assessments.filter((a) => a.slaCompliance !== null).length
+      ? assessments.reduce(
+          (sum, a) => sum + (Number(a.slaCompliance) || 0),
+          0,
+        ) / assessments.filter((a) => a.slaCompliance !== null).length
       : 0;
 
   const expiredContracts = assessments.filter((a) => {
@@ -204,7 +216,11 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
     daysRemaining: number | null;
   } {
     if (!contractEnd)
-      return { status: "No expiry date", color: "text-gray-600", daysRemaining: null };
+      return {
+        status: "No expiry date",
+        color: "text-gray-600",
+        daysRemaining: null,
+      };
 
     const daysRemaining = differenceInDays(contractEnd, new Date());
 
@@ -230,7 +246,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
               <div>{expiredContracts.length} contract(s) have expired.</div>
             )}
             {expiringContracts.length > 0 && (
-              <div>{expiringContracts.length} contract(s) expiring within 90 days.</div>
+              <div>
+                {expiringContracts.length} contract(s) expiring within 90 days.
+              </div>
             )}
           </AlertDescription>
         </Alert>
@@ -246,7 +264,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>High Risk Vendors</CardDescription>
-            <CardTitle className="text-3xl text-red-600">{highRiskCount}</CardTitle>
+            <CardTitle className="text-3xl text-red-600">
+              {highRiskCount}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -275,10 +295,12 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
               Add Assessment
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingAssessment ? "Edit Vendor Assessment" : "Add Vendor Risk Assessment"}
+                {editingAssessment
+                  ? "Edit Vendor Assessment"
+                  : "Add Vendor Risk Assessment"}
               </DialogTitle>
               <DialogDescription>
                 {editingAssessment
@@ -286,7 +308,10 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
                   : "Record vendor risk assessment and SLA compliance."}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="vendorName">Vendor Name *</Label>
@@ -302,7 +327,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
                   <Label htmlFor="applicationId">Linked Application</Label>
                   <Select
                     value={form.watch("applicationId") || ""}
-                    onValueChange={(value) => form.setValue("applicationId", value)}
+                    onValueChange={(value) =>
+                      form.setValue("applicationId", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select application (optional)" />
@@ -319,12 +346,20 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
 
                 <div className="space-y-2">
                   <Label htmlFor="contractStart">Contract Start</Label>
-                  <Input id="contractStart" type="date" {...form.register("contractStart")} />
+                  <Input
+                    id="contractStart"
+                    type="date"
+                    {...form.register("contractStart")}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="contractEnd">Contract End</Label>
-                  <Input id="contractEnd" type="date" {...form.register("contractEnd")} />
+                  <Input
+                    id="contractEnd"
+                    type="date"
+                    {...form.register("contractEnd")}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -343,7 +378,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
                   <Label htmlFor="riskRating">Risk Rating</Label>
                   <Select
                     value={form.watch("riskRating") || ""}
-                    onValueChange={(value) => form.setValue("riskRating", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("riskRating", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -357,7 +394,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
                 </div>
 
                 <div className="col-span-2 space-y-2">
-                  <Label htmlFor="lastAssessmentDate">Last Assessment Date</Label>
+                  <Label htmlFor="lastAssessmentDate">
+                    Last Assessment Date
+                  </Label>
                   <Input
                     id="lastAssessmentDate"
                     type="date"
@@ -367,12 +406,20 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
 
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="findings">Findings</Label>
-                  <Textarea id="findings" {...form.register("findings")} rows={3} />
+                  <Textarea
+                    id="findings"
+                    {...form.register("findings")}
+                    rows={3}
+                  />
                 </div>
 
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="mitigations">Mitigations</Label>
-                  <Textarea id="mitigations" {...form.register("mitigations")} rows={3} />
+                  <Textarea
+                    id="mitigations"
+                    {...form.register("mitigations")}
+                    rows={3}
+                  />
                 </div>
               </div>
 
@@ -421,10 +468,17 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
               </TableRow>
             ) : (
               assessments.map((assessment) => {
-                const contractStatus = getContractStatus(assessment.contractEnd);
+                const contractStatus = getContractStatus(
+                  assessment.contractEnd,
+                );
                 return (
-                  <TableRow key={assessment.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell className="font-medium">{assessment.vendorName}</TableCell>
+                  <TableRow
+                    key={assessment.id}
+                    className="hover:bg-muted/50 cursor-pointer"
+                  >
+                    <TableCell className="font-medium">
+                      {assessment.vendorName}
+                    </TableCell>
                     <TableCell>
                       {assessment.application ? (
                         <div>
@@ -457,7 +511,9 @@ export function VendorRiskPanel({ assessments, applications }: VendorRiskPanelPr
                     </TableCell>
                     <TableCell>
                       {assessment.slaCompliance !== null ? (
-                        <div className={`font-semibold ${getSlaColor(assessment.slaCompliance)}`}>
+                        <div
+                          className={`font-semibold ${getSlaColor(assessment.slaCompliance)}`}
+                        >
                           {assessment.slaCompliance.toFixed(1)}%
                         </div>
                       ) : (

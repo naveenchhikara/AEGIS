@@ -11,7 +11,9 @@ import { logger } from "@/lib/logger";
 const ManageRiskSchema = z.object({
   id: z.string().uuid().optional(),
   entityId: z.string().uuid(),
-  riskStatement: z.string().min(10, "Risk statement must be at least 10 characters"),
+  riskStatement: z
+    .string()
+    .min(10, "Risk statement must be at least 10 characters"),
   riskCategory: z.enum([
     "CREDIT",
     "OPERATIONAL",
@@ -188,10 +190,8 @@ export async function manageKRI(input: ManageKRIInput) {
         ) {
           breachStatus = "BREACH";
         } else if (
-          parsed.data.currentValue <=
-            parsed.data.thresholdLow * 1.1 ||
-          parsed.data.currentValue >=
-            parsed.data.thresholdHigh * 0.9
+          parsed.data.currentValue <= parsed.data.thresholdLow * 1.1 ||
+          parsed.data.currentValue >= parsed.data.thresholdHigh * 0.9
         ) {
           breachStatus = "WARNING";
         }
@@ -216,7 +216,8 @@ export async function manageKRI(input: ManageKRIInput) {
             thresholdHigh: parsed.data.thresholdHigh,
             breachStatus,
             frequency: parsed.data.frequency ?? "MONTHLY",
-            lastUpdated: parsed.data.currentValue !== undefined ? new Date() : undefined,
+            lastUpdated:
+              parsed.data.currentValue !== undefined ? new Date() : undefined,
           },
         });
       } else {
@@ -232,7 +233,8 @@ export async function manageKRI(input: ManageKRIInput) {
             thresholdHigh: parsed.data.thresholdHigh,
             breachStatus,
             frequency: parsed.data.frequency ?? "MONTHLY",
-            lastUpdated: parsed.data.currentValue !== undefined ? new Date() : undefined,
+            lastUpdated:
+              parsed.data.currentValue !== undefined ? new Date() : undefined,
           },
         });
       }

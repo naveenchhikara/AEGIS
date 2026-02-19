@@ -38,7 +38,7 @@ function getFileIcon(contentType: string) {
   if (contentType.startsWith("image/")) {
     return <Image className="h-5 w-5 text-blue-600" />;
   }
-  return <FileText className="h-5 w-5 text-muted-foreground" />;
+  return <FileText className="text-muted-foreground h-5 w-5" />;
 }
 
 function getFileTypeLabel(contentType: string): string {
@@ -46,7 +46,8 @@ function getFileTypeLabel(contentType: string): string {
     "application/pdf": "PDF",
     "image/jpeg": "JPEG",
     "image/png": "PNG",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      "DOCX",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
   };
   return typeMap[contentType] || "File";
@@ -89,8 +90,10 @@ export function ExaminationEvidenceList({
   if (evidence.length === 0) {
     return (
       <div className="rounded-md border border-dashed p-8 text-center">
-        <FileText className="mx-auto h-8 w-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm text-muted-foreground">No evidence attached</p>
+        <FileText className="text-muted-foreground/50 mx-auto h-8 w-8" />
+        <p className="text-muted-foreground mt-2 text-sm">
+          No evidence attached
+        </p>
       </div>
     );
   }
@@ -104,32 +107,28 @@ export function ExaminationEvidenceList({
         return (
           <div
             key={item.id}
-            className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50"
+            className="hover:bg-muted/50 flex items-center gap-3 rounded-lg border p-3"
           >
             {/* File icon */}
             <div className="flex-shrink-0">{getFileIcon(item.contentType)}</div>
 
             {/* File info */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium truncate">{item.filename}</p>
-                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <p className="truncate text-sm font-medium">{item.filename}</p>
+                <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
                   {fileTypeLabel}
                 </span>
               </div>
-              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
                 <span>{formatFileSize(item.fileSize)}</span>
                 <span>•</span>
-                <span>
-                  Uploaded by {item.uploadedBy.name}
-                </span>
+                <span>Uploaded by {item.uploadedBy.name}</span>
                 <span>•</span>
-                <span>
-                  {format(new Date(item.createdAt), "MMM d, yyyy")}
-                </span>
+                <span>{format(new Date(item.createdAt), "MMM d, yyyy")}</span>
               </div>
               {item.description && (
-                <p className="mt-1 text-xs text-muted-foreground italic">
+                <p className="text-muted-foreground mt-1 text-xs italic">
                   {item.description}
                 </p>
               )}

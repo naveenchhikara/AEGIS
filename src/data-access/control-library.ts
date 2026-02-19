@@ -12,7 +12,7 @@ export async function getControls(
     controlType?: string;
     isKeyControl?: boolean;
     riskRegisterId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -22,8 +22,12 @@ export async function getControls(
       tenantId,
       ...(options?.processArea && { processArea: options.processArea }),
       ...(options?.controlType && { controlType: options.controlType }),
-      ...(options?.isKeyControl !== undefined && { isKeyControl: options.isKeyControl }),
-      ...(options?.riskRegisterId && { riskRegisterId: options.riskRegisterId }),
+      ...(options?.isKeyControl !== undefined && {
+        isKeyControl: options.isKeyControl,
+      }),
+      ...(options?.riskRegisterId && {
+        riskRegisterId: options.riskRegisterId,
+      }),
     },
     include: {
       riskRegister: {
@@ -92,7 +96,7 @@ export async function getTestProcedures(
   session: Session,
   options?: {
     controlId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -131,7 +135,10 @@ export async function getTestProcedures(
 /**
  * Get a single test procedure by ID.
  */
-export async function getTestProcedure(session: Session, testProcedureId: string) {
+export async function getTestProcedure(
+  session: Session,
+  testProcedureId: string,
+) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
 

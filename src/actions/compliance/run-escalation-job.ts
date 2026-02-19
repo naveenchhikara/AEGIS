@@ -10,9 +10,15 @@
 import { prismaForTenant } from "@/data-access/prisma";
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission } from "@/lib/permissions";
-import { computeBatchEscalation, type ComplianceItemForEscalation } from "@/lib/escalation-engine";
+import {
+  computeBatchEscalation,
+  type ComplianceItemForEscalation,
+} from "@/lib/escalation-engine";
 import { getEscalationRoute } from "@/lib/escalation-router";
-import { getOpenComplianceItemsWithContext, getEscalationRecipients } from "@/data-access/compliance-items";
+import {
+  getOpenComplianceItemsWithContext,
+  getEscalationRecipients,
+} from "@/data-access/compliance-items";
 import { logger } from "@/lib/logger";
 
 /**
@@ -72,15 +78,21 @@ export async function runEscalationJobInternal(tenantId: string) {
       },
     });
 
-    logger.info({ tenantId, count: items.length }, "Fetched open compliance items");
+    logger.info(
+      { tenantId, count: items.length },
+      "Fetched open compliance items",
+    );
 
     // Step 2: Compute batch escalation
-    const escalationInput: ComplianceItemForEscalation[] = items.map((item) => ({
-      id: item.id,
-      createdAt: item.createdAt,
-      dueDate: item.dueDate,
-      escalationLevel: item.escalationLevel as ComplianceItemForEscalation["escalationLevel"],
-    }));
+    const escalationInput: ComplianceItemForEscalation[] = items.map(
+      (item) => ({
+        id: item.id,
+        createdAt: item.createdAt,
+        dueDate: item.dueDate,
+        escalationLevel:
+          item.escalationLevel as ComplianceItemForEscalation["escalationLevel"],
+      }),
+    );
 
     const updates = computeBatchEscalation(escalationInput);
 

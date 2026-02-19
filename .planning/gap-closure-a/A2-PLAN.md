@@ -55,6 +55,7 @@ Implement R10-R11, R13: Engagement management create/edit UI with real user sele
 **Purpose:** Enable engagement creation with proper team assignment, replacing placeholder UI and enabling real audit execution workflows per SDD p.51.
 
 **Output:**
+
 - Create engagement form with branch, audit area, period, team selection
 - Real user selector (LEAD_AUDITOR, FIELD_AUDITOR roles)
 - Section allocation dropdown per team member (25 examination areas)
@@ -83,69 +84,77 @@ Implement R10-R11, R13: Engagement management create/edit UI with real user sele
   <action>
   Create `src/data-access/audit-teams.ts` with functions:
 
-  **1a. `getAssignableUsers(session: Session): Promise<AssignableUser[]>`**
-  - Extract tenantId from session
-  - Use `prismaForTenant(tenantId)`
-  - Query users with roles containing LEAD_AUDITOR or FIELD_AUDITOR
-  - Use: `where: { tenantId, roles: { hasSome: ["LEAD_AUDITOR", "FIELD_AUDITOR"] }, status: "ACTIVE" }`
-  - Select: id, name, email, roles
-  - Sort by name ascending
-  - Return array of `{ id, name, email, roles }`
+**1a. `getAssignableUsers(session: Session): Promise<AssignableUser[]>`**
 
-  **Type:**
-  ```typescript
-  export type AssignableUser = {
-    id: string;
-    name: string;
-    email: string;
-    roles: string[];
-  };
-  ```
+- Extract tenantId from session
+- Use `prismaForTenant(tenantId)`
+- Query users with roles containing LEAD_AUDITOR or FIELD_AUDITOR
+- Use: `where: { tenantId, roles: { hasSome: ["LEAD_AUDITOR", "FIELD_AUDITOR"] }, status: "ACTIVE" }`
+- Select: id, name, email, roles
+- Sort by name ascending
+- Return array of `{ id, name, email, roles }`
 
-  **1b. `getTeamMembers(session: Session, engagementId: string): Promise<TeamMember[]>`**
-  - Extract tenantId from session
-  - Use `prismaForTenant(tenantId)`
-  - Query AuditTeamMember with:
-    - `where: { engagementId, tenantId }`
-    - `include: { user: { select: { id: true, name: true, email: true } } }`
-  - Return array of `{ id, userId, user: { name, email }, roleInEngagement, assignedSections }`
+**Type:**
 
-  **Type:**
-  ```typescript
-  export type TeamMember = {
-    id: string;
-    userId: string;
-    user: { id: string; name: string; email: string };
-    roleInEngagement: string;
-    assignedSections: string[];
-  };
-  ```
+```typescript
+export type AssignableUser = {
+  id: string;
+  name: string;
+  email: string;
+  roles: string[];
+};
+```
 
-  **1c. `getExaminationAreaCodes(session: Session): Promise<string[]>`**
-  - Extract tenantId from session
-  - Use `prismaForTenant(tenantId)`
-  - Query ExaminationArea with: `where: { tenantId, isActive: true }`
-  - Order by displayOrder
-  - Select only `code` field
-  - Return array of codes: ["CASH", "ATM", "CLEARING", ...]
+**1b. `getTeamMembers(session: Session, engagementId: string): Promise<TeamMember[]>`**
 
-  **IMPORTANT:** Follow existing DAL patterns (session auth, prismaForTenant, error handling with logger).
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/audit-teams.ts 2>&1 | head -20
-  ```
-  Must compile without errors. Must export getAssignableUsers, getTeamMembers, getExaminationAreaCodes.
-  </verify>
-  <done>
-  - `src/data-access/audit-teams.ts` exists with ≥30 lines
-  - `getAssignableUsers()` queries users with LEAD_AUDITOR or FIELD_AUDITOR roles
-  - `getTeamMembers()` fetches AuditTeamMember with user relation
-  - `getExaminationAreaCodes()` returns active examination area codes
-  - All functions use session auth and prismaForTenant
-  - TypeScript compiles successfully
+- Extract tenantId from session
+- Use `prismaForTenant(tenantId)`
+- Query AuditTeamMember with:
+  - `where: { engagementId, tenantId }`
+  - `include: { user: { select: { id: true, name: true, email: true } } }`
+- Return array of `{ id, userId, user: { name, email }, roleInEngagement, assignedSections }`
+
+**Type:**
+
+```typescript
+export type TeamMember = {
+  id: string;
+  userId: string;
+  user: { id: string; name: string; email: string };
+  roleInEngagement: string;
+  assignedSections: string[];
+};
+```
+
+**1c. `getExaminationAreaCodes(session: Session): Promise<string[]>`**
+
+- Extract tenantId from session
+- Use `prismaForTenant(tenantId)`
+- Query ExaminationArea with: `where: { tenantId, isActive: true }`
+- Order by displayOrder
+- Select only `code` field
+- Return array of codes: ["CASH", "ATM", "CLEARING", ...]
+
+**IMPORTANT:** Follow existing DAL patterns (session auth, prismaForTenant, error handling with logger).
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/audit-teams.ts 2>&1 | head -20
+```
+
+Must compile without errors. Must export getAssignableUsers, getTeamMembers, getExaminationAreaCodes.
+</verify>
+<done>
+
+- `src/data-access/audit-teams.ts` exists with ≥30 lines
+- `getAssignableUsers()` queries users with LEAD_AUDITOR or FIELD_AUDITOR roles
+- `getTeamMembers()` fetches AuditTeamMember with user relation
+- `getExaminationAreaCodes()` returns active examination area codes
+- All functions use session auth and prismaForTenant
+- TypeScript compiles successfully
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Task 2: Server Actions — Create engagement and assign team</name>
@@ -155,85 +164,89 @@ Implement R10-R11, R13: Engagement management create/edit UI with real user sele
   ```typescript
   import { z } from "zod";
 
-  export const CreateEngagementSchema = z.object({
-    auditPlanId: z.string().uuid(),
-    branchId: z.string().uuid(),
-    auditAreaId: z.string().uuid().optional(),
-    auditNumber: z.string().min(3).max(50),
-    auditType: z.string().default("RBIA"),
-    visitNumber: z.number().int().positive().default(1),
-    periodFrom: z.string().datetime(),
-    periodTo: z.string().datetime(),
-    scheduledStartDate: z.string().datetime().optional(),
-  });
+export const CreateEngagementSchema = z.object({
+auditPlanId: z.string().uuid(),
+branchId: z.string().uuid(),
+auditAreaId: z.string().uuid().optional(),
+auditNumber: z.string().min(3).max(50),
+auditType: z.string().default("RBIA"),
+visitNumber: z.number().int().positive().default(1),
+periodFrom: z.string().datetime(),
+periodTo: z.string().datetime(),
+scheduledStartDate: z.string().datetime().optional(),
+});
 
-  export type CreateEngagementInput = z.infer<typeof CreateEngagementSchema>;
+export type CreateEngagementInput = z.infer<typeof CreateEngagementSchema>;
 
-  export const AssignTeamMemberSchema = z.object({
-    engagementId: z.string().uuid(),
-    userId: z.string().uuid(),
-    roleInEngagement: z.enum(["LEAD_AUDITOR", "FIELD_AUDITOR"]),
-    assignedSections: z.array(z.string()).default([]), // Array of examination area codes
-  });
+export const AssignTeamMemberSchema = z.object({
+engagementId: z.string().uuid(),
+userId: z.string().uuid(),
+roleInEngagement: z.enum(["LEAD_AUDITOR", "FIELD_AUDITOR"]),
+assignedSections: z.array(z.string()).default([]), // Array of examination area codes
+});
 
-  export type AssignTeamMemberInput = z.infer<typeof AssignTeamMemberSchema>;
+export type AssignTeamMemberInput = z.infer<typeof AssignTeamMemberSchema>;
 
-  export const RemoveTeamMemberSchema = z.object({
-    teamMemberId: z.string().uuid(),
-  });
+export const RemoveTeamMemberSchema = z.object({
+teamMemberId: z.string().uuid(),
+});
 
-  export type RemoveTeamMemberInput = z.infer<typeof RemoveTeamMemberSchema>;
-  ```
+export type RemoveTeamMemberInput = z.infer<typeof RemoveTeamMemberSchema>;
 
-  **2b. Create `src/actions/audit-execution/create-engagement.ts`:**
+````
 
-  Follow standard server action boilerplate:
-  1. "use server" directive
-  2. Imports: getRequiredSession, prismaForTenant, setAuditContext, hasPermission, logger
-  3. Check permission: `hasPermission(userRoles, "audit_execution:create")`
-  4. Validate input with CreateEngagementSchema
-  5. Transaction:
-     - Set audit context: `actionType: "audit_engagement.created"`
-     - Create AuditEngagement: `tx.auditEngagement.create({ data: { tenantId, ...validated, status: "PLANNED" } })`
-     - Return engagement.id
-  6. revalidatePath("/audit-execution")
-  7. Return `{ success: true, data: { id } }`
+**2b. Create `src/actions/audit-execution/create-engagement.ts`:**
 
-  **2c. Create `src/actions/audit-execution/assign-team.ts`:**
+Follow standard server action boilerplate:
+1. "use server" directive
+2. Imports: getRequiredSession, prismaForTenant, setAuditContext, hasPermission, logger
+3. Check permission: `hasPermission(userRoles, "audit_execution:create")`
+4. Validate input with CreateEngagementSchema
+5. Transaction:
+   - Set audit context: `actionType: "audit_engagement.created"`
+   - Create AuditEngagement: `tx.auditEngagement.create({ data: { tenantId, ...validated, status: "PLANNED" } })`
+   - Return engagement.id
+6. revalidatePath("/audit-execution")
+7. Return `{ success: true, data: { id } }`
 
-  Two server actions in this file:
+**2c. Create `src/actions/audit-execution/assign-team.ts`:**
 
-  **assignTeamMember():**
-  1. "use server" directive
-  2. Check permission: `hasPermission(userRoles, "audit_execution:manage_team")`
-  3. Validate input with AssignTeamMemberSchema
-  4. Transaction:
-     - Set audit context: `actionType: "audit_team.assigned"`
-     - Check if user already assigned: `tx.auditTeamMember.findUnique({ where: { engagementId_userId } })`
-     - If exists, throw error: "User already assigned to this engagement"
-     - Create AuditTeamMember: `tx.auditTeamMember.create({ data: { tenantId, ...validated } })`
-  5. revalidatePath("/audit-execution/[id]")
-  6. Return `{ success: true, data: { id } }`
+Two server actions in this file:
 
-  **removeTeamMember():**
-  1. Check permission: `hasPermission(userRoles, "audit_execution:manage_team")`
-  2. Validate input with RemoveTeamMemberSchema
-  3. Transaction:
-     - Set audit context: `actionType: "audit_team.removed"`
-     - Delete: `tx.auditTeamMember.delete({ where: { id: validated.teamMemberId, tenantId } })`
-  4. revalidatePath("/audit-execution/[id]")
-  5. Return `{ success: true }`
+**assignTeamMember():**
+1. "use server" directive
+2. Check permission: `hasPermission(userRoles, "audit_execution:manage_team")`
+3. Validate input with AssignTeamMemberSchema
+4. Transaction:
+   - Set audit context: `actionType: "audit_team.assigned"`
+   - Check if user already assigned: `tx.auditTeamMember.findUnique({ where: { engagementId_userId } })`
+   - If exists, throw error: "User already assigned to this engagement"
+   - Create AuditTeamMember: `tx.auditTeamMember.create({ data: { tenantId, ...validated } })`
+5. revalidatePath("/audit-execution/[id]")
+6. Return `{ success: true, data: { id } }`
 
-  **IMPORTANT:** Both actions must follow exact boilerplate from CONVENTIONS.md.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/*.ts 2>&1 | head -30
-  ```
-  Must compile without errors. Check exports with:
-  ```bash
-  grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)" src/actions/audit-execution/*.ts
-  ```
+**removeTeamMember():**
+1. Check permission: `hasPermission(userRoles, "audit_execution:manage_team")`
+2. Validate input with RemoveTeamMemberSchema
+3. Transaction:
+   - Set audit context: `actionType: "audit_team.removed"`
+   - Delete: `tx.auditTeamMember.delete({ where: { id: validated.teamMemberId, tenantId } })`
+4. revalidatePath("/audit-execution/[id]")
+5. Return `{ success: true }`
+
+**IMPORTANT:** Both actions must follow exact boilerplate from CONVENTIONS.md.
+</action>
+<verify>
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/audit-execution/*.ts 2>&1 | head -30
+````
+
+Must compile without errors. Check exports with:
+
+```bash
+grep -E "export.*function.*(createEngagement|assignTeamMember|removeTeamMember)" src/actions/audit-execution/*.ts
+```
+
   </verify>
   <done>
   - schemas.ts defines CreateEngagementSchema, AssignTeamMemberSchema, RemoveTeamMemberSchema
@@ -267,55 +280,64 @@ Implement R10-R11, R13: Engagement management create/edit UI with real user sele
   - On success: redirect to `/audit-execution/${engagementId}` and show success toast
   - On error: show error toast
 
-  **3b. Create `src/components/audit-execution/team-assignment-panel.tsx` (client component):**
-  - "use client" directive
-  - Props: `{ engagementId: string, users: AssignableUser[], examinationAreas: string[], teamMembers: TeamMember[] }`
-  - Display current team members in a table: Name, Email, Role, Assigned Sections, Remove button
-  - "Add Team Member" form:
-    - User selector (dropdown from users prop)
-    - Role selector (LEAD_AUDITOR or FIELD_AUDITOR)
-    - Section selector (multi-select from examinationAreas prop)
-    - Submit button → calls assignTeamMember() action
-  - Remove button per row → calls removeTeamMember() action
-  - Toast notifications on success/error
+**3b. Create `src/components/audit-execution/team-assignment-panel.tsx` (client component):**
 
-  **3c. Create `src/app/(dashboard)/audit-execution/create/page.tsx` (server component):**
-  - Fetch required data:
-    - branches (via DAL)
-    - auditAreas (via DAL)
-    - auditPlans (via DAL)
-  - Render EngagementForm with data passed as props
-  - Use Card layout from shadcn/ui
+- "use client" directive
+- Props: `{ engagementId: string, users: AssignableUser[], examinationAreas: string[], teamMembers: TeamMember[] }`
+- Display current team members in a table: Name, Email, Role, Assigned Sections, Remove button
+- "Add Team Member" form:
+  - User selector (dropdown from users prop)
+  - Role selector (LEAD_AUDITOR or FIELD_AUDITOR)
+  - Section selector (multi-select from examinationAreas prop)
+  - Submit button → calls assignTeamMember() action
+- Remove button per row → calls removeTeamMember() action
+- Toast notifications on success/error
 
-  **UI Structure:**
-  ```tsx
-  <div className="max-w-4xl mx-auto">
-    <Card>
-      <CardHeader>
-        <CardTitle>Create Audit Engagement</CardTitle>
-        <CardDescription>Set up a new audit engagement with team assignment</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <EngagementForm
-          branches={branches}
-          auditAreas={auditAreas}
-          auditPlans={auditPlans}
-        />
-      </CardContent>
-    </Card>
-  </div>
-  ```
+**3c. Create `src/app/(dashboard)/audit-execution/create/page.tsx` (server component):**
 
-  **IMPORTANT:** Follow form patterns from CONVENTIONS.md. Use shadcn/ui components (Card, Form, Select, Input, Button, Calendar). Use sonner for toasts.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/(dashboard)/audit-execution/create/page.tsx src/components/audit-execution/*.tsx 2>&1 | head -30
-  ```
-  Must compile without errors. Check for "use client" directives:
-  ```bash
-  grep -l '"use client"' src/components/audit-execution/engagement-form.tsx src/components/audit-execution/team-assignment-panel.tsx
-  ```
+- Fetch required data:
+  - branches (via DAL)
+  - auditAreas (via DAL)
+  - auditPlans (via DAL)
+- Render EngagementForm with data passed as props
+- Use Card layout from shadcn/ui
+
+**UI Structure:**
+
+```tsx
+<div className="mx-auto max-w-4xl">
+  <Card>
+    <CardHeader>
+      <CardTitle>Create Audit Engagement</CardTitle>
+      <CardDescription>
+        Set up a new audit engagement with team assignment
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <EngagementForm
+        branches={branches}
+        auditAreas={auditAreas}
+        auditPlans={auditPlans}
+      />
+    </CardContent>
+  </Card>
+</div>
+```
+
+**IMPORTANT:** Follow form patterns from CONVENTIONS.md. Use shadcn/ui components (Card, Form, Select, Input, Button, Calendar). Use sonner for toasts.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/app/(dashboard)/audit-execution/create/page.tsx src/components/audit-execution/*.tsx 2>&1 | head -30
+```
+
+Must compile without errors. Check for "use client" directives:
+
+```bash
+grep -l '"use client"' src/components/audit-execution/engagement-form.tsx src/components/audit-execution/team-assignment-panel.tsx
+```
+
   </verify>
   <done>
   - engagement-form.tsx exists as client component with "use client" directive
@@ -369,6 +391,7 @@ ls src/components/audit-execution/team-assignment-panel.tsx && echo "PASS: Team 
 ## Output
 
 After completion, create `.planning/gap-closure-a/A2-SUMMARY.md` documenting:
+
 - How engagement creation works
 - How team assignment wires to AuditTeamMember model
 - How section allocation is stored (assignedSections array)

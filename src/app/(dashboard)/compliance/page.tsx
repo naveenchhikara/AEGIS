@@ -18,9 +18,16 @@ export default async function CompliancePage() {
 
   // Calculate summary stats
   const total = items.length;
-  const open = items.filter((i) => i.status === "OPEN" || i.status === "BRANCH_RESPONSE_DUE").length;
-  const pending = items.filter((i) => i.status === "BRANCH_RESPONSE_SUBMITTED" || i.status === "ZAC_REVIEW").length;
-  const closed = items.filter((i) => i.status === "CLOSED" || i.status === "ZAC_APPROVED").length;
+  const open = items.filter(
+    (i) => i.status === "OPEN" || i.status === "BRANCH_RESPONSE_DUE",
+  ).length;
+  const pending = items.filter(
+    (i) =>
+      i.status === "BRANCH_RESPONSE_SUBMITTED" || i.status === "ZAC_REVIEW",
+  ).length;
+  const closed = items.filter(
+    (i) => i.status === "CLOSED" || i.status === "ZAC_APPROVED",
+  ).length;
 
   const summaryCards = [
     {
@@ -54,14 +61,19 @@ export default async function CompliancePage() {
   ];
 
   const canUpdate = hasPermission(userRoles, "compliance:update");
-  const canBranchResponse = hasPermission(userRoles, "compliance:branch_response");
+  const canBranchResponse = hasPermission(
+    userRoles,
+    "compliance:branch_response",
+  );
   const canZacReview = hasPermission(userRoles, "compliance:zac_review");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Compliance Registry</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Compliance Registry
+          </h1>
           <p className="text-muted-foreground">
             Track and manage compliance items across all branches
           </p>

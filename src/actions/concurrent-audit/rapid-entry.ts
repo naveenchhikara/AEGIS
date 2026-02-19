@@ -14,12 +14,14 @@ import { logger } from "@/lib/logger";
 const RapidEntrySchema = z.object({
   branchId: z.string().uuid(),
   scopeArea: z.string(),
-  observations: z.array(z.object({
-    particulars: z.string(),
-    finding: z.string(),
-    severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
-    recommendation: z.string().optional(),
-  })),
+  observations: z.array(
+    z.object({
+      particulars: z.string(),
+      finding: z.string(),
+      severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+      recommendation: z.string().optional(),
+    }),
+  ),
 });
 
 type RapidEntryInput = z.infer<typeof RapidEntrySchema>;
@@ -38,7 +40,8 @@ export async function rapidEntryObservations(input: RapidEntryInput) {
   if (!hasPermission(userRoles, "concurrent_audit:execute")) {
     return {
       success: false as const,
-      error: "You do not have permission to create concurrent audit observations.",
+      error:
+        "You do not have permission to create concurrent audit observations.",
     };
   }
 
@@ -73,7 +76,8 @@ export async function rapidEntryObservations(input: RapidEntryInput) {
             criteria: `Concurrent Audit - ${parsed.data.scopeArea}`,
             cause: "To be determined",
             effect: "To be determined",
-            recommendation: obs.recommendation || "Branch to provide corrective action plan",
+            recommendation:
+              obs.recommendation || "Branch to provide corrective action plan",
             severity: obs.severity,
             status: "DRAFT",
             createdById: session.user.id,
@@ -97,10 +101,11 @@ export async function rapidEntryObservations(input: RapidEntryInput) {
     };
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to create observations.";
-    logger.error({ error, action: "rapid_entry_observations", tenantId }, message);
+      error instanceof Error ? error.message : "Failed to create observations.";
+    logger.error(
+      { error, action: "rapid_entry_observations", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

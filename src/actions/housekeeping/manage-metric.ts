@@ -21,7 +21,7 @@ const ManageMetricSchema = z.object({
 });
 
 export async function manageHousekeepingMetric(
-  input: z.infer<typeof ManageMetricSchema>
+  input: z.infer<typeof ManageMetricSchema>,
 ) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
@@ -82,7 +82,7 @@ export async function manageHousekeepingMetric(
   } catch (error) {
     logger.error(
       { error, action: "manage_housekeeping_metric", tenantId },
-      "Failed to manage housekeeping metric"
+      "Failed to manage housekeeping metric",
     );
     return { success: false as const, error: "Failed to manage metric." };
   }

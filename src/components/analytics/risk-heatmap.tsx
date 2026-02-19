@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -44,20 +50,22 @@ export function RiskHeatmap({ data }: RiskHeatmapProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
+          <Target className="text-primary h-5 w-5" />
           <CardTitle>Branch Risk Heatmap</CardTitle>
         </div>
         <CardDescription>
           RAM scores and compliance status across all branches
         </CardDescription>
         <div className="flex gap-4 pt-2">
-          <span className="text-sm text-muted-foreground">
-            High Risk: <span className="font-semibold text-red-600">{highRisk}</span>
+          <span className="text-muted-foreground text-sm">
+            High Risk:{" "}
+            <span className="font-semibold text-red-600">{highRisk}</span>
           </span>
-          <span className="text-sm text-muted-foreground">
-            Medium: <span className="font-semibold text-amber-600">{mediumRisk}</span>
+          <span className="text-muted-foreground text-sm">
+            Medium:{" "}
+            <span className="font-semibold text-amber-600">{mediumRisk}</span>
           </span>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Low: <span className="font-semibold text-green-600">{lowRisk}</span>
           </span>
         </div>
@@ -89,7 +97,7 @@ export function RiskHeatmap({ data }: RiskHeatmapProps) {
                   <TableRow key={branch.id}>
                     <TableCell className="font-medium">
                       {branch.code}
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {branch.name}
                       </div>
                     </TableCell>
@@ -115,11 +123,19 @@ export function RiskHeatmap({ data }: RiskHeatmapProps) {
                     </TableCell>
                     <TableCell>
                       {branch.lastAuditDate
-                        ? new Date(branch.lastAuditDate).toLocaleDateString("en-IN")
+                        ? new Date(branch.lastAuditDate).toLocaleDateString(
+                            "en-IN",
+                          )
                         : "—"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={branch.openComplianceItems > 0 ? "destructive" : "secondary"}>
+                      <Badge
+                        variant={
+                          branch.openComplianceItems > 0
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
                         {branch.openComplianceItems}
                       </Badge>
                     </TableCell>

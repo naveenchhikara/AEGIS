@@ -58,7 +58,8 @@ Wire `/issues` page to real database and create board-level consolidated view (R
 
 **Purpose:** Close R59-R63 gaps by replacing mock data with actual unified issue tracking across all sources, enabling action plan management and board reporting.
 
-**Output:** 
+**Output:**
+
 - Working issues list page with source filtering
 - Action plan management with milestone tracking
 - New `/issues/board` page for consolidated board view
@@ -92,11 +93,13 @@ Wire `/issues` page to real database and create board-level consolidated view (R
 **In issues/page.tsx:**
 
 1. Import DAL:
+
    ```typescript
    import { getIssues } from "@/data-access/issues";
    ```
 
 2. Extract filter params from searchParams:
+
    ```typescript
    const issues = await getIssues(session, {
      source: searchParams.source, // internal, regulatory, external, self_assessment
@@ -113,6 +116,7 @@ Wire `/issues` page to real database and create board-level consolidated view (R
 **In issues-table.tsx:**
 
 1. Import actions:
+
    ```typescript
    import { manageIssue } from "@/actions/issues/manage-issue";
    import { acceptRisk } from "@/actions/issues/accept-risk";
@@ -130,6 +134,7 @@ Wire `/issues` page to real database and create board-level consolidated view (R
 **In action-plan-panel.tsx:**
 
 1. Import action:
+
    ```typescript
    import { manageActionPlan } from "@/actions/issues/manage-action-plan";
    ```
@@ -142,14 +147,16 @@ Wire `/issues` page to real database and create board-level consolidated view (R
 3. Display existing action plans with milestone progress
 
 **Pattern:** Follow server component + client interaction pattern from CONVENTIONS.md.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false | grep -E "issues/page.tsx|issues-table.tsx|action-plan-panel.tsx|error TS"
 ```
 
 Manual checks:
+
 - Navigate to `/issues`
 - Page loads with real issue data
 - Filter by source/severity/status → updates table
@@ -167,7 +174,7 @@ Manual checks:
 - TypeScript clean
 - Page functional end-to-end
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Create board consolidated view (R63)</name>
@@ -181,6 +188,7 @@ Manual checks:
 Server component that:
 
 1. Imports DAL:
+
    ```typescript
    import { getIssues } from "@/data-access/issues";
    import { getRequiredSession } from "@/data-access/session";
@@ -188,6 +196,7 @@ Server component that:
    ```
 
 2. Fetches all open issues across all sources:
+
    ```typescript
    const openIssues = await getIssues(session, {
      status: "OPEN",
@@ -195,19 +204,20 @@ Server component that:
    ```
 
 3. Aggregates by source:
+
    ```typescript
    const bySource = {
-     internal: openIssues.filter(i => i.source === "internal"),
-     regulatory: openIssues.filter(i => i.source === "regulatory"),
-     external: openIssues.filter(i => i.source === "external"),
-     self_assessment: openIssues.filter(i => i.source === "self_assessment"),
+     internal: openIssues.filter((i) => i.source === "internal"),
+     regulatory: openIssues.filter((i) => i.source === "regulatory"),
+     external: openIssues.filter((i) => i.source === "external"),
+     self_assessment: openIssues.filter((i) => i.source === "self_assessment"),
    };
-   
+
    const bySeverity = {
-     critical: openIssues.filter(i => i.severity === "CRITICAL").length,
-     high: openIssues.filter(i => i.severity === "HIGH").length,
-     medium: openIssues.filter(i => i.severity === "MEDIUM").length,
-     low: openIssues.filter(i => i.severity === "LOW").length,
+     critical: openIssues.filter((i) => i.severity === "CRITICAL").length,
+     high: openIssues.filter((i) => i.severity === "HIGH").length,
+     medium: openIssues.filter((i) => i.severity === "MEDIUM").length,
+     low: openIssues.filter((i) => i.severity === "LOW").length,
    };
    ```
 
@@ -235,14 +245,16 @@ Client component that:
 **Permission check:** Require `ACB_MEMBER` or higher role to access board view.
 
 **Pattern:** Dashboard page with aggregated metrics + drill-down table.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false | grep -E "issues/board/page.tsx|board-view.tsx|error TS"
 ```
 
 Manual checks:
+
 - Navigate to `/issues/board` as ACB_MEMBER or admin
 - Page loads without errors
 - Summary cards display counts by source and severity
@@ -257,7 +269,7 @@ Manual checks:
 - TypeScript clean
 - Page functional
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -265,6 +277,7 @@ Manual checks:
 **Overall checks:**
 
 1. TypeScript:
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit
@@ -288,9 +301,10 @@ pnpm exec tsc --noEmit
    - Aggregates issues from all sources
    - Displays critical/high severity prominently
    - Drill-down to individual issues works
-</verification>
+     </verification>
 
 <success_criteria>
+
 - ✅ `/issues` page wired to `getIssues()` with filtering
 - ✅ Issues table displays real unified issue data
 - ✅ Create/edit issue forms call `manageIssue()` action
@@ -301,7 +315,7 @@ pnpm exec tsc --noEmit
 - ✅ TypeScript compilation clean
 - ✅ Both pages load without errors
 - ✅ R59-R63 requirements marked as implemented
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

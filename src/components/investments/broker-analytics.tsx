@@ -29,7 +29,10 @@ interface BrokerAnalyticsProps {
 
 export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
   // Calculate total value across all brokers
-  const totalValue = brokerData.reduce((sum, broker) => sum + broker.totalValue, 0);
+  const totalValue = brokerData.reduce(
+    (sum, broker) => sum + broker.totalValue,
+    0,
+  );
 
   // Calculate each broker's share percentage
   const enrichedBrokerData = brokerData.map((broker) => ({
@@ -38,10 +41,14 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
   }));
 
   // Sort by share descending
-  const sortedBrokers = enrichedBrokerData.sort((a, b) => b.sharePercent - a.sharePercent);
+  const sortedBrokers = enrichedBrokerData.sort(
+    (a, b) => b.sharePercent - a.sharePercent,
+  );
 
   // Identify brokers with cap issues
-  const brokersAtWarning = sortedBrokers.filter((b) => b.sharePercent >= 4 && b.sharePercent < 5);
+  const brokersAtWarning = sortedBrokers.filter(
+    (b) => b.sharePercent >= 4 && b.sharePercent < 5,
+  );
   const brokersInBreach = sortedBrokers.filter((b) => b.sharePercent >= 5);
 
   const getCapStatus = (sharePercent: number) => {
@@ -73,9 +80,9 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Regulatory Requirement</AlertTitle>
         <AlertDescription>
-          Per RBI circular, no single broker should handle more than 5% of total investment
-          transactions. Banks must monitor broker concentration to prevent undue dependency and
-          ensure market risk diversification.
+          Per RBI circular, no single broker should handle more than 5% of total
+          investment transactions. Banks must monitor broker concentration to
+          prevent undue dependency and ensure market risk diversification.
         </AlertDescription>
       </Alert>
 
@@ -86,14 +93,16 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
           <AlertTitle>Broker Cap Breach Detected</AlertTitle>
           <AlertDescription>
             <p className="mb-2">
-              {brokersInBreach.length} broker{brokersInBreach.length > 1 ? "s" : ""} exceed the 5%
+              {brokersInBreach.length} broker
+              {brokersInBreach.length > 1 ? "s" : ""} exceed the 5%
               concentration limit:
             </p>
-            <ul className="list-disc list-inside space-y-1">
+            <ul className="list-inside list-disc space-y-1">
               {brokersInBreach.map((broker) => (
                 <li key={broker.broker}>
-                  <strong>{broker.broker}</strong>: {broker.sharePercent.toFixed(2)}% (
-                  ₹{(broker.totalValue / 10000000).toFixed(2)}Cr)
+                  <strong>{broker.broker}</strong>:{" "}
+                  {broker.sharePercent.toFixed(2)}% ( ₹
+                  {(broker.totalValue / 10000000).toFixed(2)}Cr)
                 </li>
               ))}
             </ul>
@@ -107,16 +116,20 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
       {brokersAtWarning.length > 0 && brokersInBreach.length === 0 && (
         <Alert className="border-amber-500 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-900">Approaching Broker Cap Limit</AlertTitle>
+          <AlertTitle className="text-amber-900">
+            Approaching Broker Cap Limit
+          </AlertTitle>
           <AlertDescription className="text-amber-800">
             <p className="mb-2">
-              {brokersAtWarning.length} broker{brokersAtWarning.length > 1 ? "s" : ""} approaching
-              the 5% threshold:
+              {brokersAtWarning.length} broker
+              {brokersAtWarning.length > 1 ? "s" : ""} approaching the 5%
+              threshold:
             </p>
-            <ul className="list-disc list-inside space-y-1">
+            <ul className="list-inside list-disc space-y-1">
               {brokersAtWarning.map((broker) => (
                 <li key={broker.broker}>
-                  <strong>{broker.broker}</strong>: {broker.sharePercent.toFixed(2)}%
+                  <strong>{broker.broker}</strong>:{" "}
+                  {broker.sharePercent.toFixed(2)}%
                 </li>
               ))}
             </ul>
@@ -127,9 +140,12 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
       {brokersInBreach.length === 0 && brokersAtWarning.length === 0 && (
         <Alert className="border-green-500 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-900">Broker Compliance: All Clear</AlertTitle>
+          <AlertTitle className="text-green-900">
+            Broker Compliance: All Clear
+          </AlertTitle>
           <AlertDescription className="text-green-800">
-            All brokers are within the 5% concentration limit. No immediate action required.
+            All brokers are within the 5% concentration limit. No immediate
+            action required.
           </AlertDescription>
         </Alert>
       )}
@@ -138,7 +154,7 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
       <Card>
         <CardHeader>
           <CardTitle>Broker Concentration Analysis</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Breakdown of investment value by broker with 5% cap monitoring
           </p>
         </CardHeader>
@@ -167,17 +183,25 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
                     const status = getCapStatus(broker.sharePercent);
                     return (
                       <TableRow key={broker.broker}>
-                        <TableCell className="font-medium">{broker.broker}</TableCell>
-                        <TableCell>₹{(broker.totalValue / 10000000).toFixed(2)}Cr</TableCell>
+                        <TableCell className="font-medium">
+                          {broker.broker}
+                        </TableCell>
+                        <TableCell>
+                          ₹{(broker.totalValue / 10000000).toFixed(2)}Cr
+                        </TableCell>
                         <TableCell>{broker.count}</TableCell>
-                        <TableCell>{(broker.maxShare * 100).toFixed(2)}%</TableCell>
+                        <TableCell>
+                          {(broker.maxShare * 100).toFixed(2)}%
+                        </TableCell>
                         <TableCell>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium">
                                 {broker.sharePercent.toFixed(2)}%
                               </span>
-                              <span className="text-muted-foreground">of total</span>
+                              <span className="text-muted-foreground">
+                                of total
+                              </span>
                             </div>
                             <Progress
                               value={Math.min(broker.sharePercent, 10)}
@@ -186,8 +210,8 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
                                 status.severity === "critical"
                                   ? "[&>div]:bg-red-500"
                                   : status.severity === "warning"
-                                  ? "[&>div]:bg-amber-500"
-                                  : "[&>div]:bg-green-500"
+                                    ? "[&>div]:bg-amber-500"
+                                    : "[&>div]:bg-green-500"
                               }
                             />
                           </div>
@@ -220,7 +244,7 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
       <Card>
         <CardHeader>
           <CardTitle>Broker Share Distribution</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Visual representation of broker concentration (5% threshold marked)
           </p>
         </CardHeader>
@@ -232,7 +256,11 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
                 <div key={broker.broker} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{broker.broker}</span>
-                    <span className={status.severity === "ok" ? "text-muted-foreground" : ""}>
+                    <span
+                      className={
+                        status.severity === "ok" ? "text-muted-foreground" : ""
+                      }
+                    >
                       {broker.sharePercent.toFixed(2)}%
                     </span>
                   </div>
@@ -244,8 +272,8 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
                         status.severity === "critical"
                           ? "[&>div]:bg-red-500"
                           : status.severity === "warning"
-                          ? "[&>div]:bg-amber-500"
-                          : "[&>div]:bg-green-500"
+                            ? "[&>div]:bg-amber-500"
+                            : "[&>div]:bg-green-500"
                       }
                     />
                     {/* 5% threshold marker */}
@@ -255,7 +283,7 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
                         left: `${(5 / Math.max(10, broker.sharePercent)) * 100}%`,
                       }}
                     >
-                      <div className="absolute -top-5 -left-6 text-xs text-red-600 font-semibold">
+                      <div className="absolute -top-5 -left-6 text-xs font-semibold text-red-600">
                         5%
                       </div>
                     </div>
@@ -266,7 +294,9 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
           </div>
 
           {sortedBrokers.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No broker data to display.</p>
+            <p className="text-muted-foreground py-8 text-center">
+              No broker data to display.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -279,19 +309,25 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{sortedBrokers.length}</div>
-            <p className="text-xs text-muted-foreground">Active broker relationships</p>
+            <p className="text-muted-foreground text-xs">
+              Active broker relationships
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Highest Concentration</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Highest Concentration
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {sortedBrokers.length > 0 ? `${sortedBrokers[0].sharePercent.toFixed(2)}%` : "—"}
+              {sortedBrokers.length > 0
+                ? `${sortedBrokers[0].sharePercent.toFixed(2)}%`
+                : "—"}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {sortedBrokers.length > 0 ? sortedBrokers[0].broker : "N/A"}
             </p>
           </CardContent>
@@ -299,22 +335,24 @@ export function BrokerAnalytics({ brokerData }: BrokerAnalyticsProps) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Status</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Compliance Status
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {brokersInBreach.length > 0
                 ? "BREACH"
                 : brokersAtWarning.length > 0
-                ? "WARNING"
-                : "COMPLIANT"}
+                  ? "WARNING"
+                  : "COMPLIANT"}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {brokersInBreach.length > 0
                 ? `${brokersInBreach.length} broker(s) over limit`
                 : brokersAtWarning.length > 0
-                ? `${brokersAtWarning.length} broker(s) near limit`
-                : "All brokers within 5% cap"}
+                  ? `${brokersAtWarning.length} broker(s) near limit`
+                  : "All brokers within 5% cap"}
             </p>
           </CardContent>
         </Card>

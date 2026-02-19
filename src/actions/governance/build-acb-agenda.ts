@@ -111,7 +111,10 @@ export async function buildAcbAgenda(input: BuildAcbAgendaInput) {
       });
 
       // 5. Recent audit completions (this quarter)
-      const quarterDates = getQuarterDates(parsed.data.year, parsed.data.quarter);
+      const quarterDates = getQuarterDates(
+        parsed.data.year,
+        parsed.data.quarter,
+      );
       const completedAudits = await tx.auditEngagement.count({
         where: {
           tenantId,

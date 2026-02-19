@@ -111,7 +111,7 @@ export async function createEngagement(input: CreateEngagementInput) {
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, action: "create_engagement", tenantId },
-      "Failed to create audit engagement"
+      "Failed to create audit engagement",
     );
 
     return {

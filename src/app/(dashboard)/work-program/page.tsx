@@ -9,7 +9,11 @@ import { WorkProgramGenerator } from "@/components/work-program/work-program-gen
 export default async function WorkProgramPage({
   searchParams,
 }: {
-  searchParams: Promise<{ engagementId?: string; assignedToId?: string; status?: string }>;
+  searchParams: Promise<{
+    engagementId?: string;
+    assignedToId?: string;
+    status?: string;
+  }>;
 }) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];

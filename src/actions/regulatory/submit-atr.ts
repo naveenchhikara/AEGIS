@@ -22,7 +22,7 @@ type SubmitAtrInput = z.infer<typeof SubmitAtrSchema>;
 
 /**
  * ATR workflow: draft → submitted → accepted (R78).
- * Security: 
+ * Security:
  * - SUBMIT: Requires regulatory:manage permission
  * - MARK_ACCEPTED: Requires regulatory:atr_submit permission (typically CAE/CEO)
  * - REQUEST_INFO: Requires regulatory:atr_submit permission
@@ -87,8 +87,13 @@ export async function submitAtr(input: SubmitAtrInput) {
 
       switch (parsed.data.action) {
         case "SUBMIT":
-          if (current.atrStatus !== "DRAFT" && current.atrStatus !== "FURTHER_INFO") {
-            throw new Error("Can only submit ATR from DRAFT or FURTHER_INFO status");
+          if (
+            current.atrStatus !== "DRAFT" &&
+            current.atrStatus !== "FURTHER_INFO"
+          ) {
+            throw new Error(
+              "Can only submit ATR from DRAFT or FURTHER_INFO status",
+            );
           }
           newStatus = "SUBMITTED";
           timestamps.submittedAt = new Date();

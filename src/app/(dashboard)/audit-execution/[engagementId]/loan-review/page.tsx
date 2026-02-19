@@ -4,7 +4,13 @@ import {
   getLoanReviewSummary,
   getEngagementForLoanReview,
 } from "@/data-access/loan-review";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoanReviewTableWrapper } from "@/components/audit-execution/loan-review-table-wrapper";
 import { LoanCsvImport } from "@/components/audit-execution/loan-csv-import";
@@ -35,10 +41,13 @@ export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
   }));
 
   const totalLoans = loanReviews.length;
-  const totalSanction = summary.reduce((sum, s) => sum + Number(s._sum.sanctionAmount || 0), 0);
+  const totalSanction = summary.reduce(
+    (sum, s) => sum + Number(s._sum.sanctionAmount || 0),
+    0,
+  );
   const totalOutstanding = summary.reduce(
     (sum, s) => sum + Number(s._sum.outstandingAmount || 0),
-    0
+    0,
   );
 
   return (
@@ -46,8 +55,8 @@ export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
       <div>
         <h1 className="text-2xl font-bold">Loan Portfolio Review</h1>
         <p className="text-muted-foreground">
-          {engagement.branch?.name || "Branch"} — Review individual loan accounts and import loan data
-          from CBS extracts
+          {engagement.branch?.name || "Branch"} — Review individual loan
+          accounts and import loan data from CBS extracts
         </p>
       </div>
 
@@ -62,7 +71,9 @@ export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Sanction</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Sanction
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -72,7 +83,9 @@ export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Outstanding</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Outstanding
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">

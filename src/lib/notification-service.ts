@@ -36,7 +36,10 @@ export async function queueNotification(
 ): Promise<void> {
   const tenantId = (session.user as Record<string, unknown>).tenantId as string;
   if (!tenantId) {
-    logger.error({ action: "queue_notification", recipientId, type }, "No tenantId in session, skipping notification");
+    logger.error(
+      { action: "queue_notification", recipientId, type },
+      "No tenantId in session, skipping notification",
+    );
     return;
   }
 

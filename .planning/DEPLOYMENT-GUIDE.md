@@ -40,6 +40,7 @@ aws ses get-email-identity \
 ```
 
 **Console Method:**
+
 1. Navigate to: https://ap-south-1.console.aws.amazon.com/ses/home?region=ap-south-1#/verified-identities
 2. Click **Create identity**
 3. Select **Domain**
@@ -70,6 +71,7 @@ Value: qrstuvwx54321.dkim.amazonses.com
 ```
 
 **Action Required:**
+
 1. Copy the exact values from the SES console
 2. Add all 3 CNAME records to your DNS provider
 3. Wait 5-10 minutes for DNS propagation
@@ -110,6 +112,7 @@ Value: "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@aegis.in; pct=100; adki
 ```
 
 **Explanation:**
+
 - `p=quarantine` — Suspicious emails go to spam (use `p=reject` after testing)
 - `rua=` — Aggregate reports sent here
 - `pct=100` — Apply policy to 100% of emails
@@ -130,6 +133,7 @@ aws ses get-email-identity \
 ```
 
 **Console Method:**
+
 1. Go to SES Console → Verified Identities
 2. Click on `aegis.in`
 3. Check **Identity status**: Should show "Verified" with green checkmark
@@ -147,6 +151,7 @@ To send to any email address (production):
    - **Mail type:** Transactional
    - **Website URL:** https://aegis.in
    - **Use case description:**
+
      ```
      AEGIS is an internal audit management platform for Urban Cooperative Banks (UCBs)
      in India. We send transactional emails for:
@@ -154,12 +159,14 @@ To send to any email address (production):
      - Audit engagement notifications
      - Observation status updates
      - Compliance action reminders
-     
+
      Expected volume: 500-1000 emails/day
      Opt-out mechanism: Unsubscribe link in all emails
      Bounce/complaint handling: Automated via SES notifications
      ```
+
    - **Additional contacts:** (Your email)
+
 4. Submit request
 5. **Response time:** Usually 24-48 hours
 
@@ -188,11 +195,7 @@ aws iam create-access-key --user-name aegis-ses
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "ses:SendEmail",
-        "ses:SendRawEmail",
-        "ses:SendTemplatedEmail"
-      ],
+      "Action": ["ses:SendEmail", "ses:SendRawEmail", "ses:SendTemplatedEmail"],
       "Resource": "arn:aws:ses:ap-south-1:YOUR_ACCOUNT_ID:identity/aegis.in"
     }
   ]
@@ -326,6 +329,7 @@ npx cdk deploy \
 ```
 
 **What CDK Creates:**
+
 - EC2 t3.small instance (2 vCPU, 2 GB RAM)
 - 30 GB GP3 EBS volume (encrypted)
 - Elastic IP (static, free when attached)
@@ -350,6 +354,7 @@ npx cdk deploy \
 2. Attach Elastic IP
 
 3. SSH into instance:
+
    ```bash
    ssh -i aegis-prod.pem ec2-user@YOUR_ELASTIC_IP
    ```
@@ -496,6 +501,7 @@ exit
    - Status should change to: ✅ SSL Active
 
 4. **Update Environment Variables**:
+
    ```env
    BETTER_AUTH_URL=https://aegis.in
    NEXT_PUBLIC_APP_URL=https://aegis.in
@@ -611,6 +617,7 @@ docker logs aegis-postgres --tail 50
 Based on `.github/workflows/ci.yml`, configure these checks:
 
 **Navigate to:**
+
 ```
 https://github.com/your-org/aegis/settings/branches
 ```
@@ -636,6 +643,7 @@ Click **Add rule** and configure:
 - **Require branches to be up to date before merging:** ✅
 
 **Required status checks** (must all pass):
+
 ```
 lint
 typecheck
@@ -689,6 +697,7 @@ Add pattern: `v*.*.*` (e.g., v1.0.0, v2.1.3)
 **Test the protection:**
 
 1. Create a test branch:
+
    ```bash
    git checkout -b test/branch-protection
    git commit --allow-empty -m "test: verify branch protection"
@@ -705,6 +714,7 @@ Add pattern: `v*.*.*` (e.g., v1.0.0, v2.1.3)
    - Cannot push directly to `main` (branch is protected)
 
 4. **Try direct push (should fail):**
+
    ```bash
    git checkout main
    git commit --allow-empty -m "test: direct push should fail"
@@ -907,7 +917,7 @@ limit_req_zone $binary_remote_addr zone=general_limit:10m rate=30r/s;
 location /api/ {
     limit_req zone=api_limit burst=20 nodelay;
     limit_req_status 429;
-    
+
     # ... existing proxy_pass config
 }
 
@@ -915,7 +925,7 @@ location /api/ {
 location / {
     limit_req zone=general_limit burst=50 nodelay;
     limit_req_status 429;
-    
+
     # ... existing proxy_pass config
 }
 ```
@@ -1484,28 +1494,28 @@ ORDER BY pg_total_relation_size(schemaname || '.' || tablename) DESC;
 
 ```typescript
 // src/app/api/health/route.ts
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
 
 export async function GET() {
   try {
     // Check database connectivity
     await prisma.$queryRaw`SELECT 1`;
-    
+
     return NextResponse.json({
-      status: 'ok',
-      database: 'connected',
+      status: "ok",
+      database: "connected",
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
       {
-        status: 'error',
-        database: 'disconnected',
+        status: "error",
+        database: "disconnected",
         error: error.message,
         timestamp: new Date().toISOString(),
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }
@@ -1557,7 +1567,7 @@ pnpm add @sentry/nextjs
 **Configure Sentry** (`sentry.client.config.ts`):
 
 ```typescript
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -1608,7 +1618,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://abc123@o123456.ingest.sentry.io/7890123
 Create `docker-compose.monitoring.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   prometheus:
@@ -1621,7 +1631,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--config.file=/etc/prometheus/prometheus.yml"
 
   grafana:
     image: grafana/grafana:latest
@@ -1653,13 +1663,13 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'node'
+  - job_name: "node"
     static_configs:
-      - targets: ['node-exporter:9100']
+      - targets: ["node-exporter:9100"]
 
-  - job_name: 'aegis-app'
+  - job_name: "aegis-app"
     static_configs:
-      - targets: ['aegis-app:3000']
+      - targets: ["aegis-app:3000"]
 ```
 
 **Start monitoring stack:**
@@ -1694,24 +1704,24 @@ http://YOUR_ELASTIC_IP:3001
 **Add to `docker-compose.monitoring.yml`:**
 
 ```yaml
-  loki:
-    image: grafana/loki:latest
-    container_name: aegis-loki
-    restart: unless-stopped
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
-      - loki_data:/loki
+loki:
+  image: grafana/loki:latest
+  container_name: aegis-loki
+  restart: unless-stopped
+  ports:
+    - "3100:3100"
+  volumes:
+    - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
+    - loki_data:/loki
 
-  promtail:
-    image: grafana/promtail:latest
-    container_name: aegis-promtail
-    restart: unless-stopped
-    volumes:
-      - /var/log:/var/log
-      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
+promtail:
+  image: grafana/promtail:latest
+  container_name: aegis-promtail
+  restart: unless-stopped
+  volumes:
+    - /var/log:/var/log
+    - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+  command: -config.file=/etc/promtail/config.yml
 ```
 
 **Loki config** (`monitoring/loki-config.yml`):
@@ -1764,8 +1774,8 @@ scrape_configs:
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
     relabel_configs:
-      - source_labels: ['__meta_docker_container_name']
-        target_label: 'container'
+      - source_labels: ["__meta_docker_container_name"]
+        target_label: "container"
 ```
 
 **Query logs in Grafana:**
@@ -1831,44 +1841,44 @@ global:
   resolve_timeout: 5m
 
 route:
-  group_by: ['alertname', 'severity']
+  group_by: ["alertname", "severity"]
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 12h
-  receiver: 'email-notifications'
+  receiver: "email-notifications"
 
 receivers:
-  - name: 'email-notifications'
+  - name: "email-notifications"
     email_configs:
-      - to: 'alerts@aegis.in'
-        from: 'prometheus@aegis.in'
-        smarthost: 'email-smtp.ap-south-1.amazonaws.com:587'
-        auth_username: 'AKIA...'  # SES SMTP credentials
-        auth_password: '...'
+      - to: "alerts@aegis.in"
+        from: "prometheus@aegis.in"
+        smarthost: "email-smtp.ap-south-1.amazonaws.com:587"
+        auth_username: "AKIA..." # SES SMTP credentials
+        auth_password: "..."
         headers:
-          Subject: '[AEGIS Alert] {{ .GroupLabels.severity | toUpper }}: {{ .GroupLabels.alertname }}'
+          Subject: "[AEGIS Alert] {{ .GroupLabels.severity | toUpper }}: {{ .GroupLabels.alertname }}"
 
-  - name: 'slack-notifications'
+  - name: "slack-notifications"
     slack_configs:
-      - api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
-        channel: '#aegis-alerts'
-        title: '{{ .GroupLabels.severity | toUpper }}: {{ .GroupLabels.alertname }}'
+      - api_url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+        channel: "#aegis-alerts"
+        title: "{{ .GroupLabels.severity | toUpper }}: {{ .GroupLabels.alertname }}"
         text: '{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}'
 ```
 
 **Add Alertmanager to `docker-compose.monitoring.yml`:**
 
 ```yaml
-  alertmanager:
-    image: prom/alertmanager:latest
-    container_name: aegis-alertmanager
-    restart: unless-stopped
-    ports:
-      - "9093:9093"
-    volumes:
-      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
+alertmanager:
+  image: prom/alertmanager:latest
+  container_name: aegis-alertmanager
+  restart: unless-stopped
+  ports:
+    - "9093:9093"
+  volumes:
+    - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+  command:
+    - "--config.file=/etc/alertmanager/alertmanager.yml"
 ```
 
 **Update Prometheus config** to use Alertmanager:
@@ -1878,10 +1888,10 @@ receivers:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: ['alertmanager:9093']
+        - targets: ["alertmanager:9093"]
 
 rule_files:
-  - '/etc/prometheus/alerts.yml'
+  - "/etc/prometheus/alerts.yml"
 ```
 
 ### 6.8 Database Monitoring
@@ -1891,23 +1901,23 @@ rule_files:
 Add to `docker-compose.monitoring.yml`:
 
 ```yaml
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: aegis-postgres-exporter
-    restart: unless-stopped
-    ports:
-      - "9187:9187"
-    environment:
-      DATA_SOURCE_NAME: "postgresql://aegis:${POSTGRES_PASSWORD}@postgres:5432/aegis?sslmode=disable"
+postgres-exporter:
+  image: prometheuscommunity/postgres-exporter:latest
+  container_name: aegis-postgres-exporter
+  restart: unless-stopped
+  ports:
+    - "9187:9187"
+  environment:
+    DATA_SOURCE_NAME: "postgresql://aegis:${POSTGRES_PASSWORD}@postgres:5432/aegis?sslmode=disable"
 ```
 
 **Update Prometheus config:**
 
 ```yaml
 scrape_configs:
-  - job_name: 'postgres'
+  - job_name: "postgres"
     static_configs:
-      - targets: ['postgres-exporter:9187']
+      - targets: ["postgres-exporter:9187"]
 ```
 
 **Grafana Dashboard:**
@@ -2230,15 +2240,15 @@ NODE_ENV=production
 
 ### Secrets Rotation Schedule
 
-| Secret                  | Rotation Frequency | How to Rotate                                    |
-| ----------------------- | ------------------ | ------------------------------------------------ |
-| BETTER_AUTH_SECRET      | Every 90 days      | Generate new, update env, restart app            |
-| POSTGRES_PASSWORD       | Every 90 days      | Update in Docker, update env, restart containers |
-| AWS_ACCESS_KEY_ID       | Every 90 days      | Create new IAM key, update env, delete old key   |
-| AWS_SECRET_ACCESS_KEY   | Every 90 days      | (Same as above)                                  |
-| Coolify root password   | Every 90 days      | Settings → Account → Change Password             |
-| SSH key                 | Every 365 days     | Generate new, add to EC2, remove old             |
-| SSL certificate         | Auto-renewed       | Let's Encrypt auto-renews every 60 days          |
+| Secret                | Rotation Frequency | How to Rotate                                    |
+| --------------------- | ------------------ | ------------------------------------------------ |
+| BETTER_AUTH_SECRET    | Every 90 days      | Generate new, update env, restart app            |
+| POSTGRES_PASSWORD     | Every 90 days      | Update in Docker, update env, restart containers |
+| AWS_ACCESS_KEY_ID     | Every 90 days      | Create new IAM key, update env, delete old key   |
+| AWS_SECRET_ACCESS_KEY | Every 90 days      | (Same as above)                                  |
+| Coolify root password | Every 90 days      | Settings → Account → Change Password             |
+| SSH key               | Every 365 days     | Generate new, add to EC2, remove old             |
+| SSL certificate       | Auto-renewed       | Let's Encrypt auto-renews every 60 days          |
 
 ---
 
@@ -2335,16 +2345,16 @@ NODE_ENV=production
 
 **Current Monthly Estimate (ap-south-1):**
 
-| Resource               | Specs                   | Cost/Month (USD) |
-| ---------------------- | ----------------------- | ---------------- |
-| EC2 t3.small           | 2 vCPU, 2 GB RAM        | ~$15             |
-| Elastic IP             | (free when attached)    | $0               |
-| EBS 30 GB GP3          | 30 GB, 3000 IOPS        | ~$3              |
-| S3 Standard            | 10 GB storage           | ~$0.25           |
-| S3 Requests            | 10,000 PUT, 50,000 GET  | ~$0.10           |
-| Data Transfer Out      | 10 GB/month             | ~$1              |
-| SES (in-region)        | 1,000 emails/day        | $0 (62,000 free) |
-| **Total**              |                         | **~$20/month**   |
+| Resource          | Specs                  | Cost/Month (USD) |
+| ----------------- | ---------------------- | ---------------- |
+| EC2 t3.small      | 2 vCPU, 2 GB RAM       | ~$15             |
+| Elastic IP        | (free when attached)   | $0               |
+| EBS 30 GB GP3     | 30 GB, 3000 IOPS       | ~$3              |
+| S3 Standard       | 10 GB storage          | ~$0.25           |
+| S3 Requests       | 10,000 PUT, 50,000 GET | ~$0.10           |
+| Data Transfer Out | 10 GB/month            | ~$1              |
+| SES (in-region)   | 1,000 emails/day       | $0 (62,000 free) |
+| **Total**         |                        | **~$20/month**   |
 
 **Cost Reduction Strategies:**
 

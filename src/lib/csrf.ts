@@ -4,7 +4,7 @@ import { env } from "@/env";
 /**
  * Verify request origin matches the application URL.
  * Use in all non-GET API routes to prevent cross-site request forgery.
- * 
+ *
  * @throws Error if origin/referer doesn't match BETTER_AUTH_URL
  */
 export async function verifyCsrf() {

@@ -31,7 +31,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FileText, Loader2, Link as LinkIcon, Pencil, Search } from "@/lib/icons";
+import {
+  Plus,
+  FileText,
+  Loader2,
+  Link as LinkIcon,
+  Pencil,
+  Search,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { manageRegulatoryObservation } from "@/actions/regulatory/manage-observation";
 import { submitAtr } from "@/actions/regulatory/submit-atr";
@@ -88,11 +95,17 @@ const ATR_STATUS_COLORS: Record<string, string> = {
   CLOSED: "bg-purple-100 text-purple-800 border-purple-300",
 };
 
-export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues }: RegulatoryTableProps) {
+export function RegulatoryTable({
+  observations,
+  canManage,
+  canSubmitAtr,
+  issues,
+}: RegulatoryTableProps) {
   const router = useRouter();
   const [addDialogOpen, setAddDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-  const [selectedObservation, setSelectedObservation] = React.useState<RegulatoryObservation | null>(null);
+  const [selectedObservation, setSelectedObservation] =
+    React.useState<RegulatoryObservation | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Filter states
@@ -115,8 +128,10 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
   const filteredObservations = React.useMemo(() => {
     return observations.filter((obs) => {
       if (sourceFilter !== "all" && obs.source !== sourceFilter) return false;
-      if (severityFilter !== "all" && obs.severity !== severityFilter) return false;
-      if (atrStatusFilter !== "all" && obs.atrStatus !== atrStatusFilter) return false;
+      if (severityFilter !== "all" && obs.severity !== severityFilter)
+        return false;
+      if (atrStatusFilter !== "all" && obs.atrStatus !== atrStatusFilter)
+        return false;
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -127,7 +142,13 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
       }
       return true;
     });
-  }, [observations, sourceFilter, severityFilter, atrStatusFilter, searchQuery]);
+  }, [
+    observations,
+    sourceFilter,
+    severityFilter,
+    atrStatusFilter,
+    searchQuery,
+  ]);
 
   function resetForm() {
     setFormData({
@@ -176,7 +197,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success(selectedObservation ? "Observation updated" : "Observation created");
+      toast.success(
+        selectedObservation ? "Observation updated" : "Observation created",
+      );
       setAddDialogOpen(false);
       setEditDialogOpen(false);
       resetForm();
@@ -190,10 +213,10 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
   return (
     <div className="space-y-4">
       {/* Filters and Search */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex-1 min-w-[200px]">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="min-w-[200px] flex-1">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
             <Input
               placeholder="Search by reference, para, or description..."
               value={searchQuery}
@@ -255,7 +278,8 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
               <DialogHeader>
                 <DialogTitle>Add Regulatory Observation</DialogTitle>
                 <DialogDescription>
-                  Create a new regulatory observation from RBI, NABARD, or other sources.
+                  Create a new regulatory observation from RBI, NABARD, or other
+                  sources.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -264,15 +288,21 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     <Label htmlFor="source">Source *</Label>
                     <Select
                       value={formData.source}
-                      onValueChange={(value) => setFormData({ ...formData, source: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, source: value })
+                      }
                     >
                       <SelectTrigger id="source">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="RBI_INSPECTION">RBI Inspection</SelectItem>
+                        <SelectItem value="RBI_INSPECTION">
+                          RBI Inspection
+                        </SelectItem>
                         <SelectItem value="NABARD">NABARD</SelectItem>
-                        <SelectItem value="STATUTORY_AUDITOR">Statutory Auditor</SelectItem>
+                        <SelectItem value="STATUTORY_AUDITOR">
+                          Statutory Auditor
+                        </SelectItem>
                         <SelectItem value="EXTERNAL">External</SelectItem>
                       </SelectContent>
                     </Select>
@@ -282,7 +312,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     <Label htmlFor="severity">Severity *</Label>
                     <Select
                       value={formData.severity}
-                      onValueChange={(value) => setFormData({ ...formData, severity: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, severity: value })
+                      }
                     >
                       <SelectTrigger id="severity">
                         <SelectValue />
@@ -303,7 +335,12 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     <Input
                       id="referenceNo"
                       value={formData.referenceNo}
-                      onChange={(e) => setFormData({ ...formData, referenceNo: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          referenceNo: e.target.value,
+                        })
+                      }
                       placeholder="e.g., RBI/2024/123"
                       required
                     />
@@ -314,7 +351,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     <Input
                       id="paraNo"
                       value={formData.paraNo}
-                      onChange={(e) => setFormData({ ...formData, paraNo: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, paraNo: e.target.value })
+                      }
                       placeholder="e.g., 5.3.2"
                     />
                   </div>
@@ -325,7 +364,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     placeholder="Describe the regulatory observation..."
                     rows={4}
                     required
@@ -333,10 +374,14 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="issueId">Link to Existing Issue (Optional)</Label>
+                  <Label htmlFor="issueId">
+                    Link to Existing Issue (Optional)
+                  </Label>
                   <Select
                     value={formData.issueId}
-                    onValueChange={(value) => setFormData({ ...formData, issueId: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, issueId: value })
+                    }
                   >
                     <SelectTrigger id="issueId">
                       <SelectValue placeholder="Select issue (optional)" />
@@ -362,7 +407,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Observation
                   </Button>
                 </DialogFooter>
@@ -373,8 +420,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
       </div>
 
       {/* Results count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {filteredObservations.length} of {observations.length} observations
+      <div className="text-muted-foreground text-sm">
+        Showing {filteredObservations.length} of {observations.length}{" "}
+        observations
       </div>
 
       {/* Table */}
@@ -412,7 +460,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     <div className="space-y-1">
                       <div className="font-medium">{obs.referenceNo}</div>
                       {obs.paraNo && (
-                        <div className="text-xs text-muted-foreground">Para {obs.paraNo}</div>
+                        <div className="text-muted-foreground text-xs">
+                          Para {obs.paraNo}
+                        </div>
                       )}
                     </div>
                   </TableCell>
@@ -422,17 +472,23 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={SEVERITY_COLORS[obs.severity] ?? ""}>
+                    <Badge
+                      variant="outline"
+                      className={SEVERITY_COLORS[obs.severity] ?? ""}
+                    >
                       {obs.severity}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <Badge variant="outline" className={ATR_STATUS_COLORS[obs.atrStatus] ?? ""}>
+                      <Badge
+                        variant="outline"
+                        className={ATR_STATUS_COLORS[obs.atrStatus] ?? ""}
+                      >
                         {obs.atrStatus.replace("_", " ")}
                       </Badge>
                       {obs.submittedAt && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {format(new Date(obs.submittedAt), "MMM d, yyyy")}
                         </div>
                       )}
@@ -441,7 +497,10 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <TableCell>
                     {obs.issue ? (
                       <div className="space-y-1">
-                        <div className="text-sm font-medium line-clamp-1" title={obs.issue.title}>
+                        <div
+                          className="line-clamp-1 text-sm font-medium"
+                          title={obs.issue.title}
+                        >
                           {obs.issue.title}
                         </div>
                         <Badge variant="outline" className="text-xs">
@@ -449,7 +508,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                         </Badge>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">Not mapped</span>
+                      <span className="text-muted-foreground text-xs">
+                        Not mapped
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -488,15 +549,21 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <Label htmlFor="edit-source">Source *</Label>
                   <Select
                     value={formData.source}
-                    onValueChange={(value) => setFormData({ ...formData, source: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, source: value })
+                    }
                   >
                     <SelectTrigger id="edit-source">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="RBI_INSPECTION">RBI Inspection</SelectItem>
+                      <SelectItem value="RBI_INSPECTION">
+                        RBI Inspection
+                      </SelectItem>
                       <SelectItem value="NABARD">NABARD</SelectItem>
-                      <SelectItem value="STATUTORY_AUDITOR">Statutory Auditor</SelectItem>
+                      <SelectItem value="STATUTORY_AUDITOR">
+                        Statutory Auditor
+                      </SelectItem>
                       <SelectItem value="EXTERNAL">External</SelectItem>
                     </SelectContent>
                   </Select>
@@ -506,7 +573,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <Label htmlFor="edit-severity">Severity *</Label>
                   <Select
                     value={formData.severity}
-                    onValueChange={(value) => setFormData({ ...formData, severity: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, severity: value })
+                    }
                   >
                     <SelectTrigger id="edit-severity">
                       <SelectValue />
@@ -527,7 +596,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <Input
                     id="edit-referenceNo"
                     value={formData.referenceNo}
-                    onChange={(e) => setFormData({ ...formData, referenceNo: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, referenceNo: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -537,7 +608,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   <Input
                     id="edit-paraNo"
                     value={formData.paraNo}
-                    onChange={(e) => setFormData({ ...formData, paraNo: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, paraNo: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -547,7 +620,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                 <Textarea
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={4}
                   required
                 />
@@ -557,7 +632,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                 <Label htmlFor="edit-issueId">Link to Issue</Label>
                 <Select
                   value={formData.issueId}
-                  onValueChange={(value) => setFormData({ ...formData, issueId: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, issueId: value })
+                  }
                 >
                   <SelectTrigger id="edit-issueId">
                     <SelectValue placeholder="Select issue (optional)" />
@@ -586,7 +663,9 @@ export function RegulatoryTable({ observations, canManage, canSubmitAtr, issues 
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Update Observation
                 </Button>
               </DialogFooter>

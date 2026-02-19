@@ -40,8 +40,13 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
   const [totalDeposits, setTotalDeposits] = useState<string>("100000000"); // 10Cr default
 
   // Calculate non-SLR totals
-  const nonSlrInvestments = investments.filter((inv) => inv.securityType === "NON_SLR");
-  const nonSlrTotal = nonSlrInvestments.reduce((sum, inv) => sum + Number(inv.faceValue), 0);
+  const nonSlrInvestments = investments.filter(
+    (inv) => inv.securityType === "NON_SLR",
+  );
+  const nonSlrTotal = nonSlrInvestments.reduce(
+    (sum, inv) => sum + Number(inv.faceValue),
+    0,
+  );
 
   // Calculate by classification
   const htmNonSlr = nonSlrInvestments
@@ -64,7 +69,8 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
         label: "BREACH",
         color: "bg-red-100 text-red-800 border-red-300",
         severity: "critical",
-        message: "Non-SLR investments exceed 10% regulatory cap. Immediate action required.",
+        message:
+          "Non-SLR investments exceed 10% regulatory cap. Immediate action required.",
       };
     } else if (capUtilization >= 90) {
       return {
@@ -92,9 +98,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
         <Info className="h-4 w-4" />
         <AlertTitle>Regulatory Requirement</AlertTitle>
         <AlertDescription>
-          As per RBI norms for UCBs, non-SLR investments (equity, mutual funds, corporate bonds,
-          etc.) must not exceed 10% of total deposits. This ensures adequate liquidity and risk
-          management.
+          As per RBI norms for UCBs, non-SLR investments (equity, mutual funds,
+          corporate bonds, etc.) must not exceed 10% of total deposits. This
+          ensures adequate liquidity and risk management.
         </AlertDescription>
       </Alert>
 
@@ -122,7 +128,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
       {status.severity === "warning" && (
         <Alert className="border-amber-500 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-900">Approaching Non-SLR Cap</AlertTitle>
+          <AlertTitle className="text-amber-900">
+            Approaching Non-SLR Cap
+          </AlertTitle>
           <AlertDescription className="text-amber-800">
             <p>{status.message}</p>
             <p className="mt-2">
@@ -135,7 +143,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
       {status.severity === "ok" && (
         <Alert className="border-green-500 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-900">Non-SLR Compliance: All Clear</AlertTitle>
+          <AlertTitle className="text-green-900">
+            Non-SLR Compliance: All Clear
+          </AlertTitle>
           <AlertDescription className="text-green-800">
             {status.message} Current utilization: {capUtilization.toFixed(2)}%
           </AlertDescription>
@@ -146,9 +156,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
       <Card>
         <CardHeader>
           <CardTitle>Total Deposits Configuration</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Enter total deposits to calculate 10% non-SLR cap (or integrate with Housekeeping
-            Metrics)
+          <p className="text-muted-foreground text-sm">
+            Enter total deposits to calculate 10% non-SLR cap (or integrate with
+            Housekeeping Metrics)
           </p>
         </CardHeader>
         <CardContent>
@@ -181,50 +191,68 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
             <CardTitle className="text-sm font-medium">Total Non-SLR</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(nonSlrTotal / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">{nonSlrInvestments.length} investments</p>
+            <div className="text-2xl font-bold">
+              ₹{(nonSlrTotal / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {nonSlrInvestments.length} investments
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Cap Utilization</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Cap Utilization
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{capUtilization.toFixed(2)}%</div>
-            <p className="text-xs text-muted-foreground">of 10% limit</p>
+            <div className="text-2xl font-bold">
+              {capUtilization.toFixed(2)}%
+            </div>
+            <p className="text-muted-foreground text-xs">of 10% limit</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Available Headroom</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Available Headroom
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               ₹{Math.max(0, (capLimit - nonSlrTotal) / 10000000).toFixed(2)}Cr
             </div>
-            <p className="text-xs text-muted-foreground">Remaining capacity</p>
+            <p className="text-muted-foreground text-xs">Remaining capacity</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Status</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Compliance Status
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Badge variant="outline" className={status.color}>
-              {status.severity === "critical" && <AlertTriangle className="mr-1 h-3 w-3" />}
-              {status.severity === "warning" && <AlertCircle className="mr-1 h-3 w-3" />}
-              {status.severity === "ok" && <CheckCircle2 className="mr-1 h-3 w-3" />}
+              {status.severity === "critical" && (
+                <AlertTriangle className="mr-1 h-3 w-3" />
+              )}
+              {status.severity === "warning" && (
+                <AlertCircle className="mr-1 h-3 w-3" />
+              )}
+              {status.severity === "ok" && (
+                <CheckCircle2 className="mr-1 h-3 w-3" />
+              )}
               {status.label}
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               {status.severity === "critical"
                 ? "Excess exposure"
                 : status.severity === "warning"
-                ? "Monitor closely"
-                : "Within limits"}
+                  ? "Monitor closely"
+                  : "Within limits"}
             </p>
           </CardContent>
         </Card>
@@ -234,8 +262,9 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
       <Card>
         <CardHeader>
           <CardTitle>Non-SLR Cap Utilization</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Visual representation of non-SLR investment against 10% regulatory cap
+          <p className="text-muted-foreground text-sm">
+            Visual representation of non-SLR investment against 10% regulatory
+            cap
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -253,32 +282,42 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
                 status.severity === "critical"
                   ? "[&>div]:bg-red-500"
                   : status.severity === "warning"
-                  ? "[&>div]:bg-amber-500"
-                  : "[&>div]:bg-green-500"
+                    ? "[&>div]:bg-amber-500"
+                    : "[&>div]:bg-green-500"
               }
             />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center justify-between text-xs">
               <span>0%</span>
-              <span className="text-red-600 font-semibold">10% Cap Limit</span>
+              <span className="font-semibold text-red-600">10% Cap Limit</span>
               <span>12%</span>
             </div>
           </div>
 
-          <div className="pt-4 border-t">
+          <div className="border-t pt-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-sm text-muted-foreground">Non-SLR Total</div>
-                <div className="text-lg font-bold">₹{(nonSlrTotal / 10000000).toFixed(2)}Cr</div>
+                <div className="text-muted-foreground text-sm">
+                  Non-SLR Total
+                </div>
+                <div className="text-lg font-bold">
+                  ₹{(nonSlrTotal / 10000000).toFixed(2)}Cr
+                </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">10% Cap Limit</div>
-                <div className="text-lg font-bold">₹{(capLimit / 10000000).toFixed(2)}Cr</div>
+                <div className="text-muted-foreground text-sm">
+                  10% Cap Limit
+                </div>
+                <div className="text-lg font-bold">
+                  ₹{(capLimit / 10000000).toFixed(2)}Cr
+                </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {capUtilization >= 100 ? "Excess" : "Headroom"}
                 </div>
-                <div className={`text-lg font-bold ${capUtilization >= 100 ? "text-red-600" : ""}`}>
+                <div
+                  className={`text-lg font-bold ${capUtilization >= 100 ? "text-red-600" : ""}`}
+                >
                   ₹{Math.abs((capLimit - nonSlrTotal) / 10000000).toFixed(2)}Cr
                 </div>
               </div>
@@ -291,7 +330,7 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
       <Card>
         <CardHeader>
           <CardTitle>Non-SLR by Classification</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Breakdown of non-SLR investments by HTM/HFT/AFS classification
           </p>
         </CardHeader>
@@ -309,52 +348,84 @@ export function NonSlrMonitor({ investments }: NonSlrMonitorProps) {
               <TableBody>
                 <TableRow>
                   <TableCell>
-                    <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-300">
+                    <Badge
+                      variant="outline"
+                      className="border-indigo-300 bg-indigo-100 text-indigo-800"
+                    >
                       HTM
                     </Badge>
                   </TableCell>
                   <TableCell>₹{(htmNonSlr / 10000000).toFixed(2)}Cr</TableCell>
                   <TableCell>
-                    {nonSlrTotal > 0 ? ((htmNonSlr / nonSlrTotal) * 100).toFixed(2) : "0.00"}%
+                    {nonSlrTotal > 0
+                      ? ((htmNonSlr / nonSlrTotal) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                   <TableCell>
-                    {deposits > 0 ? ((htmNonSlr / deposits) * 100).toFixed(2) : "0.00"}%
+                    {deposits > 0
+                      ? ((htmNonSlr / deposits) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
-                    <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300">
+                    <Badge
+                      variant="outline"
+                      className="border-rose-300 bg-rose-100 text-rose-800"
+                    >
                       HFT
                     </Badge>
                   </TableCell>
                   <TableCell>₹{(hftNonSlr / 10000000).toFixed(2)}Cr</TableCell>
                   <TableCell>
-                    {nonSlrTotal > 0 ? ((hftNonSlr / nonSlrTotal) * 100).toFixed(2) : "0.00"}%
+                    {nonSlrTotal > 0
+                      ? ((hftNonSlr / nonSlrTotal) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                   <TableCell>
-                    {deposits > 0 ? ((hftNonSlr / deposits) * 100).toFixed(2) : "0.00"}%
+                    {deposits > 0
+                      ? ((hftNonSlr / deposits) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>
-                    <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                    <Badge
+                      variant="outline"
+                      className="border-amber-300 bg-amber-100 text-amber-800"
+                    >
                       AFS
                     </Badge>
                   </TableCell>
                   <TableCell>₹{(afsNonSlr / 10000000).toFixed(2)}Cr</TableCell>
                   <TableCell>
-                    {nonSlrTotal > 0 ? ((afsNonSlr / nonSlrTotal) * 100).toFixed(2) : "0.00"}%
+                    {nonSlrTotal > 0
+                      ? ((afsNonSlr / nonSlrTotal) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                   <TableCell>
-                    {deposits > 0 ? ((afsNonSlr / deposits) * 100).toFixed(2) : "0.00"}%
+                    {deposits > 0
+                      ? ((afsNonSlr / deposits) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                 </TableRow>
-                <TableRow className="font-semibold bg-muted/50">
+                <TableRow className="bg-muted/50 font-semibold">
                   <TableCell>Total Non-SLR</TableCell>
-                  <TableCell>₹{(nonSlrTotal / 10000000).toFixed(2)}Cr</TableCell>
+                  <TableCell>
+                    ₹{(nonSlrTotal / 10000000).toFixed(2)}Cr
+                  </TableCell>
                   <TableCell>100.00%</TableCell>
                   <TableCell>
-                    {deposits > 0 ? ((nonSlrTotal / deposits) * 100).toFixed(2) : "0.00"}%
+                    {deposits > 0
+                      ? ((nonSlrTotal / deposits) * 100).toFixed(2)
+                      : "0.00"}
+                    %
                   </TableCell>
                 </TableRow>
               </TableBody>

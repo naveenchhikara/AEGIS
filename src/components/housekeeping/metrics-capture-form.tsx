@@ -98,7 +98,7 @@ export function MetricsCaptureForm({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [editingMetric, setEditingMetric] = useState<HousekeepingMetric | null>(
-    null
+    null,
   );
   const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useState({
@@ -156,7 +156,9 @@ export function MetricsCaptureForm({
       const result = await manageHousekeepingMetric(values);
       if (result.success) {
         toast.success(
-          editingMetric ? "Metric updated successfully" : "Metric created successfully"
+          editingMetric
+            ? "Metric updated successfully"
+            : "Metric created successfully",
         );
         setOpen(false);
         form.reset();
@@ -396,7 +398,11 @@ export function MetricsCaptureForm({
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : editingMetric ? "Update" : "Create"}
+                  {isPending
+                    ? "Saving..."
+                    : editingMetric
+                      ? "Update"
+                      : "Create"}
                 </Button>
               </DialogFooter>
             </form>
@@ -484,7 +490,7 @@ export function MetricsCaptureForm({
                 <TableRow>
                   <TableCell
                     colSpan={canManage ? 9 : 8}
-                    className="text-center text-muted-foreground"
+                    className="text-muted-foreground text-center"
                   >
                     No metrics found
                   </TableCell>

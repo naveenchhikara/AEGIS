@@ -30,7 +30,11 @@ const DENOMINATIONS = [
   { value: 1, label: "₹1" },
 ];
 
-export function DenominationTable({ value, onChange, disabled }: DenominationTableProps) {
+export function DenominationTable({
+  value,
+  onChange,
+  disabled,
+}: DenominationTableProps) {
   const handleCountChange = (denomination: number, count: string) => {
     const numCount = parseInt(count) || 0;
     onChange({
@@ -68,7 +72,9 @@ export function DenominationTable({ value, onChange, disabled }: DenominationTab
                   min="0"
                   step="1"
                   value={count || ""}
-                  onChange={(e) => handleCountChange(denom.value, e.target.value)}
+                  onChange={(e) =>
+                    handleCountChange(denom.value, e.target.value)
+                  }
                   disabled={disabled}
                   className="w-full"
                   placeholder="0"
@@ -86,7 +92,7 @@ export function DenominationTable({ value, onChange, disabled }: DenominationTab
           <TableCell colSpan={2} className="font-bold">
             Total Cash
           </TableCell>
-          <TableCell className="text-right font-bold font-mono">
+          <TableCell className="text-right font-mono font-bold">
             ₹{calculateTotal().toLocaleString("en-IN")}
           </TableCell>
         </TableRow>

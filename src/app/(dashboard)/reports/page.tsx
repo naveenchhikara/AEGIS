@@ -37,15 +37,15 @@ export default async function ReportsPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg p-2 bg-blue-50">
+            <div className="rounded-lg bg-blue-50 p-2">
               <FileSpreadsheet className="h-5 w-5 text-blue-600" />
             </div>
             <div>
               <p className="font-semibold">XLSX Reports</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Detailed audit data export
               </p>
             </div>
@@ -54,12 +54,12 @@ export default async function ReportsPage() {
 
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg p-2 bg-red-50">
+            <div className="rounded-lg bg-red-50 p-2">
               <FileText className="h-5 w-5 text-red-600" />
             </div>
             <div>
               <p className="font-semibold">PDF Summaries</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Executive summary reports
               </p>
             </div>
@@ -68,12 +68,12 @@ export default async function ReportsPage() {
 
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg p-2 bg-green-50">
+            <div className="rounded-lg bg-green-50 p-2">
               <Download className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <p className="font-semibold">Templates</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {templates.length} available
               </p>
             </div>

@@ -87,9 +87,13 @@ Replace mock data with real DAL calls:
    - `getQaSummaryByStandard()`
 
 2. Replace `const currentAssessment = null;` with actual data fetching:
+
    ```typescript
    const currentYear = new Date().getFullYear();
-   const { assessments, summary } = await getQaAssessmentsByYear(session, currentYear);
+   const { assessments, summary } = await getQaAssessmentsByYear(
+     session,
+     currentYear,
+   );
    const unconvertedGaps = await getUnconvertedGaps(session);
    const progress = await getQaAssessmentProgress(session);
    const standardSummary = await getQaSummaryByStandard(session, currentYear);
@@ -98,6 +102,7 @@ Replace mock data with real DAL calls:
 3. Add Tabs layout with 4 tabs: "Assessment", "Gap Conversion", "KPIs", "Health Dashboard"
 
 4. Pass real data to child components:
+
    ```typescript
    <Tabs defaultValue="assessment" className="space-y-4">
      <TabsList>
@@ -124,20 +129,23 @@ Replace mock data with real DAL calls:
 5. Add proper error handling with try-catch
 
 **Pattern:** Server component with Tabs, direct async DAL calls, pass data as props.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false 2>&1 | grep -c "error TS"
 ```
+
 Should output 0.
-  </verify>
-  <done>
+</verify>
+<done>
+
 - `/qa-assessment` page fetches real QaSelfAssessment data
 - Tabs layout with 4 sections
 - Real data passed to all child components
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Update AssessmentForm to handle real data</name>
@@ -148,6 +156,7 @@ Should output 0.
 Update the existing AssessmentForm component to work with real QaSelfAssessment data:
 
 1. Define proper props interface:
+
    ```typescript
    interface AssessmentFormProps {
      assessments: Array<{
@@ -184,17 +193,18 @@ Update the existing AssessmentForm component to work with real QaSelfAssessment 
 5. Add "Initialize from Template" button calling `createQaAssessmentsFromTemplate()`
 
 6. Use `useActionState` for form submissions with toast feedback
-  </action>
-  <verify>
-TypeScript clean, component renders assessment table with real data.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   TypeScript clean, component renders assessment table with real data.
+   </verify>
+   <done>
+
 - AssessmentForm renders real QaSelfAssessment records in table
 - Response/evidence fields editable via manageQaAssessment action
 - Summary stats cards displayed
 - Template initialization button working
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Gap-to-Issue conversion panel</name>
@@ -227,9 +237,13 @@ Create new client component for gap-to-issue conversion (R65):
 
 ```typescript
 "use client";
-import { convertGapToIssue, bulkConvertGapsToIssues } from "@/actions/qa-assessment/gap-to-issue";
+import {
+  convertGapToIssue,
+  bulkConvertGapsToIssues,
+} from "@/actions/qa-assessment/gap-to-issue";
 // ... implementation
 ```
+
   </action>
   <verify>
 Component renders gap list, single/bulk conversion actions work.
@@ -252,6 +266,7 @@ Component renders gap list, single/bulk conversion actions work.
 Create IA Effectiveness KPIs component (R66) with 10 metrics per SDD:
 
 1. Add new DAL function `getAuditEffectivenessKpis(session)` to `src/data-access/qa-assessment.ts`:
+
    ```typescript
    export async function getAuditEffectivenessKpis(session: Session) {
      const tenantId = (session.user as any).tenantId as string;
@@ -259,23 +274,37 @@ Create IA Effectiveness KPIs component (R66) with 10 metrics per SDD:
      const currentYear = new Date().getFullYear();
 
      // KPI 1: Audit Plan Coverage (planned vs universe)
-     const totalEntities = await db.auditUniverseEntity.count({ where: { tenantId } });
-     const plannedAudits = await db.auditEngagement.count({ where: { tenantId, status: { not: "CANCELLED" } } });
-     const auditCoverage = totalEntities > 0 ? (plannedAudits / totalEntities) * 100 : 0;
+     const totalEntities = await db.auditUniverseEntity.count({
+       where: { tenantId },
+     });
+     const plannedAudits = await db.auditEngagement.count({
+       where: { tenantId, status: { not: "CANCELLED" } },
+     });
+     const auditCoverage =
+       totalEntities > 0 ? (plannedAudits / totalEntities) * 100 : 0;
 
      // KPI 2: Audit Plan Completion Rate
-     const completedAudits = await db.auditEngagement.count({ where: { tenantId, status: "COMPLETED" } });
-     const planCompletionRate = plannedAudits > 0 ? (completedAudits / plannedAudits) * 100 : 0;
+     const completedAudits = await db.auditEngagement.count({
+       where: { tenantId, status: "COMPLETED" },
+     });
+     const planCompletionRate =
+       plannedAudits > 0 ? (completedAudits / plannedAudits) * 100 : 0;
 
      // KPI 3: Finding Closure Rate (within SLA)
      const totalFindings = await db.observation.count({ where: { tenantId } });
-     const closedFindings = await db.observation.count({ where: { tenantId, status: "CLOSED" } });
-     const findingClosureRate = totalFindings > 0 ? (closedFindings / totalFindings) * 100 : 0;
+     const closedFindings = await db.observation.count({
+       where: { tenantId, status: "CLOSED" },
+     });
+     const findingClosureRate =
+       totalFindings > 0 ? (closedFindings / totalFindings) * 100 : 0;
 
      // KPI 4: Repeat Finding Rate
      // (observations with isRepeat flag or similar)
-     const repeatFindings = await db.observation.count({ where: { tenantId, isRepeat: true } });
-     const repeatFindingRate = totalFindings > 0 ? (repeatFindings / totalFindings) * 100 : 0;
+     const repeatFindings = await db.observation.count({
+       where: { tenantId, isRepeat: true },
+     });
+     const repeatFindingRate =
+       totalFindings > 0 ? (repeatFindings / totalFindings) * 100 : 0;
 
      // KPI 5: Average Days to Close Findings
      // (avg of closedAt - createdAt for closed observations)
@@ -283,36 +312,70 @@ Create IA Effectiveness KPIs component (R66) with 10 metrics per SDD:
        where: { tenantId, status: "CLOSED", closedAt: { not: null } },
        select: { createdAt: true, closedAt: true },
      });
-     const avgDaysToClose = closedObs.length > 0
-       ? closedObs.reduce((sum, o) => sum + Math.ceil((o.closedAt!.getTime() - o.createdAt.getTime()) / 86400000), 0) / closedObs.length
-       : 0;
+     const avgDaysToClose =
+       closedObs.length > 0
+         ? closedObs.reduce(
+             (sum, o) =>
+               sum +
+               Math.ceil(
+                 (o.closedAt!.getTime() - o.createdAt.getTime()) / 86400000,
+               ),
+             0,
+           ) / closedObs.length
+         : 0;
 
      // KPI 6: High/Critical Finding Ratio
-     const highCritical = await db.observation.count({ where: { tenantId, severity: { in: ["HIGH", "CRITICAL"] } } });
-     const highCriticalRatio = totalFindings > 0 ? (highCritical / totalFindings) * 100 : 0;
+     const highCritical = await db.observation.count({
+       where: { tenantId, severity: { in: ["HIGH", "CRITICAL"] } },
+     });
+     const highCriticalRatio =
+       totalFindings > 0 ? (highCritical / totalFindings) * 100 : 0;
 
      // KPI 7: QA Conformance Rate
      const qaAssessments = await db.qaSelfAssessment.findMany({
        where: { tenantId, assessmentYear: currentYear },
        select: { response: true },
      });
-     const conforming = qaAssessments.filter(a => a.response === "CONFORMS").length;
-     const qaConformanceRate = qaAssessments.length > 0 ? (conforming / qaAssessments.length) * 100 : 0;
+     const conforming = qaAssessments.filter(
+       (a) => a.response === "CONFORMS",
+     ).length;
+     const qaConformanceRate =
+       qaAssessments.length > 0 ? (conforming / qaAssessments.length) * 100 : 0;
 
      // KPI 8: Compliance Item Overdue Rate
-     const totalCompliance = await db.complianceItem.count({ where: { tenantId } });
-     const overdueCompliance = await db.complianceItem.count({
-       where: { tenantId, status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] }, dueDate: { lt: new Date() } },
+     const totalCompliance = await db.complianceItem.count({
+       where: { tenantId },
      });
-     const overdueRate = totalCompliance > 0 ? (overdueCompliance / totalCompliance) * 100 : 0;
+     const overdueCompliance = await db.complianceItem.count({
+       where: {
+         tenantId,
+         status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] },
+         dueDate: { lt: new Date() },
+       },
+     });
+     const overdueRate =
+       totalCompliance > 0 ? (overdueCompliance / totalCompliance) * 100 : 0;
 
      // KPI 9: Staff Utilization (audits per auditor)
-     const auditors = await db.user.count({ where: { tenantId, roles: { hasSome: ["AUDITOR", "LEAD_AUDITOR", "FIELD_AUDITOR"] } } });
+     const auditors = await db.user.count({
+       where: {
+         tenantId,
+         roles: { hasSome: ["AUDITOR", "LEAD_AUDITOR", "FIELD_AUDITOR"] },
+       },
+     });
      const staffUtilization = auditors > 0 ? completedAudits / auditors : 0;
 
      // KPI 10: Stakeholder Satisfaction (% accepted at first ZAC review)
-     const zacReviewed = await db.complianceItem.count({ where: { tenantId, status: { in: ["ZAC_APPROVED", "ACE_PROCESSING", "ACB_REPORTING", "CLOSED"] } } });
-     const firstPassRate = totalCompliance > 0 ? (zacReviewed / totalCompliance) * 100 : 0;
+     const zacReviewed = await db.complianceItem.count({
+       where: {
+         tenantId,
+         status: {
+           in: ["ZAC_APPROVED", "ACE_PROCESSING", "ACB_REPORTING", "CLOSED"],
+         },
+       },
+     });
+     const firstPassRate =
+       totalCompliance > 0 ? (zacReviewed / totalCompliance) * 100 : 0;
 
      return {
        auditCoverage: Math.round(auditCoverage * 10) / 10,
@@ -335,16 +398,17 @@ Create IA Effectiveness KPIs component (R66) with 10 metrics per SDD:
    - Each card shows: metric name, value, trend indicator, target threshold
    - Color-coding: green (>80%), yellow (50-80%), red (<50%) for rate metrics
    - Use Card components from shadcn/ui
-  </action>
-  <verify>
-DAL function returns 10 KPI values. Component renders all 10 KPIs.
-  </verify>
-  <done>
+     </action>
+     <verify>
+     DAL function returns 10 KPI values. Component renders all 10 KPIs.
+     </verify>
+     <done>
+
 - 10 IA effectiveness KPIs computed from real data
 - KPI grid rendered with color-coded thresholds
 - DAL function added to qa-assessment.ts
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Audit Function Health dashboard</name>
@@ -355,6 +419,7 @@ DAL function returns 10 KPI values. Component renders all 10 KPIs.
 Create Audit Function Health dashboard (R67):
 
 1. Props interface:
+
    ```typescript
    interface AuditHealthDashboardProps {
      progress: {
@@ -398,17 +463,18 @@ Create Audit Function Health dashboard (R67):
    - If completion < 50%: "Assessment is incomplete"
 
 Use shadcn Card, Progress, Table, Badge components.
-  </action>
-  <verify>
+</action>
+<verify>
 Health dashboard renders with real conformance data and recommendations.
-  </verify>
-  <done>
+</verify>
+<done>
+
 - Audit Function Health dashboard displays health score
 - IIA standard breakdown table with color coding
 - Gap summary with conversion status
 - Contextual recommendations based on scores
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -416,6 +482,7 @@ Health dashboard renders with real conformance data and recommendations.
 **Overall checks:**
 
 1. TypeScript compilation:
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit
@@ -433,9 +500,10 @@ pnpm exec tsc --noEmit
    - Gap conversion creates real Issue records
    - KPIs computed from live data across multiple models
    - Tenant isolation maintained via prismaForTenant
-</verification>
+     </verification>
 
 <success_criteria>
+
 - ✅ `/qa-assessment` page uses real DAL instead of mock data
 - ✅ QA self-assessment questionnaires rendered from QaSelfAssessment model
 - ✅ Gap-to-issue conversion UI with single + bulk operations
@@ -443,7 +511,7 @@ pnpm exec tsc --noEmit
 - ✅ Audit Function Health dashboard with conformance metrics
 - ✅ TypeScript compilation clean
 - ✅ R64-R67 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

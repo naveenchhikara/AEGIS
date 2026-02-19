@@ -35,11 +35,11 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <AlertCircle className="h-6 w-6 text-destructive" />
+          <div className="bg-destructive/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            <AlertCircle className="text-destructive h-6 w-6" />
           </div>
           <CardTitle className="text-2xl">Something went wrong</CardTitle>
           <CardDescription className="mt-2">
@@ -48,18 +48,18 @@ export default function Error({
         </CardHeader>
         <CardContent className="text-center">
           {error.digest && (
-            <div className="rounded-md bg-muted p-3">
-              <p className="text-xs text-muted-foreground">
+            <div className="bg-muted rounded-md p-3">
+              <p className="text-muted-foreground text-xs">
                 Error ID: <span className="font-mono">{error.digest}</span>
               </p>
             </div>
           )}
           {process.env.NODE_ENV === "development" && (
-            <div className="mt-4 rounded-md bg-muted p-3 text-left">
-              <p className="text-xs font-semibold text-foreground">
+            <div className="bg-muted mt-4 rounded-md p-3 text-left">
+              <p className="text-foreground text-xs font-semibold">
                 Development Error:
               </p>
-              <p className="mt-1 text-xs text-muted-foreground font-mono break-all">
+              <p className="text-muted-foreground mt-1 font-mono text-xs break-all">
                 {error.message}
               </p>
             </div>

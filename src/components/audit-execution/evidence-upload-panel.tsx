@@ -5,7 +5,14 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Upload, FileText, Loader2, CheckCircle2, XCircle, RotateCcw } from "@/lib/icons";
+import {
+  Upload,
+  FileText,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+} from "@/lib/icons";
 import {
   requestExaminationEvidenceUpload,
   confirmExaminationEvidenceUpload,
@@ -39,8 +46,12 @@ const ACCEPTED_TYPES: Record<string, string[]> = {
   "application/pdf": [".pdf"],
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    ".docx",
+  ],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+    ".xlsx",
+  ],
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -255,13 +266,13 @@ export function EvidenceUploadPanel({
           }`}
         >
           <input {...getInputProps()} />
-          <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">
+          <Upload className="text-muted-foreground mx-auto h-8 w-8" />
+          <p className="text-muted-foreground mt-2 text-sm">
             {isDragActive
               ? "Drop file here..."
               : "Drag & drop evidence or click to browse"}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-xs">
             PDF, JPEG, PNG, DOCX, XLSX • Max {formatFileSize(MAX_FILE_SIZE)}
           </p>
         </div>
@@ -271,20 +282,21 @@ export function EvidenceUploadPanel({
       {entry && (
         <div className="rounded-lg border p-4">
           <div className="flex items-start gap-3">
-            <FileText className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+            <FileText className="text-muted-foreground mt-0.5 h-5 w-5 flex-shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium">{entry.file.name}</p>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatFileSize(entry.file.size)}
                 </span>
               </div>
 
               {/* Progress bar */}
-              {(entry.status === "uploading" || entry.status === "confirming") && (
+              {(entry.status === "uploading" ||
+                entry.status === "confirming") && (
                 <div className="space-y-1">
                   <Progress value={entry.progress} className="h-1.5" />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {entry.status === "confirming"
                       ? "Confirming upload..."
                       : `Uploading... ${entry.progress}%`}
@@ -302,7 +314,7 @@ export function EvidenceUploadPanel({
 
               {entry.status === "error" && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-destructive">
+                  <div className="text-destructive flex items-center gap-2 text-sm">
                     <XCircle className="h-4 w-4" />
                     <span>{entry.error || "Upload failed"}</span>
                   </div>
@@ -319,7 +331,8 @@ export function EvidenceUploadPanel({
               )}
 
               {/* Cancel button */}
-              {(entry.status === "uploading" || entry.status === "confirming") && (
+              {(entry.status === "uploading" ||
+                entry.status === "confirming") && (
                 <Button
                   size="sm"
                   variant="ghost"

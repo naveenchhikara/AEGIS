@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -27,7 +33,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Save, Loader2, Plus, CheckCircle2, XCircle, AlertCircle } from "@/lib/icons";
+import {
+  Save,
+  Loader2,
+  Plus,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { manageIsAuditChecklist } from "@/actions/investment/manage-is-audit";
 import { format } from "date-fns";
@@ -72,10 +85,30 @@ const CATEGORIES = [
 ];
 
 const RESPONSE_STATUS = [
-  { value: "COMPLIANT", label: "Compliant", icon: CheckCircle2, color: "text-green-600" },
-  { value: "NON_COMPLIANT", label: "Non-Compliant", icon: XCircle, color: "text-red-600" },
-  { value: "PARTIAL", label: "Partial", icon: AlertCircle, color: "text-amber-600" },
-  { value: "NOT_APPLICABLE", label: "N/A", icon: AlertCircle, color: "text-gray-600" },
+  {
+    value: "COMPLIANT",
+    label: "Compliant",
+    icon: CheckCircle2,
+    color: "text-green-600",
+  },
+  {
+    value: "NON_COMPLIANT",
+    label: "Non-Compliant",
+    icon: XCircle,
+    color: "text-red-600",
+  },
+  {
+    value: "PARTIAL",
+    label: "Partial",
+    icon: AlertCircle,
+    color: "text-amber-600",
+  },
+  {
+    value: "NOT_APPLICABLE",
+    label: "N/A",
+    icon: AlertCircle,
+    color: "text-gray-600",
+  },
 ];
 
 const NewChecklistSchema = z.object({
@@ -96,11 +129,14 @@ type NewChecklistValues = z.infer<typeof NewChecklistSchema>;
 export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = React.useState<string>(
-    CATEGORIES[0].value
+    CATEGORIES[0].value,
   );
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [editingChecklist, setEditingChecklist] = React.useState<Checklist | null>(null);
-  const [responses, setResponses] = React.useState<Record<string, ChecklistItem>>({});
+  const [editingChecklist, setEditingChecklist] =
+    React.useState<Checklist | null>(null);
+  const [responses, setResponses] = React.useState<
+    Record<string, ChecklistItem>
+  >({});
   const [isSaving, setIsSaving] = React.useState(false);
 
   const form = useForm<NewChecklistValues>({
@@ -111,7 +147,9 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
     },
   });
 
-  const filteredChecklists = checklists.filter((c) => c.category === selectedCategory);
+  const filteredChecklists = checklists.filter(
+    (c) => c.category === selectedCategory,
+  );
   const activeChecklist = editingChecklist || filteredChecklists[0] || null;
 
   React.useEffect(() => {
@@ -148,17 +186,21 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
     setIsSaving(true);
 
     const items = Object.values(responses);
-    
+
     // Calculate overall rating if marking complete
-    let overallRating: "SATISFACTORY" | "NEEDS_IMPROVEMENT" | "UNSATISFACTORY" | undefined;
+    let overallRating:
+      | "SATISFACTORY"
+      | "NEEDS_IMPROVEMENT"
+      | "UNSATISFACTORY"
+      | undefined;
     if (markComplete) {
       const compliantCount = items.filter(
-        (i) => i.response === "COMPLIANT"
+        (i) => i.response === "COMPLIANT",
       ).length;
       const totalResponded = items.filter(
-        (i) => i.response && i.response !== "NOT_APPLICABLE"
+        (i) => i.response && i.response !== "NOT_APPLICABLE",
       ).length;
-      
+
       if (totalResponded > 0) {
         const complianceRate = compliantCount / totalResponded;
         if (complianceRate >= 0.9) {
@@ -193,7 +235,7 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
   function updateResponse(
     itemKey: string,
     field: keyof ChecklistItem,
-    value: string
+    value: string,
   ) {
     setResponses((prev) => ({
       ...prev,
@@ -208,25 +250,40 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
     const items = checklist.items;
     const total = items.length;
     const compliant = items.filter((i) => i.response === "COMPLIANT").length;
-    const nonCompliant = items.filter((i) => i.response === "NON_COMPLIANT").length;
+    const nonCompliant = items.filter(
+      (i) => i.response === "NON_COMPLIANT",
+    ).length;
     const partial = items.filter((i) => i.response === "PARTIAL").length;
-    const notApplicable = items.filter((i) => i.response === "NOT_APPLICABLE").length;
-    const unanswered = total - compliant - nonCompliant - partial - notApplicable;
+    const notApplicable = items.filter(
+      (i) => i.response === "NOT_APPLICABLE",
+    ).length;
+    const unanswered =
+      total - compliant - nonCompliant - partial - notApplicable;
 
     const responded = total - unanswered - notApplicable;
     const complianceRate = responded > 0 ? (compliant / responded) * 100 : 0;
 
-    return { total, compliant, nonCompliant, partial, notApplicable, unanswered, complianceRate };
+    return {
+      total,
+      compliant,
+      nonCompliant,
+      partial,
+      notApplicable,
+      unanswered,
+      complianceRate,
+    };
   }
 
   const stats = activeChecklist ? calculateStats(activeChecklist) : null;
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
-            const count = checklists.filter((c) => c.category === cat.value).length;
+            const count = checklists.filter(
+              (c) => c.category === cat.value,
+            ).length;
             return (
               <Button
                 key={cat.value}
@@ -253,12 +310,17 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
                 Create a new checklist for a specific category.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(handleCreateChecklist)} className="space-y-4 py-4">
+            <form
+              onSubmit={form.handleSubmit(handleCreateChecklist)}
+              className="space-y-4 py-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
                 <Select
                   value={form.watch("category")}
-                  onValueChange={(value) => form.setValue("category", value as any)}
+                  onValueChange={(value) =>
+                    form.setValue("category", value as any)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -311,26 +373,36 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
                 <div>
                   <CardTitle>{activeChecklist.checklistName}</CardTitle>
                   <CardDescription>
-                    {CATEGORIES.find((c) => c.value === activeChecklist.category)?.label}
+                    {
+                      CATEGORIES.find(
+                        (c) => c.value === activeChecklist.category,
+                      )?.label
+                    }
                     {activeChecklist.engagement && (
                       <> • {activeChecklist.engagement.branch?.name}</>
                     )}
                     {activeChecklist.completedAt && (
-                      <> • Completed {format(activeChecklist.completedAt, "dd MMM yyyy")}</>
+                      <>
+                        {" "}
+                        • Completed{" "}
+                        {format(activeChecklist.completedAt, "dd MMM yyyy")}
+                      </>
                     )}
                   </CardDescription>
                 </div>
                 {stats && (
                   <div className="text-right">
-                    <div className="text-3xl font-bold">{Math.round(stats.complianceRate)}%</div>
+                    <div className="text-3xl font-bold">
+                      {Math.round(stats.complianceRate)}%
+                    </div>
                     <Badge
                       variant="outline"
                       className={
                         stats.complianceRate >= 90
-                          ? "bg-green-100 text-green-800 border-green-300"
+                          ? "border-green-300 bg-green-100 text-green-800"
                           : stats.complianceRate >= 70
-                            ? "bg-amber-100 text-amber-800 border-amber-300"
-                            : "bg-red-100 text-red-800 border-red-300"
+                            ? "border-amber-300 bg-amber-100 text-amber-800"
+                            : "border-red-300 bg-red-100 text-red-800"
                       }
                     >
                       {activeChecklist.overallRating?.replace("_", " ") ||
@@ -348,23 +420,33 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
               <CardContent>
                 <div className="grid grid-cols-5 gap-4 text-center text-sm">
                   <div>
-                    <div className="text-2xl font-bold text-green-600">{stats.compliant}</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {stats.compliant}
+                    </div>
                     <div className="text-muted-foreground">Compliant</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-red-600">{stats.nonCompliant}</div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {stats.nonCompliant}
+                    </div>
                     <div className="text-muted-foreground">Non-Compliant</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-amber-600">{stats.partial}</div>
+                    <div className="text-2xl font-bold text-amber-600">
+                      {stats.partial}
+                    </div>
                     <div className="text-muted-foreground">Partial</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-600">{stats.notApplicable}</div>
+                    <div className="text-2xl font-bold text-gray-600">
+                      {stats.notApplicable}
+                    </div>
                     <div className="text-muted-foreground">N/A</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">{stats.unanswered}</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {stats.unanswered}
+                    </div>
                     <div className="text-muted-foreground">Unanswered</div>
                   </div>
                 </div>
@@ -375,7 +457,7 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
           <Card>
             <CardContent className="space-y-6 pt-6">
               {activeChecklist.items.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-muted-foreground py-8 text-center">
                   No checklist items yet. Add items to this checklist.
                 </div>
               ) : (
@@ -386,15 +468,17 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
                   return (
                     <div
                       key={itemKey}
-                      className="space-y-3 pb-6 border-b last:border-0 last:pb-0"
+                      className="space-y-3 border-b pb-6 last:border-0 last:pb-0"
                     >
                       <div className="flex items-start justify-between gap-4">
-                        <Label className="text-sm font-medium leading-relaxed flex-1">
+                        <Label className="flex-1 text-sm leading-relaxed font-medium">
                           {idx + 1}. {item.question}
                         </Label>
                         <Select
                           value={currentResponse.response || ""}
-                          onValueChange={(value) => updateResponse(itemKey, "response", value)}
+                          onValueChange={(value) =>
+                            updateResponse(itemKey, "response", value)
+                          }
                         >
                           <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select status" />
@@ -403,9 +487,14 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
                             {RESPONSE_STATUS.map((status) => {
                               const Icon = status.icon;
                               return (
-                                <SelectItem key={status.value} value={status.value}>
+                                <SelectItem
+                                  key={status.value}
+                                  value={status.value}
+                                >
                                   <div className="flex items-center gap-2">
-                                    <Icon className={`h-4 w-4 ${status.color}`} />
+                                    <Icon
+                                      className={`h-4 w-4 ${status.color}`}
+                                    />
                                     {status.label}
                                   </div>
                                 </SelectItem>
@@ -417,20 +506,32 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Evidence</Label>
+                          <Label className="text-muted-foreground text-xs">
+                            Evidence
+                          </Label>
                           <Textarea
                             placeholder="Evidence reference or description"
                             value={currentResponse.evidence || ""}
-                            onChange={(e) => updateResponse(itemKey, "evidence", e.target.value)}
+                            onChange={(e) =>
+                              updateResponse(
+                                itemKey,
+                                "evidence",
+                                e.target.value,
+                              )
+                            }
                             rows={2}
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Remarks</Label>
+                          <Label className="text-muted-foreground text-xs">
+                            Remarks
+                          </Label>
                           <Textarea
                             placeholder="Comments, findings, or observations"
                             value={currentResponse.remarks || ""}
-                            onChange={(e) => updateResponse(itemKey, "remarks", e.target.value)}
+                            onChange={(e) =>
+                              updateResponse(itemKey, "remarks", e.target.value)
+                            }
                             rows={2}
                           />
                         </div>
@@ -463,8 +564,9 @@ export function ChecklistForm({ checklists, userId }: ChecklistFormProps) {
         </>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No checklists found for this category. Create a new checklist to get started.
+          <CardContent className="text-muted-foreground py-12 text-center">
+            No checklists found for this category. Create a new checklist to get
+            started.
           </CardContent>
         </Card>
       )}

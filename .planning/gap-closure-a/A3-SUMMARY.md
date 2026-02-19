@@ -12,9 +12,11 @@ Successfully implemented comprehensive pre-audit branch profiling functionality 
 ## Files Created
 
 ### 1. Data Access Layer
+
 **File:** `src/data-access/pre-audit-profiling.ts` (163 lines)
 
 **Exports:**
+
 - `getBranchProfileData(session, branchId)` - Main DAL function
 - `BranchProfileData` - TypeScript type for return data
 
@@ -50,11 +52,13 @@ Successfully implemented comprehensive pre-audit branch profiling functionality 
    - Returns count per compliance status (OPEN, CLOSED, BRANCH_RESPONSE_DUE, etc.)
 
 **Security:**
+
 - All queries use `prismaForTenant(tenantId)` pattern
 - tenantId extracted from session: `(session.user as any).tenantId as string`
 - All queries include explicit `tenantId` filter
 
 ### 2. Presentational Component
+
 **File:** `src/components/pre-audit/branch-profile.tsx` (356 lines)
 
 **Component Type:** Server Component (no "use client" directive)
@@ -97,22 +101,26 @@ Successfully implemented comprehensive pre-audit branch profiling functionality 
    - Fallback: "No compliance items" if empty
 
 **UI Components Used:**
+
 - `Card`, `CardContent`, `CardHeader`, `CardTitle` from shadcn/ui
 - `Badge` for status/severity indicators
 - `Progress` for RAM breakdown visualization
 - Icons: Building2, Calendar, TrendingUp, AlertCircle, CheckCircle2
 
 **Formatting:**
+
 - Dates: `formatDate()` from `@/lib/utils`
 - Currency: Custom `formatBusinessSize()` function (Indian lakhs)
 - Enum values: Replace underscores with spaces for display
 
 ### 3. Page Route
+
 **File:** `src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx` (72 lines)
 
 **Route:** `/pre-audit-profiling/[branchId]`
 
 **Implementation:**
+
 - Server component (async function)
 - Next.js 15+ pattern: `params: Promise<{ branchId: string }>`
 - Awaits params: `const resolvedParams = await params`
@@ -122,11 +130,13 @@ Successfully implemented comprehensive pre-audit branch profiling functionality 
 - Renders `<BranchProfile data={data} />`
 
 **Metadata:**
+
 - `generateMetadata()` function exported
 - Title: `"Pre-Audit Profiling - Branch {branchId}"`
 - Description for SEO
 
 **Navigation:**
+
 - Back link to "/branches" with ArrowLeft icon
 - Page title: "Pre-Audit Branch Profiling"
 - Subtitle shows branch name and code
@@ -149,10 +159,12 @@ Successfully implemented comprehensive pre-audit branch profiling functionality 
 **Input:** `RamAssessment` with nested `scores` array
 
 **Process:**
+
 ```typescript
 for (const scoreRecord of ramAssessment.scores) {
-  const weightedScore = Number(scoreRecord.score) * Number(scoreRecord.paramConfig.weight);
-  
+  const weightedScore =
+    Number(scoreRecord.score) * Number(scoreRecord.paramConfig.weight);
+
   if (scoreRecord.paramConfig.category === "BUSINESS_RISK") {
     businessRiskScore += weightedScore;
   } else if (scoreRecord.paramConfig.category === "CONTROL_RISK") {
@@ -162,12 +174,14 @@ for (const scoreRecord of ramAssessment.scores) {
 ```
 
 **Output:**
+
 - `businessRiskScore`: Sum of all BUSINESS_RISK parameter weighted scores
 - `controlRiskScore`: Sum of all CONTROL_RISK parameter weighted scores
 - Both rounded to 2 decimal places: `Math.round(score * 100) / 100`
 - Composite score taken directly from `ramAssessment.compositeScore`
 
 **Example:**
+
 - Assessment has 18 parameters (9 BUSINESS_RISK, 9 CONTROL_RISK)
 - Each parameter has score (1-5) × weight (e.g., 0.0556)
 - Business Risk: 9 params × avg 3.5 score × 0.0556 weight ≈ 1.75
@@ -179,31 +193,34 @@ for (const scoreRecord of ramAssessment.scores) {
 ### Findings Summary Calculation
 
 **By Severity (groupBy):**
+
 ```typescript
 await db.observation.groupBy({
-  by: ['severity'],
+  by: ["severity"],
   where: {
     branchId,
     tenantId,
-    status: { in: ['ISSUED', 'RESPONSE', 'COMPLIANCE', 'CLOSED'] },
+    status: { in: ["ISSUED", "RESPONSE", "COMPLIANCE", "CLOSED"] },
   },
   _count: { id: true },
 });
 ```
 
 **Result:** Array of `{ severity: string, count: number }`
+
 - Example: `[{ severity: "HIGH", count: 12 }, { severity: "MEDIUM", count: 8 }]`
 
 **Top Findings (findMany):**
+
 ```typescript
 await db.observation.findMany({
-  where: { 
-    branchId, 
-    tenantId, 
-    severity: { in: ['CRITICAL', 'HIGH'] },
-    status: { in: ['ISSUED', 'RESPONSE', 'COMPLIANCE', 'CLOSED'] },
+  where: {
+    branchId,
+    tenantId,
+    severity: { in: ["CRITICAL", "HIGH"] },
+    status: { in: ["ISSUED", "RESPONSE", "COMPLIANCE", "CLOSED"] },
   },
-  orderBy: { createdAt: 'desc' },
+  orderBy: { createdAt: "desc" },
   take: 5,
 });
 ```
@@ -213,44 +230,51 @@ await db.observation.findMany({
 ### Compliance Summary Calculation
 
 **By Status (groupBy):**
+
 ```typescript
 await db.complianceItem.groupBy({
-  by: ['status'],
+  by: ["status"],
   where: { branchId, tenantId },
   _count: { id: true },
 });
 ```
 
 **Result:** Array of `{ status: string, count: number }`
+
 - Example: `[{ status: "OPEN", count: 5 }, { status: "CLOSED", count: 15 }]`
 
 ## Conventions Followed
 
 ✅ **DAL Pattern:**
+
 - Used `prismaForTenant(tenantId)` for all queries
 - Extracted tenantId from session
 - Used "server-only" directive
 - Exported type from function return: `Awaited<ReturnType<typeof getBranchProfileData>>`
 
 ✅ **Server Component Pattern:**
+
 - No "use client" directive on branch-profile.tsx
 - Props passed down from server component page
 - Used shadcn/ui components (server-compatible)
 - No useState, useEffect, or client hooks
 
 ✅ **Next.js 15+ App Router:**
+
 - `params: Promise<{ ... }>` pattern
 - `await params` to resolve
 - `notFound()` for 404 handling
 - `generateMetadata()` for SEO
 
 ✅ **Import Organization:**
+
 - React/Next imports first
 - Internal imports (@/data-access, @/components)
 - Type imports with `type` keyword
 - Path alias `@/*` for all imports
 
 ✅ **Naming Conventions:**
+
 - Files: kebab-case (pre-audit-profiling.ts, branch-profile.tsx)
 - Functions: camelCase (getBranchProfileData)
 - Components: PascalCase (BranchProfile)
@@ -263,6 +287,7 @@ await db.complianceItem.groupBy({
 All three files compile successfully. Pre-existing TypeScript errors in the codebase are unrelated to this implementation (located in `src/actions/audit-execution/*` files).
 
 **Created files verified:**
+
 - `src/data-access/pre-audit-profiling.ts` - 163 lines (min 60) ✓
 - `src/components/pre-audit/branch-profile.tsx` - 356 lines (min 40) ✓
 - `src/app/(dashboard)/pre-audit-profiling/[branchId]/page.tsx` - 72 lines ✓

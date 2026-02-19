@@ -23,16 +23,22 @@ const ManageIsAuditChecklistSchema = z.object({
     "CYBER_SECURITY",
   ]),
   checklistName: z.string().min(1),
-  items: z.array(z.object({
-    id: z.string().optional(),
-    question: z.string(),
-    response: z.enum(["COMPLIANT", "NON_COMPLIANT", "PARTIAL", "NOT_APPLICABLE"]).optional(),
-    evidence: z.string().optional(),
-    remarks: z.string().optional(),
-  })),
+  items: z.array(
+    z.object({
+      id: z.string().optional(),
+      question: z.string(),
+      response: z
+        .enum(["COMPLIANT", "NON_COMPLIANT", "PARTIAL", "NOT_APPLICABLE"])
+        .optional(),
+      evidence: z.string().optional(),
+      remarks: z.string().optional(),
+    }),
+  ),
   engagementId: z.string().uuid().optional(),
   completedById: z.string().uuid().optional(),
-  overallRating: z.enum(["SATISFACTORY", "NEEDS_IMPROVEMENT", "UNSATISFACTORY"]).optional(),
+  overallRating: z
+    .enum(["SATISFACTORY", "NEEDS_IMPROVEMENT", "UNSATISFACTORY"])
+    .optional(),
 });
 
 const ManageApplicationInventorySchema = z.object({
@@ -45,7 +51,9 @@ const ManageApplicationInventorySchema = z.object({
   drTested: z.boolean().optional(),
   lastDrTestDate: z.coerce.date().optional(),
   lastIsAuditDate: z.coerce.date().optional(),
-  dataClassification: z.enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]).optional(),
+  dataClassification: z
+    .enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"])
+    .optional(),
   description: z.string().optional(),
 });
 
@@ -63,19 +71,26 @@ const ManageVendorRiskSchema = z.object({
 });
 
 type ManageIsAuditChecklistInput = z.infer<typeof ManageIsAuditChecklistSchema>;
-type ManageApplicationInventoryInput = z.infer<typeof ManageApplicationInventorySchema>;
+type ManageApplicationInventoryInput = z.infer<
+  typeof ManageApplicationInventorySchema
+>;
 type ManageVendorRiskInput = z.infer<typeof ManageVendorRiskSchema>;
 
 /**
  * Create or update IS audit checklist (R99, R101, R103).
  * Security: Requires IS_AUDITOR role or concurrent_audit:execute permission.
  */
-export async function manageIsAuditChecklist(input: ManageIsAuditChecklistInput) {
+export async function manageIsAuditChecklist(
+  input: ManageIsAuditChecklistInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
-  if (!userRoles.includes("IS_AUDITOR") && !hasPermission(userRoles, "concurrent_audit:execute")) {
+  if (
+    !userRoles.includes("IS_AUDITOR") &&
+    !hasPermission(userRoles, "concurrent_audit:execute")
+  ) {
     return {
       success: false as const,
       error: "You do not have permission to manage IS audit checklists.",
@@ -144,8 +159,13 @@ export async function manageIsAuditChecklist(input: ManageIsAuditChecklistInput)
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage IS audit checklist.";
-    logger.error({ error, action: "manage_is_audit_checklist", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to manage IS audit checklist.";
+    logger.error(
+      { error, action: "manage_is_audit_checklist", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }
@@ -153,12 +173,17 @@ export async function manageIsAuditChecklist(input: ManageIsAuditChecklistInput)
 /**
  * Create or update application inventory (R98).
  */
-export async function manageApplicationInventory(input: ManageApplicationInventoryInput) {
+export async function manageApplicationInventory(
+  input: ManageApplicationInventoryInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
-  if (!userRoles.includes("IS_AUDITOR") && !hasPermission(userRoles, "concurrent_audit:execute")) {
+  if (
+    !userRoles.includes("IS_AUDITOR") &&
+    !hasPermission(userRoles, "concurrent_audit:execute")
+  ) {
     return {
       success: false as const,
       error: "You do not have permission to manage application inventory.",
@@ -229,7 +254,9 @@ export async function manageApplicationInventory(input: ManageApplicationInvento
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage application inventory.";
+      error instanceof Error
+        ? error.message
+        : "Failed to manage application inventory.";
     logger.error({ error, action: "manage_app_inventory", tenantId }, message);
     return { success: false as const, error: message };
   }
@@ -243,7 +270,10 @@ export async function manageVendorRiskAssessment(input: ManageVendorRiskInput) {
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
 
-  if (!userRoles.includes("IS_AUDITOR") && !hasPermission(userRoles, "concurrent_audit:execute")) {
+  if (
+    !userRoles.includes("IS_AUDITOR") &&
+    !hasPermission(userRoles, "concurrent_audit:execute")
+  ) {
     return {
       success: false as const,
       error: "You do not have permission to manage vendor risk assessments.",
@@ -314,7 +344,9 @@ export async function manageVendorRiskAssessment(input: ManageVendorRiskInput) {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to manage vendor risk assessment.";
+      error instanceof Error
+        ? error.message
+        : "Failed to manage vendor risk assessment.";
     logger.error({ error, action: "manage_vendor_risk", tenantId }, message);
     return { success: false as const, error: message };
   }

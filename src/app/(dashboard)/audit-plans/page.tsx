@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
  * Get status badge variant for AuditPlanStatus
  */
 function getStatusVariant(
-  status: string
+  status: string,
 ): "default" | "secondary" | "outline" | "destructive" {
   switch (status) {
     case "COMPLETED":
@@ -107,8 +107,9 @@ export default async function AuditPlansPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Annual Audit Plans
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Generate and manage audit plans based on RAM scores and audit frequency
+        <p className="text-muted-foreground text-sm">
+          Generate and manage audit plans based on RAM scores and audit
+          frequency
         </p>
       </div>
 
@@ -159,19 +160,14 @@ export default async function AuditPlansPage() {
                       .map((e) => e.branch!.code)
                       .slice(0, 5)
                       .join(", ");
-                    const moreCount = Math.max(
-                      0,
-                      plan.engagements.length - 5
-                    );
+                    const moreCount = Math.max(0, plan.engagements.length - 5);
 
                     return (
                       <TableRow key={plan.id}>
                         <TableCell className="font-medium">
                           FY {fyLabel}
                         </TableCell>
-                        <TableCell>
-                          {getQuarterLabel(plan.quarter)}
-                        </TableCell>
+                        <TableCell>{getQuarterLabel(plan.quarter)}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusVariant(plan.status)}>
                             {plan.status}
@@ -180,7 +176,7 @@ export default async function AuditPlansPage() {
                         <TableCell className="text-right">
                           {plan.engagements.length}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground text-sm">
                           {branches}
                           {moreCount > 0 && ` +${moreCount} more`}
                         </TableCell>
@@ -191,9 +187,9 @@ export default async function AuditPlansPage() {
               </Table>
             </div>
           ) : (
-            <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-              No audit plans created yet. Use the generator above to create
-              your first plan.
+            <div className="text-muted-foreground rounded-md border border-dashed p-8 text-center text-sm">
+              No audit plans created yet. Use the generator above to create your
+              first plan.
             </div>
           )}
         </CardContent>

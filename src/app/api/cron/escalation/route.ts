@@ -32,9 +32,8 @@ export async function POST(request: Request) {
 
   try {
     // Import dynamically to avoid issues with server-only modules
-    const { runEscalationJobInternal } = await import(
-      "@/actions/compliance/run-escalation-job"
-    );
+    const { runEscalationJobInternal } =
+      await import("@/actions/compliance/run-escalation-job");
 
     // Check if specific tenant requested
     const body = await request.json().catch(() => ({}));
@@ -53,7 +52,10 @@ export async function POST(request: Request) {
       select: { id: true, shortName: true },
     });
 
-    logger.info({ count: tenants.length }, "Running escalation job for all tenants");
+    logger.info(
+      { count: tenants.length },
+      "Running escalation job for all tenants",
+    );
 
     const results = [];
     for (const tenant of tenants) {

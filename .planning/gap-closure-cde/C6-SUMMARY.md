@@ -13,11 +13,11 @@ Successfully wired the `/regulatory` page to real database and built comprehensi
 
 ### Gap Closure Status
 
-| Gap | Requirement | Status | Implementation |
-|-----|-------------|--------|----------------|
-| **R77** | RegulatoryObservation CRUD with real data | ✅ **CLOSED** | Full CRUD via `manageRegulatoryObservation` action; filterable table by source/severity/ATR status |
-| **R78** | ATR workflow: draft → submitted → accepted/further_info | ✅ **CLOSED** | Complete workflow panel with visual stepper and state transitions via `submitAtr` action |
-| **R79** | Para-to-issue mapping for internal tracking | ✅ **CLOSED** | Bidirectional mapping: link observations to existing Issues or create new Issues from observations |
+| Gap     | Requirement                                             | Status        | Implementation                                                                                     |
+| ------- | ------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------- |
+| **R77** | RegulatoryObservation CRUD with real data               | ✅ **CLOSED** | Full CRUD via `manageRegulatoryObservation` action; filterable table by source/severity/ATR status |
+| **R78** | ATR workflow: draft → submitted → accepted/further_info | ✅ **CLOSED** | Complete workflow panel with visual stepper and state transitions via `submitAtr` action           |
+| **R79** | Para-to-issue mapping for internal tracking             | ✅ **CLOSED** | Bidirectional mapping: link observations to existing Issues or create new Issues from observations |
 
 ---
 
@@ -135,7 +135,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ✅ **Permission checks:** Multi-role aware via `hasPermission(userRoles, permission)`  
 ✅ **Next.js 16:** Params are NOT used (page has no dynamic segments)  
 ✅ **Import paths:** All use `@/*` alias (no relative imports)  
-✅ **Enums:** Prisma enums used (not TypeScript enums)  
+✅ **Enums:** Prisma enums used (not TypeScript enums)
 
 ### Manual Testing Checklist (for Main Agent)
 
@@ -158,12 +158,12 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 
 ## Key Links Established
 
-| From | To | Via | Pattern Match |
-|------|----|----|---------------|
-| `page.tsx` | `regulatory.ts` (DAL) | `getRegulatoryObservations(session)` | ✅ `await getRegulatoryObservations(session)` |
-| `regulatory-table.tsx` | `manage-observation.ts` | `manageRegulatoryObservation` action | ✅ CRUD with source/severity/issueId |
-| `atr-workflow-panel.tsx` | `submit-atr.ts` | `submitAtr` action | ✅ SUBMIT/MARK_ACCEPTED/REQUEST_INFO |
-| `para-issue-mapping.tsx` | `manage-observation.ts` + `manage-issue.ts` | Link/create Issues | ✅ `manageRegulatoryObservation`, `manageIssue` |
+| From                     | To                                          | Via                                  | Pattern Match                                   |
+| ------------------------ | ------------------------------------------- | ------------------------------------ | ----------------------------------------------- |
+| `page.tsx`               | `regulatory.ts` (DAL)                       | `getRegulatoryObservations(session)` | ✅ `await getRegulatoryObservations(session)`   |
+| `regulatory-table.tsx`   | `manage-observation.ts`                     | `manageRegulatoryObservation` action | ✅ CRUD with source/severity/issueId            |
+| `atr-workflow-panel.tsx` | `submit-atr.ts`                             | `submitAtr` action                   | ✅ SUBMIT/MARK_ACCEPTED/REQUEST_INFO            |
+| `para-issue-mapping.tsx` | `manage-observation.ts` + `manage-issue.ts` | Link/create Issues                   | ✅ `manageRegulatoryObservation`, `manageIssue` |
 
 ---
 
@@ -172,6 +172,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ### 1. Visual Workflow Stepper
 
 The ATR workflow panel displays a horizontal stepper with icons:
+
 - **Clock icon:** Current pending state
 - **CheckCircle icon:** Completed state
 - **Empty circle:** Future state
@@ -182,6 +183,7 @@ Colors: Draft (blue) → Submitted (blue) → Accepted (green) | Further Info (o
 ### 2. Para-to-Issue Smart Pre-fill
 
 When creating a new Issue from a regulatory observation:
+
 - **Title:** Auto-generated as "Regulatory: {referenceNo} Para {paraNo}"
 - **Description:** Pre-filled from observation.description
 - **Severity:** Inherited from observation.severity
@@ -194,6 +196,7 @@ User can edit before submission.
 ### 3. Mapped/Unmapped Segregation
 
 The "Issue Mapping" tab uses sub-tabs:
+
 - **Mapped (N):** Table showing observation → Issue links with unlink button
 - **Unmapped (N):** Cards highlighting observations without issueId + prominent "Map to Issue" CTA
 
@@ -202,13 +205,18 @@ Improves UX by clearly surfacing unmapped regulatory items requiring attention.
 ### 4. Filter State Management
 
 All filters use React.useMemo for efficient re-computation:
+
 ```tsx
 const filteredObservations = React.useMemo(() => {
   return observations.filter((obs) => {
     if (sourceFilter !== "all" && obs.source !== sourceFilter) return false;
-    if (severityFilter !== "all" && obs.severity !== severityFilter) return false;
-    if (atrStatusFilter !== "all" && obs.atrStatus !== atrStatusFilter) return false;
-    if (searchQuery) { /* substring match */ }
+    if (severityFilter !== "all" && obs.severity !== severityFilter)
+      return false;
+    if (atrStatusFilter !== "all" && obs.atrStatus !== atrStatusFilter)
+      return false;
+    if (searchQuery) {
+      /* substring match */
+    }
     return true;
   });
 }, [observations, sourceFilter, severityFilter, atrStatusFilter, searchQuery]);

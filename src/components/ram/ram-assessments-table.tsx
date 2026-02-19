@@ -206,7 +206,7 @@ export function RamAssessmentsTable({
               assessments.map((assessment) => (
                 <TableRow
                   key={assessment.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="hover:bg-muted/50 cursor-pointer"
                   onClick={() => router.push(`/ram/${assessment.id}`)}
                 >
                   <TableCell className="font-medium">
@@ -222,9 +222,7 @@ export function RamAssessmentsTable({
                     {assessment.riskCategory ? (
                       <Badge
                         variant="outline"
-                        className={
-                          RISK_COLORS[assessment.riskCategory] ?? ""
-                        }
+                        className={RISK_COLORS[assessment.riskCategory] ?? ""}
                       >
                         {assessment.riskCategory}
                       </Badge>

@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { manageTemplate, deleteTemplate } from "@/actions/concurrent-audit/manage-template";
+import {
+  manageTemplate,
+  deleteTemplate,
+} from "@/actions/concurrent-audit/manage-template";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +75,10 @@ const SCOPE_AREAS = [
   { value: "EDP", label: "EDP/IT Systems" },
 ];
 
-export function TemplateManager({ templates, canExecute }: TemplateManagerProps) {
+export function TemplateManager({
+  templates,
+  canExecute,
+}: TemplateManagerProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -94,7 +106,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
       const particulars = formData.get(`particulars-${index}`) as string;
       const riskCategory = formData.get(`riskCategory-${index}`) as string;
       const regulatoryRef = formData.get(`regulatoryRef-${index}`) as string;
-      
+
       if (particulars.trim()) {
         checklistItems.push({
           particulars,
@@ -120,7 +132,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
       toast.success(
         editingTemplate
           ? "Template updated successfully"
-          : "Template created successfully"
+          : "Template created successfully",
       );
       setIsCreateOpen(false);
       setEditingTemplate(null);
@@ -144,10 +156,12 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Concurrent Audit Scope Templates</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold">
+            Concurrent Audit Scope Templates
+          </h2>
+          <p className="text-muted-foreground text-sm">
             Manage checklists for 7 concurrent audit areas
           </p>
         </div>
@@ -159,7 +173,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
                 Create Template
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create Scope Template</DialogTitle>
                 <DialogDescription>
@@ -179,7 +193,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
       <div className="space-y-6">
         {templatesByArea.map((area) => (
           <div key={area.value}>
-            <h3 className="text-lg font-semibold mb-3">{area.label}</h3>
+            <h3 className="mb-3 text-lg font-semibold">{area.label}</h3>
             {area.templates.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-8">
@@ -202,7 +216,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
                 {area.templates.map((template) => (
                   <Card key={template.id}>
                     <CardHeader>
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-base">
                             {template.name}
@@ -230,7 +244,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
                                   <Pencil className="h-4 w-4" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                              <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
                                 <DialogHeader>
                                   <DialogTitle>Edit Template</DialogTitle>
                                   <DialogDescription>
@@ -256,7 +270,7 @@ export function TemplateManager({ templates, canExecute }: TemplateManagerProps)
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         {Array.isArray(template.checklistItems)
                           ? template.checklistItems.length
                           : 0}{" "}
@@ -319,7 +333,9 @@ function TemplateForm({
   template: Template | null;
 }) {
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(
-    template?.checklistItems || [{ particulars: "", riskCategory: "", regulatoryRef: "" }]
+    template?.checklistItems || [
+      { particulars: "", riskCategory: "", regulatoryRef: "" },
+    ],
   );
 
   const addChecklistItem = () => {
@@ -379,10 +395,15 @@ function TemplateForm({
       </div>
 
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <Label>Checklist Items</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addChecklistItem}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addChecklistItem}
+          >
+            <Plus className="mr-2 h-4 w-4" />
             Add Item
           </Button>
         </div>
@@ -390,7 +411,7 @@ function TemplateForm({
         {checklistItems.map((item, index) => (
           <Card key={index}>
             <CardContent className="pt-4">
-              <div className="flex gap-2 mb-3">
+              <div className="mb-3 flex gap-2">
                 <div className="flex-1 space-y-2">
                   <Label>Particulars *</Label>
                   <Input

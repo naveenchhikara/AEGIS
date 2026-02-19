@@ -49,65 +49,72 @@ This plan covers R31 (risk rating computation), R32 (rating bands), and partial 
   <action>
   Create `src/services/risk-rating/types.ts`:
 
-  ```typescript
-  import type { Severity } from "@/generated/prisma/enums";
+```typescript
+import type { Severity } from "@/generated/prisma/enums";
 
-  export type RatingBand = "VERY_GOOD" | "GOOD" | "SATISFACTORY" | "MODERATE" | "POOR";
+export type RatingBand =
+  | "VERY_GOOD"
+  | "GOOD"
+  | "SATISFACTORY"
+  | "MODERATE"
+  | "POOR";
 
-  export interface RiskRatingConfig {
-    repeatFindingMultiplier: number;
-    severityWeights: Record<Severity, number>;
-    ratingBands: {
-      band: RatingBand;
-      minScore: number;
-      maxScore: number;
-    }[];
-  }
+export interface RiskRatingConfig {
+  repeatFindingMultiplier: number;
+  severityWeights: Record<Severity, number>;
+  ratingBands: {
+    band: RatingBand;
+    minScore: number;
+    maxScore: number;
+  }[];
+}
 
-  export interface ObservationInput {
-    id: string;
-    severity: Severity;
-    isRepeatFinding: boolean;
-  }
+export interface ObservationInput {
+  id: string;
+  severity: Severity;
+  isRepeatFinding: boolean;
+}
 
-  export interface RiskRatingResult {
-    totalScore: number;
-    maxPossibleScore: number;
-    percentageScore: number;
-    ratingBand: RatingBand;
-    observationCount: number;
-    criticalCount: number;
-    highCount: number;
-    mediumCount: number;
-    lowCount: number;
-    repeatFindingCount: number;
-  }
+export interface RiskRatingResult {
+  totalScore: number;
+  maxPossibleScore: number;
+  percentageScore: number;
+  ratingBand: RatingBand;
+  observationCount: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+  repeatFindingCount: number;
+}
 
-  // Default configuration per R31, R32
-  export const DEFAULT_RISK_RATING_CONFIG: RiskRatingConfig = {
-    repeatFindingMultiplier: 1.5,
-    severityWeights: {
-      CRITICAL: 4,
-      HIGH: 3,
-      MEDIUM: 2,
-      LOW: 1,
-    },
-    ratingBands: [
-      { band: "VERY_GOOD", minScore: 80, maxScore: 100 },
-      { band: "GOOD", minScore: 65, maxScore: 79.99 },
-      { band: "SATISFACTORY", minScore: 50, maxScore: 64.99 },
-      { band: "MODERATE", minScore: 40, maxScore: 49.99 },
-      { band: "POOR", minScore: 0, maxScore: 39.99 },
-    ],
-  };
-  ```
+// Default configuration per R31, R32
+export const DEFAULT_RISK_RATING_CONFIG: RiskRatingConfig = {
+  repeatFindingMultiplier: 1.5,
+  severityWeights: {
+    CRITICAL: 4,
+    HIGH: 3,
+    MEDIUM: 2,
+    LOW: 1,
+  },
+  ratingBands: [
+    { band: "VERY_GOOD", minScore: 80, maxScore: 100 },
+    { band: "GOOD", minScore: 65, maxScore: 79.99 },
+    { band: "SATISFACTORY", minScore: 50, maxScore: 64.99 },
+    { band: "MODERATE", minScore: 40, maxScore: 49.99 },
+    { band: "POOR", minScore: 0, maxScore: 39.99 },
+  ],
+};
+```
 
-  **Note:** Rating bands are inverted — higher percentage = better rating. This matches banking audit convention where fewer/lower-severity findings = better score.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/services/risk-rating/types.ts
-  ```
+**Note:** Rating bands are inverted — higher percentage = better rating. This matches banking audit convention where fewer/lower-severity findings = better score.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/services/risk-rating/types.ts
+```
+
   </verify>
   <done>
   - types.ts exists with RiskRatingConfig, ObservationInput, RiskRatingResult interfaces
@@ -123,178 +130,180 @@ This plan covers R31 (risk rating computation), R32 (rating bands), and partial 
   <action>
   Create `src/services/risk-rating/compute.ts`:
 
-  ```typescript
-  import type {
-    RiskRatingConfig,
-    RatingBand,
-    ObservationInput,
-    RiskRatingResult,
-  } from "./types";
-  import { DEFAULT_RISK_RATING_CONFIG } from "./types";
-  import type { Severity } from "@/generated/prisma/enums";
+```typescript
+import type {
+  RiskRatingConfig,
+  RatingBand,
+  ObservationInput,
+  RiskRatingResult,
+} from "./types";
+import { DEFAULT_RISK_RATING_CONFIG } from "./types";
+import type { Severity } from "@/generated/prisma/enums";
 
-  export class RiskRatingService {
-    private config: RiskRatingConfig;
+export class RiskRatingService {
+  private config: RiskRatingConfig;
 
-    constructor(config?: Partial<RiskRatingConfig>) {
-      this.config = { ...DEFAULT_RISK_RATING_CONFIG, ...config };
-    }
-
-    /**
-     * Compute risk rating for an engagement based on its observations.
-     * 
-     * Algorithm (R31):
-     * 1. Each observation gets a weighted score = severity_weight × repeat_multiplier
-     * 2. Total score = sum of all weighted scores
-     * 3. Max possible score = count × CRITICAL_weight × repeat_multiplier
-     * 4. Percentage = (max_possible - total) / max_possible × 100
-     * 5. Map percentage to rating band per R32
-     * 
-     * Inverted scale: fewer/lower findings = higher percentage = better rating
-     */
-    computeEngagementRating(
-      observations: ObservationInput[]
-    ): RiskRatingResult {
-      if (observations.length === 0) {
-        return {
-          totalScore: 0,
-          maxPossibleScore: 0,
-          percentageScore: 100, // No findings = perfect score
-          ratingBand: "VERY_GOOD",
-          observationCount: 0,
-          criticalCount: 0,
-          highCount: 0,
-          mediumCount: 0,
-          lowCount: 0,
-          repeatFindingCount: 0,
-        };
-      }
-
-      let totalScore = 0;
-      let criticalCount = 0;
-      let highCount = 0;
-      let mediumCount = 0;
-      let lowCount = 0;
-      let repeatFindingCount = 0;
-
-      for (const obs of observations) {
-        const baseWeight = this.config.severityWeights[obs.severity];
-        const multiplier = obs.isRepeatFinding
-          ? this.config.repeatFindingMultiplier
-          : 1;
-        const weightedScore = baseWeight * multiplier;
-
-        totalScore += weightedScore;
-
-        // Count by severity
-        if (obs.severity === "CRITICAL") criticalCount++;
-        else if (obs.severity === "HIGH") highCount++;
-        else if (obs.severity === "MEDIUM") mediumCount++;
-        else if (obs.severity === "LOW") lowCount++;
-
-        if (obs.isRepeatFinding) repeatFindingCount++;
-      }
-
-      // Max possible = all findings at CRITICAL severity with repeat multiplier
-      const maxPossibleScore =
-        observations.length *
-        this.config.severityWeights.CRITICAL *
-        this.config.repeatFindingMultiplier;
-
-      // Inverted percentage: (max - actual) / max × 100
-      const percentageScore =
-        maxPossibleScore > 0
-          ? ((maxPossibleScore - totalScore) / maxPossibleScore) * 100
-          : 100;
-
-      const ratingBand = this.getRatingBand(percentageScore);
-
-      return {
-        totalScore,
-        maxPossibleScore,
-        percentageScore: Math.round(percentageScore * 100) / 100, // 2 decimal places
-        ratingBand,
-        observationCount: observations.length,
-        criticalCount,
-        highCount,
-        mediumCount,
-        lowCount,
-        repeatFindingCount,
-      };
-    }
-
-    /**
-     * Map percentage score to rating band per R32.
-     */
-    getRatingBand(percentageScore: number): RatingBand {
-      for (const band of this.config.ratingBands) {
-        if (percentageScore >= band.minScore && percentageScore <= band.maxScore) {
-          return band.band;
-        }
-      }
-      // Fallback
-      return "POOR";
-    }
-
-    /**
-     * Compute aggregate rating for multiple engagements (e.g., quarterly).
-     */
-    computeAggregateRating(
-      engagementRatings: RiskRatingResult[]
-    ): RiskRatingResult {
-      if (engagementRatings.length === 0) {
-        return {
-          totalScore: 0,
-          maxPossibleScore: 0,
-          percentageScore: 100,
-          ratingBand: "VERY_GOOD",
-          observationCount: 0,
-          criticalCount: 0,
-          highCount: 0,
-          mediumCount: 0,
-          lowCount: 0,
-          repeatFindingCount: 0,
-        };
-      }
-
-      const aggregated = engagementRatings.reduce(
-        (acc, rating) => ({
-          totalScore: acc.totalScore + rating.totalScore,
-          maxPossibleScore: acc.maxPossibleScore + rating.maxPossibleScore,
-          observationCount: acc.observationCount + rating.observationCount,
-          criticalCount: acc.criticalCount + rating.criticalCount,
-          highCount: acc.highCount + rating.highCount,
-          mediumCount: acc.mediumCount + rating.mediumCount,
-          lowCount: acc.lowCount + rating.lowCount,
-          repeatFindingCount: acc.repeatFindingCount + rating.repeatFindingCount,
-        }),
-        {
-          totalScore: 0,
-          maxPossibleScore: 0,
-          observationCount: 0,
-          criticalCount: 0,
-          highCount: 0,
-          mediumCount: 0,
-          lowCount: 0,
-          repeatFindingCount: 0,
-        }
-      );
-
-      const percentageScore =
-        aggregated.maxPossibleScore > 0
-          ? ((aggregated.maxPossibleScore - aggregated.totalScore) /
-              aggregated.maxPossibleScore) *
-            100
-          : 100;
-
-      return {
-        ...aggregated,
-        percentageScore: Math.round(percentageScore * 100) / 100,
-        ratingBand: this.getRatingBand(percentageScore),
-      };
-    }
+  constructor(config?: Partial<RiskRatingConfig>) {
+    this.config = { ...DEFAULT_RISK_RATING_CONFIG, ...config };
   }
-  ```
+
+  /**
+   * Compute risk rating for an engagement based on its observations.
+   *
+   * Algorithm (R31):
+   * 1. Each observation gets a weighted score = severity_weight × repeat_multiplier
+   * 2. Total score = sum of all weighted scores
+   * 3. Max possible score = count × CRITICAL_weight × repeat_multiplier
+   * 4. Percentage = (max_possible - total) / max_possible × 100
+   * 5. Map percentage to rating band per R32
+   *
+   * Inverted scale: fewer/lower findings = higher percentage = better rating
+   */
+  computeEngagementRating(observations: ObservationInput[]): RiskRatingResult {
+    if (observations.length === 0) {
+      return {
+        totalScore: 0,
+        maxPossibleScore: 0,
+        percentageScore: 100, // No findings = perfect score
+        ratingBand: "VERY_GOOD",
+        observationCount: 0,
+        criticalCount: 0,
+        highCount: 0,
+        mediumCount: 0,
+        lowCount: 0,
+        repeatFindingCount: 0,
+      };
+    }
+
+    let totalScore = 0;
+    let criticalCount = 0;
+    let highCount = 0;
+    let mediumCount = 0;
+    let lowCount = 0;
+    let repeatFindingCount = 0;
+
+    for (const obs of observations) {
+      const baseWeight = this.config.severityWeights[obs.severity];
+      const multiplier = obs.isRepeatFinding
+        ? this.config.repeatFindingMultiplier
+        : 1;
+      const weightedScore = baseWeight * multiplier;
+
+      totalScore += weightedScore;
+
+      // Count by severity
+      if (obs.severity === "CRITICAL") criticalCount++;
+      else if (obs.severity === "HIGH") highCount++;
+      else if (obs.severity === "MEDIUM") mediumCount++;
+      else if (obs.severity === "LOW") lowCount++;
+
+      if (obs.isRepeatFinding) repeatFindingCount++;
+    }
+
+    // Max possible = all findings at CRITICAL severity with repeat multiplier
+    const maxPossibleScore =
+      observations.length *
+      this.config.severityWeights.CRITICAL *
+      this.config.repeatFindingMultiplier;
+
+    // Inverted percentage: (max - actual) / max × 100
+    const percentageScore =
+      maxPossibleScore > 0
+        ? ((maxPossibleScore - totalScore) / maxPossibleScore) * 100
+        : 100;
+
+    const ratingBand = this.getRatingBand(percentageScore);
+
+    return {
+      totalScore,
+      maxPossibleScore,
+      percentageScore: Math.round(percentageScore * 100) / 100, // 2 decimal places
+      ratingBand,
+      observationCount: observations.length,
+      criticalCount,
+      highCount,
+      mediumCount,
+      lowCount,
+      repeatFindingCount,
+    };
+  }
+
+  /**
+   * Map percentage score to rating band per R32.
+   */
+  getRatingBand(percentageScore: number): RatingBand {
+    for (const band of this.config.ratingBands) {
+      if (
+        percentageScore >= band.minScore &&
+        percentageScore <= band.maxScore
+      ) {
+        return band.band;
+      }
+    }
+    // Fallback
+    return "POOR";
+  }
+
+  /**
+   * Compute aggregate rating for multiple engagements (e.g., quarterly).
+   */
+  computeAggregateRating(
+    engagementRatings: RiskRatingResult[],
+  ): RiskRatingResult {
+    if (engagementRatings.length === 0) {
+      return {
+        totalScore: 0,
+        maxPossibleScore: 0,
+        percentageScore: 100,
+        ratingBand: "VERY_GOOD",
+        observationCount: 0,
+        criticalCount: 0,
+        highCount: 0,
+        mediumCount: 0,
+        lowCount: 0,
+        repeatFindingCount: 0,
+      };
+    }
+
+    const aggregated = engagementRatings.reduce(
+      (acc, rating) => ({
+        totalScore: acc.totalScore + rating.totalScore,
+        maxPossibleScore: acc.maxPossibleScore + rating.maxPossibleScore,
+        observationCount: acc.observationCount + rating.observationCount,
+        criticalCount: acc.criticalCount + rating.criticalCount,
+        highCount: acc.highCount + rating.highCount,
+        mediumCount: acc.mediumCount + rating.mediumCount,
+        lowCount: acc.lowCount + rating.lowCount,
+        repeatFindingCount: acc.repeatFindingCount + rating.repeatFindingCount,
+      }),
+      {
+        totalScore: 0,
+        maxPossibleScore: 0,
+        observationCount: 0,
+        criticalCount: 0,
+        highCount: 0,
+        mediumCount: 0,
+        lowCount: 0,
+        repeatFindingCount: 0,
+      },
+    );
+
+    const percentageScore =
+      aggregated.maxPossibleScore > 0
+        ? ((aggregated.maxPossibleScore - aggregated.totalScore) /
+            aggregated.maxPossibleScore) *
+          100
+        : 100;
+
+    return {
+      ...aggregated,
+      percentageScore: Math.round(percentageScore * 100) / 100,
+      ratingBand: this.getRatingBand(percentageScore),
+    };
+  }
+}
+```
+
   </action>
   <verify>
   ```bash
@@ -317,180 +326,181 @@ This plan covers R31 (risk rating computation), R32 (rating bands), and partial 
   <action>
   Create `src/data-access/compliance-items.ts`:
 
-  ```typescript
-  import { prismaForTenant } from "./prisma";
-  import type { Session } from "@/lib/auth";
-  import { logger } from "@/lib/logger";
+```typescript
+import { prismaForTenant } from "./prisma";
+import type { Session } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
-  /**
-   * Create ComplianceItem for an observation (R34).
-   * Called when observation transitions to ISSUED status.
-   */
-  export async function createComplianceItem(
-    session: Session,
-    observationId: string,
-    auditId: string,
-    branchId: string | null
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
+/**
+ * Create ComplianceItem for an observation (R34).
+ * Called when observation transitions to ISSUED status.
+ */
+export async function createComplianceItem(
+  session: Session,
+  observationId: string,
+  auditId: string,
+  branchId: string | null,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
-    try {
-      // Check if ComplianceItem already exists
-      const existing = await db.complianceItem.findUnique({
-        where: { observationId },
-      });
-
-      if (existing) {
-        logger.warn(
-          { observationId, tenantId },
-          "ComplianceItem already exists for observation"
-        );
-        return existing;
-      }
-
-      // Compute due date: 30 days from now (R35 — branch response SLA)
-      const now = new Date();
-      const branchResponseDue = new Date(now);
-      branchResponseDue.setDate(branchResponseDue.getDate() + 30);
-
-      const complianceItem = await db.complianceItem.create({
-        data: {
-          tenantId,
-          observationId,
-          auditId,
-          branchId,
-          status: "OPEN",
-          escalationLevel: "NONE",
-          daysOpen: 0,
-          branchResponseDue,
-        },
-      });
-
-      logger.info(
-        { complianceItemId: complianceItem.id, observationId, tenantId },
-        "ComplianceItem created"
-      );
-
-      return complianceItem;
-    } catch (error) {
-      logger.error(
-        { error, observationId, tenantId },
-        "Failed to create ComplianceItem"
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Get ComplianceItem for an observation.
-   */
-  export async function getComplianceItemByObservation(
-    session: Session,
-    observationId: string
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
-
-    return db.complianceItem.findUnique({
+  try {
+    // Check if ComplianceItem already exists
+    const existing = await db.complianceItem.findUnique({
       where: { observationId },
-      include: {
-        observation: {
-          select: {
-            id: true,
-            title: true,
-            severity: true,
-            status: true,
-          },
-        },
-        branch: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-      },
     });
-  }
 
-  /**
-   * Get all ComplianceItems for an engagement.
-   */
-  export async function getComplianceItemsByEngagement(
-    session: Session,
-    auditId: string
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
+    if (existing) {
+      logger.warn(
+        { observationId, tenantId },
+        "ComplianceItem already exists for observation",
+      );
+      return existing;
+    }
 
-    return db.complianceItem.findMany({
-      where: {
+    // Compute due date: 30 days from now (R35 — branch response SLA)
+    const now = new Date();
+    const branchResponseDue = new Date(now);
+    branchResponseDue.setDate(branchResponseDue.getDate() + 30);
+
+    const complianceItem = await db.complianceItem.create({
+      data: {
         tenantId,
+        observationId,
         auditId,
-      },
-      include: {
-        observation: {
-          select: {
-            id: true,
-            title: true,
-            severity: true,
-            status: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
+        branchId,
+        status: "OPEN",
+        escalationLevel: "NONE",
+        daysOpen: 0,
+        branchResponseDue,
       },
     });
+
+    logger.info(
+      { complianceItemId: complianceItem.id, observationId, tenantId },
+      "ComplianceItem created",
+    );
+
+    return complianceItem;
+  } catch (error) {
+    logger.error(
+      { error, observationId, tenantId },
+      "Failed to create ComplianceItem",
+    );
+    throw error;
   }
+}
 
-  /**
-   * Update daysOpen for all open compliance items (cron job).
-   */
-  export async function updateDaysOpenForOpenItems(tenantId: string) {
-    const db = prismaForTenant(tenantId);
+/**
+ * Get ComplianceItem for an observation.
+ */
+export async function getComplianceItemByObservation(
+  session: Session,
+  observationId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
-    try {
-      const openItems = await db.complianceItem.findMany({
-        where: {
-          tenantId,
-          status: {
-            notIn: ["COMPLIED", "ACCEPTED_RISK", "CLOSED"],
-          },
-        },
+  return db.complianceItem.findUnique({
+    where: { observationId },
+    include: {
+      observation: {
         select: {
           id: true,
-          createdAt: true,
+          title: true,
+          severity: true,
+          status: true,
         },
+      },
+      branch: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Get all ComplianceItems for an engagement.
+ */
+export async function getComplianceItemsByEngagement(
+  session: Session,
+  auditId: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
+
+  return db.complianceItem.findMany({
+    where: {
+      tenantId,
+      auditId,
+    },
+    include: {
+      observation: {
+        select: {
+          id: true,
+          title: true,
+          severity: true,
+          status: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+/**
+ * Update daysOpen for all open compliance items (cron job).
+ */
+export async function updateDaysOpenForOpenItems(tenantId: string) {
+  const db = prismaForTenant(tenantId);
+
+  try {
+    const openItems = await db.complianceItem.findMany({
+      where: {
+        tenantId,
+        status: {
+          notIn: ["COMPLIED", "ACCEPTED_RISK", "CLOSED"],
+        },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+      },
+    });
+
+    const now = new Date();
+
+    for (const item of openItems) {
+      const daysOpen = Math.floor(
+        (now.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      await db.complianceItem.update({
+        where: { id: item.id },
+        data: { daysOpen },
       });
-
-      const now = new Date();
-
-      for (const item of openItems) {
-        const daysOpen = Math.floor(
-          (now.getTime() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        await db.complianceItem.update({
-          where: { id: item.id },
-          data: { daysOpen },
-        });
-      }
-
-      logger.info(
-        { tenantId, count: openItems.length },
-        "Updated daysOpen for compliance items"
-      );
-    } catch (error) {
-      logger.error(
-        { error, tenantId },
-        "Failed to update daysOpen for compliance items"
-      );
-      throw error;
     }
+
+    logger.info(
+      { tenantId, count: openItems.length },
+      "Updated daysOpen for compliance items",
+    );
+  } catch (error) {
+    logger.error(
+      { error, tenantId },
+      "Failed to update daysOpen for compliance items",
+    );
+    throw error;
   }
-  ```
+}
+```
+
   </action>
   <verify>
   ```bash
@@ -512,120 +522,122 @@ This plan covers R31 (risk rating computation), R32 (rating bands), and partial 
   <action>
   Create `src/actions/reports/compute-risk-rating.ts`:
 
-  ```typescript
-  "use server";
+```typescript
+"use server";
 
-  import { getRequiredSession } from "@/data-access/session";
-  import { prismaForTenant } from "@/data-access/prisma";
-  import { hasPermission, type Role } from "@/lib/permissions";
-  import { logger } from "@/lib/logger";
-  import { RiskRatingService } from "@/services/risk-rating/compute";
-  import type { ObservationInput } from "@/services/risk-rating/types";
+import { getRequiredSession } from "@/data-access/session";
+import { prismaForTenant } from "@/data-access/prisma";
+import { hasPermission, type Role } from "@/lib/permissions";
+import { logger } from "@/lib/logger";
+import { RiskRatingService } from "@/services/risk-rating/compute";
+import type { ObservationInput } from "@/services/risk-rating/types";
 
-  /**
-   * Compute risk rating for an audit engagement.
-   * 
-   * Algorithm:
-   * 1. Fetch all ISSUED observations for the engagement
-   * 2. Determine repeat findings (observation.repeatOfId exists)
-   * 3. Compute weighted risk score with RiskRatingService
-   * 4. Update AuditEngagement.overallRiskRating
-   * 
-   * Security: Requires report:generate permission
-   * Returns: { success, data: RiskRatingResult, error? }
-   */
-  export async function computeRiskRating(engagementId: string) {
-    // ─── Step 1: Authentication ────────────────────────────────────
-    const session = await getRequiredSession();
-    const userRoles = ((session.user as any).roles ?? []) as Role[];
-    const tenantId = (session.user as any).tenantId as string;
+/**
+ * Compute risk rating for an audit engagement.
+ *
+ * Algorithm:
+ * 1. Fetch all ISSUED observations for the engagement
+ * 2. Determine repeat findings (observation.repeatOfId exists)
+ * 3. Compute weighted risk score with RiskRatingService
+ * 4. Update AuditEngagement.overallRiskRating
+ *
+ * Security: Requires report:generate permission
+ * Returns: { success, data: RiskRatingResult, error? }
+ */
+export async function computeRiskRating(engagementId: string) {
+  // ─── Step 1: Authentication ────────────────────────────────────
+  const session = await getRequiredSession();
+  const userRoles = ((session.user as any).roles ?? []) as Role[];
+  const tenantId = (session.user as any).tenantId as string;
 
-    // ─── Step 2: Permission Check ──────────────────────────────────
-    if (!hasPermission(userRoles, "report:generate")) {
-      return {
-        success: false as const,
-        error: "You do not have permission to compute risk ratings.",
-      };
-    }
-
-    // ─── Step 3: Tenant-Scoped Database ────────────────────────────
-    const db = prismaForTenant(tenantId);
-
-    try {
-      // ─── Step 4: Verify Engagement Exists ──────────────────────
-      const engagement = await db.auditEngagement.findFirst({
-        where: { id: engagementId, tenantId },
-      });
-
-      if (!engagement) {
-        return {
-          success: false as const,
-          error: "Audit engagement not found.",
-        };
-      }
-
-      // ─── Step 5: Fetch Issued Observations ─────────────────────
-      const observations = await db.observation.findMany({
-        where: {
-          tenantId,
-          engagementId,
-          status: "ISSUED",
-        },
-        select: {
-          id: true,
-          severity: true,
-          repeatOfId: true,
-        },
-      });
-
-      // ─── Step 6: Prepare Input for Risk Rating Service ────────
-      const observationInputs: ObservationInput[] = observations.map((obs) => ({
-        id: obs.id,
-        severity: obs.severity,
-        isRepeatFinding: obs.repeatOfId !== null,
-      }));
-
-      // ─── Step 7: Compute Risk Rating ───────────────────────────
-      const ratingService = new RiskRatingService();
-      const ratingResult = ratingService.computeEngagementRating(observationInputs);
-
-      // ─── Step 8: Update Engagement ─────────────────────────────
-      await db.auditEngagement.update({
-        where: { id: engagementId },
-        data: {
-          overallRiskRating: ratingResult.ratingBand,
-        },
-      });
-
-      logger.info(
-        {
-          engagementId,
-          tenantId,
-          ratingBand: ratingResult.ratingBand,
-          percentageScore: ratingResult.percentageScore,
-        },
-        "Risk rating computed"
-      );
-
-      // ─── Step 9: Success Response ──────────────────────────────
-      return {
-        success: true as const,
-        data: ratingResult,
-      };
-    } catch (error) {
-      // ─── Step 10: Error Handling ───────────────────────────────
-      logger.error(
-        { error, engagementId, tenantId },
-        "Failed to compute risk rating"
-      );
-
-      return {
-        success: false as const,
-        error: "Failed to compute risk rating. Please try again.",
-      };
-    }
+  // ─── Step 2: Permission Check ──────────────────────────────────
+  if (!hasPermission(userRoles, "report:generate")) {
+    return {
+      success: false as const,
+      error: "You do not have permission to compute risk ratings.",
+    };
   }
-  ```
+
+  // ─── Step 3: Tenant-Scoped Database ────────────────────────────
+  const db = prismaForTenant(tenantId);
+
+  try {
+    // ─── Step 4: Verify Engagement Exists ──────────────────────
+    const engagement = await db.auditEngagement.findFirst({
+      where: { id: engagementId, tenantId },
+    });
+
+    if (!engagement) {
+      return {
+        success: false as const,
+        error: "Audit engagement not found.",
+      };
+    }
+
+    // ─── Step 5: Fetch Issued Observations ─────────────────────
+    const observations = await db.observation.findMany({
+      where: {
+        tenantId,
+        engagementId,
+        status: "ISSUED",
+      },
+      select: {
+        id: true,
+        severity: true,
+        repeatOfId: true,
+      },
+    });
+
+    // ─── Step 6: Prepare Input for Risk Rating Service ────────
+    const observationInputs: ObservationInput[] = observations.map((obs) => ({
+      id: obs.id,
+      severity: obs.severity,
+      isRepeatFinding: obs.repeatOfId !== null,
+    }));
+
+    // ─── Step 7: Compute Risk Rating ───────────────────────────
+    const ratingService = new RiskRatingService();
+    const ratingResult =
+      ratingService.computeEngagementRating(observationInputs);
+
+    // ─── Step 8: Update Engagement ─────────────────────────────
+    await db.auditEngagement.update({
+      where: { id: engagementId },
+      data: {
+        overallRiskRating: ratingResult.ratingBand,
+      },
+    });
+
+    logger.info(
+      {
+        engagementId,
+        tenantId,
+        ratingBand: ratingResult.ratingBand,
+        percentageScore: ratingResult.percentageScore,
+      },
+      "Risk rating computed",
+    );
+
+    // ─── Step 9: Success Response ──────────────────────────────
+    return {
+      success: true as const,
+      data: ratingResult,
+    };
+  } catch (error) {
+    // ─── Step 10: Error Handling ───────────────────────────────
+    logger.error(
+      { error, engagementId, tenantId },
+      "Failed to compute risk rating",
+    );
+
+    return {
+      success: false as const,
+      error: "Failed to compute risk rating. Please try again.",
+    };
+  }
+}
+```
+
   </action>
   <verify>
   ```bash

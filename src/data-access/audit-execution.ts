@@ -7,7 +7,7 @@ import type { Session } from "@/lib/auth";
  */
 export async function getEngagementWithTeam(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -35,7 +35,7 @@ export async function getEngagementWithTeam(
  */
 export async function getEngagementSections(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -53,7 +53,7 @@ export async function getEngagementSections(
 export async function getExaminationResponsesForSection(
   session: Session,
   engagementId: string,
-  areaCode: string
+  areaCode: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -109,7 +109,7 @@ export async function getExaminationResponsesForSection(
 export async function getEngagementExaminationItems(
   session: Session,
   engagementId: string,
-  areaCode: string
+  areaCode: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);

@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { UpdateSectionStatusSchema, type UpdateSectionStatusInput } from "./schemas";
+import {
+  UpdateSectionStatusSchema,
+  type UpdateSectionStatusInput,
+} from "./schemas";
 
 // Valid status transitions
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -27,7 +30,10 @@ export async function updateSectionStatus(input: UpdateSectionStatusInput) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "audit_execution:manage_sections")) {
-    return { success: false as const, error: "You do not have permission to update section status." };
+    return {
+      success: false as const,
+      error: "You do not have permission to update section status.",
+    };
   }
 
   const parsed = UpdateSectionStatusSchema.safeParse(input);
@@ -63,7 +69,7 @@ export async function updateSectionStatus(input: UpdateSectionStatusInput) {
       const allowed = VALID_TRANSITIONS[section.status] ?? [];
       if (!allowed.includes(validated.status)) {
         throw new Error(
-          `Cannot transition from ${section.status} to ${validated.status}. Allowed: ${allowed.join(", ") || "none"}`
+          `Cannot transition from ${section.status} to ${validated.status}. Allowed: ${allowed.join(", ") || "none"}`,
         );
       }
 
@@ -82,9 +88,15 @@ export async function updateSectionStatus(input: UpdateSectionStatusInput) {
     });
 
     revalidatePath("/audit-execution");
-    return { success: true as const, data: { id: result.id, status: result.status } };
+    return {
+      success: true as const,
+      data: { id: result.id, status: result.status },
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update section status.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update section status.";
     logger.error({ error, action: "update_section_status", tenantId }, message);
     return { success: false as const, error: message };
   }

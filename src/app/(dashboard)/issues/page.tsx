@@ -80,10 +80,7 @@ export default async function IssuesPage(props: {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-2">
           <Label htmlFor="source">Source</Label>
-          <Select
-            name="source"
-            defaultValue={searchParams.source || "all"}
-          >
+          <Select name="source" defaultValue={searchParams.source || "all"}>
             <SelectTrigger id="source">
               <SelectValue placeholder="All Sources" />
             </SelectTrigger>
@@ -100,10 +97,7 @@ export default async function IssuesPage(props: {
 
         <div className="space-y-2">
           <Label htmlFor="severity">Severity</Label>
-          <Select
-            name="severity"
-            defaultValue={searchParams.severity || "all"}
-          >
+          <Select name="severity" defaultValue={searchParams.severity || "all"}>
             <SelectTrigger id="severity">
               <SelectValue placeholder="All Severities" />
             </SelectTrigger>
@@ -119,10 +113,7 @@ export default async function IssuesPage(props: {
 
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
-          <Select
-            name="status"
-            defaultValue={searchParams.status || "all"}
-          >
+          <Select name="status" defaultValue={searchParams.status || "all"}>
             <SelectTrigger id="status">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>

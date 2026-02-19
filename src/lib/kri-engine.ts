@@ -37,7 +37,7 @@ export function detectKRIBreach(kri: KRIInput): KRIBreachResult {
   // Validate inputs
   if (thresholdLow >= thresholdHigh) {
     throw new Error(
-      "Invalid thresholds: thresholdLow must be less than thresholdHigh"
+      "Invalid thresholds: thresholdLow must be less than thresholdHigh",
     );
   }
 
@@ -99,7 +99,7 @@ export function detectKRIBreach(kri: KRIInput): KRIBreachResult {
  * @returns Array of breach results with KRI IDs
  */
 export function batchDetectKRIBreaches(
-  kris: Array<KRIInput & { id: string; name: string }>
+  kris: Array<KRIInput & { id: string; name: string }>,
 ): Array<KRIBreachResult & { id: string; name: string }> {
   return kris.map((kri) => {
     const result = detectKRIBreach(kri);
@@ -121,7 +121,7 @@ export function batchDetectKRIBreaches(
  */
 export function filterKRIsByStatus(
   results: Array<KRIBreachResult & { id: string; name: string }>,
-  status: BreachStatus
+  status: BreachStatus,
 ) {
   return results.filter((r) => r.status === status);
 }
@@ -134,7 +134,7 @@ export function filterKRIsByStatus(
  * @returns Sorted array of critical KRIs
  */
 export function getCriticalKRIs(
-  results: Array<KRIBreachResult & { id: string; name: string }>
+  results: Array<KRIBreachResult & { id: string; name: string }>,
 ) {
   return results
     .filter((r) => r.status === "BREACH")

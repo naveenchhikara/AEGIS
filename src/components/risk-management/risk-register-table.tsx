@@ -88,7 +88,11 @@ type FormState = {
   data?: { id: string };
 };
 
-export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTableProps) {
+export function RiskRegisterTable({
+  risks,
+  entities,
+  canManage,
+}: RiskRegisterTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -103,16 +107,22 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
 
   async function submitAction(
     _prev: FormState,
-    formData: FormData
+    formData: FormData,
   ): Promise<FormState> {
     const input = {
       entityId: formData.get("entityId") as string,
       riskStatement: formData.get("riskStatement") as string,
-      riskCategory: formData.get("riskCategory") as "CREDIT" | "OPERATIONAL" | "MARKET" | "LIQUIDITY" | "COMPLIANCE" | "IT",
+      riskCategory: formData.get("riskCategory") as
+        | "CREDIT"
+        | "OPERATIONAL"
+        | "MARKET"
+        | "LIQUIDITY"
+        | "COMPLIANCE"
+        | "IT",
       inherentScore: Number(formData.get("inherentScore")),
       controlScore: Number(formData.get("controlScore")),
-      riskOwner: formData.get("riskOwner") as string || undefined,
-      mitigationPlan: formData.get("mitigationPlan") as string || undefined,
+      riskOwner: (formData.get("riskOwner") as string) || undefined,
+      mitigationPlan: (formData.get("mitigationPlan") as string) || undefined,
     };
 
     return manageRisk(input);
@@ -152,7 +162,7 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                 </DialogHeader>
 
                 {state.error && (
-                  <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                  <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
                     {state.error}
                   </div>
                 )}
@@ -160,7 +170,11 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="entityId">Entity</Label>
-                    <Select name="entityId" defaultValue={formData.entityId} required>
+                    <Select
+                      name="entityId"
+                      defaultValue={formData.entityId}
+                      required
+                    >
                       <SelectTrigger id="entityId">
                         <SelectValue placeholder="Select entity" />
                       </SelectTrigger>
@@ -189,13 +203,19 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="riskCategory">Risk Category</Label>
-                      <Select name="riskCategory" defaultValue={formData.riskCategory} required>
+                      <Select
+                        name="riskCategory"
+                        defaultValue={formData.riskCategory}
+                        required
+                      >
                         <SelectTrigger id="riskCategory">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="CREDIT">Credit</SelectItem>
-                          <SelectItem value="OPERATIONAL">Operational</SelectItem>
+                          <SelectItem value="OPERATIONAL">
+                            Operational
+                          </SelectItem>
                           <SelectItem value="MARKET">Market</SelectItem>
                           <SelectItem value="LIQUIDITY">Liquidity</SelectItem>
                           <SelectItem value="COMPLIANCE">Compliance</SelectItem>
@@ -217,7 +237,9 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="inherentScore">Inherent Score (1-5)</Label>
+                      <Label htmlFor="inherentScore">
+                        Inherent Score (1-5)
+                      </Label>
                       <Input
                         id="inherentScore"
                         name="inherentScore"
@@ -246,7 +268,9 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="mitigationPlan">Mitigation Plan (Optional)</Label>
+                    <Label htmlFor="mitigationPlan">
+                      Mitigation Plan (Optional)
+                    </Label>
                     <Textarea
                       id="mitigationPlan"
                       name="mitigationPlan"
@@ -267,7 +291,9 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create
                   </Button>
                 </DialogFooter>
@@ -294,36 +320,49 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
             {risks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  No risks in register. {canManage && "Click 'Add Risk' to create one."}
+                  No risks in register.{" "}
+                  {canManage && "Click 'Add Risk' to create one."}
                 </TableCell>
               </TableRow>
             ) : (
               risks.map((risk) => {
                 const inherentLevel = getRiskLevel(Number(risk.inherentScore));
                 const residualLevel = getRiskLevel(Number(risk.residualScore));
-                const breachedKris = risk.kris?.filter(k => k.breachStatus === "BREACH").length || 0;
+                const breachedKris =
+                  risk.kris?.filter((k) => k.breachStatus === "BREACH")
+                    .length || 0;
 
                 return (
                   <TableRow
                     key={risk.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="hover:bg-muted/50 cursor-pointer"
                     onClick={() => router.push(`/risk-management/${risk.id}`)}
                   >
                     <TableCell className="font-medium">
                       {risk.entity.name}
-                      <div className="text-xs text-muted-foreground">{risk.entity.entityType}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {risk.entity.entityType}
+                      </div>
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">{risk.riskStatement}</TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {risk.riskStatement}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">{risk.riskCategory}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={RISK_LEVEL_COLORS[inherentLevel]}>
+                      <Badge
+                        variant="outline"
+                        className={RISK_LEVEL_COLORS[inherentLevel]}
+                      >
                         {Number(risk.inherentScore).toFixed(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={RISK_LEVEL_COLORS[residualLevel]}>
+                      <Badge
+                        variant="outline"
+                        className={RISK_LEVEL_COLORS[residualLevel]}
+                      >
                         {Number(risk.residualScore).toFixed(1)}
                       </Badge>
                     </TableCell>
@@ -335,13 +374,16 @@ export function RiskRegisterTable({ risks, entities, canManage }: RiskRegisterTa
                         <div className="flex items-center gap-1">
                           <span className="text-sm">{risk.kris.length}</span>
                           {breachedKris > 0 && (
-                            <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 text-xs">
+                            <Badge
+                              variant="outline"
+                              className="border-red-300 bg-red-100 text-xs text-red-800"
+                            >
                               {breachedKris} ⚠
                             </Badge>
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
+                        <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
                   </TableRow>

@@ -17,6 +17,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ## What Was Built
 
 ### 1. Housekeeping Page (`/housekeeping`)
+
 **File**: `src/app/(dashboard)/housekeeping/page.tsx`
 
 - Server component with 3-tab interface
@@ -27,6 +28,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 - **Lines**: 78
 
 **Key Features**:
+
 - Tabs: Metrics Capture, Risk MIS, Inter-bank Exposure
 - Real data integration with `getHousekeepingMetrics()` and `getHighRiskHousekeepingMetrics()`
 - Tenant-scoped branch fetching
@@ -34,12 +36,14 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ---
 
 ### 2. Metrics Capture Form
+
 **File**: `src/components/housekeeping/metrics-capture-form.tsx`
 
 - Client component with dialog-based form for creating/editing housekeeping metrics
 - **Lines**: 606
 
 **Features**:
+
 - **High-risk alerts banner**: Displays metrics with aging > 90 days
 - **Capture form dialog**:
   - Branch selector (from branches prop)
@@ -63,6 +67,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ---
 
 ### 3. Risk MIS Dashboard
+
 **File**: `src/components/housekeeping/risk-mis-dashboard.tsx`
 
 - Client component displaying 4 risk management dashboards
@@ -71,18 +76,21 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 **Dashboards**:
 
 #### A. CRAR Dashboard (Capital Adequacy Ratio)
+
 - Current CRAR ratio with regulatory minimum (9%)
 - Tier 1 + Tier 2 capital breakdown
 - Alert if below regulatory minimum
 - Compliance badge (green = compliant, red = breach)
 
 #### B. Asset Quality Dashboard
+
 - Gross NPA %, Net NPA %
 - Provision coverage ratio
 - Slippage ratio
 - High-risk alert for Gross NPA > 6%
 
 #### C. Liquidity Dashboard
+
 - SLR maintained vs required (18%)
 - CRR maintained vs required (4.5%)
 - Liquidity Coverage Ratio (LCR) - Basel III requirement (100%)
@@ -91,6 +99,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 - Alerts for non-compliance
 
 #### D. Operational Risk Dashboard
+
 - Inter-branch reconciliation aging (aggregate)
 - Suspense account balances
 - Clearing account aging
@@ -99,6 +108,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 - Color-coded aging (red > 90 days)
 
 **Data Handling**:
+
 - Shows "Data Not Available" prompts with instructions to enter via Metrics Capture
 - Supports metric types: CRAR_TIER1, CRAR_TIER2, CRAR_TOTAL, RISK_WEIGHTED_ASSETS, GROSS_NPA, NET_NPA, PROVISION_COVERAGE, SLIPPAGE_RATIO, SLR_MAINTAINED, CRR_MAINTAINED, LCR, CD_RATIO, INTER_BRANCH, SUSPENSE, CLEARING, SUNDRY
 
@@ -107,6 +117,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ---
 
 ### 4. Inter-bank Exposure Monitor
+
 **File**: `src/components/housekeeping/interbank-exposure-monitor.tsx`
 
 - Client component monitoring inter-bank exposure against regulatory limits
@@ -115,10 +126,12 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 **Features**:
 
 #### Configuration Panel
+
 - Net worth input (editable)
 - Used to calculate exposure limits
 
 #### Total Exposure Summary
+
 - Total exposure amount
 - Total limit (20% of net worth)
 - Utilization percentage
@@ -127,6 +140,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 - Regulatory alerts for breaches
 
 #### Per-Bank Exposure Table
+
 - Counterparty bank name (from remarks field)
 - Exposure amount (from closingBalance)
 - Per-bank limit (5% of net worth)
@@ -135,16 +149,19 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 - Color-coded utilization values
 
 **Regulatory References**:
+
 - Total inter-bank exposure: ≤ 20% of net worth
 - Single bank exposure: ≤ 5% of net worth
 - Source: RBI Master Circular on Exposure Norms
 
 **Data Model**:
+
 - Uses HousekeepingMetric with metricType = "INTERBANK_EXPOSURE"
 - Bank name stored in `remarks` field
 - Exposure amount in `closingBalance` field
 
 **Alerts**:
+
 - WARNING: Total > 18% or single bank > 4%
 - BREACH: Total > 20% or single bank > 5%
 
@@ -153,12 +170,14 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ---
 
 ### 5. Server Action
+
 **File**: `src/actions/housekeeping/manage-metric.ts`
 
 - Server action for creating/updating housekeeping metrics
 - **Lines**: 94
 
 **Features**:
+
 - Zod schema validation (YYYY-Q[1-4] period format)
 - Permission check: `regulatory:manage`
 - Audit context tracking
@@ -169,12 +188,14 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ---
 
 ### 6. MIS Data Access Layer
+
 **File**: `src/data-access/housekeeping-mis.ts`
 
 - DAL function for fetching risk MIS data
 - **Lines**: 57
 
 **Function**: `getRiskMisData(session: Session)`
+
 - Returns: crarMetrics, assetQuality, liquidity, operational
 - Fetches last 8 quarters of CRAR/asset quality/liquidity metrics
 - Fetches all operational risk metrics with branch details
@@ -185,6 +206,7 @@ Created housekeeping risk metrics capture UI, risk management MIS dashboards, an
 ## Verification
 
 ### TypeScript Compilation
+
 ✅ **PASS** - No TypeScript errors in housekeeping module files
 
 ```bash
@@ -195,6 +217,7 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 **Total project errors**: 12 (all in other modules: investments, is-audit - outside this plan's scope)
 
 ### Files Modified (6 files)
+
 1. ✅ `src/app/(dashboard)/housekeeping/page.tsx` (78 lines)
 2. ✅ `src/components/housekeeping/metrics-capture-form.tsx` (606 lines)
 3. ✅ `src/components/housekeeping/risk-mis-dashboard.tsx` (598 lines)
@@ -208,21 +231,23 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 
 ## Gaps Closed
 
-| Gap ID | Requirement | Status | Evidence |
-|--------|-------------|--------|----------|
-| **R80** | Housekeeping risk metrics capture UI allows branch-level data entry | ✅ CLOSED | `metrics-capture-form.tsx`: Branch selector, metric type selection (INTER_BRANCH, SUSPENSE, CLEARING, SUNDRY), period/balance/aging input, server action integration |
-| **R87** | Risk management MIS dashboards display CRAR, asset quality, liquidity, operational metrics | ✅ CLOSED | `risk-mis-dashboard.tsx`: 4 dashboards with regulatory thresholds, compliance badges, alerts, trend data support |
-| **R88** | Inter-bank exposure monitoring enforces 20% total and 5% per-bank limits | ✅ CLOSED | `interbank-exposure-monitor.tsx`: Total/per-bank exposure tracking, 20%/5% limit enforcement, breach alerts, regulatory reference |
+| Gap ID  | Requirement                                                                                | Status    | Evidence                                                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R80** | Housekeeping risk metrics capture UI allows branch-level data entry                        | ✅ CLOSED | `metrics-capture-form.tsx`: Branch selector, metric type selection (INTER_BRANCH, SUSPENSE, CLEARING, SUNDRY), period/balance/aging input, server action integration |
+| **R87** | Risk management MIS dashboards display CRAR, asset quality, liquidity, operational metrics | ✅ CLOSED | `risk-mis-dashboard.tsx`: 4 dashboards with regulatory thresholds, compliance badges, alerts, trend data support                                                     |
+| **R88** | Inter-bank exposure monitoring enforces 20% total and 5% per-bank limits                   | ✅ CLOSED | `interbank-exposure-monitor.tsx`: Total/per-bank exposure tracking, 20%/5% limit enforcement, breach alerts, regulatory reference                                    |
 
 ---
 
 ## Key Implementation Details
 
 ### Permissions Used
+
 - **Read access**: `regulatory:read`
 - **Manage access**: `regulatory:manage`
 
 ### Data Model
+
 - Primary table: `HousekeepingMetric`
 - Fields: branchId, metricType, period, openingBalance, closingBalance, entriesCount, agingDays, remarks
 - Metric types supported:
@@ -233,6 +258,7 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
   - **Exposure**: INTERBANK_EXPOSURE
 
 ### Regulatory Compliance
+
 - RBI CRAR minimum: 9%
 - RBI SLR requirement: 18%
 - RBI CRR requirement: 4.5%
@@ -240,6 +266,7 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 - Inter-bank exposure limits: 20% total, 5% per bank (RBI Master Circular on Exposure Norms)
 
 ### Color Coding
+
 - **Aging badges**:
   - < 30 days: Green/outline
   - 30-90 days: Yellow
@@ -255,10 +282,12 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 ## Dependencies
 
 ### Upstream (required before C10)
+
 - ✅ C4: Governance data access functions (getHousekeepingMetrics, getHighRiskHousekeepingMetrics)
 - ✅ C6: Prisma schema with HousekeepingMetric model
 
 ### Downstream (enabled by C10)
+
 - Risk monitoring workflows
 - Regulatory reporting automation
 - Compliance dashboards
@@ -268,6 +297,7 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 ## Testing Notes
 
 ### Manual Testing Checklist
+
 - [ ] `/housekeeping` route accessible with `regulatory:read` permission
 - [ ] Metrics Capture form creates new housekeeping metrics
 - [ ] Metrics Capture form edits existing metrics
@@ -282,6 +312,7 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 - [ ] Edit disabled for users without `regulatory:manage`
 
 ### Data Entry Guide
+
 1. **Operational Metrics**: Use Metrics Capture tab with metric types: INTER_BRANCH, SUSPENSE, CLEARING, SUNDRY
 2. **CRAR Metrics**: Use Metrics Capture tab with metric types: CRAR_TOTAL, CRAR_TIER1, CRAR_TIER2
 3. **Asset Quality**: Use Metrics Capture tab with metric types: GROSS_NPA, NET_NPA, PROVISION_COVERAGE, SLIPPAGE_RATIO
@@ -307,11 +338,13 @@ pnpm exec tsc --noEmit 2>&1 | grep -E "(housekeeping|manage-metric)"
 ## Next Steps
 
 ### Immediate
+
 1. Update `VALIDATION-REPORT.md` to mark R80, R87, R88 as closed
 2. Add `/housekeeping` route to navigation (`nav-items.ts`) if not already present
 3. Seed sample data for testing all dashboard views
 
 ### Future Enhancements
+
 - Trend charts for CRAR/NPA over time (quarter-over-quarter visualization)
 - Automated alerts for regulatory breaches (email/notifications)
 - Export MIS dashboards to PDF for regulatory reporting

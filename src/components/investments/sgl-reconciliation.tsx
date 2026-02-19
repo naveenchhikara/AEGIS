@@ -36,7 +36,10 @@ interface SglReconciliationProps {
   unreconciled: InvestmentRecord[];
 }
 
-export function SglReconciliation({ investments, unreconciled }: SglReconciliationProps) {
+export function SglReconciliation({
+  investments,
+  unreconciled,
+}: SglReconciliationProps) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
@@ -49,16 +52,21 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
 
   const totalReconciled = investments.filter((inv) => inv.reconciled).length;
   const reconciliationPercent =
-    investments.length > 0 ? ((totalReconciled / investments.length) * 100).toFixed(1) : "0.0";
+    investments.length > 0
+      ? ((totalReconciled / investments.length) * 100).toFixed(1)
+      : "0.0";
 
   // Group unreconciled by period
-  const unreconciledByPeriod = unreconciled.reduce((acc, inv) => {
-    if (!acc[inv.period]) {
-      acc[inv.period] = [];
-    }
-    acc[inv.period].push(inv);
-    return acc;
-  }, {} as Record<string, InvestmentRecord[]>);
+  const unreconciledByPeriod = unreconciled.reduce(
+    (acc, inv) => {
+      if (!acc[inv.period]) {
+        acc[inv.period] = [];
+      }
+      acc[inv.period].push(inv);
+      return acc;
+    },
+    {} as Record<string, InvestmentRecord[]>,
+  );
 
   const handleToggle = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -112,35 +120,43 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total SGL Records</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total SGL Records
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{sglRecords.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {sglReconciled} reconciled, {sglRecords.length - sglReconciled} pending
+            <p className="text-muted-foreground text-xs">
+              {sglReconciled} reconciled, {sglRecords.length - sglReconciled}{" "}
+              pending
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total CSGL Records</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total CSGL Records
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{csglRecords.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {csglReconciled} reconciled, {csglRecords.length - csglReconciled} pending
+            <p className="text-muted-foreground text-xs">
+              {csglReconciled} reconciled, {csglRecords.length - csglReconciled}{" "}
+              pending
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Overall Reconciliation</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Overall Reconciliation
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{reconciliationPercent}%</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {totalReconciled} of {investments.length} records
             </p>
           </CardContent>
@@ -148,11 +164,15 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reconciliation</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Reconciliation
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{unreconciled.length}</div>
-            <p className="text-xs text-muted-foreground">Records awaiting reconciliation</p>
+            <p className="text-muted-foreground text-xs">
+              Records awaiting reconciliation
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -164,7 +184,7 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Unreconciled Records</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-sm">
                   Records pending SGL/CSGL reconciliation
                 </p>
               </div>
@@ -175,7 +195,9 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
                   onClick={handleToggleAll}
                   disabled={unreconciled.length === 0}
                 >
-                  {selectedIds.size === unreconciled.length ? "Deselect All" : "Select All"}
+                  {selectedIds.size === unreconciled.length
+                    ? "Deselect All"
+                    : "Select All"}
                 </Button>
                 <Button
                   size="sm"
@@ -197,7 +219,10 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedIds.size === unreconciled.length && unreconciled.length > 0}
+                        checked={
+                          selectedIds.size === unreconciled.length &&
+                          unreconciled.length > 0
+                        }
                         onCheckedChange={handleToggleAll}
                       />
                     </TableHead>
@@ -222,22 +247,30 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
                       <TableCell>
                         <Badge variant="outline">{inv.securityType}</Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{inv.isin || "—"}</TableCell>
-                      <TableCell>₹{(Number(inv.faceValue) / 100000).toFixed(2)}L</TableCell>
-                      <TableCell>₹{(Number(inv.bookValue) / 100000).toFixed(2)}L</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {inv.isin || "—"}
+                      </TableCell>
+                      <TableCell>
+                        ₹{(Number(inv.faceValue) / 100000).toFixed(2)}L
+                      </TableCell>
+                      <TableCell>
+                        ₹{(Number(inv.bookValue) / 100000).toFixed(2)}L
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
                           className={
                             inv.sglAccount === "SGL"
-                              ? "bg-blue-100 text-blue-800 border-blue-300"
-                              : "bg-purple-100 text-purple-800 border-purple-300"
+                              ? "border-blue-300 bg-blue-100 text-blue-800"
+                              : "border-purple-300 bg-purple-100 text-purple-800"
                           }
                         >
                           {inv.sglAccount}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{inv.period}</TableCell>
+                      <TableCell className="font-medium">
+                        {inv.period}
+                      </TableCell>
                       <TableCell>
                         <Button
                           size="sm"
@@ -261,7 +294,7 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
       <Card>
         <CardHeader>
           <CardTitle>Reconciliation by Period</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             SGL/CSGL reconciliation status across reporting periods
           </p>
         </CardHeader>
@@ -281,21 +314,40 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
               </TableHeader>
               <TableBody>
                 {Object.entries(
-                  investments.reduce((acc, inv) => {
-                    if (!acc[inv.period]) {
-                      acc[inv.period] = { total: 0, sgl: 0, csgl: 0, reconciled: 0 };
-                    }
-                    acc[inv.period].total += 1;
-                    if (inv.sglAccount === "SGL") acc[inv.period].sgl += 1;
-                    if (inv.sglAccount === "CSGL") acc[inv.period].csgl += 1;
-                    if (inv.reconciled) acc[inv.period].reconciled += 1;
-                    return acc;
-                  }, {} as Record<string, { total: number; sgl: number; csgl: number; reconciled: number }>)
+                  investments.reduce(
+                    (acc, inv) => {
+                      if (!acc[inv.period]) {
+                        acc[inv.period] = {
+                          total: 0,
+                          sgl: 0,
+                          csgl: 0,
+                          reconciled: 0,
+                        };
+                      }
+                      acc[inv.period].total += 1;
+                      if (inv.sglAccount === "SGL") acc[inv.period].sgl += 1;
+                      if (inv.sglAccount === "CSGL") acc[inv.period].csgl += 1;
+                      if (inv.reconciled) acc[inv.period].reconciled += 1;
+                      return acc;
+                    },
+                    {} as Record<
+                      string,
+                      {
+                        total: number;
+                        sgl: number;
+                        csgl: number;
+                        reconciled: number;
+                      }
+                    >,
+                  ),
                 )
                   .sort(([a], [b]) => b.localeCompare(a))
                   .map(([period, stats]) => {
                     const pending = stats.total - stats.reconciled;
-                    const percent = stats.total > 0 ? (stats.reconciled / stats.total) * 100 : 0;
+                    const percent =
+                      stats.total > 0
+                        ? (stats.reconciled / stats.total) * 100
+                        : 0;
                     return (
                       <TableRow key={period}>
                         <TableCell className="font-medium">{period}</TableCell>
@@ -306,16 +358,25 @@ export function SglReconciliation({ investments, unreconciled }: SglReconciliati
                         <TableCell>{pending}</TableCell>
                         <TableCell>
                           {percent === 100 ? (
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                            <Badge
+                              variant="outline"
+                              className="border-green-300 bg-green-100 text-green-800"
+                            >
                               <Check className="mr-1 h-3 w-3" />
                               Complete
                             </Badge>
                           ) : percent >= 80 ? (
-                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                            <Badge
+                              variant="outline"
+                              className="border-blue-300 bg-blue-100 text-blue-800"
+                            >
                               {percent.toFixed(0)}%
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                            <Badge
+                              variant="outline"
+                              className="border-amber-300 bg-amber-100 text-amber-800"
+                            >
                               <X className="mr-1 h-3 w-3" />
                               {percent.toFixed(0)}%
                             </Badge>

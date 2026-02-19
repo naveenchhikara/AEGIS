@@ -1,9 +1,22 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AlertCircle, CheckCircle2, TrendingUp, Activity } from "@/lib/icons";
 
 interface AuditHealthDashboardProps {
@@ -32,11 +45,11 @@ export function AuditHealthDashboard({
   // Calculate overall health score
   const totalResponses = standardSummary.reduce(
     (sum, s) => sum + s.conforms + s.partiallyConforms + s.doesNotConform,
-    0
+    0,
   );
   const weightedScore = standardSummary.reduce(
     (sum, s) => sum + s.conforms * 100 + s.partiallyConforms * 50,
-    0
+    0,
   );
   const healthScore =
     totalResponses > 0 ? Math.round(weightedScore / totalResponses) : 0;
@@ -86,8 +99,10 @@ export function AuditHealthDashboard({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-2">Audit Function Health Dashboard</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="mb-2 text-lg font-semibold">
+          Audit Function Health Dashboard
+        </h2>
+        <p className="text-muted-foreground text-sm">
           Overall health metrics and IIA Standards conformance analysis
         </p>
       </div>
@@ -96,13 +111,15 @@ export function AuditHealthDashboard({
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-1">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Overall Health Score</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Overall Health Score
+            </CardTitle>
             <CardDescription>Weighted conformance score</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center">
-              <div className="relative w-32 h-32">
-                <svg className="w-32 h-32 transform -rotate-90">
+              <div className="relative h-32 w-32">
+                <svg className="h-32 w-32 -rotate-90 transform">
                   <circle
                     cx="64"
                     cy="64"
@@ -131,7 +148,7 @@ export function AuditHealthDashboard({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-bold">{healthScore}</span>
-                  <span className="text-xs text-muted-foreground">/ 100</span>
+                  <span className="text-muted-foreground text-xs">/ 100</span>
                 </div>
               </div>
             </div>
@@ -140,10 +157,10 @@ export function AuditHealthDashboard({
                 variant="outline"
                 className={
                   healthColor === "green"
-                    ? "bg-green-100 text-green-800 border-green-300"
+                    ? "border-green-300 bg-green-100 text-green-800"
                     : healthColor === "yellow"
-                      ? "bg-amber-100 text-amber-800 border-amber-300"
-                      : "bg-red-100 text-red-800 border-red-300"
+                      ? "border-amber-300 bg-amber-100 text-amber-800"
+                      : "border-red-300 bg-red-100 text-red-800"
                 }
               >
                 {healthColor === "green"
@@ -158,15 +175,20 @@ export function AuditHealthDashboard({
 
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Assessment Progress</CardTitle>
-            <CardDescription>FY {progress.year} completion status</CardDescription>
+            <CardTitle className="text-sm font-medium">
+              Assessment Progress
+            </CardTitle>
+            <CardDescription>
+              FY {progress.year} completion status
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Completed</span>
                 <span className="font-semibold">
-                  {progress.completed} / {progress.total} ({progress.completionPct}%)
+                  {progress.completed} / {progress.total} (
+                  {progress.completionPct}%)
                 </span>
               </div>
               <Progress value={progress.completionPct} className="h-2" />
@@ -174,12 +196,16 @@ export function AuditHealthDashboard({
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Completed</p>
-                <p className="text-xl font-bold text-green-600">{progress.completed}</p>
+                <p className="text-muted-foreground text-xs">Completed</p>
+                <p className="text-xl font-bold text-green-600">
+                  {progress.completed}
+                </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Pending</p>
-                <p className="text-xl font-bold text-amber-600">{progress.pending}</p>
+                <p className="text-muted-foreground text-xs">Pending</p>
+                <p className="text-xl font-bold text-amber-600">
+                  {progress.pending}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -190,11 +216,13 @@ export function AuditHealthDashboard({
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Gaps Identified</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Gaps Identified
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalGaps}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               Across all IIA standards
             </p>
           </CardContent>
@@ -202,11 +230,15 @@ export function AuditHealthDashboard({
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Gaps Converted</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Gaps Converted
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{gapsConverted}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-2xl font-bold text-green-600">
+              {gapsConverted}
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
               Converted to issues
             </p>
           </CardContent>
@@ -214,11 +246,15 @@ export function AuditHealthDashboard({
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Pending Conversion</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Conversion
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{gapsPending}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-2xl font-bold text-amber-600">
+              {gapsPending}
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
               Awaiting action
             </p>
           </CardContent>
@@ -250,20 +286,27 @@ export function AuditHealthDashboard({
             <TableBody>
               {standardSummary.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={8}
+                    className="text-muted-foreground text-center"
+                  >
                     No assessment data available
                   </TableCell>
                 </TableRow>
               ) : (
                 standardSummary.map((summary) => {
                   const categoryScore =
-                    summary.conforms + summary.partiallyConforms + summary.doesNotConform > 0
+                    summary.conforms +
+                      summary.partiallyConforms +
+                      summary.doesNotConform >
+                    0
                       ? Math.round(
-                          ((summary.conforms * 100 + summary.partiallyConforms * 50) /
+                          ((summary.conforms * 100 +
+                            summary.partiallyConforms * 50) /
                             (summary.conforms +
                               summary.partiallyConforms +
                               summary.doesNotConform)) *
-                            100
+                            100,
                         ) / 100
                       : 0;
 
@@ -272,8 +315,10 @@ export function AuditHealthDashboard({
                       <TableCell className="font-mono font-semibold">
                         {summary.standard}
                       </TableCell>
-                      <TableCell className="text-right">{summary.total}</TableCell>
-                      <TableCell className="text-right text-green-600 font-semibold">
+                      <TableCell className="text-right">
+                        {summary.total}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-green-600">
                         {summary.conforms}
                       </TableCell>
                       <TableCell className="text-right text-amber-600">
@@ -282,7 +327,7 @@ export function AuditHealthDashboard({
                       <TableCell className="text-right text-red-600">
                         {summary.doesNotConform}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-right">
                         {summary.notApplicable}
                       </TableCell>
                       <TableCell className="text-right">
@@ -297,10 +342,10 @@ export function AuditHealthDashboard({
                           variant="outline"
                           className={
                             categoryScore >= 90
-                              ? "bg-green-100 text-green-800 border-green-300"
+                              ? "border-green-300 bg-green-100 text-green-800"
                               : categoryScore >= 70
-                                ? "bg-amber-100 text-amber-800 border-amber-300"
-                                : "bg-red-100 text-red-800 border-red-300"
+                                ? "border-amber-300 bg-amber-100 text-amber-800"
+                                : "border-red-300 bg-red-100 text-red-800"
                           }
                         >
                           {categoryScore}
@@ -326,7 +371,7 @@ export function AuditHealthDashboard({
         <CardContent>
           <div className="space-y-3">
             {recommendations.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No specific recommendations at this time.
               </p>
             ) : (
@@ -342,11 +387,11 @@ export function AuditHealthDashboard({
                   }`}
                 >
                   {rec.severity === "high" ? (
-                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                    <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                   ) : rec.severity === "medium" ? (
-                    <Activity className="h-5 w-5 text-amber-600 mt-0.5" />
+                    <Activity className="mt-0.5 h-5 w-5 text-amber-600" />
                   ) : (
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                   )}
                   <div className="flex-1">
                     <p className="text-sm font-medium">{rec.text}</p>

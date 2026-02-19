@@ -106,7 +106,7 @@ export async function assignTeamMember(input: AssignTeamMemberInput) {
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, action: "assign_team_member", tenantId },
-      "Failed to assign team member"
+      "Failed to assign team member",
     );
 
     // User-friendly error message
@@ -195,7 +195,7 @@ export async function removeTeamMember(input: RemoveTeamMemberInput) {
     // ─── Step 8: Error Handling ────────────────────────────────
     logger.error(
       { error, action: "remove_team_member", tenantId },
-      "Failed to remove team member"
+      "Failed to remove team member",
     );
 
     return {

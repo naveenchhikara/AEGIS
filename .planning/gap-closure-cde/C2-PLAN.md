@@ -79,11 +79,13 @@ Wire `/controls` and `/work-program` pages to real database via existing DAL fun
 **In controls/page.tsx:**
 
 1. Import DAL functions:
+
    ```typescript
    import { getControls } from "@/data-access/control-library";
    ```
 
 2. Replace mock data with real fetch:
+
    ```typescript
    const controls = await getControls(session);
    ```
@@ -95,6 +97,7 @@ Wire `/controls` and `/work-program` pages to real database via existing DAL fun
 **In control-library-table.tsx:**
 
 1. Import server action:
+
    ```typescript
    import { manageControl } from "@/actions/control-library/manage-control";
    ```
@@ -109,14 +112,16 @@ Wire `/controls` and `/work-program` pages to real database via existing DAL fun
 4. Show linked test procedures count per control
 
 **Pattern:** Follow standard server component → DAL → client component → action flow from CONVENTIONS.md.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false | grep -E "controls/page.tsx|control-library-table.tsx|error TS"
 ```
 
 Manual checks:
+
 - Navigate to `/controls`
 - Page loads without 500 error
 - Control library table displays real entries (or empty state)
@@ -130,7 +135,7 @@ Manual checks:
 - TypeScript compilation clean
 - Page renders without errors
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Wire work-program page to real DAL and actions</name>
@@ -141,16 +146,18 @@ Manual checks:
 **In work-program/page.tsx:**
 
 1. Import DAL and actions:
+
    ```typescript
    import { getWorkProgramItems } from "@/data-access/work-program";
    import { getActiveEngagements } from "@/data-access/audit-execution";
    ```
 
 2. Replace mock data:
+
    ```typescript
    // Get current/active engagements for filter dropdown
    const engagements = await getActiveEngagements(session);
-   
+
    // Get work program items (optionally filter by engagement)
    const workItems = await getWorkProgramItems(session, {
      engagementId: searchParams.engagementId,
@@ -173,16 +180,19 @@ Manual checks:
 **Note:** Per VALIDATION-REPORT.md, `generateWorkProgram` action exists but is not auto-triggered on engagement initiation. This plan focuses on UI wiring; auto-trigger will be addressed in audit-execution flow separately.
 
 **Pattern:** Use server/client split per CONVENTIONS.md:
+
 - Server component fetches data
 - Client components handle interactive mutations
   </action>
   <verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false | grep -E "work-program/page.tsx|error TS"
 ```
 
 Manual checks:
+
 - Navigate to `/work-program`
 - Page loads without errors
 - Work program items table displays (empty if no items generated yet)
@@ -197,7 +207,7 @@ Manual checks:
 - TypeScript clean
 - Page functional end-to-end
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -205,6 +215,7 @@ Manual checks:
 **Overall checks:**
 
 1. TypeScript:
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit
@@ -224,9 +235,10 @@ pnpm exec tsc --noEmit
    - Controls display effectiveness scores
    - Work program items link to test procedures
    - Tenant isolation maintained
-</verification>
+     </verification>
 
 <success_criteria>
+
 - ✅ `/controls` page wired to `getControls()` DAL function
 - ✅ Control library table displays real entries with effectiveness data
 - ✅ Create/edit control forms call `manageControl()` action
@@ -236,7 +248,7 @@ pnpm exec tsc --noEmit
 - ✅ Both pages load without errors
 - ✅ Toast notifications for user feedback
 - ✅ R54-R56 requirements marked as implemented
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

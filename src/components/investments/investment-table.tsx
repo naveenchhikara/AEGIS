@@ -34,7 +34,10 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { manageInvestmentRecord, markReconciled } from "@/actions/investment/manage-records";
+import {
+  manageInvestmentRecord,
+  markReconciled,
+} from "@/actions/investment/manage-records";
 import { Plus, Pencil, Check, X } from "@/lib/icons";
 import { useRouter } from "next/navigation";
 
@@ -90,7 +93,8 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<InvestmentRecord | null>(null);
   const [filterSecurityType, setFilterSecurityType] = useState<string>("ALL");
-  const [filterClassification, setFilterClassification] = useState<string>("ALL");
+  const [filterClassification, setFilterClassification] =
+    useState<string>("ALL");
   const [filterReconciled, setFilterReconciled] = useState<string>("ALL");
   const [filterPeriod, setFilterPeriod] = useState<string>("ALL");
   const [submitting, setSubmitting] = useState(false);
@@ -107,8 +111,13 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
 
   // Filter investments
   const filteredInvestments = investments.filter((inv) => {
-    if (filterSecurityType !== "ALL" && inv.securityType !== filterSecurityType) return false;
-    if (filterClassification !== "ALL" && inv.classification !== filterClassification) return false;
+    if (filterSecurityType !== "ALL" && inv.securityType !== filterSecurityType)
+      return false;
+    if (
+      filterClassification !== "ALL" &&
+      inv.classification !== filterClassification
+    )
+      return false;
     if (filterReconciled !== "ALL") {
       const isReconciled = inv.reconciled;
       if (filterReconciled === "RECONCILED" && !isReconciled) return false;
@@ -119,20 +128,31 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
   });
 
   // Calculate summary stats
-  const totalFaceValue = filteredInvestments.reduce((sum, inv) => sum + Number(inv.faceValue), 0);
-  const totalBookValue = filteredInvestments.reduce((sum, inv) => sum + Number(inv.bookValue), 0);
-  const totalMarketValue = filteredInvestments.reduce(
-    (sum, inv) => sum + (inv.marketValue ? Number(inv.marketValue) : Number(inv.bookValue)),
-    0
+  const totalFaceValue = filteredInvestments.reduce(
+    (sum, inv) => sum + Number(inv.faceValue),
+    0,
   );
-  const reconciledCount = filteredInvestments.filter((inv) => inv.reconciled).length;
+  const totalBookValue = filteredInvestments.reduce(
+    (sum, inv) => sum + Number(inv.bookValue),
+    0,
+  );
+  const totalMarketValue = filteredInvestments.reduce(
+    (sum, inv) =>
+      sum + (inv.marketValue ? Number(inv.marketValue) : Number(inv.bookValue)),
+    0,
+  );
+  const reconciledCount = filteredInvestments.filter(
+    (inv) => inv.reconciled,
+  ).length;
   const reconciliationPercent =
     filteredInvestments.length > 0
       ? ((reconciledCount / filteredInvestments.length) * 100).toFixed(1)
       : "0.0";
 
   // Get unique periods
-  const periods = Array.from(new Set(investments.map((inv) => inv.period))).sort().reverse();
+  const periods = Array.from(new Set(investments.map((inv) => inv.period)))
+    .sort()
+    .reverse();
 
   const handleSubmit = async (values: InvestmentFormValues) => {
     setSubmitting(true);
@@ -146,10 +166,17 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
         isin: values.isin || undefined,
         faceValue: parseFloat(values.faceValue),
         bookValue: parseFloat(values.bookValue),
-        marketValue: values.marketValue ? parseFloat(values.marketValue) : undefined,
+        marketValue: values.marketValue
+          ? parseFloat(values.marketValue)
+          : undefined,
         brokerName: values.brokerName || undefined,
-        brokerShare: values.brokerShare ? parseFloat(values.brokerShare) / 100 : undefined,
-        sglAccount: values.sglAccount && values.sglAccount !== "" ? (values.sglAccount as any) : undefined,
+        brokerShare: values.brokerShare
+          ? parseFloat(values.brokerShare) / 100
+          : undefined,
+        sglAccount:
+          values.sglAccount && values.sglAccount !== ""
+            ? (values.sglAccount as any)
+            : undefined,
         period: values.period,
       });
 
@@ -191,7 +218,9 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
       bookValue: record.bookValue.toString(),
       marketValue: record.marketValue?.toString() || undefined,
       brokerName: record.brokerName || undefined,
-      brokerShare: record.brokerShare ? (Number(record.brokerShare) * 100).toString() : undefined,
+      brokerShare: record.brokerShare
+        ? (Number(record.brokerShare) * 100).toString()
+        : undefined,
       sglAccount: (record.sglAccount as any) || "",
       period: record.period,
     });
@@ -204,21 +233,31 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Face Value</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Face Value
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(totalFaceValue / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">{filteredInvestments.length} records</p>
+            <div className="text-2xl font-bold">
+              ₹{(totalFaceValue / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {filteredInvestments.length} records
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Book Value</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Book Value
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(totalBookValue / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">Amortized cost</p>
+            <div className="text-2xl font-bold">
+              ₹{(totalBookValue / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">Amortized cost</p>
           </CardContent>
         </Card>
 
@@ -227,18 +266,22 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
             <CardTitle className="text-sm font-medium">Market Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(totalMarketValue / 10000000).toFixed(2)}Cr</div>
-            <p className="text-xs text-muted-foreground">Mark-to-market</p>
+            <div className="text-2xl font-bold">
+              ₹{(totalMarketValue / 10000000).toFixed(2)}Cr
+            </div>
+            <p className="text-muted-foreground text-xs">Mark-to-market</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Reconciliation</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Reconciliation
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{reconciliationPercent}%</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {reconciledCount} of {filteredInvestments.length} reconciled
             </p>
           </CardContent>
@@ -249,7 +292,10 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1 space-y-2">
           <Label>Security Type</Label>
-          <Select value={filterSecurityType} onValueChange={setFilterSecurityType}>
+          <Select
+            value={filterSecurityType}
+            onValueChange={setFilterSecurityType}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
@@ -265,7 +311,10 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
 
         <div className="flex-1 space-y-2">
           <Label>Classification</Label>
-          <Select value={filterClassification} onValueChange={setFilterClassification}>
+          <Select
+            value={filterClassification}
+            onValueChange={setFilterClassification}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
@@ -326,10 +375,12 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
               Add Investment Record
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editRecord ? "Edit Investment Record" : "Add Investment Record"}
+                {editRecord
+                  ? "Edit Investment Record"
+                  : "Add Investment Record"}
               </DialogTitle>
               <DialogDescription>
                 Record investment transaction with compliance checks
@@ -337,11 +388,11 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
             </DialogHeader>
 
             {warnings.length > 0 && (
-              <div className="rounded-md bg-amber-50 p-4 border border-amber-200">
-                <h4 className="text-sm font-semibold text-amber-900 mb-2">
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+                <h4 className="mb-2 text-sm font-semibold text-amber-900">
                   Compliance Warnings:
                 </h4>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-inside list-disc space-y-1">
                   {warnings.map((warning, idx) => (
                     <li key={idx} className="text-sm text-amber-800">
                       {warning}
@@ -366,13 +417,18 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
               </div>
             )}
 
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="securityType">Security Type *</Label>
                   <Select
                     value={form.watch("securityType")}
-                    onValueChange={(value) => form.setValue("securityType", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("securityType", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -390,22 +446,34 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
                   <Label htmlFor="classification">Classification *</Label>
                   <Select
                     value={form.watch("classification")}
-                    onValueChange={(value) => form.setValue("classification", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("classification", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="HTM">HTM (Held to Maturity)</SelectItem>
-                      <SelectItem value="HFT">HFT (Held for Trading)</SelectItem>
-                      <SelectItem value="AFS">AFS (Available for Sale)</SelectItem>
+                      <SelectItem value="HTM">
+                        HTM (Held to Maturity)
+                      </SelectItem>
+                      <SelectItem value="HFT">
+                        HFT (Held for Trading)
+                      </SelectItem>
+                      <SelectItem value="AFS">
+                        AFS (Available for Sale)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="isin">ISIN</Label>
-                  <Input id="isin" {...form.register("isin")} placeholder="INE123A01012" />
+                  <Input
+                    id="isin"
+                    {...form.register("isin")}
+                    placeholder="INE123A01012"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -476,7 +544,9 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
                   <Label htmlFor="sglAccount">SGL Account</Label>
                   <Select
                     value={form.watch("sglAccount")}
-                    onValueChange={(value) => form.setValue("sglAccount", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("sglAccount", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select account type" />
@@ -541,18 +611,30 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
               filteredInvestments.map((inv) => (
                 <TableRow key={inv.id}>
                   <TableCell>
-                    <Badge variant="outline" className={SECURITY_TYPE_COLORS[inv.securityType]}>
+                    <Badge
+                      variant="outline"
+                      className={SECURITY_TYPE_COLORS[inv.securityType]}
+                    >
                       {inv.securityType}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={CLASSIFICATION_COLORS[inv.classification]}>
+                    <Badge
+                      variant="outline"
+                      className={CLASSIFICATION_COLORS[inv.classification]}
+                    >
                       {inv.classification}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{inv.isin || "—"}</TableCell>
-                  <TableCell>₹{(Number(inv.faceValue) / 100000).toFixed(2)}L</TableCell>
-                  <TableCell>₹{(Number(inv.bookValue) / 100000).toFixed(2)}L</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {inv.isin || "—"}
+                  </TableCell>
+                  <TableCell>
+                    ₹{(Number(inv.faceValue) / 100000).toFixed(2)}L
+                  </TableCell>
+                  <TableCell>
+                    ₹{(Number(inv.bookValue) / 100000).toFixed(2)}L
+                  </TableCell>
                   <TableCell>
                     {inv.marketValue
                       ? `₹${(Number(inv.marketValue) / 100000).toFixed(2)}L`
@@ -561,7 +643,7 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
                   <TableCell>
                     {inv.brokerName || "—"}
                     {inv.brokerShare && (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {(Number(inv.brokerShare) * 100).toFixed(2)}%
                       </div>
                     )}
@@ -569,12 +651,18 @@ export function InvestmentTable({ investments }: InvestmentTableProps) {
                   <TableCell>{inv.sglAccount || "—"}</TableCell>
                   <TableCell>
                     {inv.reconciled ? (
-                      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                      <Badge
+                        variant="outline"
+                        className="border-green-300 bg-green-100 text-green-800"
+                      >
                         <Check className="mr-1 h-3 w-3" />
                         Yes
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                      <Badge
+                        variant="outline"
+                        className="border-amber-300 bg-amber-100 text-amber-800"
+                      >
                         <X className="mr-1 h-3 w-3" />
                         No
                       </Badge>

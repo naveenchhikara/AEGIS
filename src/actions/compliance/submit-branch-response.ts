@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { SubmitBranchResponseSchema, type SubmitBranchResponseInput } from "./schemas";
+import {
+  SubmitBranchResponseSchema,
+  type SubmitBranchResponseInput,
+} from "./schemas";
 
 /**
  * Submit branch response to a compliance item.
@@ -82,7 +85,10 @@ export async function submitBranchResponse(input: SubmitBranchResponseInput) {
       error instanceof Error
         ? error.message
         : "Failed to submit branch response.";
-    logger.error({ error, action: "submit_branch_response", tenantId }, message);
+    logger.error(
+      { error, action: "submit_branch_response", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -21,8 +27,11 @@ export function AcbAgendaBuilder() {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedMeeting, setGeneratedMeeting] = React.useState<any>(null);
-  const [selectedYear, setSelectedYear] = React.useState<number>(new Date().getFullYear());
-  const [selectedQuarter, setSelectedQuarter] = React.useState<string>("Q1_APR_JUN");
+  const [selectedYear, setSelectedYear] = React.useState<number>(
+    new Date().getFullYear(),
+  );
+  const [selectedQuarter, setSelectedQuarter] =
+    React.useState<string>("Q1_APR_JUN");
 
   const currentYear = new Date().getFullYear();
   const years = [currentYear - 1, currentYear, currentYear + 1];
@@ -50,7 +59,9 @@ export function AcbAgendaBuilder() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">ACB Agenda Builder</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          ACB Agenda Builder
+        </h2>
         <p className="text-muted-foreground">
           Auto-generate quarterly ACB packs from live data
         </p>
@@ -60,7 +71,8 @@ export function AcbAgendaBuilder() {
         <CardHeader>
           <CardTitle>Generate Quarterly Pack</CardTitle>
           <CardDescription>
-            Select year and quarter to auto-generate ACB meeting pack with 5 standard agenda items
+            Select year and quarter to auto-generate ACB meeting pack with 5
+            standard agenda items
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -86,7 +98,10 @@ export function AcbAgendaBuilder() {
 
             <div className="space-y-2">
               <Label htmlFor="quarter">Quarter</Label>
-              <Select value={selectedQuarter} onValueChange={setSelectedQuarter}>
+              <Select
+                value={selectedQuarter}
+                onValueChange={setSelectedQuarter}
+              >
                 <SelectTrigger id="quarter">
                   <SelectValue />
                 </SelectTrigger>
@@ -100,14 +115,18 @@ export function AcbAgendaBuilder() {
             </div>
           </div>
 
-          <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+          <Button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="w-full"
+          >
             {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <FileText className="mr-2 h-4 w-4" />
             Generate Quarterly Pack
           </Button>
 
           {generatedMeeting && (
-            <div className="mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-950 space-y-4">
+            <div className="mt-6 space-y-4 rounded-lg border bg-green-50 p-4 dark:bg-green-950">
               <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                 <CheckCircle className="h-5 w-5" />
                 <h3 className="font-semibold">Pack Generated Successfully</h3>
@@ -116,7 +135,9 @@ export function AcbAgendaBuilder() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Meeting ID</p>
-                  <p className="font-mono text-xs">{generatedMeeting.meetingId}</p>
+                  <p className="font-mono text-xs">
+                    {generatedMeeting.meetingId}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Committee</p>
@@ -125,10 +146,14 @@ export function AcbAgendaBuilder() {
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2">Agenda Items Generated:</p>
+                <p className="mb-2 text-sm font-medium">
+                  Agenda Items Generated:
+                </p>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2 text-sm">
-                    <Badge variant="outline" className="mt-0.5">1</Badge>
+                    <Badge variant="outline" className="mt-0.5">
+                      1
+                    </Badge>
                     <span>
                       High & Critical Observations Review
                       <span className="text-muted-foreground ml-2">
@@ -137,11 +162,15 @@ export function AcbAgendaBuilder() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <Badge variant="outline" className="mt-0.5">2</Badge>
+                    <Badge variant="outline" className="mt-0.5">
+                      2
+                    </Badge>
                     <span>Compliance Status Dashboard</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <Badge variant="outline" className="mt-0.5">3</Badge>
+                    <Badge variant="outline" className="mt-0.5">
+                      3
+                    </Badge>
                     <span>
                       Overdue Observations
                       <span className="text-muted-foreground ml-2">
@@ -150,11 +179,15 @@ export function AcbAgendaBuilder() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <Badge variant="outline" className="mt-0.5">4</Badge>
+                    <Badge variant="outline" className="mt-0.5">
+                      4
+                    </Badge>
                     <span>Housekeeping Risk Review</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm">
-                    <Badge variant="outline" className="mt-0.5">5</Badge>
+                    <Badge variant="outline" className="mt-0.5">
+                      5
+                    </Badge>
                     <span>Quarterly Audit Completion Report</span>
                   </li>
                 </ul>
@@ -180,46 +213,48 @@ export function AcbAgendaBuilder() {
         <CardContent>
           <div className="grid gap-3">
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
-                <p className="font-medium text-sm">High & Critical Observations</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">
+                  High & Critical Observations
+                </p>
+                <p className="text-muted-foreground text-sm">
                   All open observations with HIGH or CRITICAL severity
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
-                <p className="font-medium text-sm">Compliance Status Summary</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Compliance Status Summary</p>
+                <p className="text-muted-foreground text-sm">
                   Breakdown by status (Open, Closed, Pending, etc.)
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
-                <p className="font-medium text-sm">Overdue Items Analysis</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Overdue Items Analysis</p>
+                <p className="text-muted-foreground text-sm">
                   All compliance items past their due date
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
-                <p className="font-medium text-sm">Housekeeping Risk Metrics</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Housekeeping Risk Metrics</p>
+                <p className="text-muted-foreground text-sm">
                   Accounts with aging &gt; 90 days across all branches
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
-                <p className="font-medium text-sm">Audit Completion Stats</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Audit Completion Stats</p>
+                <p className="text-muted-foreground text-sm">
                   Number of audits completed during the quarter
                 </p>
               </div>

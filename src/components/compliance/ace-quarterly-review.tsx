@@ -29,7 +29,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { reviewAceItem, processAceQuarterly } from "@/actions/compliance/ace-processing";
+import {
+  reviewAceItem,
+  processAceQuarterly,
+} from "@/actions/compliance/ace-processing";
 
 interface AceItem {
   id: string;
@@ -70,10 +73,10 @@ export function AceQuarterlyReview({
   // Calculate stats
   const totalItems = items.length;
   const criticalCount = items.filter(
-    (i) => i.observation?.severity === "CRITICAL"
+    (i) => i.observation?.severity === "CRITICAL",
   ).length;
   const highCount = items.filter(
-    (i) => i.observation?.severity === "HIGH"
+    (i) => i.observation?.severity === "HIGH",
   ).length;
   const avgDaysOverdue =
     totalItems > 0
@@ -139,7 +142,7 @@ export function AceQuarterlyReview({
 
     if (result.success) {
       toast.success(
-        `Processed ${result.data.processed} items for quarter ${result.data.quarter}`
+        `Processed ${result.data.processed} items for quarter ${result.data.quarter}`,
       );
       window.location.reload();
     } else {
@@ -150,10 +153,10 @@ export function AceQuarterlyReview({
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Total Items
             </CardTitle>
           </CardHeader>
@@ -164,7 +167,7 @@ export function AceQuarterlyReview({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Critical Severity
             </CardTitle>
           </CardHeader>
@@ -177,7 +180,7 @@ export function AceQuarterlyReview({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               High Severity
             </CardTitle>
           </CardHeader>
@@ -190,7 +193,7 @@ export function AceQuarterlyReview({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
               Avg Days Overdue
             </CardTitle>
           </CardHeader>
@@ -201,10 +204,10 @@ export function AceQuarterlyReview({
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Label>Quarter:</Label>
-          <Badge variant="outline" className="text-lg px-4 py-1">
+          <Badge variant="outline" className="px-4 py-1 text-lg">
             {currentQuarter}
           </Badge>
         </div>
@@ -227,9 +230,7 @@ export function AceQuarterlyReview({
                   <TableHead>Observation</TableHead>
                   <TableHead>Severity</TableHead>
                   <TableHead className="text-right">Days Overdue</TableHead>
-                  <TableHead className="text-right">
-                    Escalation Level
-                  </TableHead>
+                  <TableHead className="text-right">Escalation Level</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -239,7 +240,7 @@ export function AceQuarterlyReview({
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
                       {item.branch?.name ?? "N/A"}
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {item.branch?.code}
                       </div>
                     </TableCell>
@@ -247,14 +248,14 @@ export function AceQuarterlyReview({
                       <div className="max-w-md truncate">
                         {item.observation?.title ?? "N/A"}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {item.audit?.auditNumber ?? "N/A"}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
                         className={getSeverityColor(
-                          item.observation?.severity ?? "MEDIUM"
+                          item.observation?.severity ?? "MEDIUM",
                         )}
                       >
                         {item.observation?.severity ?? "N/A"}
@@ -284,7 +285,7 @@ export function AceQuarterlyReview({
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="text-center text-muted-foreground h-24"
+                      className="text-muted-foreground h-24 text-center"
                     >
                       No items in ACE review queue
                     </TableCell>
@@ -320,9 +321,7 @@ export function AceQuarterlyReview({
                   </p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">
-                    Days Overdue:
-                  </Label>
+                  <Label className="text-muted-foreground">Days Overdue:</Label>
                   <p className="mt-1 font-medium">{selectedItem.daysOpen}</p>
                 </div>
               </div>

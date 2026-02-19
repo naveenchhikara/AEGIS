@@ -94,7 +94,10 @@ export async function sendEmail(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown SES error";
-    logger.error({ error, action: "send_email_ses", to: params.to }, "SES send email failed");
+    logger.error(
+      { error, action: "send_email_ses", to: params.to },
+      "SES send email failed",
+    );
     return {
       success: false,
       error: message,

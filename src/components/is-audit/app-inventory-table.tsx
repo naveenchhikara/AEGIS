@@ -91,17 +91,23 @@ const AppFormSchema = z.object({
   drTested: z.boolean().default(false),
   lastDrTestDate: z.string().optional(),
   lastIsAuditDate: z.string().optional(),
-  dataClassification: z.enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]).optional(),
+  dataClassification: z
+    .enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"])
+    .optional(),
   description: z.string().optional(),
 });
 
 type AppFormValues = z.infer<typeof AppFormSchema>;
 
-export function AppInventoryTable({ applications, pendingDr }: AppInventoryTableProps) {
+export function AppInventoryTable({
+  applications,
+  pendingDr,
+}: AppInventoryTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingApp, setEditingApp] = React.useState<Application | null>(null);
-  const [filterCriticality, setFilterCriticality] = React.useState<string>("ALL");
+  const [filterCriticality, setFilterCriticality] =
+    React.useState<string>("ALL");
   const [filterHosting, setFilterHosting] = React.useState<string>("ALL");
   const [filterDrStatus, setFilterDrStatus] = React.useState<string>("ALL");
 
@@ -152,14 +158,20 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
     // Convert string dates to Date objects if present
     const submitData = {
       ...data,
-      lastDrTestDate: data.lastDrTestDate ? new Date(data.lastDrTestDate) : undefined,
-      lastIsAuditDate: data.lastIsAuditDate ? new Date(data.lastIsAuditDate) : undefined,
+      lastDrTestDate: data.lastDrTestDate
+        ? new Date(data.lastDrTestDate)
+        : undefined,
+      lastIsAuditDate: data.lastIsAuditDate
+        ? new Date(data.lastIsAuditDate)
+        : undefined,
     } as any;
 
     const result = await manageApplicationInventory(submitData);
 
     if (result.success) {
-      toast.success(editingApp ? "Application updated" : "Application added to inventory");
+      toast.success(
+        editingApp ? "Application updated" : "Application added to inventory",
+      );
       setDialogOpen(false);
       setEditingApp(null);
       form.reset();
@@ -181,8 +193,10 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
   }
 
   const filteredApps = applications.filter((app) => {
-    if (filterCriticality !== "ALL" && app.criticality !== filterCriticality) return false;
-    if (filterHosting !== "ALL" && app.hostingType !== filterHosting) return false;
+    if (filterCriticality !== "ALL" && app.criticality !== filterCriticality)
+      return false;
+    if (filterHosting !== "ALL" && app.hostingType !== filterHosting)
+      return false;
     if (filterDrStatus === "TESTED" && !app.drTested) return false;
     if (filterDrStatus === "NOT_TESTED" && app.drTested) return false;
     return true;
@@ -197,15 +211,18 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>DR Testing Overdue</AlertTitle>
           <AlertDescription>
-            {pendingDr.length} application{pendingDr.length > 1 ? "s" : ""} have not been DR tested
-            in the last 12 months. Immediate action required.
+            {pendingDr.length} application{pendingDr.length > 1 ? "s" : ""} have
+            not been DR tested in the last 12 months. Immediate action required.
           </AlertDescription>
         </Alert>
       )}
 
-      <div className="flex justify-between items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex gap-2">
-          <Select value={filterCriticality} onValueChange={setFilterCriticality}>
+          <Select
+            value={filterCriticality}
+            onValueChange={setFilterCriticality}
+          >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Criticality" />
             </SelectTrigger>
@@ -249,10 +266,12 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
               Add Application
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingApp ? "Edit Application" : "Add Application to Inventory"}
+                {editingApp
+                  ? "Edit Application"
+                  : "Add Application to Inventory"}
               </DialogTitle>
               <DialogDescription>
                 {editingApp
@@ -260,13 +279,18 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                   : "Register a new application for IS audit tracking."}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="appName">Application Name *</Label>
                   <Input id="appName" {...form.register("appName")} />
                   {form.formState.errors.appName && (
-                    <p className="text-sm text-red-600">{form.formState.errors.appName.message}</p>
+                    <p className="text-sm text-red-600">
+                      {form.formState.errors.appName.message}
+                    </p>
                   )}
                 </div>
 
@@ -284,7 +308,9 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                   <Label htmlFor="hostingType">Hosting Type *</Label>
                   <Select
                     value={form.watch("hostingType")}
-                    onValueChange={(value) => form.setValue("hostingType", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("hostingType", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -301,7 +327,9 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                   <Label htmlFor="criticality">Criticality *</Label>
                   <Select
                     value={form.watch("criticality")}
-                    onValueChange={(value) => form.setValue("criticality", value as any)}
+                    onValueChange={(value) =>
+                      form.setValue("criticality", value as any)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -316,7 +344,9 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dataClassification">Data Classification</Label>
+                  <Label htmlFor="dataClassification">
+                    Data Classification
+                  </Label>
                   <Select
                     value={form.watch("dataClassification") || ""}
                     onValueChange={(value) =>
@@ -337,7 +367,11 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
 
                 <div className="space-y-2">
                   <Label htmlFor="lastDrTestDate">Last DR Test Date</Label>
-                  <Input id="lastDrTestDate" type="date" {...form.register("lastDrTestDate")} />
+                  <Input
+                    id="lastDrTestDate"
+                    type="date"
+                    {...form.register("lastDrTestDate")}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -353,7 +387,9 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                   <Checkbox
                     id="drTested"
                     checked={form.watch("drTested")}
-                    onCheckedChange={(checked) => form.setValue("drTested", !!checked)}
+                    onCheckedChange={(checked) =>
+                      form.setValue("drTested", !!checked)
+                    }
                   />
                   <Label htmlFor="drTested" className="cursor-pointer">
                     DR Tested
@@ -362,7 +398,11 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
 
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" {...form.register("description")} rows={3} />
+                  <Textarea
+                    id="description"
+                    {...form.register("description")}
+                    rows={3}
+                  />
                 </div>
               </div>
 
@@ -418,48 +458,66 @@ export function AppInventoryTable({ applications, pendingDr }: AppInventoryTable
                 return (
                   <TableRow
                     key={app.id}
-                    className={`cursor-pointer hover:bg-muted/50 ${
+                    className={`hover:bg-muted/50 cursor-pointer ${
                       isDrOverdue ? "bg-red-50" : ""
                     }`}
                   >
                     <TableCell className="font-medium">
                       {app.appName}
                       {isDrOverdue && (
-                        <AlertTriangle className="inline ml-2 h-4 w-4 text-red-600" />
+                        <AlertTriangle className="ml-2 inline h-4 w-4 text-red-600" />
                       )}
                     </TableCell>
                     <TableCell>{app.vendor || "—"}</TableCell>
                     <TableCell>{app.version || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={HOSTING_COLORS[app.hostingType] ?? ""}>
+                      <Badge
+                        variant="outline"
+                        className={HOSTING_COLORS[app.hostingType] ?? ""}
+                      >
                         {app.hostingType.replace("_", " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={CRITICALITY_COLORS[app.criticality] ?? ""}>
+                      <Badge
+                        variant="outline"
+                        className={CRITICALITY_COLORS[app.criticality] ?? ""}
+                      >
                         {app.criticality}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {app.drTested ? (
-                        <Badge variant="outline" className="bg-green-100 text-green-800">
+                        <Badge
+                          variant="outline"
+                          className="bg-green-100 text-green-800"
+                        >
                           Yes
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-100 text-gray-800"
+                        >
                           No
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      {app.lastDrTestDate ? format(app.lastDrTestDate, "dd MMM yyyy") : "—"}
+                      {app.lastDrTestDate
+                        ? format(app.lastDrTestDate, "dd MMM yyyy")
+                        : "—"}
                     </TableCell>
                     <TableCell>
-                      {app.lastIsAuditDate ? format(app.lastIsAuditDate, "dd MMM yyyy") : "—"}
+                      {app.lastIsAuditDate
+                        ? format(app.lastIsAuditDate, "dd MMM yyyy")
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       {app.dataClassification ? (
-                        <Badge variant="outline">{app.dataClassification}</Badge>
+                        <Badge variant="outline">
+                          {app.dataClassification}
+                        </Badge>
                       ) : (
                         "—"
                       )}

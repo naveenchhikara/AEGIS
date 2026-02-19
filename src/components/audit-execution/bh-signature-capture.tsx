@@ -26,7 +26,8 @@ export function BhSignatureCapture({
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [comments, setComments] = useState("");
 
-  const canSign = declarationAccepted && comments.trim().length > 0 && !disabled;
+  const canSign =
+    declarationAccepted && comments.trim().length > 0 && !disabled;
 
   const handleSign = () => {
     if (canSign) {
@@ -35,33 +36,35 @@ export function BhSignatureCapture({
   };
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="space-y-6 p-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">Branch Head Declaration</h3>
-        
+        <h3 className="mb-4 text-lg font-semibold">Branch Head Declaration</h3>
+
         {/* Declaration Text */}
-        <div className="bg-muted/50 p-4 rounded-md border mb-4">
+        <div className="bg-muted/50 mb-4 rounded-md border p-4">
           <p className="text-sm leading-relaxed whitespace-pre-line">
             {DECLARATION_TEXT.replace("[SIGNER_NAME]", signerName)}
           </p>
         </div>
 
         {/* Declaration Checkbox */}
-        <div className="flex items-start space-x-3 mb-4">
+        <div className="mb-4 flex items-start space-x-3">
           <Checkbox
             id="declaration-acceptance"
             checked={declarationAccepted}
-            onCheckedChange={(checked) => setDeclarationAccepted(checked === true)}
+            onCheckedChange={(checked) =>
+              setDeclarationAccepted(checked === true)
+            }
             disabled={disabled || isPending}
           />
           <div className="space-y-1 leading-none">
             <Label
               htmlFor="declaration-acceptance"
-              className="text-sm font-medium cursor-pointer"
+              className="cursor-pointer text-sm font-medium"
             >
               I accept this declaration
             </Label>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               You must accept the declaration to sign the certificate
             </p>
           </div>
@@ -81,17 +84,18 @@ export function BhSignatureCapture({
             className="min-h-[100px]"
             maxLength={2000}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {comments.length}/2000 characters
           </p>
         </div>
 
         {/* Warning if requirements not met */}
         {!declarationAccepted && (
-          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md mt-4">
-            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+          <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 text-amber-600" />
             <p className="text-sm text-amber-800">
-              Please accept the declaration and provide comments to sign the certificate.
+              Please accept the declaration and provide comments to sign the
+              certificate.
             </p>
           </div>
         )}
@@ -99,11 +103,7 @@ export function BhSignatureCapture({
 
       {/* Sign Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSign}
-          disabled={!canSign || isPending}
-          size="lg"
-        >
+        <Button onClick={handleSign} disabled={!canSign || isPending} size="lg">
           {isPending ? "Signing..." : "Sign Certificate"}
         </Button>
       </div>

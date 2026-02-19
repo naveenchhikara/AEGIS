@@ -95,7 +95,7 @@ type FormState = {
 
 async function submitExecuteAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const input = {
     workProgramItemId: formData.get("workProgramItemId") as string,
@@ -114,8 +114,12 @@ export function WorkProgramTable({
   const router = useRouter();
   const [executeDialogOpen, setExecuteDialogOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<WorkItem | null>(null);
-  const [selectedStatus, setSelectedStatus] = React.useState<string>("COMPLETED");
-  const [state, formAction, isPending] = useActionState(submitExecuteAction, {});
+  const [selectedStatus, setSelectedStatus] =
+    React.useState<string>("COMPLETED");
+  const [state, formAction, isPending] = useActionState(
+    submitExecuteAction,
+    {},
+  );
 
   // Handle success/error feedback
   React.useEffect(() => {
@@ -153,7 +157,10 @@ export function WorkProgramTable({
           <TableBody>
             {workItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canExecute ? 7 : 6} className="h-24 text-center">
+                <TableCell
+                  colSpan={canExecute ? 7 : 6}
+                  className="h-24 text-center"
+                >
                   <div className="text-muted-foreground">
                     No work program items found.
                     <p className="mt-2 text-sm">
@@ -167,14 +174,14 @@ export function WorkProgramTable({
               workItems.map((item) => (
                 <TableRow
                   key={item.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="hover:bg-muted/50 cursor-pointer"
                   onClick={() => router.push(`/work-program/${item.id}`)}
                 >
                   <TableCell className="font-medium">
                     <div>
                       <div>{item.engagement.auditNumber}</div>
                       {item.engagement.branch && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {item.engagement.branch.name}
                         </div>
                       )}
@@ -182,9 +189,11 @@ export function WorkProgramTable({
                   </TableCell>
                   <TableCell>
                     <div className="max-w-md">
-                      <div className="font-medium">{item.testProcedure.name}</div>
+                      <div className="font-medium">
+                        {item.testProcedure.name}
+                      </div>
                       {item.testProcedure.description && (
-                        <div className="text-xs text-muted-foreground line-clamp-2">
+                        <div className="text-muted-foreground line-clamp-2 text-xs">
                           {item.testProcedure.description}
                         </div>
                       )}
@@ -198,12 +207,15 @@ export function WorkProgramTable({
                   <TableCell>
                     <span className="text-sm">
                       {formatProcessArea(
-                        item.testProcedure.control.processArea
+                        item.testProcedure.control.processArea,
                       )}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={STATUS_COLORS[item.status]}>
+                    <Badge
+                      variant="outline"
+                      className={STATUS_COLORS[item.status]}
+                    >
                       {item.status.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
@@ -216,7 +228,7 @@ export function WorkProgramTable({
                         {item.result.replace(/_/g, " ")}
                       </Badge>
                     ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
                   {canExecute && (
@@ -256,10 +268,12 @@ export function WorkProgramTable({
             </DialogHeader>
             <div className="space-y-4 py-4">
               {selectedItem && (
-                <div className="rounded-md bg-muted p-4 space-y-2">
+                <div className="bg-muted space-y-2 rounded-md p-4">
                   <div>
                     <span className="text-sm font-medium">Test Procedure:</span>{" "}
-                    <span className="text-sm">{selectedItem.testProcedure.name}</span>
+                    <span className="text-sm">
+                      {selectedItem.testProcedure.name}
+                    </span>
                   </div>
                   <div>
                     <span className="text-sm font-medium">Control:</span>{" "}
@@ -293,7 +307,9 @@ export function WorkProgramTable({
                   <SelectContent>
                     <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="NOT_APPLICABLE">Not Applicable</SelectItem>
+                    <SelectItem value="NOT_APPLICABLE">
+                      Not Applicable
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

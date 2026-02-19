@@ -7,7 +7,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { checkBrokerConcentration, checkNonSlrCap } from "@/lib/investment-compliance";
+import {
+  checkBrokerConcentration,
+  checkNonSlrCap,
+} from "@/lib/investment-compliance";
 
 /**
  * Schema for investment record CRUD (R93-R94).
@@ -34,7 +37,9 @@ type ManageInvestmentRecordInput = z.infer<typeof ManageInvestmentRecordSchema>;
  * Security: Requires concurrent_audit:execute or IS_AUDITOR role.
  * Side effects: Validates broker 5% cap and non-SLR 10% cap.
  */
-export async function manageInvestmentRecord(input: ManageInvestmentRecordInput) {
+export async function manageInvestmentRecord(
+  input: ManageInvestmentRecordInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -112,7 +117,7 @@ export async function manageInvestmentRecord(input: ManageInvestmentRecordInput)
           tx,
           tenantId,
           parsed.data.period,
-          parsed.data.brokerName
+          parsed.data.brokerName,
         );
         if (!brokerCheck.compliant) {
           warnings.push(brokerCheck.message);
@@ -144,7 +149,10 @@ export async function manageInvestmentRecord(input: ManageInvestmentRecordInput)
       error instanceof Error
         ? error.message
         : "Failed to manage investment record.";
-    logger.error({ error, action: "manage_investment_record", tenantId }, message);
+    logger.error(
+      { error, action: "manage_investment_record", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

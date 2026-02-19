@@ -78,16 +78,19 @@
 ## Convention Compliance
 
 ✅ **Server Actions:**
+
 - All actions use `"use server"` directive
 - All use `getRequiredSession()` from `@/data-access/session`
 - Return type: `{ success: true, data: T } | { success: false, error: string }`
 
 ✅ **Database:**
+
 - All use `prismaForTenant(tenantId)` from `@/data-access/prisma`
 - All wrap mutations in `db.$transaction()`
 - All call `setAuditContext(tx, { actionType, userId, tenantId, sessionId })`
 
 ✅ **Permissions:**
+
 - All use `hasPermission(userRoles, permission)` from `@/lib/permissions`
 - Permission checks match RBAC matrix:
   - `compliance:update` — CAE, AUDIT_MANAGER
@@ -96,15 +99,18 @@
   - `compliance:read` — CAE, AUDIT_MANAGER, CCO, CEO, ZONAL_AUDITOR
 
 ✅ **Logging:**
+
 - All use `logger` from `@/lib/logger`
 - Error logging includes: `{ error, action, tenantId }`
 - Info logging for escalation computation includes counts + details
 
 ✅ **Validation:**
+
 - All inputs validated with Zod schemas
 - Graceful error handling with user-friendly messages
 
 ✅ **Cache Revalidation:**
+
 - All actions call `revalidatePath()` for affected routes
 
 ---
@@ -117,6 +123,7 @@ $ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -E "(
 ```
 
 **Errors in other files (not in scope):**
+
 - `compliance-items.ts` (pre-existing)
 - `reports.ts` (pre-existing)
 - `excel-export/audit-report-generator.ts` (pre-existing)
@@ -166,16 +173,16 @@ $ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -E "(
 
 ## Files Summary
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `src/data-access/compliance.ts` | 145 | DAL queries for compliance items |
-| `src/actions/compliance/schemas.ts` | 28 | Zod schemas for compliance actions |
-| `src/actions/compliance/create-compliance-items.ts` | 96 | Auto-create compliance items from observations |
-| `src/actions/compliance/submit-branch-response.ts` | 82 | Branch response submission |
-| `src/actions/compliance/zac-review.ts` | 99 | ZAC review and approval/rejection |
-| `src/lib/escalation-engine.ts` | 124 | Pure escalation computation logic |
-| `src/actions/compliance/compute-escalation.ts` | 119 | Batch escalation computation action |
-| **TOTAL** | **693 lines** | **7 files** |
+| File                                                | Lines         | Purpose                                        |
+| --------------------------------------------------- | ------------- | ---------------------------------------------- |
+| `src/data-access/compliance.ts`                     | 145           | DAL queries for compliance items               |
+| `src/actions/compliance/schemas.ts`                 | 28            | Zod schemas for compliance actions             |
+| `src/actions/compliance/create-compliance-items.ts` | 96            | Auto-create compliance items from observations |
+| `src/actions/compliance/submit-branch-response.ts`  | 82            | Branch response submission                     |
+| `src/actions/compliance/zac-review.ts`              | 99            | ZAC review and approval/rejection              |
+| `src/lib/escalation-engine.ts`                      | 124           | Pure escalation computation logic              |
+| `src/actions/compliance/compute-escalation.ts`      | 119           | Batch escalation computation action            |
+| **TOTAL**                                           | **693 lines** | **7 files**                                    |
 
 ---
 

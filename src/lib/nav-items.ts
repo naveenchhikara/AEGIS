@@ -242,8 +242,7 @@ export function filterNavByRoles(roles: Role[]): NavItem[] {
     // Special case: Analytics accessible by CAE or CEO
     if (item.title === "Analytics") {
       return (
-        permissions.has("dashboard:cae") ||
-        permissions.has("dashboard:ceo")
+        permissions.has("dashboard:cae") || permissions.has("dashboard:ceo")
       );
     }
 

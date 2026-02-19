@@ -36,11 +36,11 @@ for (const user of users) {
     await page.goto("/login");
 
     // Wait for the form to hydrate (client component)
-    await page.waitForSelector('input#email', { timeout: 15000 });
+    await page.waitForSelector("input#email", { timeout: 15000 });
 
     // Fill by ID (reliable, matches the JSX id= attributes)
-    await page.fill('input#email', user.email);
-    await page.fill('input#password', user.password);
+    await page.fill("input#email", user.email);
+    await page.fill("input#password", user.password);
 
     // Click Sign In button
     await page.click('button[type="submit"]');

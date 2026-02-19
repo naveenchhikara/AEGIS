@@ -88,15 +88,19 @@ Wire the `/governance` page to real database and build ACB workspace, agenda bui
 Replace mock data with real DAL calls and expand to 5 tabs:
 
 1. Import DAL functions:
+
    ```typescript
    import {
-     getPolicyDocuments, getPoliciesDueForReview,
-     getCommittees, getCommitteeMeetings,
+     getPolicyDocuments,
+     getPoliciesDueForReview,
+     getCommittees,
+     getCommitteeMeetings,
      getHousekeepingMetrics,
    } from "@/data-access/governance";
    ```
 
 2. Replace `const policies: any[] = [];` and `const committees: any[] = [];`:
+
    ```typescript
    const policies = await getPolicyDocuments(session);
    const policiesDueReview = await getPoliciesDueForReview(session, 30);
@@ -105,6 +109,7 @@ Replace mock data with real DAL calls and expand to 5 tabs:
    ```
 
 3. Expand Tabs from 3 to 5:
+
    ```typescript
    <Tabs defaultValue="policies" className="space-y-4">
      <TabsList className="grid w-full grid-cols-5 lg:w-auto">
@@ -133,15 +138,16 @@ Replace mock data with real DAL calls and expand to 5 tabs:
    ```
 
 4. Add permission checks for `board:agenda` and `board:reporting`
-  </action>
-  <verify>
-TypeScript clean, governance page loads with 5 tabs and real data.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   TypeScript clean, governance page loads with 5 tabs and real data.
+   </verify>
+   <done>
+
 - Governance page fetches real PolicyDocument, Committee, Meeting data
 - 5-tab layout: Policies, Committees, ACB Workspace, Board Calendar, RBI Pack
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Wire PolicyTable and CommitteePanel to real actions</name>
@@ -161,6 +167,7 @@ TypeScript clean, governance page loads with 5 tabs and real data.
 5. Version history display per policy
 
 **CommitteePanel updates:**
+
 1. Update props to accept real Committee data with members and meetings
 2. Display committees as cards: name, description, member count, meeting count
 3. Expand card to show: members list (name, email, role), recent meetings
@@ -169,15 +176,16 @@ TypeScript clean, governance page loads with 5 tabs and real data.
    - Add/remove members → `addCommitteeMember()`, `removeCommitteeMember()`
    - Schedule meeting → `createCommitteeMeeting()` (from governance DAL)
 5. Meeting details: date, agenda items, status, attendees, minutes ref
-  </action>
-  <verify>
-Policy CRUD and committee management work end-to-end.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Policy CRUD and committee management work end-to-end.
+   </verify>
+   <done>
+
 - PolicyTable with real data, CRUD, due-for-review alerts
 - CommitteePanel with members, meetings, CRUD operations
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build ACB Workspace with consolidated dashboards</name>
@@ -189,20 +197,54 @@ Policy CRUD and committee management work end-to-end.
 Create ACB workspace dashboard (R81):
 
 1. Add DAL function to `governance.ts`:
+
    ```typescript
    export async function getAcbDashboardData(session: Session) {
      const tenantId = (session.user as any).tenantId as string;
      const db = prismaForTenant(tenantId);
 
-     const [criticalObs, complianceStats, overdueItems, recentAudits, riskMetrics] = await Promise.all([
-       db.observation.count({ where: { tenantId, severity: { in: ["HIGH", "CRITICAL"] }, status: { not: "CLOSED" } } }),
-       db.complianceItem.groupBy({ by: ["status"], where: { tenantId }, _count: true }),
-       db.complianceItem.count({ where: { tenantId, dueDate: { lt: new Date() }, status: { notIn: ["CLOSED", "ZAC_APPROVED"] } } }),
+     const [
+       criticalObs,
+       complianceStats,
+       overdueItems,
+       recentAudits,
+       riskMetrics,
+     ] = await Promise.all([
+       db.observation.count({
+         where: {
+           tenantId,
+           severity: { in: ["HIGH", "CRITICAL"] },
+           status: { not: "CLOSED" },
+         },
+       }),
+       db.complianceItem.groupBy({
+         by: ["status"],
+         where: { tenantId },
+         _count: true,
+       }),
+       db.complianceItem.count({
+         where: {
+           tenantId,
+           dueDate: { lt: new Date() },
+           status: { notIn: ["CLOSED", "ZAC_APPROVED"] },
+         },
+       }),
        db.auditEngagement.count({ where: { tenantId, status: "COMPLETED" } }),
-       db.housekeepingMetric.findMany({ where: { tenantId, agingDays: { gte: 90 } }, take: 5, orderBy: { agingDays: "desc" }, include: { branch: { select: { name: true } } } }),
+       db.housekeepingMetric.findMany({
+         where: { tenantId, agingDays: { gte: 90 } },
+         take: 5,
+         orderBy: { agingDays: "desc" },
+         include: { branch: { select: { name: true } } },
+       }),
      ]);
 
-     return { criticalObs, complianceStats, overdueItems, recentAudits, riskMetrics };
+     return {
+       criticalObs,
+       complianceStats,
+       overdueItems,
+       recentAudits,
+       riskMetrics,
+     };
    }
    ```
 
@@ -214,16 +256,17 @@ Create ACB workspace dashboard (R81):
    - "Generate Quarterly Pack" CTA button (links to agenda builder)
 
 3. Use shadcn Card, Badge, Progress components
-  </action>
-  <verify>
-ACB workspace renders dashboard with real metrics.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   ACB workspace renders dashboard with real metrics.
+   </verify>
+   <done>
+
 - ACB workspace dashboard with executive summary cards
 - Compliance status breakdown
 - Risk alerts for high-aging housekeeping metrics
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build ACB Agenda Builder</name>
@@ -240,6 +283,7 @@ Create ACB agenda builder for quarterly pack generation (R82):
    - "Generate Quarterly Pack" button
 
 2. Wire to `buildAcbAgenda()` action:
+
    ```typescript
    import { buildAcbAgenda } from "@/actions/governance/build-acb-agenda";
    ```
@@ -257,16 +301,17 @@ Create ACB agenda builder for quarterly pack generation (R82):
 4. Previous quarterly packs list:
    - Show past meetings generated by agenda builder
    - Status: SCHEDULED / COMPLETED / CANCELLED
-  </action>
-  <verify>
-Agenda builder generates quarterly pack and creates meeting record.
-  </verify>
-  <done>
+     </action>
+     <verify>
+     Agenda builder generates quarterly pack and creates meeting record.
+     </verify>
+     <done>
+
 - ACB agenda builder generates quarterly packs
 - 5 auto-generated agenda sections from live data
 - Meeting record created in CommitteeMeeting table
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Board Review Calendar</name>
@@ -283,18 +328,43 @@ Create board review calendar with RBI-mandated items (R83):
    - Click date → show meeting details
 
 3. RBI-mandated items list (hardcoded schedule per regulations):
+
    ```typescript
    const RBI_MANDATED_ITEMS = [
-     { title: "ACB Meeting — Quarterly Review", frequency: "QUARTERLY", months: [3, 6, 9, 12] },
+     {
+       title: "ACB Meeting — Quarterly Review",
+       frequency: "QUARTERLY",
+       months: [3, 6, 9, 12],
+     },
      { title: "IS Audit Report to Board", frequency: "ANNUAL", months: [3] },
-     { title: "Concurrent Audit Report", frequency: "QUARTERLY", months: [3, 6, 9, 12] },
+     {
+       title: "Concurrent Audit Report",
+       frequency: "QUARTERLY",
+       months: [3, 6, 9, 12],
+     },
      { title: "RBIA Plan Approval", frequency: "ANNUAL", months: [3] },
-     { title: "Risk Management Policy Review", frequency: "ANNUAL", months: [6] },
+     {
+       title: "Risk Management Policy Review",
+       frequency: "ANNUAL",
+       months: [6],
+     },
      { title: "KYC/AML Policy Review", frequency: "ANNUAL", months: [9] },
-     { title: "Cyber Security Review", frequency: "HALF_YEARLY", months: [3, 9] },
+     {
+       title: "Cyber Security Review",
+       frequency: "HALF_YEARLY",
+       months: [3, 9],
+     },
      { title: "Investment Policy Review", frequency: "ANNUAL", months: [6] },
-     { title: "Statutory Audit Report Discussion", frequency: "ANNUAL", months: [6] },
-     { title: "RBI Inspection Report Discussion", frequency: "AS_NEEDED", months: [] },
+     {
+       title: "Statutory Audit Report Discussion",
+       frequency: "ANNUAL",
+       months: [6],
+     },
+     {
+       title: "RBI Inspection Report Discussion",
+       frequency: "AS_NEEDED",
+       months: [],
+     },
    ];
    ```
 
@@ -304,16 +374,17 @@ Create board review calendar with RBI-mandated items (R83):
    - ❌ Missing (no meeting scheduled for required period)
 
 5. "Schedule Meeting" action for missing mandated items
-  </action>
-  <verify>
-Board calendar shows meetings and highlights missing mandated items.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Board calendar shows meetings and highlights missing mandated items.
+   </verify>
+   <done>
+
 - Board review calendar with month view
 - RBI-mandated items schedule with compliance indicators
 - Missing items highlighted for action
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build RBI Inspection Support Pack</name>
@@ -325,6 +396,7 @@ Board calendar shows meetings and highlights missing mandated items.
 Create one-click RBI inspection support pack generator (R86):
 
 1. Create server action `generate-inspection-pack.ts`:
+
    ```typescript
    "use server";
    // Aggregates 9 components for RBI inspection pack:
@@ -371,16 +443,17 @@ Create one-click RBI inspection support pack generator (R86):
    - Each section: expandable with summary stats + data table
    - "Export as PDF" button (future enhancement placeholder)
    - "Export as XLSX" button (future enhancement placeholder)
-  </action>
-  <verify>
-Inspection pack aggregates 9 components from real data.
-  </verify>
-  <done>
+     </action>
+     <verify>
+     Inspection pack aggregates 9 components from real data.
+     </verify>
+     <done>
+
 - One-click RBI inspection pack with 9 components
 - Data aggregated from multiple models
 - Accordion display with summary stats
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -395,9 +468,10 @@ Inspection pack aggregates 9 components from real data.
 6. Agenda builder generates quarterly packs
 7. Board calendar shows mandated items
 8. RBI inspection pack aggregates 9 components
-</verification>
+   </verification>
 
 <success_criteria>
+
 - ✅ `/governance` page uses real DAL (PolicyDocument, Committee, Meeting)
 - ✅ ACB workspace with consolidated dashboards
 - ✅ ACB agenda builder auto-generates quarterly packs
@@ -405,7 +479,7 @@ Inspection pack aggregates 9 components from real data.
 - ✅ RBI inspection support pack (one-click 9-component report)
 - ✅ TypeScript compilation clean
 - ✅ R81-R86 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

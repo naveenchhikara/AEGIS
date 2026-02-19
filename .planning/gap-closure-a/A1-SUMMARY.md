@@ -31,6 +31,7 @@
   - Returns sorted array (urgent audits first)
 
 **Type Definition:**
+
 ```typescript
 export type BranchAuditSchedule = {
   branchId: string;
@@ -46,6 +47,7 @@ export type BranchAuditSchedule = {
 ```
 
 **Conventions Followed:**
+
 - ✅ Uses `prismaForTenant(tenantId)` for tenant isolation
 - ✅ Session-based authentication
 - ✅ Follows DAL pattern from `ram.ts`
@@ -58,6 +60,7 @@ export type BranchAuditSchedule = {
 **Functionality:**
 
 Two-mode operation:
+
 1. **Preview Mode** (`autoCreateEngagements: false`):
    - Fetches branch schedules from DAL
    - Returns computed schedules without database writes
@@ -70,16 +73,19 @@ Two-mode operation:
    - Sets audit context for AuditLog trigger
 
 **Return Type:**
+
 ```typescript
 | { success: true; data: { preview?: BranchAuditSchedule[]; planId?: string; engagementsCount?: number } }
 | { success: false; error: string }
 ```
 
 **Security:**
+
 - Permission check: `hasPermission(userRoles, "audit_plan:create")`
 - Tenant isolation via `session.tenantId`
 
 **Conventions Followed:**
+
 - ✅ "use server" directive (first line)
 - ✅ Standard server action boilerplate from CONVENTIONS.md
 - ✅ Input validation with Zod
@@ -93,14 +99,18 @@ Two-mode operation:
 ### 3. Schemas (`src/actions/audit-plans/schemas.ts`)
 
 **Schema Definition:**
+
 ```typescript
 export const GenerateAnnualPlanSchema = z.object({
-  fiscalYear: z.string().regex(/^\d{4}-\d{2}$/, "Invalid fiscal year format (e.g., 2025-26)"),
+  fiscalYear: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/, "Invalid fiscal year format (e.g., 2025-26)"),
   autoCreateEngagements: z.boolean().default(false), // Preview mode by default
 });
 ```
 
 **Validation:**
+
 - Fiscal year format: `"YYYY-YY"` (e.g., `"2025-26"`)
 - Auto-create flag defaults to `false` (preview mode)
 
@@ -126,6 +136,7 @@ export const GenerateAnnualPlanSchema = z.object({
 - **Loading States:** Button disabled states during API calls
 
 **User Workflow:**
+
 1. Select fiscal year from dropdown
 2. Click "Generate Preview" → see computed schedules
 3. Review the preview table
@@ -152,6 +163,7 @@ export const GenerateAnnualPlanSchema = z.object({
      - Empty state for no plans
 
 **Data Fetching:**
+
 ```typescript
 const auditPlans = await db.auditPlan.findMany({
   where: { tenantId },
@@ -165,6 +177,7 @@ const auditPlans = await db.auditPlan.findMany({
 ```
 
 **Replaced:**
+
 - ❌ Removed all mock data imports (`@/data`)
 - ❌ Removed client-side state management
 - ❌ Removed old audit calendar/cards view
@@ -177,11 +190,11 @@ const auditPlans = await db.auditPlan.findMany({
 
 **Priority Levels (based on RAM Score):**
 
-| RAM Score | Priority | Audit Frequency | Rule ID |
-|-----------|----------|----------------|---------|
-| > 3.5     | HIGH     | 12 months      | R8      |
-| 2.5 - 3.5 | MEDIUM   | 18 months      | R8      |
-| < 2.5     | LOW      | 24 months      | R8      |
+| RAM Score | Priority | Audit Frequency     | Rule ID  |
+| --------- | -------- | ------------------- | -------- |
+| > 3.5     | HIGH     | 12 months           | R8       |
+| 2.5 - 3.5 | MEDIUM   | 18 months           | R8       |
+| < 2.5     | LOW      | 24 months           | R8       |
 | null      | LOW      | 12 months (default) | Fallback |
 
 **Implementation Logic:**
@@ -216,15 +229,17 @@ const auditPlans = await db.auditPlan.findMany({
 1. **User Action:**  
    User selects fiscal year and clicks "Generate Preview"
 
-2. **Server Action Call:**  
+2. **Server Action Call:**
+
    ```typescript
-   generateAnnualPlan({ fiscalYear: "2025-26", autoCreateEngagements: false })
+   generateAnnualPlan({ fiscalYear: "2025-26", autoCreateEngagements: false });
    ```
 
 3. **DAL Execution:**  
    `getBranchesForAnnualPlan()` computes schedules for all branches
 
-4. **Response:**  
+4. **Response:**
+
    ```typescript
    {
      success: true,
@@ -244,6 +259,7 @@ const auditPlans = await db.auditPlan.findMany({
    No AuditPlan or AuditEngagement records are created (preview only)
 
 **Benefits:**
+
 - ✅ Users can review schedules before committing
 - ✅ Detect issues (e.g., too many audits in one quarter)
 - ✅ Validate RAM scores and frequency data
@@ -258,6 +274,7 @@ const auditPlans = await db.auditPlan.findMany({
 **Decision:** When creating AuditPlan, default to Q1 (Apr-Jun) for annual plans.
 
 **Rationale:**
+
 - Annual plans typically cover the full fiscal year
 - Q1 is the start of Indian FY (April 1)
 - Individual engagements have their own `scheduledStartDate` mapped to quarters
@@ -273,6 +290,7 @@ Create 4 separate plans (one per quarter) — rejected due to complexity and unc
 **Decision:** If AuditPlan already exists for the year/quarter, update its status to PLANNED and reuse its ID.
 
 **Rationale:**
+
 - Prevents duplicate plan records
 - Allows regeneration of annual plan (e.g., after updating RAM scores)
 - Existing engagements are not automatically deleted (manual cleanup required)
@@ -287,6 +305,7 @@ Add option to delete old engagements before regenerating.
 **Decision:** Set `scheduledStartDate` to the computed `nextAuditDate` (exact date, not just quarter).
 
 **Rationale:**
+
 - Provides precise scheduling information
 - Matches the plan's promise of "auto-scheduling from RAM + last_audit_date"
 - Users can adjust dates later via engagement management UI
@@ -299,11 +318,13 @@ Set to first day of assigned quarter — rejected as too vague.
 ### 4. Priority Badge Styling
 
 **Decision:** Use Tailwind variant props for Badge component:
+
 - HIGH → `destructive` (red)
 - MEDIUM → `default` (blue)
 - LOW → `secondary` (gray)
 
 **Rationale:**
+
 - Visual hierarchy matches urgency
 - Consistent with other status badges in the app
 - Accessible color contrast
@@ -327,6 +348,7 @@ Set to first day of assigned quarter — rejected as too vague.
 - [x] Verify toast notifications on success/error
 
 **TypeScript Compilation:**
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 # Exit code 0 — No errors in new files
@@ -336,13 +358,13 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 
 ## Files Modified
 
-| File | Lines | Type | Description |
-|------|-------|------|-------------|
-| `src/data-access/audit-plans.ts` | 170 | NEW | DAL functions for audit plan computation |
-| `src/actions/audit-plans/schemas.ts` | 18 | NEW | Zod schema for plan generation |
-| `src/actions/audit-plans/generate-annual-plan.ts` | 160 | NEW | Server action for plan generation |
-| `src/components/audit-plans/plan-generator.tsx` | 210 | NEW | Client component for plan generation UI |
-| `src/app/(dashboard)/audit-plans/page.tsx` | 180 | REPLACED | Server component with real data (replaced mock version) |
+| File                                              | Lines | Type     | Description                                             |
+| ------------------------------------------------- | ----- | -------- | ------------------------------------------------------- |
+| `src/data-access/audit-plans.ts`                  | 170   | NEW      | DAL functions for audit plan computation                |
+| `src/actions/audit-plans/schemas.ts`              | 18    | NEW      | Zod schema for plan generation                          |
+| `src/actions/audit-plans/generate-annual-plan.ts` | 160   | NEW      | Server action for plan generation                       |
+| `src/components/audit-plans/plan-generator.tsx`   | 210   | NEW      | Client component for plan generation UI                 |
+| `src/app/(dashboard)/audit-plans/page.tsx`        | 180   | REPLACED | Server component with real data (replaced mock version) |
 
 **Total:** 738 new lines  
 **Deleted:** ~140 lines of mock data code
@@ -351,16 +373,16 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 
 ## Success Criteria Verification
 
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| R9 gap closed | ✅ | Annual audit plan generator implemented end-to-end |
-| DAL layer | ✅ | `audit-plans.ts` computes next audit dates using RAM-derived frequency |
-| Server action | ✅ | `generateAnnualPlan()` creates AuditPlan + AuditEngagement in transaction |
-| UI | ✅ | `/audit-plans` page displays real data with two-step generation |
-| Frequency rules applied | ✅ | RAM >3.5 → 12mo, 2.5-3.5 → 18mo, <2.5 → 24mo |
-| No mock data | ✅ | All placeholder arrays removed (verified with grep) |
-| TypeScript | ✅ | All files compile successfully |
-| Conventions followed | ✅ | Server action boilerplate, DAL pattern, component patterns match CONVENTIONS.md |
+| Criterion               | Status | Evidence                                                                        |
+| ----------------------- | ------ | ------------------------------------------------------------------------------- |
+| R9 gap closed           | ✅     | Annual audit plan generator implemented end-to-end                              |
+| DAL layer               | ✅     | `audit-plans.ts` computes next audit dates using RAM-derived frequency          |
+| Server action           | ✅     | `generateAnnualPlan()` creates AuditPlan + AuditEngagement in transaction       |
+| UI                      | ✅     | `/audit-plans` page displays real data with two-step generation                 |
+| Frequency rules applied | ✅     | RAM >3.5 → 12mo, 2.5-3.5 → 18mo, <2.5 → 24mo                                    |
+| No mock data            | ✅     | All placeholder arrays removed (verified with grep)                             |
+| TypeScript              | ✅     | All files compile successfully                                                  |
+| Conventions followed    | ✅     | Server action boilerplate, DAL pattern, component patterns match CONVENTIONS.md |
 
 ---
 
@@ -389,6 +411,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ## Conclusion
 
 R9 is now fully implemented. The annual audit plan generator auto-schedules branch audits based on:
+
 - **RAM scores** (risk-based prioritization)
 - **Last audit date** (ensuring compliance with frequency requirements)
 - **Audit frequency** (RAM-derived 12/18/24-month cycles)

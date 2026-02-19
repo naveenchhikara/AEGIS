@@ -114,7 +114,10 @@ export function TeamAssignmentPanel({
   const handleRemove = async (teamMemberId: string) => {
     setIsRemoving(true);
     const member = teamMembers.find((m: any) => m.id === teamMemberId);
-    const result = await removeTeamMember({ engagementId, userId: member?.userId ?? teamMemberId });
+    const result = await removeTeamMember({
+      engagementId,
+      userId: member?.userId ?? teamMemberId,
+    });
 
     if (result.success) {
       toast.success("Team member removed successfully");
@@ -131,7 +134,7 @@ export function TeamAssignmentPanel({
     if (current.includes(section)) {
       setValue(
         "assignedSections",
-        current.filter((s) => s !== section)
+        current.filter((s) => s !== section),
       );
     } else {
       setValue("assignedSections", [...current, section]);
@@ -162,7 +165,10 @@ export function TeamAssignmentPanel({
         {/* Add Team Member Form */}
         {showAddForm && (
           <div className="rounded-lg border p-4">
-            <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            <form
+              onSubmit={handleSubmit(onSubmit as any)}
+              className="space-y-4"
+            >
               <div className="grid gap-4 md:grid-cols-2">
                 {/* User Selector */}
                 <div className="space-y-2">
@@ -178,7 +184,7 @@ export function TeamAssignmentPanel({
                     <SelectContent>
                       {users
                         .filter(
-                          (u) => !teamMembers.some((tm) => tm.userId === u.id)
+                          (u) => !teamMembers.some((tm) => tm.userId === u.id),
                         )
                         .map((user) => (
                           <SelectItem key={user.id} value={user.id}>
@@ -215,14 +221,14 @@ export function TeamAssignmentPanel({
               {/* Section Allocation (Multi-select) */}
               <div className="space-y-2">
                 <Label>Assigned Sections</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Select the examination areas this team member will work on
                 </p>
                 <div className="grid grid-cols-2 gap-2 rounded-md border p-4 md:grid-cols-3 lg:grid-cols-4">
                   {examinationAreas.map((section) => (
                     <div
                       key={section}
-                      className="flex flex-row items-start space-x-2 space-y-0"
+                      className="flex flex-row items-start space-y-0 space-x-2"
                     >
                       <Checkbox
                         id={`section-${section}`}
@@ -264,7 +270,7 @@ export function TeamAssignmentPanel({
         {/* Team Members Table */}
         {teamMembers.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No team members assigned yet. Click "Add Team Member" to get
               started.
             </p>
@@ -297,7 +303,7 @@ export function TeamAssignmentPanel({
                   </TableCell>
                   <TableCell>
                     {member.assignedSections.length === 0 ? (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         No sections assigned
                       </span>
                     ) : (
@@ -316,7 +322,7 @@ export function TeamAssignmentPanel({
                       size="sm"
                       onClick={() => setRemovingId(member.id)}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="text-destructive h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

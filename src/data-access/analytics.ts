@@ -72,8 +72,12 @@ export async function getAuditPlanProgress(tenantId: string) {
     });
 
     const total = engagements.length;
-    const completed = engagements.filter((e) => e.status === "COMPLETED").length;
-    const inProgress = engagements.filter((e) => e.status === "IN_PROGRESS").length;
+    const completed = engagements.filter(
+      (e) => e.status === "COMPLETED",
+    ).length;
+    const inProgress = engagements.filter(
+      (e) => e.status === "IN_PROGRESS",
+    ).length;
     const planned = engagements.filter((e) => e.status === "PLANNED").length;
 
     results.push({
@@ -244,7 +248,7 @@ export async function getNpaMovement(tenantId: string) {
 export async function getAuditCalendarEvents(
   tenantId: string,
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
 ) {
   const db = prismaForTenant(tenantId); return db.auditCalendar.findMany({
     where: {

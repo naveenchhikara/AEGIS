@@ -3,6 +3,7 @@
 Validated codebase: `/root/.openclaw/workspace/AEGIS`
 
 Focus areas requested:
+
 - Concurrent audit module
 - Regulatory observation ATR
 - Policy document management
@@ -32,6 +33,7 @@ Focus areas requested:
 ## Evidence / notes (what was checked)
 
 ### R69–R70: Concurrent audit module (checklist + branch visit tracking)
+
 - **DAL:** `src/data-access/concurrent-audit.ts`
   - Uses `prismaForTenant(tenantId)` for all reads/writes.
   - Real CRUD against `concurrentAuditTemplate`.
@@ -49,6 +51,7 @@ Focus areas requested:
 - **Naming mismatch vs request:** requirement list references `src/data-access/concurrent.ts`, but repo uses `src/data-access/concurrent-audit.ts`.
 
 ### R71–R72: Regulatory observation ATR
+
 - **DAL:** `src/data-access/regulatory.ts` uses `prismaForTenant`.
 - **Actions:**
   - `src/actions/regulatory/manage-observation.ts` (Zod + audit context + prismaForTenant + permissions)
@@ -56,6 +59,7 @@ Focus areas requested:
 - **UI:** `src/app/(dashboard)/regulatory/page.tsx` + `src/components/regulatory/*` wired to real DAL/actions.
 
 ### R73–R74: Policy document management (lifecycle + review tracking)
+
 - **DAL:** `src/data-access/governance.ts` (`getPolicyDocuments`, `getPoliciesDueForReview`, CRUD)
 - **Actions:** `src/actions/governance/manage-policy.ts` (Zod + audit context + prismaForTenant)
 - **UI:**
@@ -63,6 +67,7 @@ Focus areas requested:
   - `src/components/governance/policy-table.tsx` uses server actions and shows “due for review” alert.
 
 ### R75–R76: Committee tracking (meeting minutes + action items)
+
 - **DAL:** `src/data-access/governance.ts` (`getCommittees`, `getCommitteeMeetings`, etc.)
 - **Actions:** `src/actions/governance/manage-committee.ts` (Zod + audit context + prismaForTenant)
 - **UI:** `src/components/governance/committee-panel.tsx` schedules meetings and lists members/meetings.
@@ -71,11 +76,13 @@ Focus areas requested:
   - Action items: no model/workflow; agenda JSON exists but no action tracking/closure.
 
 ### R77–R78: KRI thresholds + breach monitoring
+
 - **DAL:** `src/data-access/risk-management.ts` includes `getBreachedKRIs()`.
 - **Actions:** `src/actions/risk-management/manage-risk.ts` includes `manageKRI()` (Zod + breachStatus computation + prismaForTenant).
 - **UI:** `src/app/(dashboard)/risk-management/page.tsx` loads breached KRIs and renders `src/components/risk-management/kri-dashboard.tsx`.
 
 ### R79–R80: Housekeeping risk metrics capture
+
 - **DAL:** `src/data-access/governance.ts` (`getHousekeepingMetrics`, `getHighRiskHousekeepingMetrics`).
 - **Actions:** `src/actions/housekeeping/manage-metric.ts` (Zod + audit context + prismaForTenant + upsert on unique key).
 - **UI:**

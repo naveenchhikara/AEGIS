@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { rapidEntryObservations } from "@/actions/concurrent-audit/rapid-entry";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,7 +94,7 @@ export function RapidEntryWorkbench({
             finding: "",
             severity: "MEDIUM" as const,
             recommendation: "",
-          })
+          }),
         );
         setObservations(
           newObservations.length > 0
@@ -101,7 +107,7 @@ export function RapidEntryWorkbench({
                   severity: "MEDIUM",
                   recommendation: "",
                 },
-              ]
+              ],
         );
       }
     }
@@ -129,10 +135,12 @@ export function RapidEntryWorkbench({
   const updateObservation = (
     id: string,
     field: keyof ObservationRow,
-    value: string
+    value: string,
   ) => {
     setObservations(
-      observations.map((obs) => (obs.id === id ? { ...obs, [field]: value } : obs))
+      observations.map((obs) =>
+        obs.id === id ? { ...obs, [field]: value } : obs,
+      ),
     );
   };
 
@@ -151,11 +159,13 @@ export function RapidEntryWorkbench({
 
     // Validate that at least one observation has content
     const validObservations = observations.filter(
-      (obs) => obs.particulars.trim() && obs.finding.trim()
+      (obs) => obs.particulars.trim() && obs.finding.trim(),
     );
 
     if (validObservations.length === 0) {
-      toast.error("Please add at least one observation with particulars and finding");
+      toast.error(
+        "Please add at least one observation with particulars and finding",
+      );
       return;
     }
 
@@ -195,7 +205,7 @@ export function RapidEntryWorkbench({
   if (!canExecute) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
+        <CardContent className="text-muted-foreground py-8 text-center">
           You do not have permission to create concurrent audit observations.
         </CardContent>
       </Card>
@@ -206,7 +216,7 @@ export function RapidEntryWorkbench({
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">Rapid Observation Entry</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Batch entry for concurrent audit findings
         </p>
       </div>
@@ -219,7 +229,7 @@ export function RapidEntryWorkbench({
             <CardDescription>Select branch and scope area</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="branch">Branch *</Label>
                 <Select value={branchId} onValueChange={setBranchId} required>
@@ -283,8 +293,9 @@ export function RapidEntryWorkbench({
                   </SelectContent>
                 </Select>
                 {selectedTemplateId && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Checklist items loaded. Fill in findings and severity for each item.
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Checklist items loaded. Fill in findings and severity for
+                    each item.
                   </p>
                 )}
               </div>
@@ -294,7 +305,7 @@ export function RapidEntryWorkbench({
 
         {/* Observation Entry Rows */}
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <Label className="text-base">Observations</Label>
             <Button
               type="button"
@@ -311,8 +322,8 @@ export function RapidEntryWorkbench({
             <Card key={obs.id}>
               <CardContent className="pt-4">
                 <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm font-medium text-muted-foreground">
+                  <div className="flex items-start justify-between">
+                    <span className="text-muted-foreground text-sm font-medium">
                       Observation #{index + 1}
                     </span>
                     {observations.length > 1 && (
@@ -327,13 +338,17 @@ export function RapidEntryWorkbench({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <Label>Particulars *</Label>
                       <Input
                         value={obs.particulars}
                         onChange={(e) =>
-                          updateObservation(obs.id, "particulars", e.target.value)
+                          updateObservation(
+                            obs.id,
+                            "particulars",
+                            e.target.value,
+                          )
                         }
                         placeholder="What was checked/audited"
                         required
@@ -361,7 +376,7 @@ export function RapidEntryWorkbench({
                           updateObservation(
                             obs.id,
                             "severity",
-                            value as ObservationRow["severity"]
+                            value as ObservationRow["severity"],
                           )
                         }
                       >
@@ -382,7 +397,11 @@ export function RapidEntryWorkbench({
                       <Input
                         value={obs.recommendation}
                         onChange={(e) =>
-                          updateObservation(obs.id, "recommendation", e.target.value)
+                          updateObservation(
+                            obs.id,
+                            "recommendation",
+                            e.target.value,
+                          )
                         }
                         placeholder="Suggested action"
                       />
@@ -415,7 +434,9 @@ export function RapidEntryWorkbench({
             Reset
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : `Create ${observations.length} Observations`}
+            {isSubmitting
+              ? "Creating..."
+              : `Create ${observations.length} Observations`}
           </Button>
         </div>
       </form>

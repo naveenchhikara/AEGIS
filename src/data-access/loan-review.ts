@@ -13,7 +13,7 @@ export async function getLoanReviewsForEngagement(
     productType?: string;
     skip?: number;
     take?: number;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -44,7 +44,7 @@ export async function getLoanReviewsForEngagement(
  */
 export async function getLoanReviewSummary(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -67,7 +67,7 @@ export async function getLoanReviewSummary(
  */
 export async function getSmaNpaEntriesForEngagement(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -99,7 +99,7 @@ export async function getSmaNpaEntriesForEngagement(
  */
 export async function getEngagementForLoanReview(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);

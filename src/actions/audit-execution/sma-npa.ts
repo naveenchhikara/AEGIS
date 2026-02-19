@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { SaveSmaNpaEntriesSchema, type SaveSmaNpaEntriesInput } from "./schemas";
+import {
+  SaveSmaNpaEntriesSchema,
+  type SaveSmaNpaEntriesInput,
+} from "./schemas";
 
 /**
  * Save SMA/NPA entries for an engagement.
@@ -88,7 +91,9 @@ export async function saveSmaNpaEntries(input: SaveSmaNpaEntriesInput) {
     return { success: true as const, data: result };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to save SMA/NPA entries.";
+      error instanceof Error
+        ? error.message
+        : "Failed to save SMA/NPA entries.";
     logger.error({ error, action: "save_sma_npa_entries", tenantId }, message);
     return { success: false as const, error: message };
   }

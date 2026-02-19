@@ -80,17 +80,23 @@ Wire the `/regulatory` page to real database and build ATR workflow UI with para
 Replace mock data with real DAL calls:
 
 1. Import DAL functions:
+
    ```typescript
-   import { getRegulatoryObservations, getPendingAtrObservations } from "@/data-access/regulatory";
+   import {
+     getRegulatoryObservations,
+     getPendingAtrObservations,
+   } from "@/data-access/regulatory";
    ```
 
 2. Replace `const observations: any[] = [];` with:
+
    ```typescript
    const observations = await getRegulatoryObservations(session);
    const pendingAtr = await getPendingAtrObservations(session);
    ```
 
 3. Fetch Issues for para-to-issue mapping:
+
    ```typescript
    import { getIssues } from "@/data-access/issues";
    const issues = await getIssues(session);
@@ -99,6 +105,7 @@ Replace mock data with real DAL calls:
 4. Add Tabs layout: "All Observations", "Pending ATR", "Mapped to Issues"
 
 5. Pass data to components:
+
    ```typescript
    <Tabs defaultValue="all" className="space-y-4">
      <TabsList>
@@ -119,12 +126,14 @@ Replace mock data with real DAL calls:
    ```
 
 6. Add permission check for `regulatory:manage` and `regulatory:atr_submit`
-  </action>
-  <verify>
+   </action>
+   <verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false 2>&1 | grep -c "error TS"
 ```
+
   </verify>
   <done>
 - `/regulatory` page fetches real RegulatoryObservation data
@@ -142,6 +151,7 @@ pnpm exec tsc --noEmit --pretty false 2>&1 | grep -c "error TS"
 Update the RegulatoryTable component to handle real data:
 
 1. Props interface:
+
    ```typescript
    interface RegulatoryTableProps {
      observations: Array<{
@@ -187,16 +197,17 @@ Update the RegulatoryTable component to handle real data:
 5. Edit observation dialog (pre-filled)
 
 6. "Map to Issue" action (opens ParaIssueMappingDialog)
-  </action>
-  <verify>
-Table renders real data with filters and CRUD operations.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Table renders real data with filters and CRUD operations.
+   </verify>
+   <done>
+
 - Regulatory table displays real observations with filters
 - CRUD operations wired to manageRegulatoryObservation
 - Source/severity/ATR status badges rendered
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build ATR Workflow Panel</name>
@@ -223,12 +234,23 @@ Create ATR (Action Taken Report) workflow panel (R78):
      - ACCEPTED: show accepted badge with date
 
 3. Submit handler:
+
    ```typescript
    import { submitAtr } from "@/actions/regulatory/submit-atr";
-   
-   const handleSubmit = async (observationId: string, atrText: string, action: string) => {
-     const result = await submitAtr({ observationId, atrText, action, remarks: "" });
-     if (result.success) toast.success(`ATR ${action.toLowerCase()} successfully`);
+
+   const handleSubmit = async (
+     observationId: string,
+     atrText: string,
+     action: string,
+   ) => {
+     const result = await submitAtr({
+       observationId,
+       atrText,
+       action,
+       remarks: "",
+     });
+     if (result.success)
+       toast.success(`ATR ${action.toLowerCase()} successfully`);
      else toast.error(result.error);
    };
    ```
@@ -236,17 +258,18 @@ Create ATR (Action Taken Report) workflow panel (R78):
 4. Visual workflow stepper showing current state
 
 5. History panel showing ATR status changes (timestamps: submittedAt, acceptedAt)
-  </action>
-  <verify>
-ATR workflow transitions work: draft→submitted, submitted→accepted, submitted→further_info.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   ATR workflow transitions work: draft→submitted, submitted→accepted, submitted→further_info.
+   </verify>
+   <done>
+
 - ATR workflow panel with state transition buttons
 - ATR text editor with submit/accept/request-info actions
 - Visual workflow stepper showing current state
 - Permission-based button visibility
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Para-to-Issue Mapping</name>
@@ -282,6 +305,7 @@ Create para-to-issue mapping component (R79):
 ```typescript
 import { manageRegulatoryObservation } from "@/actions/regulatory/manage-observation";
 ```
+
   </action>
   <verify>
 Para-to-issue mapping creates/links Issues to regulatory observations.
@@ -306,9 +330,10 @@ Para-to-issue mapping creates/links Issues to regulatory observations.
 5. Para-to-issue mapping creates linkages
 6. Filters work (source, severity, ATR status)
 7. Tenant isolation maintained
-</verification>
+   </verification>
 
 <success_criteria>
+
 - ✅ `/regulatory` page uses real DAL instead of mock data
 - ✅ RegulatoryObservation CRUD with source/severity/ATR status
 - ✅ ATR workflow UI with draft → submitted → accepted/further_info transitions
@@ -316,7 +341,7 @@ Para-to-issue mapping creates/links Issues to regulatory observations.
 - ✅ Filterable table with search
 - ✅ TypeScript compilation clean
 - ✅ R77-R79 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

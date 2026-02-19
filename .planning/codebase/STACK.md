@@ -3,6 +3,7 @@
 ## Framework & Core
 
 ### Next.js 16.1.6 (App Router)
+
 - **Output mode:** Standalone (Docker optimized)
 - **Turbopack:** Enabled for dev (`--turbopack` flag)
 - **Server Actions:** Body size limit 5MB
@@ -13,12 +14,14 @@
 - **Config:** `next.config.ts` imports env validation at build time
 
 ### React 19.2.4 / React DOM 19.2.4
+
 - **Server Components:** Default pattern (no `"use client"` unless needed)
 - **Client Components:** Marked with `"use client"` directive (forms, interactivity)
 - **Hooks:** `useActionState`, `useTransition` for progressive enhancement
 - **Suspense:** Used for async boundaries with loading fallbacks
 
 ### TypeScript 5.9.3
+
 - **Config:** `tsconfig.json` with strict mode, paths alias `@/*`
 - **Target:** ES2017
 - **Module resolution:** bundler
@@ -30,6 +33,7 @@
 ## Database & ORM
 
 ### Prisma 7.3.0 (dev) / @prisma/client 7.3.0
+
 - **Adapter:** `@prisma/adapter-pg` 7.3.0 (native PostgreSQL driver)
 - **Provider:** PostgreSQL
 - **Extensions:** `pgcrypto` (UUID generation), `pg_trgm` (fuzzy search)
@@ -43,6 +47,7 @@
   - `db:studio` - Launch Prisma Studio
 
 ### PostgreSQL (via pg 8.18.0)
+
 - **Version:** PostgreSQL 16 (docker-compose)
 - **Database:** `aegis_prod` (production), `aegis` (dev)
 - **Extensions:** pgcrypto, pg_trgm
@@ -54,6 +59,7 @@
 ## Authentication & Authorization
 
 ### Better Auth 1.4.18
+
 - **Adapter:** `better-auth/adapters/prisma`
 - **Strategy:** Cookie-based sessions (`httpOnly`, `secure`, `sameSite: lax`)
 - **Session timeout:** 30 minutes idle
@@ -67,6 +73,7 @@
 - **Server:** `@/lib/auth` (betterAuth config)
 
 ### Authorization (RBAC)
+
 - **Roles:** Prisma enum (AUDITOR, AUDIT_MANAGER, CAE, CCO, CEO, AUDITEE, BOARD_OBSERVER)
 - **Multi-role support:** Users have `roles Role[]` (array, not single role)
 - **Permission system:** `@/lib/permissions` with granular permission checks
@@ -78,7 +85,9 @@
 ## UI Framework
 
 ### Radix UI (Headless Components)
+
 All components version ^1.x or ^2.x (latest stable):
+
 - `@radix-ui/react-accordion` 1.2.12
 - `@radix-ui/react-alert-dialog` 1.1.15
 - `@radix-ui/react-avatar` 1.1.11
@@ -101,19 +110,23 @@ All components version ^1.x or ^2.x (latest stable):
 - `@radix-ui/react-tooltip` 1.2.8
 
 ### shadcn/ui Components
+
 Located in `src/components/ui/`, built on Radix UI + CVA:
+
 - **Styling:** Tailwind CSS utility classes
 - **Variants:** `class-variance-authority` 0.7.1 for component variants
 - **Utils:** `tailwind-merge` 3.4.0 + `clsx` 2.1.1 for class merging (`cn()` helper)
 - **Icons:** `lucide-react` 0.563.0
 
 ### Tailwind CSS 4.1.18
+
 - **Config:** `tailwind.config.ts`
 - **Plugin:** `tailwindcss-animate` 1.0.7 for animations
 - **PostCSS:** `@tailwindcss/postcss` 4.1.18
 - **Prettier integration:** `prettier-plugin-tailwindcss` 0.7.2
 
 ### Theming
+
 - **Theme provider:** `next-themes` 0.4.6 (dark/light mode)
 - **Toast notifications:** `sonner` 2.0.7 (Sonner toast library)
 
@@ -122,11 +135,13 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## State Management
 
 ### TanStack Query 5.90.20 (@tanstack/react-query)
+
 - **Provider:** `@/providers/query-provider` wraps dashboard layout
 - **Pattern:** Server-side initial fetch → client hydration → React Query cache
 - **Usage:** Async state management for dashboard widgets, real-time updates
 
 ### Zustand 5.0.11
+
 - **Stores:** `src/stores/` (minimal usage, prefer React Query for server state)
 - **Pattern:** Client-side ephemeral state (UI toggles, modals, filters)
 
@@ -135,11 +150,13 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Forms & Validation
 
 ### React Hook Form 7.71.1
+
 - **Resolver:** `@hookform/resolvers` 5.2.2 (Zod integration)
 - **Pattern:** Controlled forms with `useActionState` for server actions
 - **Registration:** Direct input registration or controlled via `value`/`onChange`
 
 ### Zod 4.3.6
+
 - **Usage:** Schema validation for server actions, env vars, form inputs
 - **Location:** Action schemas in `src/actions/*/schemas.ts`
 - **Env validation:** `@t3-oss/env-nextjs` 0.13.10 wraps Zod for env vars
@@ -149,11 +166,13 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Email
 
 ### React Email 5.2.8 (dev)
+
 - **Components:** `@react-email/components` 1.0.7
 - **Templates:** `src/emails/` (React components)
 - **Development:** `react-email` CLI for preview
 
 ### AWS SES (@aws-sdk/client-sesv2 3.985.0)
+
 - **Client:** `src/lib/ses-client.ts` (SESv2 API)
 - **Region:** Mumbai (ap-south-1) for RBI data localization
 - **From email:** Configured via `SES_FROM_EMAIL` env var
@@ -164,6 +183,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## File Storage
 
 ### AWS S3 (@aws-sdk/client-s3 3.985.0)
+
 - **Client:** `src/lib/s3.ts` (S3 upload/download helpers)
 - **Presigned URLs:** `@aws-sdk/s3-request-presigner` 3.985.0
 - **Region:** Mumbai (ap-south-1) for RBI data localization
@@ -172,6 +192,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 - **File uploads:** `react-dropzone` 14.4.0 for UI
 
 ### File Type Detection
+
 - **Library:** `file-type` 21.3.0 (magic byte detection)
 - **Usage:** Server-side validation of uploaded files
 
@@ -180,12 +201,14 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Export & Reporting
 
 ### ExcelJS 4.4.0
+
 - **Library:** `src/lib/excel-export.ts` for programmatic Excel generation
 - **Templates:** `src/lib/excel-templates/` for structured exports
 - **Parsers:** `src/lib/excel-parsers/` for import validation
 - **API routes:** `/api/exports/findings`, `/api/exports/compliance`, `/api/exports/audit-plans`
 
 ### @react-pdf/renderer 4.3.2
+
 - **Components:** `src/components/pdf-report/` (Board report PDF generation)
 - **External package:** Added to `serverExternalPackages` in next.config.ts
 - **Usage:** Server-side PDF generation for board reports
@@ -195,6 +218,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Background Jobs
 
 ### pg-boss 12.9.0
+
 - **Queue:** PostgreSQL-based job queue
 - **Setup:** `src/lib/job-queue.ts`
 - **Usage:** Notification batching, async email delivery
@@ -205,6 +229,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Logging
 
 ### Pino 10.3.1
+
 - **Logger:** `src/lib/logger.ts` (structured JSON logging)
 - **Pretty print:** `pino-pretty` 13.1.3 (dev dependency)
 - **Usage:** Server-side logging (actions, DAL functions, errors)
@@ -214,6 +239,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Internationalization
 
 ### next-intl 4.8.2
+
 - **Config:** `src/i18n/` (locale setup)
 - **Plugin:** `createNextIntlPlugin()` in next.config.ts
 - **Pattern:** Server-side i18n with locale detection
@@ -223,6 +249,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Testing
 
 ### Playwright 1.58.2 (@playwright/test)
+
 - **Config:** `playwright.config.ts`
 - **Test dir:** `tests/`
 - **Auth setup:** `tests/auth.setup.ts` (4 role storageStates)
@@ -233,6 +260,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 - **Reports:** HTML report at `playwright-report/`
 
 ### Vitest 4.0.18 (Unit tests, minimal usage)
+
 - **Config:** `vitest.config.ts`
 - **UI:** `@vitest/ui` 4.0.18 (test UI)
 - **Environment:** `happy-dom` 20.5.1 (DOM simulation)
@@ -242,10 +270,12 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Data Visualization
 
 ### Recharts 3.7.0
+
 - **Usage:** Dashboard charts (line, bar, area, pie)
 - **Components:** `src/components/dashboard/` widgets
 
 ### TanStack Table 8.21.3 (@tanstack/react-table)
+
 - **Usage:** Findings table, audit trail, compliance management
 - **Pattern:** Server-side pagination, client-side sorting/filtering
 
@@ -254,10 +284,12 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Date Handling
 
 ### date-fns 4.1.0
+
 - **Usage:** Date formatting, fiscal year calculations
 - **Helpers:** `src/lib/fiscal-year.ts` (Indian FY Q1-Q4 helpers)
 
 ### react-day-picker 9.13.1
+
 - **Component:** Calendar UI (Radix Popover + DayPicker)
 - **Usage:** Date inputs, date range pickers
 
@@ -266,19 +298,23 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Developer Experience
 
 ### ESLint 10.0.0
+
 - **Config:** `eslint.config.mjs` (flat config format)
 - **Extends:** `eslint-config-next` 16.1.6
 - **RC:** `@eslint/eslintrc` 3.3.3 for legacy support
 
 ### Prettier 3.8.1
+
 - **Config:** `.prettierrc`
 - **Plugins:** `prettier-plugin-tailwindcss` 0.7.2 (Tailwind class sorting)
 
 ### tsx 4.21.0
+
 - **Usage:** TypeScript execution for scripts (seed, migrations)
 - **Scripts:** `prisma/seed.ts`, `scripts/*.ts`
 
 ### dotenv 17.2.4 (dev)
+
 - **Usage:** Local .env file loading for development
 - **Production:** Docker secrets via environment variables
 
@@ -287,6 +323,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Build & Runtime
 
 ### Node.js v22.22.0
+
 - **Package manager:** pnpm 10.29.3
 - **Scripts:**
   - `dev` - Next.js dev server with Turbopack
@@ -295,6 +332,7 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
   - `lint` - ESLint
 
 ### Docker
+
 - **Base image:** node:22-alpine (Dockerfile)
 - **Compose:** docker-compose.yml, docker-compose.prod.yml
 - **Standalone:** Next.js standalone output for optimized container
@@ -304,14 +342,17 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Security & Utilities
 
 ### server-only 0.0.1
+
 - **Usage:** Mark server-only modules (prisma.ts, session.ts, etc.)
 - **Pattern:** Import at top of file to throw error if bundled for client
 
 ### crypto (Node.js built-in)
+
 - **Usage:** UUID generation (`randomUUID()` for Better Auth IDs)
 - **Password hashing:** bcryptjs (not native crypto for portability)
 
 ### react-is 19.2.4
+
 - **Usage:** React element type checking
 
 ---
@@ -328,12 +369,14 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Package Manager
 
 **pnpm 10.29.3** - Fast, disk-efficient package manager
+
 - Lock file: `pnpm-lock.yaml`
 - Workspace support: Single-root project (no workspaces)
 
 ---
 
 ## Total Dependencies
+
 - **Production:** 57
 - **Development:** 23
 - **Total:** 80
@@ -343,11 +386,13 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## Multi-Tenancy Architecture
 
 ### Tenant Isolation
+
 - **Database:** Row-Level Security via `prismaForTenant()` extension
 - **Session-based tenantId:** NEVER from URL/body, always from `getRequiredSession()`
 - **Transaction-scoped:** `app.current_tenant_id` parameter per query
 
 ### Optimistic Locking
+
 - **Version field:** `version Int` on Observation model
 - **Pattern:** Check-and-increment on updates to prevent race conditions
 
@@ -356,10 +401,12 @@ Located in `src/components/ui/`, built on Radix UI + CVA:
 ## External Service Dependencies
 
 ### AWS Services (Mumbai Region - ap-south-1)
+
 - **S3:** Evidence file storage
 - **SES:** Transactional email delivery
 
 ### PostgreSQL 16
+
 - **Extensions:** pgcrypto (UUIDs), pg_trgm (full-text search)
 - **Connection:** Direct via `pg` driver + Prisma adapter
 

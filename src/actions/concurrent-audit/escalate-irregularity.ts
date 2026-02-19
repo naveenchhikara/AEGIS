@@ -13,7 +13,12 @@ import { logger } from "@/lib/logger";
  */
 const EscalateIrregularitySchema = z.object({
   observationId: z.string().uuid(),
-  irregularityType: z.enum(["FRAUD", "MAJOR_DEVIATION", "REGULATORY_BREACH", "CRITICAL_RISK"]),
+  irregularityType: z.enum([
+    "FRAUD",
+    "MAJOR_DEVIATION",
+    "REGULATORY_BREACH",
+    "CRITICAL_RISK",
+  ]),
   urgency: z.enum(["IMMEDIATE", "URGENT", "HIGH"]),
   escalateTo: z.array(z.enum(["CAE", "CEO", "ACB_MEMBER"])),
   remarks: z.string().min(10),
@@ -25,7 +30,7 @@ type EscalateIrregularityInput = z.infer<typeof EscalateIrregularitySchema>;
  * Serious irregularity escalation with auto-routing (R75).
  * Concurrent auditors can flag critical findings for immediate escalation.
  * Security: Requires concurrent_audit:execute permission.
- * Side effects: 
+ * Side effects:
  * - Upgrades observation severity to CRITICAL if not already
  * - Creates notification queue entries for escalation recipients
  * - Logs escalation in observation timeline
@@ -114,8 +119,8 @@ export async function escalateIrregularity(input: EscalateIrregularityInput) {
                 remarks: parsed.data.remarks,
               },
             },
-          })
-        )
+          }),
+        ),
       );
 
       return {

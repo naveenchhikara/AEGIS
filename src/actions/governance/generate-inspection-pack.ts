@@ -71,10 +71,7 @@ export async function generateInspectionPack(year: number) {
           select: { code: true, name: true },
         },
       },
-      orderBy: [
-        { severity: "desc" },
-        { createdAt: "asc" },
-      ],
+      orderBy: [{ severity: "desc" }, { createdAt: "asc" }],
     });
 
     // Component 4: Compliance Status Report
@@ -114,10 +111,7 @@ export async function generateInspectionPack(year: number) {
     // Component 8: Policy Review Status
     const policies = await db.policyDocument.findMany({
       where: { tenantId },
-      orderBy: [
-        { category: "asc" },
-        { reviewDueDate: "asc" },
-      ],
+      orderBy: [{ category: "asc" }, { reviewDueDate: "asc" }],
     });
 
     // Component 9: IS Audit Status
@@ -137,16 +131,23 @@ export async function generateInspectionPack(year: number) {
     const stats = {
       totalBranches: await db.branch.count({ where: { tenantId } }),
       totalAudits: auditCoverage.length,
-      completedAudits: auditCoverage.filter((a) => a.status === "COMPLETED").length,
-      criticalObservations: openObs.filter((o) => o.severity === "CRITICAL").length,
+      completedAudits: auditCoverage.filter((a) => a.status === "COMPLETED")
+        .length,
+      criticalObservations: openObs.filter((o) => o.severity === "CRITICAL")
+        .length,
       highObservations: openObs.filter((o) => o.severity === "HIGH").length,
       overdueCompliance: compliance.filter(
-        (c) => c.dueDate < new Date() && !["CLOSED", "ZAC_APPROVED"].includes(c.status)
+        (c) =>
+          c.dueDate < new Date() &&
+          !["CLOSED", "ZAC_APPROVED"].includes(c.status),
       ).length,
       activeRisks: risks.filter((r) => r.status === "OPEN").length,
       kriBreach: kris.length,
       policiesDueReview: policies.filter(
-        (p) => p.reviewDueDate && p.reviewDueDate < new Date() && p.status === "APPROVED"
+        (p) =>
+          p.reviewDueDate &&
+          p.reviewDueDate < new Date() &&
+          p.status === "APPROVED",
       ).length,
     };
 
@@ -169,8 +170,13 @@ export async function generateInspectionPack(year: number) {
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to generate inspection pack.";
-    logger.error({ error, action: "generate_inspection_pack", tenantId }, message);
+      error instanceof Error
+        ? error.message
+        : "Failed to generate inspection pack.";
+    logger.error(
+      { error, action: "generate_inspection_pack", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

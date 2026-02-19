@@ -1,6 +1,12 @@
 import { getAuditEffectivenessKpis } from "@/data-access/qa-assessment";
 import type { Session } from "@/lib/auth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
@@ -125,9 +131,9 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
     },
   ];
 
-  const getStatusColor = (kpi: typeof kpiCards[0]) => {
+  const getStatusColor = (kpi: (typeof kpiCards)[0]) => {
     const { actual, target, reverse } = kpi;
-    
+
     let performance: number;
     if (reverse) {
       // For reverse metrics (lower is better)
@@ -142,7 +148,7 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
     return "red";
   };
 
-  const getTrendIcon = (kpi: typeof kpiCards[0]) => {
+  const getTrendIcon = (kpi: (typeof kpiCards)[0]) => {
     const color = getStatusColor(kpi);
     if (color === "green") return TrendingUp;
     if (color === "yellow") return Minus;
@@ -152,9 +158,12 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold mb-2">Internal Audit Effectiveness KPIs</h2>
-        <p className="text-sm text-muted-foreground">
-          10 key performance indicators measuring internal audit function effectiveness
+        <h2 className="mb-2 text-lg font-semibold">
+          Internal Audit Effectiveness KPIs
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          10 key performance indicators measuring internal audit function
+          effectiveness
         </p>
       </div>
 
@@ -176,7 +185,7 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
                       {kpi.description}
                     </CardDescription>
                   </div>
-                  <Icon className="h-5 w-5 text-muted-foreground" />
+                  <Icon className="text-muted-foreground h-5 w-5" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -203,10 +212,10 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
                       variant="outline"
                       className={
                         statusColor === "green"
-                          ? "bg-green-100 text-green-800 border-green-300"
+                          ? "border-green-300 bg-green-100 text-green-800"
                           : statusColor === "yellow"
-                            ? "bg-amber-100 text-amber-800 border-amber-300"
-                            : "bg-red-100 text-red-800 border-red-300"
+                            ? "border-amber-300 bg-amber-100 text-amber-800"
+                            : "border-red-300 bg-red-100 text-red-800"
                       }
                     >
                       {statusColor === "green"
@@ -218,7 +227,7 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
                   </div>
 
                   {/* Progress bar */}
-                  <div className="w-full bg-secondary rounded-full h-2">
+                  <div className="bg-secondary h-2 w-full rounded-full">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         statusColor === "green"
@@ -232,7 +241,7 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
                           kpi.reverse
                             ? Math.max(0, 100 - (kpi.actual / kpi.target) * 100)
                             : Math.min(100, (kpi.actual / kpi.target) * 100),
-                          100
+                          100,
                         )}%`,
                       }}
                     />
@@ -258,7 +267,9 @@ export async function EffectivenessKpis({ session }: EffectivenessKpisProps) {
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-amber-700">Needs Attention</p>
+              <p className="text-sm font-medium text-amber-700">
+                Needs Attention
+              </p>
               <p className="text-2xl font-bold text-amber-700">
                 {kpiCards.filter((k) => getStatusColor(k) === "yellow").length}
               </p>

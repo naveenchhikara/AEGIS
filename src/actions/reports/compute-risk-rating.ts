@@ -9,13 +9,13 @@ import type { ObservationInput } from "@/services/risk-rating/types";
 
 /**
  * Compute risk rating for an audit engagement.
- * 
+ *
  * Algorithm:
  * 1. Fetch all ISSUED observations for the engagement
  * 2. Determine repeat findings (observation.repeatOfId exists)
  * 3. Compute weighted risk score with RiskRatingService
  * 4. Update AuditEngagement.overallRiskRating
- * 
+ *
  * Security: Requires report:generate permission
  * Returns: { success, data: RiskRatingResult, error? }
  */
@@ -72,7 +72,8 @@ export async function computeRiskRating(engagementId: string) {
 
     // ─── Step 7: Compute Risk Rating ───────────────────────────
     const ratingService = new RiskRatingService();
-    const ratingResult = ratingService.computeEngagementRating(observationInputs);
+    const ratingResult =
+      ratingService.computeEngagementRating(observationInputs);
 
     // ─── Step 8: Update Engagement ─────────────────────────────
     await db.auditEngagement.update({
@@ -89,7 +90,7 @@ export async function computeRiskRating(engagementId: string) {
         ratingBand: ratingResult.ratingBand,
         percentageScore: ratingResult.percentageScore,
       },
-      "Risk rating computed"
+      "Risk rating computed",
     );
 
     // ─── Step 9: Success Response ──────────────────────────────
@@ -101,7 +102,7 @@ export async function computeRiskRating(engagementId: string) {
     // ─── Step 10: Error Handling ───────────────────────────────
     logger.error(
       { error, engagementId, tenantId },
-      "Failed to compute risk rating"
+      "Failed to compute risk rating",
     );
 
     return {

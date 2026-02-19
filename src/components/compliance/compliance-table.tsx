@@ -83,11 +83,17 @@ export function ComplianceTable({
   const router = useRouter();
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [sortField, setSortField] = React.useState<"dueDate" | "daysOpen">("daysOpen");
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("desc");
+  const [sortField, setSortField] = React.useState<"dueDate" | "daysOpen">(
+    "daysOpen",
+  );
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "desc",
+  );
 
   // Branch response dialog
-  const [branchResponseItem, setBranchResponseItem] = React.useState<string | null>(null);
+  const [branchResponseItem, setBranchResponseItem] = React.useState<
+    string | null
+  >(null);
   // ZAC review dialog
   const [zacReviewItem, setZacReviewItem] = React.useState<string | null>(null);
 
@@ -107,7 +113,7 @@ export function ComplianceTable({
         (item) =>
           item.observation?.title.toLowerCase().includes(query) ||
           item.branch?.name.toLowerCase().includes(query) ||
-          item.branch?.code.toLowerCase().includes(query)
+          item.branch?.code.toLowerCase().includes(query),
       );
     }
 
@@ -150,7 +156,7 @@ export function ComplianceTable({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Filter className="text-muted-foreground h-4 w-4" />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All statuses" />
@@ -159,7 +165,9 @@ export function ComplianceTable({
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="OPEN">Open</SelectItem>
               <SelectItem value="BRANCH_RESPONSE_DUE">Response Due</SelectItem>
-              <SelectItem value="BRANCH_RESPONSE_SUBMITTED">Submitted</SelectItem>
+              <SelectItem value="BRANCH_RESPONSE_SUBMITTED">
+                Submitted
+              </SelectItem>
               <SelectItem value="ZAC_REVIEW">ZAC Review</SelectItem>
               <SelectItem value="ZAC_APPROVED">Approved</SelectItem>
               <SelectItem value="CLOSED">Closed</SelectItem>
@@ -204,12 +212,15 @@ export function ComplianceTable({
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
                     {item.branch?.code ?? "—"}
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {item.branch?.name}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="max-w-xs truncate" title={item.observation?.title}>
+                    <div
+                      className="max-w-xs truncate"
+                      title={item.observation?.title}
+                    >
                       {item.observation?.title ?? "—"}
                     </div>
                   </TableCell>
@@ -217,7 +228,9 @@ export function ComplianceTable({
                     {item.observation?.severity ? (
                       <Badge
                         variant="outline"
-                        className={SEVERITY_COLORS[item.observation.severity] ?? ""}
+                        className={
+                          SEVERITY_COLORS[item.observation.severity] ?? ""
+                        }
                       >
                         {item.observation.severity}
                       </Badge>
@@ -240,7 +253,8 @@ export function ComplianceTable({
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {canBranchResponse &&
-                        (item.status === "OPEN" || item.status === "BRANCH_RESPONSE_DUE") && (
+                        (item.status === "OPEN" ||
+                          item.status === "BRANCH_RESPONSE_DUE") && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -249,15 +263,16 @@ export function ComplianceTable({
                             Respond
                           </Button>
                         )}
-                      {canZacReview && item.status === "BRANCH_RESPONSE_SUBMITTED" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setZacReviewItem(item.id)}
-                        >
-                          Review
-                        </Button>
-                      )}
+                      {canZacReview &&
+                        item.status === "BRANCH_RESPONSE_SUBMITTED" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setZacReviewItem(item.id)}
+                          >
+                            Review
+                          </Button>
+                        )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -20,6 +20,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
 **File Modified:** `src/app/(dashboard)/risk-management/page.tsx`
 
 **Changes Made:**
+
 1. ✅ Imported DAL functions from `@/data-access/risk-management`:
    - `getRiskRegisters()`
    - `getBreachedKRIs()`
@@ -39,6 +40,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
    - No try-catch needed (Next.js error boundaries handle this)
 
 **Verification:**
+
 ```bash
 ✅ TypeScript compilation passes with no errors in risk-management/page.tsx
 ✅ Page structure follows CONVENTIONS.md server component pattern
@@ -52,6 +54,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
 #### 2a. Risk Register Table (`src/components/risk-management/risk-register-table.tsx`)
 
 **Changes Made:**
+
 1. ✅ Imported server actions:
    - `manageRisk` from `@/actions/risk-management/manage-risk`
 
@@ -81,6 +84,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
    - Click row to navigate to detail page
 
 **Verification:**
+
 ```bash
 ✅ TypeScript compilation passes
 ✅ useActionState pattern follows CONVENTIONS.md
@@ -91,6 +95,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
 #### 2b. KRI Dashboard (`src/components/risk-management/kri-dashboard.tsx`)
 
 **Changes Made:**
+
 1. ✅ Display breach status from real data:
    - `breachStatus` field: NORMAL, WARNING, BREACH
    - Color-coded cards (BREACH=red, WARNING=amber, NORMAL=green)
@@ -118,6 +123,7 @@ Wire the `/risk-management` page to real database via existing DAL functions and
    - No action buttons needed
 
 **Verification:**
+
 ```bash
 ✅ TypeScript compilation passes
 ✅ Properly handles null values
@@ -130,11 +136,13 @@ Wire the `/risk-management` page to real database via existing DAL functions and
 ## TypeScript Verification
 
 **Full Project Check:**
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ```
 
 **Result:**
+
 - ✅ **0 errors** in modified files:
   - `src/app/(dashboard)/risk-management/page.tsx`
   - `src/components/risk-management/risk-register-table.tsx`
@@ -152,10 +160,12 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ## Compliance with Critical Rules
 
 ✅ **Used `prismaForTenant(tenantId)` for ALL database access**
+
 - DAL functions in `risk-management.ts` use tenant-scoped Prisma client
 - No raw `prisma` client used
 
 ✅ **Followed patterns from CONVENTIONS.md**
+
 - Server component pattern for data fetching
 - `useActionState` hook for form submission
 - Discriminated union return types in server actions
@@ -163,23 +173,28 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 - Progressive enhancement (form works without JS)
 
 ✅ **Next.js 16 App Router: `params` is a Promise**
+
 - N/A (this page has no dynamic route params)
 
 ✅ **Replaced mock data with real DAL calls**
+
 - Before: `const risks: any[] = []`
 - After: `const risks = await getRiskRegisters(session)`
 - Before: `const kriData: any[] = []`
 - After: `const kriData = await getBreachedKRIs(session)`
 
 ✅ **Checked existing DAL and actions**
+
 - Used existing DAL: `src/data-access/risk-management.ts`
 - Used existing actions: `src/actions/risk-management/manage-risk.ts`
 - No new DAL/actions needed (plan used existing infrastructure)
 
 ✅ **NO git commands run**
+
 - Per instructions, commits are handled by main agent
 
 ✅ **NO schema.prisma modifications**
+
 - All required models already exist
 - No schema changes needed
 
@@ -188,11 +203,13 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ## Requirements Fulfilled
 
 ### R49: Audit Universe Entity Display ✅
+
 - `/risk-management` page displays real audit universe entities from database
 - Entity selector in create risk form shows all entities with type
 - Risk register table shows entity name and type per risk
 
 ### R50: Risk Register with Linkage ✅
+
 - Risk register table shows actual risk entries from database
 - Displays risk statement, category, inherent/control/residual scores
 - Shows linked entity information
@@ -202,6 +219,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 - Create risk form functional with validation
 
 ### R51: KRI Breach Monitoring ✅
+
 - KRI dashboard displays actual breach status from database
 - Shows current value vs thresholds
 - Color-coded breach severity (NORMAL, WARNING, BREACH)
@@ -216,6 +234,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 ### End-to-End Flow
 
 1. **Page Load:**
+
    ```
    User → /risk-management
    → Server Component calls DAL
@@ -228,6 +247,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
    ```
 
 2. **Create Risk:**
+
    ```
    User fills form → Submit
    → useActionState calls manageRisk()
@@ -294,11 +314,11 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 
 ## Files Modified Summary
 
-| File | Lines Changed | Type |
-|------|---------------|------|
-| `src/app/(dashboard)/risk-management/page.tsx` | ~30 | Modified |
-| `src/components/risk-management/risk-register-table.tsx` | ~380 | Rewritten |
-| `src/components/risk-management/kri-dashboard.tsx` | ~180 | Rewritten |
+| File                                                     | Lines Changed | Type      |
+| -------------------------------------------------------- | ------------- | --------- |
+| `src/app/(dashboard)/risk-management/page.tsx`           | ~30           | Modified  |
+| `src/components/risk-management/risk-register-table.tsx` | ~380          | Rewritten |
+| `src/components/risk-management/kri-dashboard.tsx`       | ~180          | Rewritten |
 
 **Total:** 3 files, ~590 lines of code
 
@@ -318,6 +338,7 @@ cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit
 - R49, R50, R51 requirements fulfilled
 
 **Next Steps (for main agent):**
+
 1. Commit changes with message: "feat(risk): wire risk management page to real database (C1)"
 2. Update `.planning/VALIDATION-REPORT.md`:
    - R49: ✅ IMPLEMENTED

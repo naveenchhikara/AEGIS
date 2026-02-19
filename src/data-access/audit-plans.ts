@@ -33,7 +33,7 @@ export type BranchAuditSchedule = {
  */
 export function computeNextAuditDate(
   lastAuditDate: Date | null,
-  auditFrequency: number | null
+  auditFrequency: number | null,
 ): Date {
   const now = new Date();
 
@@ -84,7 +84,7 @@ function getQuarterForDate(date: Date): Quarter {
  * @returns Priority level
  */
 function getPriorityFromRamScore(
-  ramScore: number | null
+  ramScore: number | null,
 ): "HIGH" | "MEDIUM" | "LOW" {
   if (!ramScore) return "LOW"; // Unknown risk = low priority
 
@@ -107,7 +107,7 @@ function getPriorityFromRamScore(
  */
 export async function getBranchesForAnnualPlan(
   session: Session,
-  fiscalYear: string
+  fiscalYear: string,
 ): Promise<BranchAuditSchedule[]> {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -131,7 +131,7 @@ export async function getBranchesForAnnualPlan(
     const ramScore = branch.ramScore ? Number(branch.ramScore) : null;
     const nextAuditDate = computeNextAuditDate(
       branch.lastAuditDate,
-      branch.auditFrequency
+      branch.auditFrequency,
     );
     const priority = getPriorityFromRamScore(ramScore);
     const quarterAssigned = getQuarterForDate(nextAuditDate);
@@ -150,7 +150,9 @@ export async function getBranchesForAnnualPlan(
   });
 
   // Sort by next audit date (urgent audits first)
-  schedules.sort((a, b) => a.nextAuditDate.getTime() - b.nextAuditDate.getTime());
+  schedules.sort(
+    (a, b) => a.nextAuditDate.getTime() - b.nextAuditDate.getTime(),
+  );
 
   return schedules;
 }

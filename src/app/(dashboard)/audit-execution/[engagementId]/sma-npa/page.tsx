@@ -4,7 +4,13 @@ import {
   getEngagementForLoanReview,
   getLoanReviewSummary,
 } from "@/data-access/loan-review";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -63,19 +69,23 @@ export default async function SmaNpaPage({ params }: SmaNpaPageProps) {
       <div>
         <h1 className="text-2xl font-bold">SMA/NPA Summary</h1>
         <p className="text-muted-foreground">
-          {engagement.branch?.name || "Branch"} — Category-wise asset quality summary
+          {engagement.branch?.name || "Branch"} — Category-wise asset quality
+          summary
         </p>
       </div>
 
-      <SmaNpaSummary engagementId={engagementId} existingEntries={entriesForClient} />
+      <SmaNpaSummary
+        engagementId={engagementId}
+        existingEntries={entriesForClient}
+      />
 
       {autoSummary.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Auto-Computed from Loan Reviews</CardTitle>
             <CardDescription>
-              This summary is automatically calculated from the loan review data for
-              comparison
+              This summary is automatically calculated from the loan review data
+              for comparison
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,7 +95,9 @@ export default async function SmaNpaPage({ params }: SmaNpaPageProps) {
                   <TableRow>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">Account Count</TableHead>
-                    <TableHead className="text-right">Total Amount (₹)</TableHead>
+                    <TableHead className="text-right">
+                      Total Amount (₹)
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

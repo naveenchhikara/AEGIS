@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -287,10 +293,30 @@ const CYBER_BASELINE_CONTROLS = [
 ];
 
 const RESPONSE_STATUS = [
-  { value: "COMPLIANT", label: "Compliant", icon: CheckCircle2, color: "text-green-600" },
-  { value: "NON_COMPLIANT", label: "Non-Compliant", icon: XCircle, color: "text-red-600" },
-  { value: "PARTIAL", label: "Partial", icon: AlertCircle, color: "text-amber-600" },
-  { value: "NOT_APPLICABLE", label: "N/A", icon: AlertCircle, color: "text-gray-600" },
+  {
+    value: "COMPLIANT",
+    label: "Compliant",
+    icon: CheckCircle2,
+    color: "text-green-600",
+  },
+  {
+    value: "NON_COMPLIANT",
+    label: "Non-Compliant",
+    icon: XCircle,
+    color: "text-red-600",
+  },
+  {
+    value: "PARTIAL",
+    label: "Partial",
+    icon: AlertCircle,
+    color: "text-amber-600",
+  },
+  {
+    value: "NOT_APPLICABLE",
+    label: "N/A",
+    icon: AlertCircle,
+    color: "text-gray-600",
+  },
 ];
 
 type QuestionResponse = {
@@ -305,7 +331,9 @@ type QuestionResponse = {
 export function CyberSecurityChecklist({ userId }: { userId: string }) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
-  const [responses, setResponses] = React.useState<Record<string, QuestionResponse>>({});
+  const [responses, setResponses] = React.useState<
+    Record<string, QuestionResponse>
+  >({});
 
   // Initialize responses
   React.useEffect(() => {
@@ -323,7 +351,11 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
     setResponses(initial);
   }, []);
 
-  function updateResponse(key: string, field: keyof QuestionResponse, value: string) {
+  function updateResponse(
+    key: string,
+    field: keyof QuestionResponse,
+    value: string,
+  ) {
     setResponses((prev) => ({
       ...prev,
       [key]: {
@@ -334,48 +366,76 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
   }
 
   function calculateControlStats(controlId: string) {
-    const controlResponses = Object.entries(responses).filter(
-      ([key, _]) => key.startsWith(controlId)
+    const controlResponses = Object.entries(responses).filter(([key, _]) =>
+      key.startsWith(controlId),
     );
     const total = controlResponses.length;
     const compliant = controlResponses.filter(
-      ([_, r]) => r.response === "COMPLIANT"
+      ([_, r]) => r.response === "COMPLIANT",
     ).length;
     const nonCompliant = controlResponses.filter(
-      ([_, r]) => r.response === "NON_COMPLIANT"
+      ([_, r]) => r.response === "NON_COMPLIANT",
     ).length;
-    const partial = controlResponses.filter(([_, r]) => r.response === "PARTIAL").length;
+    const partial = controlResponses.filter(
+      ([_, r]) => r.response === "PARTIAL",
+    ).length;
     const notApplicable = controlResponses.filter(
-      ([_, r]) => r.response === "NOT_APPLICABLE"
+      ([_, r]) => r.response === "NOT_APPLICABLE",
     ).length;
-    const unanswered = total - compliant - nonCompliant - partial - notApplicable;
+    const unanswered =
+      total - compliant - nonCompliant - partial - notApplicable;
 
     const responded = total - unanswered - notApplicable;
     const complianceRate = responded > 0 ? (compliant / responded) * 100 : 0;
 
-    return { total, compliant, nonCompliant, partial, notApplicable, unanswered, complianceRate };
+    return {
+      total,
+      compliant,
+      nonCompliant,
+      partial,
+      notApplicable,
+      unanswered,
+      complianceRate,
+    };
   }
 
   function calculateOverallStats() {
     const allResponses = Object.values(responses);
     const total = allResponses.length;
-    const compliant = allResponses.filter((r) => r.response === "COMPLIANT").length;
-    const nonCompliant = allResponses.filter((r) => r.response === "NON_COMPLIANT").length;
+    const compliant = allResponses.filter(
+      (r) => r.response === "COMPLIANT",
+    ).length;
+    const nonCompliant = allResponses.filter(
+      (r) => r.response === "NON_COMPLIANT",
+    ).length;
     const partial = allResponses.filter((r) => r.response === "PARTIAL").length;
-    const notApplicable = allResponses.filter((r) => r.response === "NOT_APPLICABLE").length;
-    const unanswered = total - compliant - nonCompliant - partial - notApplicable;
+    const notApplicable = allResponses.filter(
+      (r) => r.response === "NOT_APPLICABLE",
+    ).length;
+    const unanswered =
+      total - compliant - nonCompliant - partial - notApplicable;
 
     const responded = total - unanswered - notApplicable;
     const complianceRate = responded > 0 ? (compliant / responded) * 100 : 0;
 
-    return { total, compliant, nonCompliant, partial, notApplicable, unanswered, complianceRate };
+    return {
+      total,
+      compliant,
+      nonCompliant,
+      partial,
+      notApplicable,
+      unanswered,
+      complianceRate,
+    };
   }
 
   function getNonCompliantItems() {
     return Object.entries(responses)
       .filter(([_, r]) => r.response === "NON_COMPLIANT")
       .map(([key, r]) => {
-        const control = CYBER_BASELINE_CONTROLS.find((c) => c.id === r.controlId);
+        const control = CYBER_BASELINE_CONTROLS.find(
+          (c) => c.id === r.controlId,
+        );
         return {
           control: control?.control || "Unknown",
           question: r.question,
@@ -396,7 +456,11 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
     }));
 
     // Calculate overall rating if marking complete
-    let overallRating: "SATISFACTORY" | "NEEDS_IMPROVEMENT" | "UNSATISFACTORY" | undefined;
+    let overallRating:
+      | "SATISFACTORY"
+      | "NEEDS_IMPROVEMENT"
+      | "UNSATISFACTORY"
+      | undefined;
     if (markComplete) {
       const stats = calculateOverallStats();
       if (stats.complianceRate >= 90) {
@@ -419,7 +483,9 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
     setIsSaving(false);
 
     if (result.success) {
-      toast.success(markComplete ? "Cyber security audit completed" : "Progress saved");
+      toast.success(
+        markComplete ? "Cyber security audit completed" : "Progress saved",
+      );
       router.refresh();
     } else {
       toast.error(result.error);
@@ -441,15 +507,17 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold">{Math.round(overallStats.complianceRate)}%</div>
+              <div className="text-3xl font-bold">
+                {Math.round(overallStats.complianceRate)}%
+              </div>
               <Badge
                 variant="outline"
                 className={
                   overallStats.complianceRate >= 90
-                    ? "bg-green-100 text-green-800 border-green-300"
+                    ? "border-green-300 bg-green-100 text-green-800"
                     : overallStats.complianceRate >= 70
-                      ? "bg-amber-100 text-amber-800 border-amber-300"
-                      : "bg-red-100 text-red-800 border-red-300"
+                      ? "border-amber-300 bg-amber-100 text-amber-800"
+                      : "border-red-300 bg-red-100 text-red-800"
                 }
               >
                 {overallStats.complianceRate >= 90
@@ -464,23 +532,33 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
         <CardContent>
           <div className="grid grid-cols-5 gap-4 text-center text-sm">
             <div>
-              <div className="text-2xl font-bold text-green-600">{overallStats.compliant}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {overallStats.compliant}
+              </div>
               <div className="text-muted-foreground">Compliant</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-red-600">{overallStats.nonCompliant}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {overallStats.nonCompliant}
+              </div>
               <div className="text-muted-foreground">Non-Compliant</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-amber-600">{overallStats.partial}</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {overallStats.partial}
+              </div>
               <div className="text-muted-foreground">Partial</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-600">{overallStats.notApplicable}</div>
+              <div className="text-2xl font-bold text-gray-600">
+                {overallStats.notApplicable}
+              </div>
               <div className="text-muted-foreground">N/A</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-600">{overallStats.unanswered}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {overallStats.unanswered}
+              </div>
               <div className="text-muted-foreground">Unanswered</div>
             </div>
           </div>
@@ -491,9 +569,13 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
         {CYBER_BASELINE_CONTROLS.map((control) => {
           const stats = calculateControlStats(control.id);
           return (
-            <AccordionItem key={control.id} value={control.id} className="border rounded-lg px-4">
+            <AccordionItem
+              key={control.id}
+              value={control.id}
+              className="rounded-lg border px-4"
+            >
               <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center justify-between w-full pr-4">
+                <div className="flex w-full items-center justify-between pr-4">
                   <div className="flex items-center gap-3">
                     <Badge variant="outline">{control.id}</Badge>
                     <span className="font-medium">{control.control}</span>
@@ -502,7 +584,7 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       {stats.compliant}/{stats.total - stats.notApplicable}
                     </div>
                     <div className="w-24">
@@ -517,14 +599,19 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
                   const currentResponse = responses[key];
 
                   return (
-                    <div key={key} className="space-y-3 pb-6 border-b last:border-0 last:pb-0">
+                    <div
+                      key={key}
+                      className="space-y-3 border-b pb-6 last:border-0 last:pb-0"
+                    >
                       <div className="flex items-start justify-between gap-4">
-                        <Label className="text-sm font-normal leading-relaxed flex-1">
+                        <Label className="flex-1 text-sm leading-relaxed font-normal">
                           {idx + 1}. {question}
                         </Label>
                         <Select
                           value={currentResponse?.response || ""}
-                          onValueChange={(value) => updateResponse(key, "response", value)}
+                          onValueChange={(value) =>
+                            updateResponse(key, "response", value)
+                          }
                         >
                           <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select status" />
@@ -533,9 +620,14 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
                             {RESPONSE_STATUS.map((status) => {
                               const Icon = status.icon;
                               return (
-                                <SelectItem key={status.value} value={status.value}>
+                                <SelectItem
+                                  key={status.value}
+                                  value={status.value}
+                                >
                                   <div className="flex items-center gap-2">
-                                    <Icon className={`h-4 w-4 ${status.color}`} />
+                                    <Icon
+                                      className={`h-4 w-4 ${status.color}`}
+                                    />
                                     {status.label}
                                   </div>
                                 </SelectItem>
@@ -547,20 +639,28 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Evidence</Label>
+                          <Label className="text-muted-foreground text-xs">
+                            Evidence
+                          </Label>
                           <Textarea
                             placeholder="Evidence reference or description"
                             value={currentResponse?.evidence || ""}
-                            onChange={(e) => updateResponse(key, "evidence", e.target.value)}
+                            onChange={(e) =>
+                              updateResponse(key, "evidence", e.target.value)
+                            }
                             rows={2}
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Remarks</Label>
+                          <Label className="text-muted-foreground text-xs">
+                            Remarks
+                          </Label>
                           <Textarea
                             placeholder="Comments, findings, or observations"
                             value={currentResponse?.remarks || ""}
-                            onChange={(e) => updateResponse(key, "remarks", e.target.value)}
+                            onChange={(e) =>
+                              updateResponse(key, "remarks", e.target.value)
+                            }
                             rows={2}
                           />
                         </div>
@@ -587,10 +687,12 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
           <CardContent>
             <div className="space-y-4">
               {nonCompliantItems.map((item, idx) => (
-                <div key={idx} className="border-l-4 border-red-600 pl-4 py-2">
+                <div key={idx} className="border-l-4 border-red-600 py-2 pl-4">
                   <div className="font-medium">{item.control}</div>
-                  <div className="text-sm text-muted-foreground">{item.question}</div>
-                  <div className="text-sm mt-1">
+                  <div className="text-muted-foreground text-sm">
+                    {item.question}
+                  </div>
+                  <div className="mt-1 text-sm">
                     <span className="font-medium">Remarks:</span> {item.remarks}
                   </div>
                 </div>
@@ -601,7 +703,11 @@ export function CyberSecurityChecklist({ userId }: { userId: string }) {
       )}
 
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => handleSave(false)} disabled={isSaving}>
+        <Button
+          variant="outline"
+          onClick={() => handleSave(false)}
+          disabled={isSaving}
+        >
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           <Save className="mr-2 h-4 w-4" />
           Save Progress

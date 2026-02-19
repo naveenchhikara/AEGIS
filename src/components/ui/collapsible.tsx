@@ -5,9 +5,17 @@ import { cn } from "@/lib/utils";
 
 const Collapsible = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { open?: boolean; onOpenChange?: (open: boolean) => void }
+  React.HTMLAttributes<HTMLDivElement> & {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }
 >(({ className, open, onOpenChange, ...props }, ref) => (
-  <div ref={ref} className={cn(className)} data-state={open ? "open" : "closed"} {...props} />
+  <div
+    ref={ref}
+    className={cn(className)}
+    data-state={open ? "open" : "closed"}
+    {...props}
+  />
 ));
 Collapsible.displayName = "Collapsible";
 
@@ -16,9 +24,16 @@ const CollapsibleTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
 >(({ className, asChild, children, ...props }, ref) => {
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, { ref, ...props });
+    return React.cloneElement(children as React.ReactElement<any>, {
+      ref,
+      ...props,
+    });
   }
-  return <button ref={ref} className={cn(className)} type="button" {...props}>{children}</button>;
+  return (
+    <button ref={ref} className={cn(className)} type="button" {...props}>
+      {children}
+    </button>
+  );
 });
 CollapsibleTrigger.displayName = "CollapsibleTrigger";
 

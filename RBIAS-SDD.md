@@ -9,13 +9,13 @@ A Comprehensive Web-Based Platform for Bank Branch Internal Audit
 
 Planning • Execution • Reporting • Compliance Tracking
 
-Version 3.0  |  February 2026  |  Confidential
+Version 3.0 | February 2026 | Confidential
 
 Prepared for: Naveen Chhikara
 
-Confidential  |  Page 1
+Confidential | Page 1
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Table of Contents
 
@@ -89,9 +89,9 @@ Key UI Patterns ................................................................
 
 Audit Execution Interface ..................................................................................................... 30
 
-Confidential  |  Page 2
+Confidential | Page 2
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Observation Entry Pattern ................................................................................................... 30
 
@@ -165,9 +165,9 @@ Text Analytics & Predictive Models .............................................
 
 Smart Suggestions UI ............................................................................................................. 48
 
-Confidential  |  Page 3
+Confidential | Page 3
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M12: Issue & Action Management .............................................................................................. 49
 
@@ -241,9 +241,9 @@ Inter-bank Exposure Monitoring .................................................
 
 M20: Governance & Board Compliance Module ..................................................................... 67
 
-Confidential  |  Page 4
+Confidential | Page 4
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 ACB Workspace & Agenda Builder ..................................................................................... 67
 
@@ -287,9 +287,9 @@ B. Reference Documents .........................................................
 
 C. Data Migration Strategy ...................................................................................................... 79
 
-Confidential  |  Page 5
+Confidential | Page 5
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Executive Summary
 
@@ -309,46 +309,46 @@ auditors to the Audit Committee of the Board (ACB) and Risk Management Committee
 Key Objectives:
 
 1. Digitize the standardized 13-16 section audit report format currently maintained in Excel
-workbooks, enabling structured data capture with built-in validations, risk scoring, and real-time
-calculations. The system incorporates the complete IA Format (Internal Audit Examination
-Format) with its 12 functional areas and 220+ value statements as the standardized checklist
-driving audit execution.
+   workbooks, enabling structured data capture with built-in validations, risk scoring, and real-time
+   calculations. The system incorporates the complete IA Format (Internal Audit Examination
+   Format) with its 12 functional areas and 220+ value statements as the standardized checklist
+   driving audit execution.
 
 2. Automate the Risk Assessment Model (RAM) for computing composite branch risk scores
-across 19 parameters, determining audit frequency, and generating the Annual Audit Plan.
+   across 19 parameters, determining audit frequency, and generating the Annual Audit Plan.
 
 3. Implement the full compliance lifecycle from initial audit observation through Branch Head
-certification, Zonal Audit Committee (ZAC) review, Audit Compliance and Evaluation (ACE)
-department processing, to final closure by the Audit Committee of the Board (ACB).
+   certification, Zonal Audit Committee (ZAC) review, Audit Compliance and Evaluation (ACE)
+   department processing, to final closure by the Audit Committee of the Board (ACB).
 
 4. Provide role-based dashboards with real-time analytics for audit management, enabling trend
-analysis across branches, visits, and audit periods.
+   analysis across branches, visits, and audit periods.
 
 5. Generate standardized Excel/PDF audit reports matching the existing bank format for
-regulatory submissions and record-keeping.
+   regulatory submissions and record-keeping.
 
 6. Provide an enterprise-grade platform with continuous auditing via data connectors and
-analytics engine, AI-powered anomaly detection and smart suggestions, unified issue
-management across all assurance sources, a centralized control library with standardized work
-programs, and multi-tenant architecture for commercial deployment across multiple banks.
+   analytics engine, AI-powered anomaly detection and smart suggestions, unified issue
+   management across all assurance sources, a centralized control library with standardized work
+   programs, and multi-tenant architecture for commercial deployment across multiple banks.
 
 7. Deliver full UCB regulatory alignment — concurrent audit workbench, IRAC & provisioning
-engine, investment/treasury audit controls, EDP/IS audit module, inter-bank exposure
-monitoring, housekeeping KPIs, RBI observation follow-up hub, and Board/ACB/RMC
-governance dashboards — enabling a UCB to demonstrate comprehensive compliance during
-RBI inspections.
+   engine, investment/treasury audit controls, EDP/IS audit module, inter-bank exposure
+   monitoring, housekeeping KPIs, RBI observation follow-up hub, and Board/ACB/RMC
+   governance dashboards — enabling a UCB to demonstrate comprehensive compliance during
+   RBI inspections.
 
-Confidential  |  Page 6
+Confidential | Page 6
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Technology Stack: React.js frontend, Node.js/Express backend, PostgreSQL database with
 RLS, deployed as a responsive web application with PWA mobile support accessible from
 laptops and tablets during branch visits. AI/ML layer for anomaly detection and text analytics.
 
-Confidential  |  Page 7
+Confidential | Page 7
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 System Overview
 
@@ -391,7 +391,7 @@ report
 
 Full audit management
 
-Branch Head  Manager of the
+Branch Head Manager of the
 audited branch
 
 Zonal Auditor
@@ -500,11 +500,11 @@ Technical
 administrator
 
 User management, system
-config, master data maintenance  Full system configuration
+config, master data maintenance Full system configuration
 
-Confidential  |  Page 8
+Confidential | Page 8
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 System Modules
 
@@ -656,9 +656,9 @@ audit workbench
 RBI-aligned scope templates, rapid entry UI, serious
 irregularity escalation, de-duplication with RBIA
 
-Confidential  |  Page 9
+Confidential | Page 9
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M16: IRAC
 Engine
@@ -704,9 +704,9 @@ support
 ACB workspace, agenda builder, Board review
 calendar, policy library, committee governance
 
-Confidential  |  Page 10
+Confidential | Page 10
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 System Architecture
 
@@ -821,9 +821,9 @@ API Gateway Layer: Express.js REST API with JWT authentication middleware, reque
 validation (Zod schemas), rate limiting, and audit logging. All API endpoints follow RESTful
 conventions with versioning (/api/v1/).
 
-Confidential  |  Page 11
+Confidential | Page 11
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Business Logic Layer: Service classes encapsulating core business rules — RAM score
 computation, risk rating algorithms, compliance timeline calculations, report generation logic,
@@ -915,7 +915,7 @@ GET
 
 GET, PUT, PATCH
 
-/api/v1/audits/:id/examinations/:area  GET, PUT
+/api/v1/audits/:id/examinations/:area GET, PUT
 
 /api/v1/analytics
 
@@ -943,9 +943,9 @@ analytics
 Notification management and
 preferences
 
-Confidential  |  Page 12
+Confidential | Page 12
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Database Schema
 
@@ -982,7 +982,7 @@ UNIQUE, NOT NULL
 
 branch_name
 
-VARCHAR(100)  NOT NULL
+VARCHAR(100) NOT NULL
 
 Unique branch identifier
 
@@ -1006,7 +1006,7 @@ VARCHAR(50)
 
 VARCHAR(50)
 
-NOT NULL, FK → zones.id  Zonal classification for
+NOT NULL, FK → zones.id Zonal classification for
 
 ZAC reporting
 
@@ -1062,7 +1062,7 @@ ram_composite_score
 
 DECIMAL(5,2)
 
-Confidential  |  Page 13
+Confidential | Page 13
 
 Full branch address
 
@@ -1094,7 +1094,7 @@ Improvement/etc.)
 Latest RAM composite
 risk score
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 audit_frequency_months
 
@@ -1131,7 +1131,7 @@ PK
 
 audit_number
 
-VARCHAR(20)  UNIQUE, NOT NULL
+VARCHAR(20) UNIQUE, NOT NULL
 
 Unique audit identifier
 
@@ -1149,7 +1149,7 @@ Branch being audited
 
 audit_type
 
-VARCHAR(30)  NOT NULL
+VARCHAR(30) NOT NULL
 
 visit_number
 
@@ -1193,7 +1193,7 @@ FK → users.id
 
 status
 
-VARCHAR(30)  NOT NULL, DEFAULT
+VARCHAR(30) NOT NULL, DEFAULT
 
 ‘planned’
 
@@ -1250,14 +1250,14 @@ DEFAULT false
 
 BH Certificate signed off
 
-branch_head_certified_at  TIMESTAMP
+branch_head_certified_at TIMESTAMP
 
 When BH signed the
 certificate
 
-Confidential  |  Page 14
+Confidential | Page 14
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 report_generated_at
 
@@ -1308,7 +1308,7 @@ NULL
 
 The audit engagement
 
-FK → users.id, NOT NULL  The auditor assigned
+FK → users.id, NOT NULL The auditor assigned
 
 VARCHAR(20)
 
@@ -1320,7 +1320,7 @@ reviewer
 Array of section codes this
 member is responsible for
 
-assigned_sections  JSONB
+assigned_sections JSONB
 
 audit_sections
 
@@ -1395,9 +1395,9 @@ UUID
 
 FK → users.id
 
-Confidential  |  Page 15
+Confidential | Page 15
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 section_data
 
@@ -1431,9 +1431,9 @@ section
 
 When section was reviewed
 
-Confidential  |  Page 16
+Confidential | Page 16
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 audit_observations
 
@@ -1463,7 +1463,7 @@ NULL
 
 section_code
 
-VARCHAR(30)  NOT NULL
+VARCHAR(30) NOT NULL
 
 sr_no
 
@@ -1485,7 +1485,7 @@ NOT NULL
 
 NOT NULL
 
-VARCHAR(20)  NOT NULL DEFAULT
+VARCHAR(20) NOT NULL DEFAULT
 ‘low’
 
 risk_score
@@ -1543,7 +1543,7 @@ during audit
 Whether this was flagged in
 a previous audit
 
-previous_observation_id  UUID
+previous_observation_id UUID
 
 FK →
 audit_observations.id
@@ -1555,7 +1555,7 @@ regulatory_reference
 
 VARCHAR(100)
 
-amount_involved_lakhs  DECIMAL(15,2)
+amount_involved_lakhs DECIMAL(15,2)
 
 RBI circular / bank policy
 reference if applicable
@@ -1584,9 +1584,9 @@ PK
 
 Record identifier
 
-Confidential  |  Page 17
+Confidential | Page 17
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 audit_id
 
@@ -1599,11 +1599,11 @@ Parent audit
 
 account_number
 
-VARCHAR(20)  NOT NULL
+VARCHAR(20) NOT NULL
 
 borrower_name
 
-VARCHAR(200)  NOT NULL
+VARCHAR(200) NOT NULL
 
 product_type
 
@@ -1621,7 +1621,7 @@ disbursement_date
 
 DATE
 
-disbursement_amount_lakhs  DECIMAL(15,2)
+disbursement_amount_lakhs DECIMAL(15,2)
 
 outstanding_amount_lakhs
 
@@ -1724,7 +1724,7 @@ Parent audit
 
 category
 
-VARCHAR(20)  NOT NULL
+VARCHAR(20) NOT NULL
 
 total_accounts
 
@@ -1742,9 +1742,9 @@ category
 
 Total amount in Lakhs
 
-Confidential  |  Page 18
+Confidential | Page 18
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 audit_observation
 
@@ -1762,9 +1762,9 @@ legal_notice_issued
 
 BOOLEAN
 
-recovery_action_taken  TEXT
+recovery_action_taken TEXT
 
-recommended_for_abn  BOOLEAN
+recommended_for_abn BOOLEAN
 
 Auditor’s observations on
 asset quality
@@ -1782,9 +1782,9 @@ Details of recovery measures
 Whether file recommended for
 ABN (write-off)
 
-Confidential  |  Page 19
+Confidential | Page 19
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 cash_checks
 
@@ -1820,7 +1820,7 @@ cash_in_hand
 
 DECIMAL(15,2)
 
-cash_balance_as_per_books  DECIMAL(15,2)
+cash_balance_as_per_books DECIMAL(15,2)
 
 difference
 
@@ -1926,13 +1926,13 @@ Branch being assessed
 
 assessment_year
 
-VARCHAR(10)  NOT NULL
+VARCHAR(10) NOT NULL
 
 Financial year (e.g., 2024-25)
 
-Confidential  |  Page 20
+Confidential | Page 20
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 inherent_risk_scores
 
@@ -2092,9 +2092,9 @@ scale)
 Whether this parameter is
 currently in use
 
-Confidential  |  Page 21
+Confidential | Page 21
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Compliance Tracking Tables
 
@@ -2149,15 +2149,15 @@ compliance
 
 status
 
-VARCHAR(30)  NOT NULL DEFAULT ‘open’
+VARCHAR(30) NOT NULL DEFAULT ‘open’
 
 branch_response
 
 TEXT
 
-branch_response_date  DATE
+branch_response_date DATE
 
-branch_evidence_files  JSONB
+branch_evidence_files JSONB
 
 zac_review_status
 
@@ -2251,7 +2251,7 @@ INTEGER
 
 DEFAULT 0
 
-Confidential  |  Page 22
+Confidential | Page 22
 
 Computed: days from
 observation to closure/today
@@ -2263,7 +2263,7 @@ compliance deadline
 2=ACE escalated, 3=ACB
 escalated
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 due_date
 
@@ -2347,8 +2347,7 @@ Full name: Deposits,
 Remittances, Cash &
 Currency Chest, etc.
 
-Ordering for UI display (1-
-12)
+Ordering for UI display (1- 12)
 
 Detailed description of what
 the area covers
@@ -2376,9 +2375,9 @@ Constraints
 
 Description
 
-Confidential  |  Page 23
+Confidential | Page 23
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 id
 
@@ -2409,7 +2408,7 @@ sub_items
 
 JSONB
 
-default_risk_category  VARCHAR(20)
+default_risk_category VARCHAR(20)
 
 pertains_to
 
@@ -2519,7 +2518,7 @@ NOT NULL
 
 area_code
 
-VARCHAR(10)  NOT NULL
+VARCHAR(10) NOT NULL
 
 The value statement
 being evaluated
@@ -2530,13 +2529,13 @@ querying
 
 status
 
-VARCHAR(20)  DEFAULT ‘not_examined’  not_examined /
+VARCHAR(20) DEFAULT ‘not_examined’ not_examined /
 
 compliant /
 
-Confidential  |  Page 24
+Confidential | Page 24
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 audit_observation
 
@@ -2568,7 +2567,7 @@ examined_at
 
 TIMESTAMP
 
-auto_generated_observation_id  UUID
+auto_generated_observation_id UUID
 
 FK →
 audit_observations.id
@@ -2609,9 +2608,9 @@ observation
 Composite unique constraint on (audit_id, examination_item_id) ensures each value statement
 is examined exactly once per audit.
 
-Confidential  |  Page 25
+Confidential | Page 25
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Supporting Tables
 
@@ -2719,9 +2718,9 @@ items
 id, section_code, template_data, version,
 is_active
 
-Confidential  |  Page 26
+Confidential | Page 26
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Entity Relationship Summary
 
@@ -2739,9 +2738,9 @@ audit_observations 1:1 → compliance_items (every observation must be tracked t
 
 branches 1:N → ram_assessments (annual risk assessment per branch)
 
-Confidential  |  Page 27
+Confidential | Page 27
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 User Interface Design
 
@@ -2753,7 +2752,7 @@ Screen Inventory
 
 Screen
 
-Module  Primary User
+Module Primary User
 
 Purpose
 
@@ -2795,7 +2794,7 @@ Branch Head
 Pending compliance items, audit history,
 upcoming audits
 
-Dashboard - ACE/ACB  M6
+Dashboard - ACE/ACB M6
 
 ACE/ACB
 
@@ -2838,7 +2837,7 @@ navigation
 Branch metadata, audit period, risk summary
 entry
 
-Section: BH Certificate  M3/M4
+Section: BH Certificate M3/M4
 
 Lead Auditor
 
@@ -2856,7 +2855,7 @@ M3
 
 Auditor
 
-Section: Branch Details  M3
+Section: Branch Details M3
 
 Auditor
 
@@ -2885,7 +2884,7 @@ Auditor
 
 Auditor
 
-Section: Housekeeping  M3
+Section: Housekeeping M3
 
 Auditor
 
@@ -2912,9 +2911,9 @@ Bank guarantees, LC, non-fund facility review
 150+ item compliance checklist with status
 dropdowns
 
-Confidential  |  Page 28
+Confidential | Page 28
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Section: Staff Matters
 
@@ -2941,7 +2940,7 @@ M3
 
 Auditor
 
-Examination Area View  M3
+Examination Area View M3
 
 Auditor
 
@@ -3037,9 +3036,9 @@ maintenance
 Section templates, risk parameters, scoring
 criteria, notification rules
 
-Confidential  |  Page 29
+Confidential | Page 29
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Key UI Patterns
 
@@ -3098,9 +3097,9 @@ Audit Observation
 
 Rich text area
 
-Required, min 20 characters  Auditor
+Required, min 20 characters Auditor
 
-Risk Categorization  Dropdown (5
+Risk Categorization Dropdown (5
 
 levels)
 
@@ -3139,7 +3138,7 @@ Branch Head
 
 Amount Involved
 
-Numeric (Lakhs)  Optional, auto-formatted
+Numeric (Lakhs) Optional, auto-formatted
 
 Auditor
 
@@ -3161,9 +3160,9 @@ Auditor
 
 System/Auditor
 
-Confidential  |  Page 30
+Confidential | Page 30
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Compliance Tracker UI
 
@@ -3187,7 +3186,7 @@ branch
 
 Report submission date
 
-Branch Responded  Orange  Review response, accept/reject,
+Branch Responded Orange Review response, accept/reject,
 
 request more info
 
@@ -3197,7 +3196,7 @@ ZAC Reviewed
 
 Yellow
 
-ZAC approval/rejection, escalation  Next ZAC meeting
+ZAC approval/rejection, escalation Next ZAC meeting
 
 ACE Processed
 
@@ -3250,9 +3249,9 @@ Top row: 3 KPI cards (Open Compliance Items, Overdue Items, Days Since Last Audi
 area: Compliance items list sorted by due date with action buttons (Respond, Upload Evidence).
 History: Previous audit ratings trend chart.
 
-Confidential  |  Page 31
+Confidential | Page 31
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Feature Specifications
 
@@ -3288,15 +3287,15 @@ Total Advances
 
 Business Risk
 
-3  Gross NPA Ratio
+3 Gross NPA Ratio
 
 Asset Quality
 
-4  Net NPA Ratio
+4 Net NPA Ratio
 
 Asset Quality
 
-5  SMA-2 Accounts
+5 SMA-2 Accounts
 
 Asset Quality
 
@@ -3306,20 +3305,20 @@ Fraud Cases
 
 Operational Risk
 
-7  Staff Accountability
+7 Staff Accountability
 
 Operational Risk
 
-8  Customer Complaints  Operational Risk
-9  Previous Audit Rating  Control
+8 Customer Complaints Operational Risk
+9 Previous Audit Rating Control
 
 Environment
 
-10  Compliance of
+10 Compliance of
 Previous Audit
 
-11  Forex Transactions
-12  Cash Handling
+11 Forex Transactions
+12 Cash Handling
 Volume
 
 Control
@@ -3330,20 +3329,20 @@ Business Risk
 IT/Cyber Incidents
 
 13
-14  Regulatory Penalties  Control
+14 Regulatory Penalties Control
 
 Operational Risk
 
-15  Staff Strength
+15 Staff Strength
 Adequacy
 
-16  Revenue per Branch
-17  Off-Balance Sheet
+16 Revenue per Branch
+17 Off-Balance Sheet
 
 Exposure
 
-18  New Product Lines
-19  KYC/AML
+18 New Product Lines
+19 KYC/AML
 
 Compliance
 
@@ -3440,9 +3439,9 @@ Regulatory Risk
 
 KYC adherence and STR filing
 
-Confidential  |  Page 32
+Confidential | Page 32
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Step 1: Each parameter is scored on a 1-5 scale (1 = Very Low Risk, 5 = Extremely High Risk)
 based on predefined thresholds configured in ram_parameters table.
@@ -3461,9 +3460,9 @@ target quarter. Features include: automatic scheduling based on last audit date 
 team workload balancing across quarters, drag-and-drop re-scheduling with conflict detection,
 export to Excel format for Board approval, and version tracking for plan revisions.
 
-Confidential  |  Page 33
+Confidential | Page 33
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M3: Audit Execution Module
 
@@ -3481,37 +3480,37 @@ driving the entire audit execution process. The system pre-loads all value state
 audit is initiated, and auditors mark each as Compliant, Non-Compliant, Partially Compliant, or
 Not Applicable, with mandatory observation text for any non-compliant findings.
 
-#  Functional Area  Code
+# Functional Area Code
 
 Scope of Examination
 
 Approx.
 Items
 
-1  Deposits
+1 Deposits
 
 DEP
 
-2  Remittances
+2 Remittances
 
 REM
 
-3  Cash & Currency
+3 Cash & Currency
 
 Chest
 
 CASH
 
-4  Government
+4 Government
 Business
 
 GOV
 
-5  Bills
+5 Bills
 
 BILL
 
-6  Clearing
+6 Clearing
 
 CLR
 
@@ -3547,7 +3546,7 @@ return memo handling, clearing settlement,
 NACH mandates, ECS processing,
 dishonour management
 
-7  Customer Service  CUST  Complaint handling, turnaround time for
+7 Customer Service CUST Complaint handling, turnaround time for
 services, account opening procedures,
 
 25-30
@@ -3564,11 +3563,11 @@ services, account opening procedures,
 
 15-20
 
-Confidential  |  Page 34
+Confidential | Page 34
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
-8  KYC / AML
+8 KYC / AML
 
 KYC
 
@@ -3579,19 +3578,19 @@ Security
 
 IT
 
-10  Human
+10 Human
 
 Resources
 
 HR
 
-11  General
+11 General
 
 Administration
 
 ADM
 
-12  Credit / Advances  CRD
+12 Credit / Advances CRD
 
 nomination updates, standing instructions,
 locker operations, customer education
@@ -3655,9 +3654,9 @@ Step 3 — Observation Entry: For Non-Compliant or Partially Compliant items, th
 requires a detailed audit observation, risk categorization (Low/Medium/High/Extremely High),
 and the functional area it pertains to (Finance/Operations/Legal & Recovery/HR/IT).
 
-Confidential  |  Page 35
+Confidential | Page 35
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Step 4 — Evidence Attachment: Auditor can attach photos, documents, or screenshots as
 evidence for any finding. Files are linked directly to the specific examination item.
@@ -3739,9 +3738,9 @@ Gold loan LTV compliance, education loan moratorium,
 MSME restructuring, agriculture KCC renewal, SHG-
 BLP linkage, PMAY subsidies
 
-Confidential  |  Page 36
+Confidential | Page 36
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Section Data Structures
 
@@ -3758,7 +3757,7 @@ team, visit number
 
 Metadata
 form
-Sign-off form  Auditor names, designations,
+Sign-off form Auditor names, designations,
 
 Overall risk score from all
 observations
@@ -3785,7 +3784,7 @@ Register
 
 Checklist
 
-visit dates, BH acknowledgment  Days spent on audit
+visit dates, BH acknowledgment Days spent on audit
 Sr No, Irregularity description,
 Branch comments
 
@@ -3831,21 +3830,21 @@ Detail table
 Account, borrower, product,
 sanction, disbursement,
 outstanding
-Review table  Account, borrower, dates,
+Review table Account, borrower, dates,
 amounts, observation, risk
 
 Summary +
 Category-wise counts, amounts,
 detail
 actions taken, recommendations
-Review table  Facility type, customer, amount,
+Review table Facility type, customer, amount,
 expiry, observation
 
 Checklist
 Particular, status, observation,
 (150+)
 risk, pertains to
-Observations  Staff meetings, rotation, training,
+Observations Staff meetings, rotation, training,
 leave management
 
 Verification
@@ -3891,9 +3890,9 @@ connected. Works offline with IndexedDB storage, syncing when back online.
 Previous Audit Comparison: Side-by-side view of current vs. previous audit findings for the
 same section. Repeat findings are automatically flagged.
 
-Confidential  |  Page 37
+Confidential | Page 37
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Bulk Loan Import: CSV upload for Loans & Advances section — auditors can export loan data
 from CBS and import directly, then add observations per account.
@@ -3910,9 +3909,9 @@ templates. All checklist items can be customized by administrators as policy evo
 Photo Evidence: Direct camera integration on tablets for capturing evidence photos during
 branch visit, automatically linked to the relevant observation.
 
-Confidential  |  Page 38
+Confidential | Page 38
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M4: Report Generation Module
 
@@ -3986,7 +3985,7 @@ continues
 
 Minor issues with generally
 adequate controls
-Robust controls, minimal findings  Audit cycle may be extended
+Robust controls, minimal findings Audit cycle may be extended
 
 Audit cycle may be extended
 
@@ -3996,9 +3995,9 @@ The score is computed as: weighted average of all observation risk scores across
 where weights are determined by the section’s relative importance (configurable in admin
 settings). Repeat findings receive a 1.5x weight multiplier as per RBIA Policy guidance.
 
-Confidential  |  Page 39
+Confidential | Page 39
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M5: Compliance Tracking Module
 
@@ -4017,25 +4016,25 @@ SLA
 System Action
 
 1. Observation
-Raised
+   Raised
 
 System
 
-On report submission  Auto-create compliance_item, set
+On report submission Auto-create compliance_item, set
 
 due_date, notify Branch Head
 
 2. Branch
-Response
+   Response
 
-Branch Head  30 days from report
+Branch Head 30 days from report
 date
 
 3. ZAC Review
 
-Zonal Auditor  Next ZAC meeting
+Zonal Auditor Next ZAC meeting
 
-4. ACE Processing  ACE Officer  Quarterly cycle
+4. ACE Processing ACE Officer Quarterly cycle
 
 5. ACB Reporting
 
@@ -4120,9 +4119,9 @@ attention
 Marked as persistent issue, 1.5x risk weight
 in next RAM computation
 
-Confidential  |  Page 40
+Confidential | Page 40
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M6: Analytics & Dashboards Module
 
@@ -4174,7 +4173,7 @@ compliance list
 
 Risk Category
 Distribution
-Section-wise Findings  Horizontal bar chart  audit_observations grouped
+Section-wise Findings Horizontal bar chart audit_observations grouped
 
 audit_observations grouped
 by risk_category
@@ -4242,9 +4241,9 @@ dates
 Click zone → zone-level
 SLA
 
-Confidential  |  Page 41
+Confidential | Page 41
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M8: Enterprise Risk Register & Audit Universe
 
@@ -4272,7 +4271,7 @@ Chembur, etc.
 RAM scores, branch risk rating,
 operational risk profile
 
-Zones / Regions  Western Zone, Central Zone, etc.
+Zones / Regions Western Zone, Central Zone, etc.
 
 Aggregated branch risk, management
 effectiveness
@@ -4361,9 +4360,9 @@ diligence leading to regulatory penalty’)
 credit / operational / compliance / strategic / reputational /
 cyber / liquidity
 
-Confidential  |  Page 42
+Confidential | Page 42
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 inherent_risk_score
 
@@ -4371,7 +4370,7 @@ DECIMAL(5,2)
 
 Pre-control risk rating (1–5 scale)
 
-control_effectiveness  VARCHAR(20)
+control_effectiveness VARCHAR(20)
 
 strong / adequate / weak / non_existent
 
@@ -4447,9 +4446,9 @@ auditable entities beyond the branch and to specific risk themes from the risk r
 ‘Credit underwriting quality at Branch X’ or ‘KYC lapses across Western Zone’), enabling
 thematic audit coverage tracking.
 
-Confidential  |  Page 43
+Confidential | Page 43
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M9: Control Library & Standardized Work Programs
 
@@ -4573,9 +4572,9 @@ linked to controls
 Runtime work program
 per audit engagement
 
-Confidential  |  Page 44
+Confidential | Page 44
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Control Effectiveness Analytics
 
@@ -4583,9 +4582,9 @@ The Analytics module is extended with control effectiveness views: trends across
 whether controls are improving or degrading, heatmaps by process area and branch, and drill-
 down from aggregate scores to individual test results.
 
-Confidential  |  Page 45
+Confidential | Page 45
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M10: Continuous Auditing & Data-Driven Testing
 
@@ -4714,9 +4713,9 @@ Critical
 
 High
 
-Confidential  |  Page 46
+Confidential | Page 46
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Operational Gaps
 
@@ -4740,9 +4739,9 @@ and linkage to audit engagements and formal observations. Continuous monitoring 
 provide real-time KPIs, early warning lists of branches breaching thresholds, coverage metrics,
 and exception-to-audit pipeline views.
 
-Confidential  |  Page 47
+Confidential | Page 47
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M11: AI & Advanced Analytics Layer
 
@@ -4765,9 +4764,9 @@ Autoencoder
 Detect outlier loan accounts deviating from branch or
 product norms by size, tenure, repayment pattern
 
-Cash Operations  Statistical Process Control
+Cash Operations Statistical Process Control
 
-+ DBSCAN
+- DBSCAN
 
 Identify unusual cash inflow/outflow patterns,
 denomination anomalies, and timing irregularities
@@ -4817,9 +4816,9 @@ based on text analysis, top 5 similar past findings from prior audits, pre-draft
 analysis and recommended corrective actions, and emerging risk theme alerts from the latest
 audit cycle.
 
-Confidential  |  Page 48
+Confidential | Page 48
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M12: Issue & Action Management
 
@@ -4871,7 +4870,7 @@ VARCHAR(30)
 internal_audit / regulatory_inspection / external_audit
 / control_testing / risk_event / self_assessment
 
-VARCHAR(200)  Concise issue title
+VARCHAR(200) Concise issue title
 
 TEXT
 
@@ -4903,7 +4902,7 @@ remediation
 
 Array of control_library IDs related to this issue
 
-linked_compliance_item_id  UUID
+linked_compliance_item_id UUID
 
 FK → compliance_items.id (if sourced from audit)
 
@@ -4955,9 +4954,9 @@ FK → issues.id
 
 Specific corrective action to be taken
 
-Confidential  |  Page 49
+Confidential | Page 49
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 action_owner
 
@@ -5011,9 +5010,9 @@ FK → users.id — auditor who verified closure
 This enables the Board/ACB to receive a consolidated view of all open issues regardless of
 source, with severity-based prioritization and partial closure tracking.
 
-Confidential  |  Page 50
+Confidential | Page 50
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Enhanced Planning & Resource Management
 
@@ -5061,9 +5060,9 @@ thematic audits on ‘Gold Loan Processes across Western Zone’). A single enga
 multiple branch_ids with shared findings, consolidated reporting, and cross-entity comparison
 analytics.
 
-Confidential  |  Page 51
+Confidential | Page 51
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 GRC Integration & Open API Layer
 
@@ -5084,7 +5083,7 @@ Purpose
 Enterprise ERM
 System
 
-Bi-directional  REST +
+Bi-directional REST +
 
 Webhooks
 
@@ -5093,7 +5092,7 @@ risk assessment updates
 
 ITSM / Issue Tracker
 
-Bi-directional  REST API
+Bi-directional REST API
 
 Push audit issues to IT remediation queues;
 receive resolution updates
@@ -5102,7 +5101,7 @@ HRMS / IAM
 
 Inbound
 
-Regulatory Reporting  Outbound
+Regulatory Reporting Outbound
 
 SCIM / LDAP /
 SAML
@@ -5126,7 +5125,7 @@ API
 
 Inbound
 (read-only)
-Bi-directional  REST /
+Bi-directional REST /
 
 WebDAV
 
@@ -5144,9 +5143,9 @@ hierarchy. A ‘Single View of Risk’ dashboard aggregates data from multiple s
 screen per risk theme: showing the risk score, open issues from all assurance sources, pending
 action plans, recent audit coverage, and current KRI status.
 
-Confidential  |  Page 52
+Confidential | Page 52
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 UX & Mobility Enhancements
 
@@ -5161,18 +5160,18 @@ Platform
 
 Description
 
-Evidence Capture  Mobile /
+Evidence Capture Mobile /
 Tablet
 
 Camera integration for photos, video, and voice-to-text notes linked
 to active audit sections
 
-Quick Checklists  Mobile
+Quick Checklists Mobile
 
 Simplified value statement examination with swipe-based status
 marking optimized for one-handed use
 
-Offline-First Sync  Mobile /
+Offline-First Sync Mobile /
 Tablet
 
 Full offline capability using service workers and IndexedDB;
@@ -5217,9 +5216,9 @@ a live audit engagement, preventing duplicate effort.
 Multilingual Support: UI localization framework for Hindi and regional languages, supporting
 multi-lingual audit teams.
 
-Confidential  |  Page 53
+Confidential | Page 53
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Multi-Tenant Architecture
 
@@ -5304,9 +5303,9 @@ processing via secure connectors.
 Cloud convenience + on-premise
 security
 
-Confidential  |  Page 54
+Confidential | Page 54
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M13: Quality Management for Internal Audit Function
 
@@ -5376,7 +5375,7 @@ from prior audits
 
 Compliance Closure
 Rate
-Stakeholder Satisfaction  Annual survey score from auditees
+Stakeholder Satisfaction Annual survey score from auditees
 
 % of compliance items closed within
 policy timelines
@@ -5405,7 +5404,7 @@ Training Hours/Auditor
 Annual professional development
 hours
 
-Confidential  |  Page 55
+Confidential | Page 55
 
 > 85%
 
@@ -5423,14 +5422,14 @@ Confidential  |  Page 55
 
 > 40 hrs
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 These KPIs are tracked in the Analytics module and presented in a dedicated ‘Audit Function
 Health’ dashboard available to IAD management and ACB members.
 
-Confidential  |  Page 56
+Confidential | Page 56
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 UCB & RBI Regulatory Alignment Framework
 
@@ -5441,9 +5440,9 @@ norms, capital adequacy requirements, investment and treasury controls, and inte
 exposure limits. Together, these capabilities ensure that a UCB using RBIAS can demonstrate
 full compliance and strong governance during RBI inspections.
 
-Confidential  |  Page 57
+Confidential | Page 57
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M14: Unified Audit Universe & Calendar
 
@@ -5538,7 +5537,7 @@ UUID
 Entity identifier
 
 VARCHAR(30)
-VARCHAR(100)  Name (e.g., ‘Treasury Department’, ‘Internet
+VARCHAR(100) Name (e.g., ‘Treasury Department’, ‘Internet
 
 branch / ho_department / process / channel / vendor
 
@@ -5585,9 +5584,9 @@ concurrent, is_audit]
 Whether RBI mandates surprise character for this
 entity
 
-Confidential  |  Page 58
+Confidential | Page 58
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 status
 
@@ -5595,9 +5594,9 @@ VARCHAR(20)
 
 active / inactive / merged
 
-Confidential  |  Page 59
+Confidential | Page 59
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M15: Concurrent Audit Module
 
@@ -5694,9 +5693,9 @@ De-duplication with RBIA: Findings raised in concurrent audit automatically surf
 RBIA planning for the same branch. Analytics identify branches with persistent concurrent audit
 issues for higher RAM risk scoring and more intensive RBIA coverage.
 
-Confidential  |  Page 60
+Confidential | Page 60
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M16: IRAC & Provisioning Engine
 
@@ -5750,9 +5749,9 @@ recomputation
 and deviation
 flags
 
-Confidential  |  Page 61
+Confidential | Page 61
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M17: Investment & Treasury Audit Controls
 
@@ -5820,9 +5819,9 @@ upload, and ‘sent to RO’ status tracking
 The HO treasury is treated as an auditable entity in the audit universe, with dedicated
 concurrent audit and periodic IS audit coverage.
 
-Confidential  |  Page 62
+Confidential | Page 62
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M18: EDP / IS Audit Module
 
@@ -5910,9 +5909,9 @@ For branches with heavy digital channel usage, RBIA automatically includes IS co
 verification items (password practices, CBS access log sampling) to complement the HO-level
 IS audit.
 
-Confidential  |  Page 63
+Confidential | Page 63
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M19: Regulatory Observation & Follow-up Hub
 
@@ -5999,9 +5998,9 @@ and deadlines. The system tracks ATR preparation, submission to Regional Office,
 evidence. ACB receives a consolidated view of all regulatory observations and their rectification
 status.
 
-Confidential  |  Page 64
+Confidential | Page 64
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Housekeeping Risk Metrics
 
@@ -6034,7 +6033,7 @@ Clearing differences count
 
 Treasury/accounts
 reconciliation
-GL data / audit verification  Large/aged suspense balances increase
+GL data / audit verification Large/aged suspense balances increase
 
 Feeds inter-bank risk dashboard; aged items
 flagged to ACB
@@ -6059,9 +6058,9 @@ These metrics are stored in a housekeeping_metrics table (branch_id, as_of_date,
 values) updated during audits and optionally via data feeds. A dedicated ‘Housekeeping Health’
 dashboard is available for CEO and ACB.
 
-Confidential  |  Page 65
+Confidential | Page 65
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Inter-bank Exposure Monitoring
 
@@ -6100,7 +6099,7 @@ Separate tracking of exposures to banks under
 RBI directions with provisioning compliance
 checks
 
-UCB-to-UCB deposits  Specific RBI restrictions
+UCB-to-UCB deposits Specific RBI restrictions
 
 apply
 
@@ -6110,9 +6109,9 @@ applicable limit calculations
 Audit checklists for HO/treasury audits include standardized tests checking compliance with all
 inter-bank limits. Any breaches are directly linked to the issue register and ACB dashboard.
 
-Confidential  |  Page 66
+Confidential | Page 66
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 M20: Governance & Board Compliance Module
 
@@ -6187,14 +6186,15 @@ IS audit findings, incident reports, DR drill status
 Fraud cases and vigilance
 
 As they arise
-+ Quarterly
-summary
+
+- Quarterly
+  summary
 
 Linked to issue register with fraud case tracking
 
-Confidential  |  Page 67
+Confidential | Page 67
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Policy Library & Review Tracker
 
@@ -6304,9 +6304,9 @@ Meeting records linked to
 RBIAS-generated reports
 and issues reviewed
 
-Confidential  |  Page 68
+Confidential | Page 68
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 RBI Inspection Support Pack
 
@@ -6396,9 +6396,9 @@ reviewed
 All key policies with last review date and
 next due date
 
-Confidential  |  Page 69
+Confidential | Page 69
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Risk Management MIS for RMC / Board
 
@@ -6448,7 +6448,7 @@ Credit
 Concentration
 
 Fraud cases, housekeeping health,
-staff-related issues, IT incident count  Operational risk framework
+staff-related issues, IT incident count Operational risk framework
 Top 10/20 borrowers exposure,
 sector-wise concentration, group
 exposure vs limits
@@ -6460,9 +6460,9 @@ regulatory_metrics table, or be populated during the audit cycle. The Risk Manag
 Committee (for UCBs with assets ≥ Rs 5000 crore) and the Board receive these as pre-
 configured report packs.
 
-Confidential  |  Page 70
+Confidential | Page 70
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Non-Functional Requirements
 
@@ -6472,21 +6472,21 @@ Requirement
 
 Specification
 
-Performance  Page Load Time
+Performance Page Load Time
 
 All pages load within 2 seconds on standard broadband
 connection
 
-Performance  Form Auto-Save
+Performance Form Auto-Save
 
 Local save within 500ms, server sync within 3 seconds
 
-Performance  Report Generation
+Performance Report Generation
 
 Excel report generated within 10 seconds for standard audit (400
 loan records)
 
-Performance  Dashboard Refresh  Analytics queries execute within 5 seconds for 3-year data range
+Performance Dashboard Refresh Analytics queries execute within 5 seconds for 3-year data range
 
 Scalability
 
@@ -6567,7 +6567,7 @@ Disaster Recovery
 RPO: 1 hour, RTO: 4 hours; active–passive or active–active
 deployment options across data centers
 
-Observability  Monitoring
+Observability Monitoring
 
 Centralized logs, metrics via Prometheus/Grafana, alert
 thresholds for error rates and performance; health dashboards
@@ -6584,27 +6584,27 @@ Usability
 Usability
 
 Browser Support
-Responsive Design  Full functionality on tablets (1024px+), read-only on mobile
+Responsive Design Full functionality on tablets (1024px+), read-only on mobile
 
 Chrome 90+, Edge 90+, Firefox 90+, Safari 15+
 
 (768px+)
 
-Compliance  Data Retention
+Compliance Data Retention
 
 Audit data retained for 8 years per RBI guidelines; concurrent
 audit records for 10 years; IRAC computation logs retained for
 regulatory examination periods
 
-Confidential  |  Page 71
+Confidential | Page 71
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Compliance
 
 Export Capability
 
-Compliance  Regulatory
+Compliance Regulatory
 Auditability
 
 Compliance
@@ -6612,7 +6612,7 @@ Compliance
 Function-Level
 RBAC
 
-Compliance  RBI Reporting
+Compliance RBI Reporting
 
 All data exportable in CSV/Excel/PDF format for regulatory
 submissions; RBI-friendly report packs (inspection support pack,
@@ -6632,9 +6632,9 @@ Pre-configured report templates for ATR submissions,
 concurrent audit summaries, IRAC deviation reports, inspection
 support packs, and regulatory observation follow-up status
 
-Confidential  |  Page 72
+Confidential | Page 72
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Implementation Roadmap
 
@@ -6657,7 +6657,7 @@ Deliverables
 Priority
 
 Project setup: database schema, Prisma models, Express API skeleton,
-React scaffold, authentication system with JWT and RBAC middleware  Critical
+React scaffold, authentication system with JWT and RBAC middleware Critical
 Branch Master module, User Management, Zone hierarchy, base
 dashboard layout with role-based routing
 
@@ -6707,7 +6707,7 @@ PDF report, Summary report, BH Certificate
 
 Critical
 
-Sprint 11-12  Compliance Tracking Module: full lifecycle workflow, Branch response
+Sprint 11-12 Compliance Tracking Module: full lifecycle workflow, Branch response
 portal, ZAC/ACE/ACB review screens, escalation engine
 
 Critical
@@ -6720,17 +6720,17 @@ Deliverables
 
 Priority
 
-Sprint 13-14  RAM Computation Engine with 19 parameters, Annual Audit Plan
+Sprint 13-14 RAM Computation Engine with 19 parameters, Annual Audit Plan
 
 generator, plan approval workflow
 
 High
 
-Confidential  |  Page 73
+Confidential | Page 73
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
-Sprint 15-16  Analytics dashboards, Branch Scorecards, trend analysis, management
+Sprint 15-16 Analytics dashboards, Branch Scorecards, trend analysis, management
 
 reporting, notification system
 
@@ -6783,7 +6783,7 @@ Deliverables
 
 Priority
 
-Sprint 24-25  Enterprise Risk Register & Audit Universe (M8): auditable entities, risk
+Sprint 24-25 Enterprise Risk Register & Audit Universe (M8): auditable entities, risk
 statements, KRIs, risk-plan linkage, what-if simulation
 
 Sprint 26-27
@@ -6836,9 +6836,9 @@ Medium
 
 Medium
 
-Confidential  |  Page 74
+Confidential | Page 74
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Sprint 35-36
 
@@ -6934,9 +6934,9 @@ High
 
 High
 
-Confidential  |  Page 75
+Confidential | Page 75
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Sprint 50-51
 
@@ -6947,9 +6947,9 @@ market, operational, liquidity concentration)
 
 High
 
-Confidential  |  Page 76
+Confidential | Page 76
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 Appendix
 
@@ -7060,9 +7060,9 @@ internal audit practice
 Extract, Transform, Load — data pipeline process for ingesting data from source
 systems into RBIAS for analytics
 
-Confidential  |  Page 77
+Confidential | Page 77
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 RLS
 
@@ -7135,49 +7135,49 @@ impacting P&L for trading/AFS categories
 B. Reference Documents
 
 1. Risk Based Internal Audit Policy 2018 (RBIA Policy) — the governing policy document
-defining audit methodology, RAM framework, risk scoring, reporting requirements, and
-compliance tracking procedures.
+   defining audit methodology, RAM framework, risk scoring, reporting requirements, and
+   compliance tracking procedures.
 
 2. Internal Audit Format of RBG (IA Format) — the detailed examination checklist defining 12
-functional areas and 220+ value statements that auditors must evaluate at each branch. Areas
-covered: Deposits, Remittances, Cash & Currency Chest, Government Business, Bills, Clearing,
-Customer Service, KYC/AML, IT & Cyber Security, Human Resources, General Administration,
-and Credit/Advances.
+   functional areas and 220+ value statements that auditors must evaluate at each branch. Areas
+   covered: Deposits, Remittances, Cash & Currency Chest, Government Business, Bills, Clearing,
+   Customer Service, KYC/AML, IT & Cyber Security, Human Resources, General Administration,
+   and Credit/Advances.
 
 3. Existing Audit Report Excel Workbooks (11 files analyzed) — actual branch audit reports from
-Fort, Bhandup, Goregaon, Chembur, Mulund East, Borivli, and Andheri branches, used as the
-definitive reference for report format and data structure.
+   Fort, Bhandup, Goregaon, Chembur, Mulund East, Borivli, and Andheri branches, used as the
+   definitive reference for report format and data structure.
 
-Confidential  |  Page 78
+Confidential | Page 78
 
-RBIAS — Software Design Document
+RBIAS — Software Design Document
 
 4. RBI Guidelines on Risk-Based Internal Audit for Banks — regulatory framework mandating
-RBIA adoption.
+   RBIA adoption.
 
 5. Global Internal Audit Best Practices — guidance from IIA Standards, COSO Internal Control
-Framework, ISO 31000, and leading GRC platforms (AuditBoard, MetricStream, Diligent,
-Centraleyes) informing the advanced modules (M8–M13) including control library, continuous
-auditing, AI analytics, and multi-tenant architecture.
+   Framework, ISO 31000, and leading GRC platforms (AuditBoard, MetricStream, Diligent,
+   Centraleyes) informing the advanced modules (M8–M13) including control library, continuous
+   auditing, AI analytics, and multi-tenant architecture.
 
 6. RBI Master Circular on Inspection & Audit Systems in Urban Cooperative Banks — regulatory
-framework governing RBIA, concurrent audit, EDP/IS audit, and governance expectations for
-UCBs, informing modules M14–M20.
+   framework governing RBIA, concurrent audit, EDP/IS audit, and governance expectations for
+   UCBs, informing modules M14–M20.
 
 7. RBI Master Circular on Income Recognition, Asset Classification and Provisioning (IRAC) for
-UCBs — norms for NPA identification, classification, and provisioning percentages driving the
-IRAC engine (M16).
+   UCBs — norms for NPA identification, classification, and provisioning percentages driving the
+   IRAC engine (M16).
 
 8. RBI Guidelines on Investment by UCBs — SLR/non-SLR limits, SGL/CSGL requirements,
-broker intermediation controls, and quarterly certification requirements informing investment
-audit controls (M17).
+   broker intermediation controls, and quarterly certification requirements informing investment
+   audit controls (M17).
 
 9. RBI Guidelines on Capital Adequacy (CRAR) for UCBs — minimum 9% CRAR requirement,
-risk-weight calculation, and capital planning framework referenced in risk management
-dashboards.
+   risk-weight calculation, and capital planning framework referenced in risk management
+   dashboards.
 
 10. RBI Framework on Inter-Bank Exposure Limits for UCBs — single-bank, aggregate, and
-UCB-to-UCB exposure limits informing the inter-bank exposure monitoring module.
+    UCB-to-UCB exposure limits informing the inter-bank exposure monitoring module.
 
 C. Data Migration Strategy
 
@@ -7188,6 +7188,4 @@ against schema constraints, and generating a migration report showing imported r
 skipped records, and data quality issues. The bulk import for Loans & Advances sections
 supports CSV format, which can be extracted from CBS.
 
-Confidential  |  Page 79
-
-
+Confidential | Page 79

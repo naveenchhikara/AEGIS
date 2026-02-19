@@ -6,7 +6,10 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { CreateRamAssessmentSchema, type CreateRamAssessmentInput } from "./schemas";
+import {
+  CreateRamAssessmentSchema,
+  type CreateRamAssessmentInput,
+} from "./schemas";
 
 /**
  * Create a new RAM assessment for a branch/year.
@@ -19,7 +22,10 @@ export async function createRamAssessment(input: CreateRamAssessmentInput) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "ram:create")) {
-    return { success: false as const, error: "You do not have permission to create RAM assessments." };
+    return {
+      success: false as const,
+      error: "You do not have permission to create RAM assessments.",
+    };
   }
 
   const parsed = CreateRamAssessmentSchema.safeParse(input);
@@ -56,7 +62,9 @@ export async function createRamAssessment(input: CreateRamAssessmentInput) {
         },
       });
       if (existing) {
-        throw new Error(`Assessment already exists for ${branch.name} in ${validated.assessmentYear}`);
+        throw new Error(
+          `Assessment already exists for ${branch.name} in ${validated.assessmentYear}`,
+        );
       }
 
       return tx.ramAssessment.create({
@@ -72,7 +80,10 @@ export async function createRamAssessment(input: CreateRamAssessmentInput) {
     revalidatePath("/ram");
     return { success: true as const, data: { id: result.id } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create RAM assessment.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to create RAM assessment.";
     logger.error({ error, action: "create_ram_assessment", tenantId }, message);
     return { success: false as const, error: message };
   }

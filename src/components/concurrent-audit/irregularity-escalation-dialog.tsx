@@ -31,7 +31,11 @@ interface IrregularityEscalationDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-type IrregularityType = "FRAUD" | "MAJOR_DEVIATION" | "REGULATORY_BREACH" | "CRITICAL_RISK";
+type IrregularityType =
+  | "FRAUD"
+  | "MAJOR_DEVIATION"
+  | "REGULATORY_BREACH"
+  | "CRITICAL_RISK";
 type Urgency = "IMMEDIATE" | "URGENT" | "HIGH";
 type Recipient = "CAE" | "CEO" | "ACB_MEMBER";
 
@@ -69,7 +73,9 @@ export function IrregularityEscalationDialog({
   onOpenChange,
 }: IrregularityEscalationDialogProps) {
   const [isOpen, setIsOpen] = useState(open || false);
-  const [irregularityType, setIrregularityType] = useState<IrregularityType | "">("");
+  const [irregularityType, setIrregularityType] = useState<
+    IrregularityType | ""
+  >("");
   const [urgency, setUrgency] = useState<Urgency>("HIGH");
   const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
   const [remarks, setRemarks] = useState("");
@@ -107,7 +113,7 @@ export function IrregularityEscalationDialog({
     setSelectedRecipients((prev) =>
       prev.includes(recipient)
         ? prev.filter((r) => r !== recipient)
-        : [...prev, recipient]
+        : [...prev, recipient],
     );
   };
 
@@ -145,7 +151,7 @@ export function IrregularityEscalationDialog({
       toast.success(
         `Escalated to ${result.data.notificationsSent} recipient${
           result.data.notificationsSent !== 1 ? "s" : ""
-        }`
+        }`,
       );
       handleOpenChange(false);
       // Optionally reload the page to reflect status changes
@@ -161,11 +167,12 @@ export function IrregularityEscalationDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <AlertTriangle className="text-destructive h-5 w-5" />
             Escalate Serious Irregularity
           </DialogTitle>
           <DialogDescription>
-            Flag critical findings for immediate attention from senior management
+            Flag critical findings for immediate attention from senior
+            management
           </DialogDescription>
         </DialogHeader>
 
@@ -175,7 +182,9 @@ export function IrregularityEscalationDialog({
               <Label htmlFor="irregularityType">Irregularity Type *</Label>
               <Select
                 value={irregularityType}
-                onValueChange={(value) => setIrregularityType(value as IrregularityType)}
+                onValueChange={(value) =>
+                  setIrregularityType(value as IrregularityType)
+                }
                 required
               >
                 <SelectTrigger id="irregularityType">
@@ -190,10 +199,12 @@ export function IrregularityEscalationDialog({
                 </SelectContent>
               </Select>
               {irregularityType && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs">
                   Auto-routing to:{" "}
                   {AUTO_ROUTING[irregularityType]
-                    .map((r) => RECIPIENTS.find((rec) => rec.value === r)?.label)
+                    .map(
+                      (r) => RECIPIENTS.find((rec) => rec.value === r)?.label,
+                    )
                     .join(", ")}
                 </p>
               )}
@@ -221,9 +232,12 @@ export function IrregularityEscalationDialog({
 
             <div>
               <Label className="mb-3 block">Escalate To *</Label>
-              <div className="space-y-3 border rounded-md p-4">
+              <div className="space-y-3 rounded-md border p-4">
                 {RECIPIENTS.map((recipient) => (
-                  <div key={recipient.value} className="flex items-center space-x-2">
+                  <div
+                    key={recipient.value}
+                    className="flex items-center space-x-2"
+                  >
                     <Checkbox
                       id={recipient.value}
                       checked={selectedRecipients.includes(recipient.value)}
@@ -231,14 +245,14 @@ export function IrregularityEscalationDialog({
                     />
                     <label
                       htmlFor={recipient.value}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                       {recipient.label}
                     </label>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-2 text-xs">
                 You can modify auto-selected recipients if needed
               </p>
             </div>
@@ -254,15 +268,15 @@ export function IrregularityEscalationDialog({
                 required
                 minLength={10}
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {remarks.length} / 10 minimum characters
               </p>
             </div>
           </div>
 
           <div className="bg-muted/50 rounded-md p-4 text-sm">
-            <p className="font-medium mb-2">What happens next:</p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+            <p className="mb-2 font-medium">What happens next:</p>
+            <ul className="text-muted-foreground list-inside list-disc space-y-1">
               <li>Observation severity will be upgraded to CRITICAL</li>
               <li>Observation status will change to SUBMITTED</li>
               <li>Notifications will be sent to selected recipients</li>

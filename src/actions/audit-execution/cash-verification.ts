@@ -6,14 +6,17 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import { SaveCashVerificationSchema, type SaveCashVerificationInput } from "./schemas";
+import {
+  SaveCashVerificationSchema,
+  type SaveCashVerificationInput,
+} from "./schemas";
 
 /**
  * Save or update cash verification data for an engagement.
  * Uses upsert pattern since there's exactly one CashCheck per engagement (@@unique).
  * Auto-computes difference = cashInHand - bookBalance.
  * Returns retentionExceeded flag if cash exceeds retention limit.
- * 
+ *
  * Security: Requires examination:respond permission.
  * Atomicity: Single upsert transaction with audit context.
  */
@@ -103,7 +106,9 @@ export async function saveCashVerification(input: SaveCashVerificationInput) {
     });
 
     // ─── Step 6: Cache Revalidation ────────────────────────────
-    revalidatePath(`/audit-execution/${validated.engagementId}/cash-verification`);
+    revalidatePath(
+      `/audit-execution/${validated.engagementId}/cash-verification`,
+    );
     revalidatePath(`/audit-execution/${validated.engagementId}`);
 
     // ─── Step 7: Success Response ──────────────────────────────
@@ -121,10 +126,13 @@ export async function saveCashVerification(input: SaveCashVerificationInput) {
     };
   } catch (error) {
     // ─── Step 8: Error Handling ────────────────────────────────
-    const message = error instanceof Error ? error.message : "Failed to save cash verification data.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to save cash verification data.";
     logger.error(
       { error, action: "save_cash_verification", tenantId },
-      message
+      message,
     );
 
     return {
@@ -164,7 +172,7 @@ export async function getCashVerificationAction(engagementId: string) {
   } catch (error) {
     logger.error(
       { error, action: "get_cash_verification", tenantId },
-      "Failed to fetch cash verification data"
+      "Failed to fetch cash verification data",
     );
 
     return {

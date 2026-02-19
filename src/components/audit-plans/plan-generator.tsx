@@ -94,7 +94,7 @@ export function PlanGenerator() {
 
       if (result.success && result.data.planId) {
         toast.success(
-          `Annual plan created! ${result.data.engagementsCount} audits scheduled.`
+          `Annual plan created! ${result.data.engagementsCount} audits scheduled.`,
         );
         setPreview(null); // Clear preview after successful commit
       } else {
@@ -109,7 +109,7 @@ export function PlanGenerator() {
 
   // Get priority badge variant
   const getPriorityVariant = (
-    priority: "HIGH" | "MEDIUM" | "LOW"
+    priority: "HIGH" | "MEDIUM" | "LOW",
   ): "destructive" | "default" | "secondary" => {
     if (priority === "HIGH") return "destructive";
     if (priority === "MEDIUM") return "default";
@@ -192,9 +192,7 @@ export function PlanGenerator() {
                   </TableCell>
                   <TableCell>{schedule.branchName}</TableCell>
                   <TableCell className="text-right">
-                    {schedule.ramScore
-                      ? schedule.ramScore.toFixed(2)
-                      : "N/A"}
+                    {schedule.ramScore ? schedule.ramScore.toFixed(2) : "N/A"}
                   </TableCell>
                   <TableCell>
                     {schedule.lastAuditDate
@@ -220,7 +218,7 @@ export function PlanGenerator() {
       )}
 
       {preview && preview.length === 0 && (
-        <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="text-muted-foreground rounded-md border border-dashed p-8 text-center text-sm">
           No branches found to schedule
         </div>
       )}

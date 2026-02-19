@@ -117,7 +117,7 @@ import { test as setup, expect } from "@playwright/test";
 
 /**
  * Authentication setup — creates storageState for 4 roles.
- * 
+ *
  * Each user logs in and saves cookies/localStorage to a JSON file.
  * Test projects load these files to bypass login for every test.
  */
@@ -154,11 +154,11 @@ for (const user of users) {
     await page.goto("/login");
 
     // Wait for the form to hydrate (client component)
-    await page.waitForSelector('input#email', { timeout: 15000 });
+    await page.waitForSelector("input#email", { timeout: 15000 });
 
     // Fill by ID (reliable, matches the JSX id= attributes)
-    await page.fill('input#email', user.email);
-    await page.fill('input#password', user.password);
+    await page.fill("input#email", user.email);
+    await page.fill("input#password", user.password);
 
     // Click Sign In button
     await page.click('button[type="submit"]');
@@ -195,10 +195,10 @@ test.describe("Feature Name", () => {
     await page.goto("/path");
 
     // Act: Perform user actions
-    await page.click('button#action');
+    await page.click("button#action");
 
     // Assert: Verify outcome
-    await expect(page.locator('text=Success')).toBeVisible();
+    await expect(page.locator("text=Success")).toBeVisible();
   });
 });
 ```
@@ -222,19 +222,22 @@ test.describe("Observation Lifecycle", () => {
     await page.goto("/findings/new");
 
     // Wait for form hydration
-    await page.waitForSelector('input#title');
+    await page.waitForSelector("input#title");
 
     // Fill 5C fields
-    await page.fill('input#title', "Test Observation - Lifecycle");
-    await page.fill('textarea#condition', "Condition: Test condition text...");
-    await page.fill('textarea#criteria', "Criteria: Test criteria text...");
-    await page.fill('textarea#cause', "Cause: Test cause text...");
-    await page.fill('textarea#effect', "Effect: Test effect text...");
-    await page.fill('textarea#recommendation', "Recommendation: Test recommendation text...");
+    await page.fill("input#title", "Test Observation - Lifecycle");
+    await page.fill("textarea#condition", "Condition: Test condition text...");
+    await page.fill("textarea#criteria", "Criteria: Test criteria text...");
+    await page.fill("textarea#cause", "Cause: Test cause text...");
+    await page.fill("textarea#effect", "Effect: Test effect text...");
+    await page.fill(
+      "textarea#recommendation",
+      "Recommendation: Test recommendation text...",
+    );
 
     // Select severity
-    await page.click('button#severity');
-    await page.click('text=High');
+    await page.click("button#severity");
+    await page.click("text=High");
 
     // Submit form
     await page.click('button[type="submit"]');
@@ -247,10 +250,14 @@ test.describe("Observation Lifecycle", () => {
     observationId = url.split("/").pop()!;
 
     // Verify success toast
-    await expect(page.locator('text=created successfully')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("text=created successfully")).toBeVisible({
+      timeout: 5000,
+    });
 
     // Verify observation appears on page
-    await expect(page.locator('h1:has-text("Test Observation - Lifecycle")')).toBeVisible();
+    await expect(
+      page.locator('h1:has-text("Test Observation - Lifecycle")'),
+    ).toBeVisible();
   });
 
   test("should view observation detail", async ({ page }) => {
@@ -258,11 +265,13 @@ test.describe("Observation Lifecycle", () => {
     await page.goto(`/findings/${observationId}`);
 
     // Verify 5C fields are displayed
-    await expect(page.locator('text=Condition: Test condition')).toBeVisible();
-    await expect(page.locator('text=Criteria: Test criteria')).toBeVisible();
-    await expect(page.locator('text=Cause: Test cause')).toBeVisible();
-    await expect(page.locator('text=Effect: Test effect')).toBeVisible();
-    await expect(page.locator('text=Recommendation: Test recommendation')).toBeVisible();
+    await expect(page.locator("text=Condition: Test condition")).toBeVisible();
+    await expect(page.locator("text=Criteria: Test criteria")).toBeVisible();
+    await expect(page.locator("text=Cause: Test cause")).toBeVisible();
+    await expect(page.locator("text=Effect: Test effect")).toBeVisible();
+    await expect(
+      page.locator("text=Recommendation: Test recommendation"),
+    ).toBeVisible();
   });
 
   test("should submit observation for review", async ({ page }) => {
@@ -272,7 +281,9 @@ test.describe("Observation Lifecycle", () => {
     await page.click('button:has-text("Submit for Review")');
 
     // Wait for status update
-    await expect(page.locator('text=Status: Submitted')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("text=Status: Submitted")).toBeVisible({
+      timeout: 5000,
+    });
   });
 });
 ```
@@ -289,23 +300,25 @@ import { test, expect } from "@playwright/test";
 test.describe("Permission Guards", () => {
   test("auditor can create observations", async ({ page }) => {
     await page.goto("/findings/new");
-    
+
     // Should see the form
-    await expect(page.locator('input#title')).toBeVisible();
+    await expect(page.locator("input#title")).toBeVisible();
   });
 
   test("auditee cannot access admin panel", async ({ page }) => {
     await page.goto("/admin/users");
-    
+
     // Should redirect or show unauthorized
-    await expect(page.locator('text=Unauthorized')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("text=Unauthorized")).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test("CAE can access audit trail", async ({ page }) => {
     await page.goto("/audit-trail");
-    
+
     // Should see audit trail table
-    await expect(page.locator('table')).toBeVisible();
+    await expect(page.locator("table")).toBeVisible();
   });
 });
 ```
@@ -324,8 +337,8 @@ Tests use direct selectors instead of full page objects to keep tests simple and
 // await loginPage.login(email, password);
 
 // We use direct selectors:
-await page.fill('input#email', email);
-await page.fill('input#password', password);
+await page.fill("input#email", email);
+await page.fill("input#password", password);
 await page.click('button[type="submit"]');
 ```
 
@@ -364,20 +377,22 @@ test("update", async ({ page }) => {
 
 ```typescript
 // Wait for selector
-await page.waitForSelector('input#email', { timeout: 15000 });
+await page.waitForSelector("input#email", { timeout: 15000 });
 
 // Wait for URL change
 await page.waitForURL("**/dashboard**", { timeout: 15000 });
 
 // Wait for visibility (implicit in expect)
-await expect(page.locator('text=Success')).toBeVisible({ timeout: 5000 });
+await expect(page.locator("text=Success")).toBeVisible({ timeout: 5000 });
 ```
 
 ### 5. Toast/Notification Assertions
 
 ```typescript
 // Wait for toast to appear
-await expect(page.locator('text=created successfully')).toBeVisible({ timeout: 5000 });
+await expect(page.locator("text=created successfully")).toBeVisible({
+  timeout: 5000,
+});
 
 // Toast might auto-hide, so don't wait too long after action
 ```
@@ -613,6 +628,7 @@ npx playwright show-report
 ```
 
 Opens browser with:
+
 - Test results summary
 - Screenshots (on failure)
 - Traces (on retry)
@@ -627,6 +643,7 @@ npx playwright show-trace playwright-report/trace-*.zip
 ```
 
 Shows:
+
 - Network requests
 - Console logs
 - DOM snapshots
@@ -676,10 +693,10 @@ test.afterEach(async ({ page }) => {
 ```typescript
 test("should create observation", async ({ page }) => {
   const tenantId = await createTestTenant();
-  
+
   // Test with isolated tenant
   await loginAsUser(page, { tenantId });
-  
+
   // Cleanup
   await deleteTestTenant(tenantId);
 });
@@ -697,24 +714,24 @@ Look at `tests/e2e/observation-lifecycle.spec.ts` for reference.
 
 ```typescript
 // ✅ GOOD: ID selector
-await page.fill('input#email', email);
+await page.fill("input#email", email);
 
 // ✅ GOOD: Text selector for buttons
 await page.click('button:has-text("Submit")');
 
 // ❌ BAD: Fragile class selector
-await page.click('.btn-submit');
+await page.click(".btn-submit");
 ```
 
 ### 3. Add Explicit Waits
 
 ```typescript
 // ✅ GOOD: Wait for element before interacting
-await page.waitForSelector('input#email');
-await page.fill('input#email', email);
+await page.waitForSelector("input#email");
+await page.fill("input#email", email);
 
 // ❌ BAD: Hope it's already there
-await page.fill('input#email', email);
+await page.fill("input#email", email);
 ```
 
 ### 4. Use Storage State for Auth
@@ -743,7 +760,7 @@ test("test1", async ({ page }) => {
 
 ```typescript
 // Waiting for form hydration because it's a client component
-await page.waitForSelector('input#email', { timeout: 15000 });
+await page.waitForSelector("input#email", { timeout: 15000 });
 ```
 
 ---
@@ -753,6 +770,7 @@ await page.waitForSelector('input#email', { timeout: 15000 });
 ### 1. Non-Deterministic Timing
 
 Some tests may fail intermittently due to:
+
 - Toast auto-hide timing
 - Network latency
 - Client component hydration
@@ -776,31 +794,37 @@ Tests run serially (`workers: 1`) to avoid race conditions.
 ## Future Testing Roadmap
 
 ### Phase 1: Coverage Expansion
+
 - [ ] Full observation lifecycle (all status transitions)
 - [ ] Evidence upload/download
 - [ ] Multi-role workflows (maker-checker)
 
 ### Phase 2: Core Features
+
 - [ ] Compliance management
 - [ ] Audit plans
 - [ ] Report generation
 
 ### Phase 3: Admin & Settings
+
 - [ ] User management
 - [ ] Role assignment
 - [ ] Tenant settings
 
 ### Phase 4: Error Cases
+
 - [ ] Form validation errors
 - [ ] Permission denied
 - [ ] Optimistic locking conflicts
 
 ### Phase 5: Unit Tests
+
 - [ ] Lib utilities
 - [ ] Validation logic
 - [ ] Data transformations
 
 ### Phase 6: Infrastructure
+
 - [ ] CI/CD integration
 - [ ] Test database seeding
 - [ ] Parallel execution with isolation

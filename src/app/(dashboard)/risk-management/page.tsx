@@ -84,7 +84,11 @@ export default async function RiskManagementPage() {
         </TabsList>
 
         <TabsContent value="register" className="space-y-4">
-          <RiskRegisterTable risks={risks} entities={entities} canManage={canManage} />
+          <RiskRegisterTable
+            risks={risks}
+            entities={entities}
+            canManage={canManage}
+          />
         </TabsContent>
 
         <TabsContent value="kri" className="space-y-4">

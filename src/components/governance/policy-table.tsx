@@ -36,7 +36,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2, FileText, AlertTriangle, Edit, Trash2 } from "@/lib/icons";
+import {
+  Plus,
+  Loader2,
+  FileText,
+  AlertTriangle,
+  Edit,
+  Trash2,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { managePolicy, deletePolicy } from "@/actions/governance/manage-policy";
 
@@ -96,7 +103,11 @@ const STATUS_COLORS: Record<string, string> = {
   SUPERSEDED: "bg-red-100 text-red-800 border-red-300",
 };
 
-export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTableProps) {
+export function PolicyTable({
+  policies,
+  policiesDueReview,
+  canManage,
+}: PolicyTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingPolicy, setEditingPolicy] = React.useState<Policy | null>(null);
@@ -146,8 +157,12 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
       category: values.category,
       status: values.status,
       version: values.version,
-      approvalDate: values.approvalDate ? new Date(values.approvalDate) : undefined,
-      reviewDueDate: values.reviewDueDate ? new Date(values.reviewDueDate) : undefined,
+      approvalDate: values.approvalDate
+        ? new Date(values.approvalDate)
+        : undefined,
+      reviewDueDate: values.reviewDueDate
+        ? new Date(values.reviewDueDate)
+        : undefined,
       documentUrl: values.documentUrl,
       summary: values.summary,
     });
@@ -193,8 +208,9 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Policies Due for Review</AlertTitle>
           <AlertDescription>
-            {policiesDueReview.length} {policiesDueReview.length === 1 ? "policy" : "policies"}{" "}
-            due for review within 30 days. Please update review dates.
+            {policiesDueReview.length}{" "}
+            {policiesDueReview.length === 1 ? "policy" : "policies"} due for
+            review within 30 days. Please update review dates.
           </AlertDescription>
         </Alert>
       )}
@@ -208,7 +224,7 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                 Add Policy
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingPolicy ? "Edit Policy" : "Add Policy Document"}
@@ -219,7 +235,10 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                     : "Create a new policy in the governance framework"}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 py-4"
+              >
                 <div className="space-y-2">
                   <Label htmlFor="name">Policy Name</Label>
                   <Input
@@ -228,7 +247,7 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                     placeholder="e.g., Lending Policy for Priority Sector"
                   />
                   {form.formState.errors.name && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-destructive text-sm">
                       {form.formState.errors.name.message}
                     </p>
                   )}
@@ -238,7 +257,9 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                   <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
                     <Select
-                      onValueChange={(value) => form.setValue("category", value as any)}
+                      onValueChange={(value) =>
+                        form.setValue("category", value as any)
+                      }
                       defaultValue={form.watch("category")}
                     >
                       <SelectTrigger>
@@ -257,7 +278,9 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
                     <Select
-                      onValueChange={(value) => form.setValue("status", value as any)}
+                      onValueChange={(value) =>
+                        form.setValue("status", value as any)
+                      }
                       defaultValue={form.watch("status")}
                     >
                       <SelectTrigger>
@@ -266,7 +289,9 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                       <SelectContent>
                         <SelectItem value="DRAFT">Draft</SelectItem>
                         <SelectItem value="APPROVED">Approved</SelectItem>
-                        <SelectItem value="UNDER_REVIEW">Under Review</SelectItem>
+                        <SelectItem value="UNDER_REVIEW">
+                          Under Review
+                        </SelectItem>
                         <SelectItem value="SUPERSEDED">Superseded</SelectItem>
                       </SelectContent>
                     </Select>
@@ -333,7 +358,9 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     {editingPolicy ? "Update" : "Create"}
                   </Button>
                 </DialogFooter>
@@ -359,7 +386,10 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
           <TableBody>
             {policies.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canManage ? 7 : 6} className="h-24 text-center">
+                <TableCell
+                  colSpan={canManage ? 7 : 6}
+                  className="h-24 text-center"
+                >
                   No policies found.
                 </TableCell>
               </TableRow>
@@ -373,7 +403,10 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={STATUS_COLORS[policy.status] ?? ""}>
+                    <Badge
+                      variant="outline"
+                      className={STATUS_COLORS[policy.status] ?? ""}
+                    >
                       {policy.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
@@ -406,12 +439,12 @@ export function PolicyTable({ policies, policiesDueReview, canManage }: PolicyTa
                           <Trash2 className="h-4 w-4" />
                         </Button>
                         {policy.documentUrl && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            asChild
-                          >
-                            <a href={policy.documentUrl} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="ghost" asChild>
+                            <a
+                              href={policy.documentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <FileText className="h-4 w-4" />
                             </a>
                           </Button>

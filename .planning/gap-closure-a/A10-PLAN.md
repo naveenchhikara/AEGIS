@@ -54,6 +54,7 @@ Implement R39: Escalation automation with level-specific notification routing. T
 **Purpose:** Automate compliance monitoring so overdue items are automatically escalated to the appropriate authority level — ensuring nothing falls through the cracks per SDD p.40 escalation policy.
 
 **Output:**
+
 - Escalation routing module that maps levels to recipients/notification types
 - Enhanced escalation job that computes + routes in one pass
 - Cron-triggered API route for daily automated execution
@@ -83,101 +84,102 @@ Implement R39: Escalation automation with level-specific notification routing. T
   <action>
   Create `src/lib/escalation-router.ts`:
 
-  This is a pure logic module (no DB access) that determines notification routing per escalation level:
+This is a pure logic module (no DB access) that determines notification routing per escalation level:
 
-  ```typescript
-  import { NotificationType } from "@/generated/prisma/enums";
+```typescript
+import { NotificationType } from "@/generated/prisma/enums";
 
-  export type EscalationLevel = 0 | 1 | 2 | 3 | 4;
+export type EscalationLevel = 0 | 1 | 2 | 3 | 4;
 
-  export interface EscalationRoute {
-    level: EscalationLevel;
-    notificationType: NotificationType;
-    recipientRoles: string[];
-    recipientDescription: string;
-    urgency: "normal" | "high" | "critical";
-    subject: string;
-    messageTemplate: string;
+export interface EscalationRoute {
+  level: EscalationLevel;
+  notificationType: NotificationType;
+  recipientRoles: string[];
+  recipientDescription: string;
+  urgency: "normal" | "high" | "critical";
+  subject: string;
+  messageTemplate: string;
+}
+
+/**
+ * Map escalation level to notification routing configuration.
+ *
+ * L0: No notification (within SLA)
+ * L1 (+15d): DEADLINE_REMINDER email to Branch Head + IAD
+ * L2 (+30d): OVERDUE_ESCALATION to Zonal Auditor
+ * L3 (+90d): OVERDUE_ESCALATION to ACE Officer
+ * L4 (+180d): OVERDUE_ESCALATION to ACB Member + CAE
+ */
+export function getEscalationRoute(
+  level: EscalationLevel,
+  itemContext: {
+    observationTitle: string;
+    branchName: string;
+    daysOverdue: number;
+  },
+): EscalationRoute | null {
+  switch (level) {
+    case 0:
+      return null; // No escalation needed
+
+    case 1:
+      return {
+        level: 1,
+        notificationType: "DEADLINE_REMINDER_7D", // Closest existing type
+        recipientRoles: ["BRANCH_HEAD", "AUDITOR", "AUDIT_MANAGER"],
+        recipientDescription: "Branch Head + Internal Audit Department",
+        urgency: "normal",
+        subject: `Compliance overdue: ${itemContext.observationTitle}`,
+        messageTemplate: `Compliance item for "${itemContext.observationTitle}" at ${itemContext.branchName} is ${itemContext.daysOverdue} days overdue. Please submit branch response.`,
+      };
+
+    case 2:
+      return {
+        level: 2,
+        notificationType: "OVERDUE_ESCALATION",
+        recipientRoles: ["ZONAL_AUDITOR"],
+        recipientDescription: "Zonal Auditor (ZAC)",
+        urgency: "high",
+        subject: `ZAC Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
+        messageTemplate: `Compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. ZAC review required.`,
+      };
+
+    case 3:
+      return {
+        level: 3,
+        notificationType: "OVERDUE_ESCALATION",
+        recipientRoles: ["ACE_OFFICER"],
+        recipientDescription: "ACE Officer",
+        urgency: "high",
+        subject: `ACE Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
+        messageTemplate: `Compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. Requires ACE quarterly processing.`,
+      };
+
+    case 4:
+      return {
+        level: 4,
+        notificationType: "OVERDUE_ESCALATION",
+        recipientRoles: ["CAE", "ACB_MEMBER"],
+        recipientDescription: "CAE + ACB Members",
+        urgency: "critical",
+        subject: `ACB Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
+        messageTemplate: `Critical compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. Requires ACB board reporting.`,
+      };
   }
+}
 
-  /**
-   * Map escalation level to notification routing configuration.
-   *
-   * L0: No notification (within SLA)
-   * L1 (+15d): DEADLINE_REMINDER email to Branch Head + IAD
-   * L2 (+30d): OVERDUE_ESCALATION to Zonal Auditor
-   * L3 (+90d): OVERDUE_ESCALATION to ACE Officer
-   * L4 (+180d): OVERDUE_ESCALATION to ACB Member + CAE
-   */
-  export function getEscalationRoute(
-    level: EscalationLevel,
-    itemContext: {
-      observationTitle: string;
-      branchName: string;
-      daysOverdue: number;
-    },
-  ): EscalationRoute | null {
-    switch (level) {
-      case 0:
-        return null; // No escalation needed
+/**
+ * Determine if a notification should be sent for this escalation update.
+ * Only notify when level increases (not every computation cycle).
+ */
+export function shouldNotify(
+  previousLevel: EscalationLevel,
+  newLevel: EscalationLevel,
+): boolean {
+  return newLevel > previousLevel;
+}
+```
 
-      case 1:
-        return {
-          level: 1,
-          notificationType: "DEADLINE_REMINDER_7D", // Closest existing type
-          recipientRoles: ["BRANCH_HEAD", "AUDITOR", "AUDIT_MANAGER"],
-          recipientDescription: "Branch Head + Internal Audit Department",
-          urgency: "normal",
-          subject: `Compliance overdue: ${itemContext.observationTitle}`,
-          messageTemplate: `Compliance item for "${itemContext.observationTitle}" at ${itemContext.branchName} is ${itemContext.daysOverdue} days overdue. Please submit branch response.`,
-        };
-
-      case 2:
-        return {
-          level: 2,
-          notificationType: "OVERDUE_ESCALATION",
-          recipientRoles: ["ZONAL_AUDITOR"],
-          recipientDescription: "Zonal Auditor (ZAC)",
-          urgency: "high",
-          subject: `ZAC Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
-          messageTemplate: `Compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. ZAC review required.`,
-        };
-
-      case 3:
-        return {
-          level: 3,
-          notificationType: "OVERDUE_ESCALATION",
-          recipientRoles: ["ACE_OFFICER"],
-          recipientDescription: "ACE Officer",
-          urgency: "high",
-          subject: `ACE Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
-          messageTemplate: `Compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. Requires ACE quarterly processing.`,
-        };
-
-      case 4:
-        return {
-          level: 4,
-          notificationType: "OVERDUE_ESCALATION",
-          recipientRoles: ["CAE", "ACB_MEMBER"],
-          recipientDescription: "CAE + ACB Members",
-          urgency: "critical",
-          subject: `ACB Escalation: ${itemContext.observationTitle} — ${itemContext.daysOverdue}d overdue`,
-          messageTemplate: `Critical compliance item at ${itemContext.branchName} has been overdue for ${itemContext.daysOverdue} days. Requires ACB board reporting.`,
-        };
-    }
-  }
-
-  /**
-   * Determine if a notification should be sent for this escalation update.
-   * Only notify when level increases (not every computation cycle).
-   */
-  export function shouldNotify(
-    previousLevel: EscalationLevel,
-    newLevel: EscalationLevel,
-  ): boolean {
-    return newLevel > previousLevel;
-  }
-  ```
   </action>
   <verify>
   ```bash
@@ -199,60 +201,67 @@ Implement R39: Escalation automation with level-specific notification routing. T
   <action>
   Add to existing `src/data-access/compliance-items.ts`:
 
-  **`getEscalationRecipients(session, roles: string[], branchId?: string)`:**
-  - Query Users who have any of the specified roles AND belong to the same tenant
-  - For BRANCH_HEAD role, also filter by branchId (via UserBranchAssignment)
-  - For ZONAL_AUDITOR, match via branch → zone (future — for now, any ZONAL_AUDITOR in tenant)
-  - Return `{ id: string; email: string; name: string }[]`
+**`getEscalationRecipients(session, roles: string[], branchId?: string)`:**
 
-  ```typescript
-  export async function getEscalationRecipients(
-    session: Session,
-    roles: string[],
-    branchId?: string,
-  ) {
-    const tenantId = (session.user as any).tenantId as string;
-    const db = prismaForTenant(tenantId);
+- Query Users who have any of the specified roles AND belong to the same tenant
+- For BRANCH_HEAD role, also filter by branchId (via UserBranchAssignment)
+- For ZONAL_AUDITOR, match via branch → zone (future — for now, any ZONAL_AUDITOR in tenant)
+- Return `{ id: string; email: string; name: string }[]`
 
-    // For BRANCH_HEAD, scope to branch-assigned users
-    if (roles.includes("BRANCH_HEAD") && branchId) {
-      const branchUsers = await db.user.findMany({
-        where: {
-          tenantId,
-          roles: { hasSome: roles as any },
-          branchAssignments: { some: { branchId } },
-        },
-        select: { id: true, email: true, name: true },
-      });
+```typescript
+export async function getEscalationRecipients(
+  session: Session,
+  roles: string[],
+  branchId?: string,
+) {
+  const tenantId = (session.user as any).tenantId as string;
+  const db = prismaForTenant(tenantId);
 
-      // Also get non-branch-specific role holders
-      const otherRoles = roles.filter(r => r !== "BRANCH_HEAD");
-      const otherUsers = otherRoles.length > 0 ? await db.user.findMany({
-        where: { tenantId, roles: { hasSome: otherRoles as any } },
-        select: { id: true, email: true, name: true },
-      }) : [];
-
-      // Deduplicate
-      const map = new Map<string, { id: string; email: string; name: string }>();
-      [...branchUsers, ...otherUsers].forEach(u => map.set(u.id, u));
-      return Array.from(map.values());
-    }
-
-    return db.user.findMany({
-      where: { tenantId, roles: { hasSome: roles as any } },
+  // For BRANCH_HEAD, scope to branch-assigned users
+  if (roles.includes("BRANCH_HEAD") && branchId) {
+    const branchUsers = await db.user.findMany({
+      where: {
+        tenantId,
+        roles: { hasSome: roles as any },
+        branchAssignments: { some: { branchId } },
+      },
       select: { id: true, email: true, name: true },
     });
-  }
-  ```
 
-  **`getOpenComplianceItemsWithContext(session)`:**
-  - Enhanced version of existing `getOpenComplianceItemsForEscalation` that includes observation title, branch info
-  - For the escalation router to build context messages
+    // Also get non-branch-specific role holders
+    const otherRoles = roles.filter((r) => r !== "BRANCH_HEAD");
+    const otherUsers =
+      otherRoles.length > 0
+        ? await db.user.findMany({
+            where: { tenantId, roles: { hasSome: otherRoles as any } },
+            select: { id: true, email: true, name: true },
+          })
+        : [];
+
+    // Deduplicate
+    const map = new Map<string, { id: string; email: string; name: string }>();
+    [...branchUsers, ...otherUsers].forEach((u) => map.set(u.id, u));
+    return Array.from(map.values());
+  }
+
+  return db.user.findMany({
+    where: { tenantId, roles: { hasSome: roles as any } },
+    select: { id: true, email: true, name: true },
+  });
+}
+```
+
+**`getOpenComplianceItemsWithContext(session)`:**
+
+- Enhanced version of existing `getOpenComplianceItemsForEscalation` that includes observation title, branch info
+- For the escalation router to build context messages
   </action>
   <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/compliance-items.ts 2>&1 | head -20
-  ```
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/data-access/compliance-items.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `getEscalationRecipients` resolves users by role + optional branch scope
@@ -269,69 +278,81 @@ Implement R39: Escalation automation with level-specific notification routing. T
   <action>
   Create `src/actions/compliance/run-escalation-job.ts`:
 
-  This is the full escalation pipeline that:
-  1. Computes escalation levels (reuses existing logic)
-  2. Routes notifications per level
-  3. Creates NotificationQueue entries
+This is the full escalation pipeline that:
 
-  ```typescript
-  "use server";
+1. Computes escalation levels (reuses existing logic)
+2. Routes notifications per level
+3. Creates NotificationQueue entries
 
-  import { prismaForTenant } from "@/data-access/prisma";
-  import { setAuditContext } from "@/data-access/audit-context";
-  import { getRequiredSession } from "@/data-access/session";
-  import { hasPermission, type Role } from "@/lib/permissions";
-  import { computeBatchEscalation } from "@/lib/escalation-engine";
-  import { getEscalationRoute, shouldNotify, type EscalationLevel } from "@/lib/escalation-router";
-  import { getOpenComplianceItemsWithContext, getEscalationRecipients } from "@/data-access/compliance-items";
-  import { createNotification } from "@/data-access/notifications";
-  import { logger } from "@/lib/logger";
-  ```
+```typescript
+"use server";
 
-  **`runEscalationJob()`:**
-  1. Auth (must be called by admin/cron user)
-  2. Fetch all open compliance items with context
-  3. Compute batch escalation (from existing engine)
-  4. For each item where level increased:
-     a. Get escalation route via `getEscalationRoute(newLevel, itemContext)`
-     b. If route is not null:
-        - Resolve recipients via `getEscalationRecipients(session, route.recipientRoles, item.branchId)`
-        - Create NotificationQueue entries for each recipient:
-          ```typescript
-          for (const recipient of recipients) {
-            await tx.notificationQueue.create({
-              data: {
-                tenantId,
-                recipientId: recipient.id,
-                type: route.notificationType,
-                payload: {
-                  subject: route.subject,
-                  message: route.messageTemplate,
-                  complianceItemId: item.id,
-                  escalationLevel: route.level,
-                  branchName: item.branchName,
-                  observationTitle: item.observationTitle,
-                },
-              },
-            });
-          }
-          ```
+import { prismaForTenant } from "@/data-access/prisma";
+import { setAuditContext } from "@/data-access/audit-context";
+import { getRequiredSession } from "@/data-access/session";
+import { hasPermission, type Role } from "@/lib/permissions";
+import { computeBatchEscalation } from "@/lib/escalation-engine";
+import {
+  getEscalationRoute,
+  shouldNotify,
+  type EscalationLevel,
+} from "@/lib/escalation-router";
+import {
+  getOpenComplianceItemsWithContext,
+  getEscalationRecipients,
+} from "@/data-access/compliance-items";
+import { createNotification } from "@/data-access/notifications";
+import { logger } from "@/lib/logger";
+```
+
+**`runEscalationJob()`:**
+
+1. Auth (must be called by admin/cron user)
+2. Fetch all open compliance items with context
+3. Compute batch escalation (from existing engine)
+4. For each item where level increased:
+   a. Get escalation route via `getEscalationRoute(newLevel, itemContext)`
+   b. If route is not null:
+   - Resolve recipients via `getEscalationRecipients(session, route.recipientRoles, item.branchId)`
+   - Create NotificationQueue entries for each recipient:
+     `typescript
+for (const recipient of recipients) {
+  await tx.notificationQueue.create({
+    data: {
+      tenantId,
+      recipientId: recipient.id,
+      type: route.notificationType,
+      payload: {
+        subject: route.subject,
+        message: route.messageTemplate,
+        complianceItemId: item.id,
+        escalationLevel: route.level,
+        branchName: item.branchName,
+        observationTitle: item.observationTitle,
+      },
+    },
+  });
+}
+`
      c. Update ComplianceItem with new escalation level and daysOpen
-  5. Log summary: `{ processed, escalated, notificationsSent }`
-  6. Return `{ success: true, data: { processed, escalated, notificationsSent } }`
+5. Log summary: `{ processed, escalated, notificationsSent }`
+6. Return `{ success: true, data: { processed, escalated, notificationsSent } }`
 
-  **Important:** This action must handle the case where it's called by a cron endpoint (no user session). Two approaches:
-  - Option A: Use a service account / system session for cron calls
-  - Option B: Accept an API key in the cron route and bypass session requirement
+**Important:** This action must handle the case where it's called by a cron endpoint (no user session). Two approaches:
 
-  Choose **Option B** for the cron route, but keep session-based auth for manual trigger.
+- Option A: Use a service account / system session for cron calls
+- Option B: Accept an API key in the cron route and bypass session requirement
 
-  Create a variant `runEscalationJobInternal(tenantId: string)` for cron use that takes tenantId directly.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/run-escalation-job.ts 2>&1 | head -20
-  ```
+Choose **Option B** for the cron route, but keep session-based auth for manual trigger.
+
+Create a variant `runEscalationJobInternal(tenantId: string)` for cron use that takes tenantId directly.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/actions/compliance/run-escalation-job.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - `runEscalationJob` runs the full compute + route + notify pipeline
@@ -349,87 +370,100 @@ Implement R39: Escalation automation with level-specific notification routing. T
   <action>
   Create `src/app/api/cron/escalation/route.ts`:
 
-  ```typescript
-  import { NextResponse } from "next/server";
-  import { logger } from "@/lib/logger";
+```typescript
+import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
-  /**
-   * Daily cron endpoint for compliance escalation.
-   * Protected by CRON_SECRET environment variable.
-   *
-   * Usage:
-   *   curl -X POST https://app.example.com/api/cron/escalation \
-   *     -H "Authorization: Bearer $CRON_SECRET"
-   *
-   * Can be triggered by:
-   * - Vercel Cron (configured in vercel.json)
-   * - External cron service (e.g., cron-job.org)
-   * - Manual curl from admin
-   */
-  export async function POST(request: Request) {
-    // Verify cron secret
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+/**
+ * Daily cron endpoint for compliance escalation.
+ * Protected by CRON_SECRET environment variable.
+ *
+ * Usage:
+ *   curl -X POST https://app.example.com/api/cron/escalation \
+ *     -H "Authorization: Bearer $CRON_SECRET"
+ *
+ * Can be triggered by:
+ * - Vercel Cron (configured in vercel.json)
+ * - External cron service (e.g., cron-job.org)
+ * - Manual curl from admin
+ */
+export async function POST(request: Request) {
+  // Verify cron secret
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
 
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    // Import dynamically to avoid issues with server-only modules
+    const { runEscalationJobInternal } =
+      await import("@/actions/compliance/run-escalation-job");
+
+    // Run for all tenants (or specific tenant if provided in body)
+    const body = await request.json().catch(() => ({}));
+    const tenantId = body.tenantId;
+
+    if (tenantId) {
+      // Single tenant
+      const result = await runEscalationJobInternal(tenantId);
+      return NextResponse.json(result);
     }
 
-    try {
-      // Import dynamically to avoid issues with server-only modules
-      const { runEscalationJobInternal } = await import(
-        "@/actions/compliance/run-escalation-job"
-      );
+    // All tenants: fetch tenant list and run for each
+    const { prisma } = await import("@/lib/prisma");
+    const tenants = await prisma.tenant.findMany({
+      select: { id: true, shortName: true },
+    });
 
-      // Run for all tenants (or specific tenant if provided in body)
-      const body = await request.json().catch(() => ({}));
-      const tenantId = body.tenantId;
-
-      if (tenantId) {
-        // Single tenant
-        const result = await runEscalationJobInternal(tenantId);
-        return NextResponse.json(result);
+    const results = [];
+    for (const tenant of tenants) {
+      try {
+        const result = await runEscalationJobInternal(tenant.id);
+        results.push({
+          tenantId: tenant.id,
+          name: tenant.shortName,
+          ...result,
+        });
+      } catch (error) {
+        logger.error(
+          { error, tenantId: tenant.id },
+          "Escalation job failed for tenant",
+        );
+        results.push({
+          tenantId: tenant.id,
+          name: tenant.shortName,
+          success: false,
+          error: "Failed",
+        });
       }
-
-      // All tenants: fetch tenant list and run for each
-      const { prisma } = await import("@/lib/prisma");
-      const tenants = await prisma.tenant.findMany({
-        select: { id: true, shortName: true },
-      });
-
-      const results = [];
-      for (const tenant of tenants) {
-        try {
-          const result = await runEscalationJobInternal(tenant.id);
-          results.push({ tenantId: tenant.id, name: tenant.shortName, ...result });
-        } catch (error) {
-          logger.error({ error, tenantId: tenant.id }, "Escalation job failed for tenant");
-          results.push({ tenantId: tenant.id, name: tenant.shortName, success: false, error: "Failed" });
-        }
-      }
-
-      return NextResponse.json({ success: true, results });
-    } catch (error) {
-      logger.error({ error }, "Escalation cron job failed");
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
     }
-  }
-  ```
 
-  Also add to `vercel.json` (or equivalent) if deployed on Vercel:
-  ```json
-  {
-    "crons": [
-      {
-        "path": "/api/cron/escalation",
-        "schedule": "0 6 * * *"
-      }
-    ]
+    return NextResponse.json({ success: true, results });
+  } catch (error) {
+    logger.error({ error }, "Escalation cron job failed");
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
-  ```
+}
+```
+
+Also add to `vercel.json` (or equivalent) if deployed on Vercel:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/escalation",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
+```
+
   </action>
   <verify>
   ```bash
@@ -451,24 +485,27 @@ Implement R39: Escalation automation with level-specific notification routing. T
   <action>
   The existing `computeBatchEscalation` function returns updates with `{ id, newEscalationLevel, daysOpen, daysOverdue }`. Verify this is sufficient for the router. If not, extend the return type to include `previousLevel` for the `shouldNotify` check.
 
-  Add or update the `EscalationUpdate` type:
-  ```typescript
-  export interface EscalationUpdate {
-    id: string;
-    previousLevel: EscalationLevel;
-    newEscalationLevel: EscalationLevel;
-    daysOpen: number;
-    daysOverdue: number;
-    shouldNotify: boolean;
-  }
-  ```
+Add or update the `EscalationUpdate` type:
 
-  Ensure `computeBatchEscalation` includes `previousLevel` and `shouldNotify` in each update object, so the job doesn't need to recompute this.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/lib/escalation-engine.ts 2>&1 | head -20
-  ```
+```typescript
+export interface EscalationUpdate {
+  id: string;
+  previousLevel: EscalationLevel;
+  newEscalationLevel: EscalationLevel;
+  daysOpen: number;
+  daysOverdue: number;
+  shouldNotify: boolean;
+}
+```
+
+Ensure `computeBatchEscalation` includes `previousLevel` and `shouldNotify` in each update object, so the job doesn't need to recompute this.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit src/lib/escalation-engine.ts 2>&1 | head -20
+```
+
   </verify>
   <done>
   - EscalationUpdate type includes previousLevel and shouldNotify

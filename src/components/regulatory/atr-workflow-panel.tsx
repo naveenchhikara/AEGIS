@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +21,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, CheckCircle, Clock, AlertCircle, ArrowRight } from "@/lib/icons";
+import {
+  Loader2,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  ArrowRight,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { submitAtr } from "@/actions/regulatory/submit-atr";
 import { format } from "date-fns";
@@ -56,16 +68,25 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 type WorkflowAction = "SUBMIT" | "MARK_ACCEPTED" | "REQUEST_INFO";
 
-export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrWorkflowPanelProps) {
+export function AtrWorkflowPanel({
+  observations,
+  canManage,
+  canSubmitAtr,
+}: AtrWorkflowPanelProps) {
   const router = useRouter();
-  const [selectedObservation, setSelectedObservation] = React.useState<RegulatoryObservation | null>(null);
+  const [selectedObservation, setSelectedObservation] =
+    React.useState<RegulatoryObservation | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [workflowAction, setWorkflowAction] = React.useState<WorkflowAction>("SUBMIT");
+  const [workflowAction, setWorkflowAction] =
+    React.useState<WorkflowAction>("SUBMIT");
   const [atrText, setAtrText] = React.useState("");
   const [remarks, setRemarks] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  function handleWorkflowAction(observation: RegulatoryObservation, action: WorkflowAction) {
+  function handleWorkflowAction(
+    observation: RegulatoryObservation,
+    action: WorkflowAction,
+  ) {
     setSelectedObservation(observation);
     setWorkflowAction(action);
     setAtrText(observation.atrText || "");
@@ -126,10 +147,11 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Pending ATRs</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-md">
-            All regulatory observations have been processed. New observations will appear here when they require ATR action.
+          <CheckCircle className="text-muted-foreground mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-lg font-semibold">No Pending ATRs</h3>
+          <p className="text-muted-foreground max-w-md text-center text-sm">
+            All regulatory observations have been processed. New observations
+            will appear here when they require ATR action.
           </p>
         </CardContent>
       </Card>
@@ -138,8 +160,9 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        {observations.length} observation{observations.length !== 1 ? "s" : ""} require ATR action
+      <div className="text-muted-foreground text-sm">
+        {observations.length} observation{observations.length !== 1 ? "s" : ""}{" "}
+        require ATR action
       </div>
 
       <div className="grid gap-4">
@@ -152,13 +175,21 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                     <Badge variant="outline">
                       {SOURCE_LABELS[obs.source] || obs.source}
                     </Badge>
-                    <Badge variant="outline" className={SEVERITY_COLORS[obs.severity] ?? ""}>
+                    <Badge
+                      variant="outline"
+                      className={SEVERITY_COLORS[obs.severity] ?? ""}
+                    >
                       {obs.severity}
                     </Badge>
                   </div>
                   <CardTitle className="text-lg">
                     {obs.referenceNo}
-                    {obs.paraNo && <span className="text-muted-foreground"> - Para {obs.paraNo}</span>}
+                    {obs.paraNo && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        - Para {obs.paraNo}
+                      </span>
+                    )}
                   </CardTitle>
                 </div>
               </div>
@@ -168,7 +199,9 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
             <CardContent className="space-y-4">
               {/* Workflow Stepper */}
               <div className="flex items-center gap-2">
-                <div className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 0 ? 'text-blue-600' : 'text-muted-foreground'}`}>
+                <div
+                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 0 ? "text-blue-600" : "text-muted-foreground"}`}
+                >
                   {getWorkflowStage(obs.atrStatus) >= 1 ? (
                     <CheckCircle className="h-5 w-5" />
                   ) : (
@@ -177,12 +210,15 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                   <span className="text-sm font-medium">Draft</span>
                 </div>
 
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <ArrowRight className="text-muted-foreground h-4 w-4" />
 
-                <div className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 1 ? 'text-blue-600' : 'text-muted-foreground'}`}>
+                <div
+                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 1 ? "text-blue-600" : "text-muted-foreground"}`}
+                >
                   {getWorkflowStage(obs.atrStatus) >= 2 ? (
                     <CheckCircle className="h-5 w-5" />
-                  ) : obs.atrStatus === "SUBMITTED" || obs.atrStatus === "FURTHER_INFO" ? (
+                  ) : obs.atrStatus === "SUBMITTED" ||
+                    obs.atrStatus === "FURTHER_INFO" ? (
                     <Clock className="h-5 w-5" />
                   ) : (
                     <div className="h-5 w-5 rounded-full border-2 border-current" />
@@ -190,9 +226,11 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                   <span className="text-sm font-medium">Submitted</span>
                 </div>
 
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <ArrowRight className="text-muted-foreground h-4 w-4" />
 
-                <div className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 2 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                <div
+                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 2 ? "text-green-600" : "text-muted-foreground"}`}
+                >
                   {getWorkflowStage(obs.atrStatus) >= 2 ? (
                     <CheckCircle className="h-5 w-5" />
                   ) : (
@@ -203,9 +241,11 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
 
                 {obs.atrStatus === "FURTHER_INFO" && (
                   <>
-                    <div className="flex items-center gap-2 ml-4 text-orange-600">
+                    <div className="ml-4 flex items-center gap-2 text-orange-600">
                       <AlertCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">Further Info Required</span>
+                      <span className="text-sm font-medium">
+                        Further Info Required
+                      </span>
                     </div>
                   </>
                 )}
@@ -213,20 +253,23 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
 
               {/* ATR Text Preview */}
               {obs.atrText && (
-                <div className="border rounded-md p-3 bg-muted/50">
-                  <Label className="text-xs text-muted-foreground mb-1 block">Current ATR Text</Label>
-                  <p className="text-sm line-clamp-3">{obs.atrText}</p>
+                <div className="bg-muted/50 rounded-md border p-3">
+                  <Label className="text-muted-foreground mb-1 block text-xs">
+                    Current ATR Text
+                  </Label>
+                  <p className="line-clamp-3 text-sm">{obs.atrText}</p>
                 </div>
               )}
 
               {/* Timestamps */}
-              <div className="flex gap-4 text-xs text-muted-foreground">
+              <div className="text-muted-foreground flex gap-4 text-xs">
                 <div>
                   Created: {format(new Date(obs.createdAt), "MMM d, yyyy")}
                 </div>
                 {obs.submittedAt && (
                   <div>
-                    Submitted: {format(new Date(obs.submittedAt), "MMM d, yyyy")}
+                    Submitted:{" "}
+                    {format(new Date(obs.submittedAt), "MMM d, yyyy")}
                   </div>
                 )}
                 {obs.acceptedAt && (
@@ -280,7 +323,10 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                 )}
 
                 {obs.atrStatus === "ACCEPTED" && (
-                  <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                  <Badge
+                    variant="outline"
+                    className="border-green-300 bg-green-100 text-green-800"
+                  >
                     <CheckCircle className="mr-1 h-3 w-3" />
                     Accepted
                   </Badge>
@@ -299,11 +345,13 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
               <DialogTitle>
                 {workflowAction === "SUBMIT" && "Submit ATR"}
                 {workflowAction === "MARK_ACCEPTED" && "Accept ATR"}
-                {workflowAction === "REQUEST_INFO" && "Request Further Information"}
+                {workflowAction === "REQUEST_INFO" &&
+                  "Request Further Information"}
               </DialogTitle>
               <DialogDescription>
                 {selectedObservation.referenceNo}
-                {selectedObservation.paraNo && ` - Para ${selectedObservation.paraNo}`}
+                {selectedObservation.paraNo &&
+                  ` - Para ${selectedObservation.paraNo}`}
               </DialogDescription>
             </DialogHeader>
 
@@ -325,17 +373,22 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                   rows={8}
                   required
                   disabled={workflowAction === "MARK_ACCEPTED"}
-                  className={workflowAction === "MARK_ACCEPTED" ? "bg-muted" : ""}
+                  className={
+                    workflowAction === "MARK_ACCEPTED" ? "bg-muted" : ""
+                  }
                 />
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {atrText.length} characters (minimum 50 required)
                 </div>
               </div>
 
-              {(workflowAction === "MARK_ACCEPTED" || workflowAction === "REQUEST_INFO") && (
+              {(workflowAction === "MARK_ACCEPTED" ||
+                workflowAction === "REQUEST_INFO") && (
                 <div className="space-y-2">
                   <Label htmlFor="remarks">
-                    {workflowAction === "MARK_ACCEPTED" ? "Approval Remarks (Optional)" : "Remarks *"}
+                    {workflowAction === "MARK_ACCEPTED"
+                      ? "Approval Remarks (Optional)"
+                      : "Remarks *"}
                   </Label>
                   <Textarea
                     id="remarks"
@@ -352,9 +405,10 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                 </div>
               )}
 
-              <div className="rounded-md border p-3 bg-muted/50">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Observation:</strong> {selectedObservation.description}
+              <div className="bg-muted/50 rounded-md border p-3">
+                <p className="text-muted-foreground text-sm">
+                  <strong>Observation:</strong>{" "}
+                  {selectedObservation.description}
                 </p>
               </div>
 
@@ -368,7 +422,9 @@ export function AtrWorkflowPanel({ observations, canManage, canSubmitAtr }: AtrW
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {workflowAction === "SUBMIT" && "Submit ATR"}
                   {workflowAction === "MARK_ACCEPTED" && "Accept ATR"}
                   {workflowAction === "REQUEST_INFO" && "Request Info"}

@@ -11,7 +11,7 @@ export async function getComplianceItems(
     status?: string;
     branchId?: string;
     escalationLevel?: number;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -54,7 +54,7 @@ export async function getComplianceItems(
  */
 export async function getComplianceItem(
   session: Session,
-  complianceItemId: string
+  complianceItemId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -90,7 +90,7 @@ export async function getComplianceItem(
  */
 export async function getBranchComplianceItems(
   session: Session,
-  userId: string
+  userId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);

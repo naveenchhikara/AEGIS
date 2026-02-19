@@ -394,7 +394,7 @@ export async function getBoardReportById(session: Session, id: string) {
  */
 export async function getAuditReportData(
   session: Session,
-  engagementId: string
+  engagementId: string,
 ) {
   const tenantId = extractTenantId(session);
   const db = prismaForTenant(tenantId);
@@ -424,10 +424,7 @@ export async function getAuditReportData(
             },
           },
         },
-        orderBy: [
-          { severity: "desc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
       },
       teamMembers: {
         include: {

@@ -28,13 +28,16 @@ export const SubmitExaminationResponseSchema = z.object({
   engagementId: z.string().uuid("Invalid engagement ID"),
   itemId: z.string().uuid("Invalid item ID"),
   status: z.enum(["COMPLIANT", "NON_COMPLIANT", "PARTIAL", "NOT_APPLICABLE"], {
-    message: "Status must be COMPLIANT, NON_COMPLIANT, PARTIAL, or NOT_APPLICABLE",
+    message:
+      "Status must be COMPLIANT, NON_COMPLIANT, PARTIAL, or NOT_APPLICABLE",
   }),
   observation: z.string().max(2000).optional(),
   riskRating: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
 });
 
-export type SubmitExaminationResponseInput = z.infer<typeof SubmitExaminationResponseSchema>;
+export type SubmitExaminationResponseInput = z.infer<
+  typeof SubmitExaminationResponseSchema
+>;
 
 export const UpdateSectionStatusSchema = z.object({
   engagementId: z.string().uuid("Invalid engagement ID"),
@@ -44,21 +47,25 @@ export const UpdateSectionStatusSchema = z.object({
   }),
 });
 
-export type UpdateSectionStatusInput = z.infer<typeof UpdateSectionStatusSchema>;
+export type UpdateSectionStatusInput = z.infer<
+  typeof UpdateSectionStatusSchema
+>;
 
 // ─── Cash Verification (Denomination + ATM) ───────────────────
-const DenominationDataSchema = z.object({
-  "2000": z.number().int().min(0).default(0),
-  "500": z.number().int().min(0).default(0),
-  "200": z.number().int().min(0).default(0),
-  "100": z.number().int().min(0).default(0),
-  "50": z.number().int().min(0).default(0),
-  "20": z.number().int().min(0).default(0),
-  "10": z.number().int().min(0).default(0),
-  "5": z.number().int().min(0).default(0),
-  "2": z.number().int().min(0).default(0),
-  "1": z.number().int().min(0).default(0),
-}).partial();
+const DenominationDataSchema = z
+  .object({
+    "2000": z.number().int().min(0).default(0),
+    "500": z.number().int().min(0).default(0),
+    "200": z.number().int().min(0).default(0),
+    "100": z.number().int().min(0).default(0),
+    "50": z.number().int().min(0).default(0),
+    "20": z.number().int().min(0).default(0),
+    "10": z.number().int().min(0).default(0),
+    "5": z.number().int().min(0).default(0),
+    "2": z.number().int().min(0).default(0),
+    "1": z.number().int().min(0).default(0),
+  })
+  .partial();
 
 const AtmBalancesSchema = z.record(z.string(), z.number().min(0));
 
@@ -72,7 +79,9 @@ export const SaveCashVerificationSchema = z.object({
   remarks: z.string().max(2000).optional(),
 });
 
-export type SaveCashVerificationInput = z.infer<typeof SaveCashVerificationSchema>;
+export type SaveCashVerificationInput = z.infer<
+  typeof SaveCashVerificationSchema
+>;
 
 // ─── BH Certificate ───────────────────────────────────────────
 export const SignBhCertificateSchema = z.object({
@@ -89,7 +98,9 @@ export const CountersignBhCertificateSchema = z.object({
 });
 
 export type SignBhCertificateInput = z.infer<typeof SignBhCertificateSchema>;
-export type CountersignBhCertificateInput = z.infer<typeof CountersignBhCertificateSchema>;
+export type CountersignBhCertificateInput = z.infer<
+  typeof CountersignBhCertificateSchema
+>;
 
 // ─── Create Engagement (A2) ──────────────────────────────────
 export const CreateEngagementSchema = z.object({
@@ -117,7 +128,9 @@ export const RequestExamEvidenceUploadSchema = z.object({
   fileHeader: z.string().optional(),
 });
 
-export type RequestExamEvidenceUploadInput = z.infer<typeof RequestExamEvidenceUploadSchema>;
+export type RequestExamEvidenceUploadInput = z.infer<
+  typeof RequestExamEvidenceUploadSchema
+>;
 
 export const ConfirmExamEvidenceUploadSchema = z.object({
   evidenceId: z.string().uuid(),
@@ -130,7 +143,9 @@ export const ConfirmExamEvidenceUploadSchema = z.object({
   description: z.string().optional(),
 });
 
-export type ConfirmExamEvidenceUploadInput = z.infer<typeof ConfirmExamEvidenceUploadSchema>;
+export type ConfirmExamEvidenceUploadInput = z.infer<
+  typeof ConfirmExamEvidenceUploadSchema
+>;
 
 // ─── Loan Review (A6) ────────────────────────────────────────
 export const CreateLoanReviewSchema = z.object({
@@ -140,7 +155,15 @@ export const CreateLoanReviewSchema = z.object({
   productType: z.string().min(1, "Product type is required"),
   sanctionAmount: z.number().min(0, "Sanction amount must be non-negative"),
   outstandingAmount: z.number().min(0, "Outstanding must be non-negative"),
-  assetClass: z.enum(["STANDARD", "SMA0", "SMA1", "SMA2", "NPA_DOUBTFUL", "NPA_LOSS", "NPA_SUB"]),
+  assetClass: z.enum([
+    "STANDARD",
+    "SMA0",
+    "SMA1",
+    "SMA2",
+    "NPA_DOUBTFUL",
+    "NPA_LOSS",
+    "NPA_SUB",
+  ]),
   dpd: z.number().int().min(0).default(0),
   auditObservation: z.string().max(2000).optional(),
 });
@@ -155,16 +178,21 @@ export type UpdateLoanReviewInput = z.infer<typeof UpdateLoanReviewSchema>;
 
 export const ImportLoanCsvSchema = z.object({
   engagementId: z.string().uuid(),
-  rows: z.array(z.object({
-    accountNo: z.string(),
-    borrowerName: z.string(),
-    productType: z.string(),
-    sanctionAmount: z.number(),
-    outstandingAmount: z.number(),
-    assetClass: z.string(),
-    dpd: z.number().default(0),
-    auditObservation: z.string().optional(),
-  })).min(1, "At least one row required").max(5000, "Maximum 5000 rows"),
+  rows: z
+    .array(
+      z.object({
+        accountNo: z.string(),
+        borrowerName: z.string(),
+        productType: z.string(),
+        sanctionAmount: z.number(),
+        outstandingAmount: z.number(),
+        assetClass: z.string(),
+        dpd: z.number().default(0),
+        auditObservation: z.string().optional(),
+      }),
+    )
+    .min(1, "At least one row required")
+    .max(5000, "Maximum 5000 rows"),
 });
 
 export type ImportLoanCsvInput = z.infer<typeof ImportLoanCsvSchema>;
@@ -172,14 +200,18 @@ export type ImportLoanCsvInput = z.infer<typeof ImportLoanCsvSchema>;
 // ─── SMA/NPA (A6) ───────────────────────────────────────────
 export const SaveSmaNpaEntriesSchema = z.object({
   engagementId: z.string().uuid(),
-  entries: z.array(z.object({
-    category: z.string().min(1),
-    count: z.number().int().min(0),
-    amount: z.number().min(0),
-    accountCount: z.number().int().min(0).optional(),
-    totalAmount: z.number().min(0).optional(),
-    remarks: z.string().optional(),
-  })).min(1),
+  entries: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        count: z.number().int().min(0),
+        amount: z.number().min(0),
+        accountCount: z.number().int().min(0).optional(),
+        totalAmount: z.number().min(0).optional(),
+        remarks: z.string().optional(),
+      }),
+    )
+    .min(1),
 });
 
 export type SaveSmaNpaEntriesInput = z.infer<typeof SaveSmaNpaEntriesSchema>;

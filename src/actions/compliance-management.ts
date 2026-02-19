@@ -52,7 +52,10 @@ export async function addCustomRequirement(input: AddCustomRequirementInput) {
     });
     return { success: true, error: null, data: result };
   } catch (error) {
-    logger.error({ error, action: "add_custom_requirement", tenantId }, "Failed to add custom requirement");
+    logger.error(
+      { error, action: "add_custom_requirement", tenantId },
+      "Failed to add custom requirement",
+    );
     return { success: false, error: "Failed to add requirement." };
   }
 }
@@ -76,7 +79,15 @@ export async function markAsNotApplicable(
     await markRequirementNotApplicable(tenantId, requirementId, reason);
     return { success: true, error: null };
   } catch (error) {
-    logger.error({ error, action: "mark_requirement_not_applicable", tenantId, requirementId }, "Failed to mark requirement as N/A");
+    logger.error(
+      {
+        error,
+        action: "mark_requirement_not_applicable",
+        tenantId,
+        requirementId,
+      },
+      "Failed to mark requirement as N/A",
+    );
     return { success: false, error: "Failed to update requirement." };
   }
 }
@@ -95,7 +106,15 @@ export async function revertNotApplicable(requirementId: string) {
     await revertRequirementNotApplicable(tenantId, requirementId);
     return { success: true, error: null };
   } catch (error) {
-    logger.error({ error, action: "revert_requirement_not_applicable", tenantId, requirementId }, "Failed to revert N/A status");
+    logger.error(
+      {
+        error,
+        action: "revert_requirement_not_applicable",
+        tenantId,
+        requirementId,
+      },
+      "Failed to revert N/A status",
+    );
     return { success: false, error: "Failed to update requirement." };
   }
 }
@@ -109,7 +128,10 @@ export async function fetchMasterDirections() {
     const directions = await getMasterDirectionsWithCounts();
     return { success: true, error: null, data: directions };
   } catch (error) {
-    logger.error({ error, action: "fetch_master_directions" }, "Failed to fetch master directions");
+    logger.error(
+      { error, action: "fetch_master_directions" },
+      "Failed to fetch master directions",
+    );
     return { success: false, error: "Failed to load master directions." };
   }
 }
@@ -121,7 +143,10 @@ export async function fetchMasterDirectionItems(masterDirectionId: string) {
     const items = await getMasterDirectionItems(masterDirectionId);
     return { success: true, error: null, data: items };
   } catch (error) {
-    logger.error({ error, action: "fetch_master_direction_items", masterDirectionId }, "Failed to fetch checklist items");
+    logger.error(
+      { error, action: "fetch_master_direction_items", masterDirectionId },
+      "Failed to fetch checklist items",
+    );
     return { success: false, error: "Failed to load checklist items." };
   }
 }
@@ -135,7 +160,10 @@ export async function searchCirculars(query: string) {
     const results = await searchRbiCirculars(query);
     return { success: true, error: null, data: results };
   } catch (error) {
-    logger.error({ error, action: "search_rbi_circulars", query }, "Failed to search RBI circulars");
+    logger.error(
+      { error, action: "search_rbi_circulars", query },
+      "Failed to search RBI circulars",
+    );
     return { success: false, error: "Failed to search." };
   }
 }
@@ -150,7 +178,10 @@ export async function fetchCustomRequirements() {
     const requirements = await getCustomRequirements(tenantId);
     return { success: true, error: null, data: requirements };
   } catch (error) {
-    logger.error({ error, action: "fetch_custom_requirements", tenantId }, "Failed to fetch custom requirements");
+    logger.error(
+      { error, action: "fetch_custom_requirements", tenantId },
+      "Failed to fetch custom requirements",
+    );
     return { success: false, error: "Failed to load requirements." };
   }
 }

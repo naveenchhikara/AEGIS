@@ -18,18 +18,24 @@ const ManageRegulatoryObservationSchema = z.object({
   paraNo: z.string().optional(),
   description: z.string().min(10),
   severity: z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]),
-  atrStatus: z.enum(["DRAFT", "SUBMITTED", "ACCEPTED", "FURTHER_INFO", "CLOSED"]).optional(),
+  atrStatus: z
+    .enum(["DRAFT", "SUBMITTED", "ACCEPTED", "FURTHER_INFO", "CLOSED"])
+    .optional(),
   issueId: z.string().uuid().optional(),
 });
 
-type ManageRegulatoryObservationInput = z.infer<typeof ManageRegulatoryObservationSchema>;
+type ManageRegulatoryObservationInput = z.infer<
+  typeof ManageRegulatoryObservationSchema
+>;
 
 /**
  * Create or update regulatory observation (R77).
  * Security: Requires regulatory:manage permission.
  * Atomicity: Single transaction with audit context.
  */
-export async function manageRegulatoryObservation(input: ManageRegulatoryObservationInput) {
+export async function manageRegulatoryObservation(
+  input: ManageRegulatoryObservationInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -107,7 +113,10 @@ export async function manageRegulatoryObservation(input: ManageRegulatoryObserva
       error instanceof Error
         ? error.message
         : "Failed to manage regulatory observation.";
-    logger.error({ error, action: "manage_regulatory_observation", tenantId }, message);
+    logger.error(
+      { error, action: "manage_regulatory_observation", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

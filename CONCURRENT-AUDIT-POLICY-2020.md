@@ -11,7 +11,7 @@ Concurrent Audit Policy
 
 1
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Annexure I
 
@@ -28,8 +28,7 @@ No.
 1
 
 Para
-No.
-2.
+No. 2.
 
 2.
 
@@ -38,14 +37,14 @@ No.
 RBI
 dated
 Circular
-18.09.2019  issued  after
-review  of  Concurrent
+18.09.2019 issued after
+review of Concurrent
 Audit Policy 2018.
 
 All
 Centralised
-Processing  Units  Centres
-like  Loan  Processing
+Processing Units Centres
+like Loan Processing
 Units
 service
 (LPUs),
@@ -55,44 +54,44 @@ account
 opening
 divisions, etc.
 
-Circular  No.DBS.  CO.
+Circular No.DBS. CO.
 ARS.No.BC.01/08/91.021/
-2019-20  dated  18.09.2019
+2019-20 dated 18.09.2019
 on
-Concurrent  Audit
+Concurrent Audit
 System.
 
 Credit
 
-All  Centralised  Processing
+All Centralised Processing
 Centres
 (business
 origination and monitoring)
 Solutions
 like
-Centres  Hubs,
+Centres Hubs,
 service
 branches,
 centralized
-account  opening  divisions,
+account opening divisions,
 etc.
 
 in
 
 standardising
 
-RBI  has  released  a  new
+RBI has released a new
 circular dated 18.09.2019 on
-Concurrent  Audit  System,
+Concurrent Audit System,
 accordingly a mention of the
-same  is  incorporated  in  the
+same is incorporated in the
 revised CA policy.
-Changes  made
+Changes made
 the
-nomenclature  as  per  RBI
+nomenclature as per RBI
 circular dated 18.09.2019.
-In  terms  of  HR  circular
-dated  05.06.  2020,  on
+In terms of HR circular
+dated 05.06. 2020, on
 organizational
 transformation “With a view
 to
@@ -100,78 +99,78 @@ credit
 improving
 processing,
 credit
-compliance,  TAT,
+compliance, TAT,
 quality,
 appraisal
-sales  &
-separating  out
+sales &
+separating out
 credit
 to
-develop  a  talent  pool  for
+develop a talent pool for
 SME & Agri loan appraisals
-in  the  Bank,  it  has  been
-decided  to  form  a  separate
+in the Bank, it has been
+decided to form a separate
 operations
 verticalized
 CPC.
 structure
 Accordingly,
 Credit
-Solutions  Centres  Hubs
-have  been  included  in  the
+Solutions Centres Hubs
+have been included in the
 coverage.
-Currency  chests  have  been
-included  under  Concurrent
-Audit  coverage  in  terms  of
+Currency chests have been
+included under Concurrent
+Audit coverage in terms of
 RBI instructions
 Included in the CA Policy in
-light  of  RBI  circular  dated
+light of RBI circular dated
 18.09.2019.
 
-functions  and
+functions and
 
 for
 
 3.
 
-3 (viii)  All  Retail  Asset  Centres
+3 (viii) All Retail Asset Centres
 & Trade Finance Centres
 
-All  Retail  Asset  Centres,
-Trade  Finance  Centres  &
+All Retail Asset Centres,
+Trade Finance Centres &
 Currency Chests
 
 4.
 
-3.
+5.
 
-Existing  policy  does  not
-on  minimum
+Existing policy does not
+on minimum
 specify
-areas  of  coverage  under
+areas of coverage under
 Concurrent Audit
 
 Further,
-the  minimum
-areas  of  coverage  under
-Concurrent  Audit  is  given
+the minimum
+areas of coverage under
+Concurrent Audit is given
 in Appendix-I.
 
-The  broad  areas
-to  be
-covered  under  Concurrent
-Audit  shall  be  based  on
+The broad areas
+to be
+covered under Concurrent
+Audit shall be based on
 the
 identified
-auditee  unit  and  must
+auditee unit and must
 random
 include
 
-risk  of
+risk of
 
 2
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Sr.
 No.
@@ -187,13 +186,13 @@ Justification
 
 5.
 
-4.
+6.
 
-The  Concurrent  Audit
+The Concurrent Audit
 be
-assignments  may
-undertaken  internally  by
-Bank's  officers  and  may
+assignments may
+undertaken internally by
+Bank's officers and may
 to
 outsourced
 also
@@ -222,55 +221,55 @@ of
 sufficiently large sample of
 transactions,
 such
-wherever  required.    The
-scope  of  work
-to  be
+wherever required. The
+scope of work
+to be
 entrusted to the Concurrent
 Auditors,
 of
-business/branches,  etc.  is
-to  be  decided  by  Head-
+business/branches, etc. is
+to be decided by Head-
 Audit with due approval of
-Audit  Committee of Board
-(“ACB”).  The  detailed
-scope  of  the  Concurrent
-Audit  may  be  defined  and
+Audit Committee of Board
+(“ACB”). The detailed
+scope of the Concurrent
+Audit may be defined and
 approved by ACB.
-The  Concurrent  Audit
+The Concurrent Audit
 be
-assignments  may
-internally  by
+assignments may
+internally by
 undertaken
 the
 Officers
-(including  retired  officers
-the  age
-not  exceeding
-beyond  70  years)  and  may
-also  outsourced to  external
-audit  firms.  Head-Audit  to
-identify  the  audits  to  be
-undertaken  by  outsourced
+(including retired officers
+the age
+not exceeding
+beyond 70 years) and may
+also outsourced to external
+audit firms. Head-Audit to
+identify the audits to be
+undertaken by outsourced
 agency.
 officers
 The
-identified  for  Concurrent
+identified for Concurrent
 Audit
 be
-experienced,  well  trained
-and  sufficiently  senior  and
-would  have  no  dealings  in
+experienced, well trained
+and sufficiently senior and
+would have no dealings in
 the
 branch/unit/centres
-where  Concurrent  Audit  is
+where Concurrent Audit is
 to
 conducted.
-[Experience  of  more  than
-10  years  and  in  the  grade
-Assistant  General
+[Experience of more than
+10 years and in the grade
+Assistant General
 of
 Manager and above would
-be  considered
+be considered
 the
 same].
 
@@ -285,61 +284,61 @@ be
 to
 
 Included in the CA Policy in
-light  of  RBI  circular  dated
+light of RBI circular dated
 18.09.2019.
 
 should
 
-Retired  officers’  upto  the
-age  of  70  years  can  be
-considered  for  Concurrent
-Audit  assignment.  Further,
+Retired officers’ upto the
+age of 70 years can be
+considered for Concurrent
+Audit assignment. Further,
 it is proposed that the retired
 officers
 have
-experience  of  more  than  10
-years  and  in  the  grade  of
-AGM  so  that  the  retired
+experience of more than 10
+years and in the grade of
+AGM so that the retired
 officers
 relevant
 have
-experience  and  maturity  to
-conduct  Concurrent  Audit
+experience and maturity to
+conduct Concurrent Audit
 assignment.
 
 6.
 
 5(b)
 
-The  firm  should  have
-standing  of  minimum
-five  years  for  audit  of
-branches  with  advances
-up  to  Rs.200  crore  and
+The firm should have
+standing of minimum
+five years for audit of
+branches with advances
+up to Rs.200 crore and
 
 firm
 
 The
-should  have
-standing  of  minimum  five
+should have
+standing of minimum five
 years for Concurrent Audit
 of branches.
 
 3
 
-None  of  the  Banks  issue
-such  certificates
+None of the Banks issue
+such certificates
 the
-auditors,  due  to  which  it  is
-difficult  to  have  a  check  on
-firms  have
+auditors, due to which it is
+difficult to have a check on
+firms have
 whether
 
 the
 
 to
 
-Sr.
+Sr.
 No.
 
 Para
@@ -353,11 +352,9 @@ No.
 
 5(h)
 
-9.
+9.  6.a.
 
-6.a.
-
-                                                                                                                           Concurrent Audit Policy 2020
+                                                                                                                               Concurrent Audit Policy 2020
 
 Existing Policy
 
@@ -365,8 +362,8 @@ Proposed Amendment
 
 Justification
 
-minimum  10  years  for
-other  branches  and  other
+minimum 10 years for
+other branches and other
 units / offices.
 Sr.
 No.
@@ -377,22 +374,22 @@ Category
 Eligible
 category
 (assigned
-by  RBI)
+by RBI)
 CA
 of
 Firm
 I
 
-I,  II,  III
+I, II, III
 & IV
 
 1.
 
-4.
+2.
 
-VLCG,  LCG,
+VLCG, LCG,
 Treasury
-RBG,  RAC,
+RBG, RAC,
 (Other
 NBS
 than
@@ -402,46 +399,46 @@ of
 
 case
 
-The  assignment  should
-in  a
-be  carried  out
-professional  manner  and
+The assignment should
+in a
+be carried out
+professional manner and
 in
 any
 misconduct & negligence
 the Bank is free to report
-the  matter  to  ICAI  /  RBI
+the matter to ICAI / RBI
 under the guidelines from
 time to time. This will be
 in
 the
-disengagement  from  the
+disengagement from the
 assignment.
 
 addition
 
 to
 
-a.  The  appointment  of
-Concurrent  Auditors
+a. The appointment of
+Concurrent Auditors
 for various Concurrent
 Audit
 assignments
-shall  be  approved  by
+shall be approved by
 Audit
 –
 CGM
-centrally  based  on  the
+centrally based on the
 of
 recommendations
 two
 Committee
-General  Managers  at
-IAD-HO.  Names  of
-two  firms  would  be
+General Managers at
+IAD-HO. Names of
+two firms would be
 each
 identified
-assignment  and  same
+assignment and same
 be
 would
 
@@ -449,11 +446,11 @@ for
 
 of
 
-(SCAs)  of
-had  made
+(SCAs) of
+had made
 
-experience  of  Concurrent
-Audit  of  branches  with
+experience of Concurrent
+Audit of branches with
 advances of Rs.200 crore .
 Central
 The
@@ -463,19 +460,19 @@ Auditors
 an
 Bank
 observation that the scope of
-concurrent  audit  needs  to
-include  cases  handled  by
-NMG.    Accordingly,  NMG
+concurrent audit needs to
+include cases handled by
+NMG. Accordingly, NMG
 branches
 been
 included
-the  branch
-categorisations.    CSC  Hubs
-have  been  included  under
+the branch
+categorisations. CSC Hubs
+have been included under
 Concurrent Audit coverage.
-Changes  proposed  in  light
+Changes proposed in light
 dated
-of  RBI
+of RBI
 18.09.2019
 
 circular
@@ -484,9 +481,9 @@ have
 
 in
 
-Changes  proposed  in  light
+Changes proposed in light
 dated
-of  RBI
+of RBI
 18.09.2019
 
 circular
@@ -494,13 +491,13 @@ circular
 Eligible
 category
 (assigned
-by  RBI)
+by RBI)
 CA
 of
 Firm
 I
 
-I,  II,  III
+I, II, III
 & IV
 
 Sr.
@@ -511,14 +508,14 @@ Category
 
 1.
 
-4.
+2.
 
-VLCG,  LCG,
+VLCG, LCG,
 NMG,
 Treasury
-RBG,  RAC,
+RBG, RAC,
 CSC Hubs
- NBS
+NBS
 than
 Treasury)
 
@@ -536,56 +533,56 @@ after
 
 omission
 
-The  assignment  should  be
+The assignment should be
 a
 out
 carried
-professional  manner  and
+professional manner and
 in case of any misconduct,
-negligence  or  any  serious
+negligence or any serious
 or
 acts
 commission are noticed in
-the  working
+the working
 the
 Concurrent Auditors, their
 be
-appointment  may
+appointment may
 cancelled
 giving
 them
 reasonable
-opportunity  to  be  heard
+opportunity to be heard
 and
-fact  shall  be
-reported  by  the  Bank  to
-ACB/  ICAI  /  RBI  under
-the  guidelines  from  time
+fact shall be
+reported by the Bank to
+ACB/ ICAI / RBI under
+the guidelines from time
 to time.
-a.  The  appointment  of
+a. The appointment of
 for
-Concurrent  Auditors
-various  Concurrent  Audit
+Concurrent Auditors
+various Concurrent Audit
 assignments
 be
 approved by CGM – Audit
 the
-centrally  based  on
+centrally based on
 recommendations
 of
-Committee  of  two  General
+Committee of two General
 IAD-HO.
 at
 Managers
-Names  of  firms  would  be
+Names of firms would be
 each
 identified
 assignment
 same
 recommended
-would  be
-taking  into  account  their
-experience  and  exposure,
+would be
+taking into account their
+experience and exposure,
 
 for
 and
@@ -594,7 +591,7 @@ shall
 
 4
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Sr.
 No.
@@ -612,34 +609,34 @@ in
 
 recommended
 the
-order  of  preference
-into  account
+order of preference
+into account
 taking
-their  experience  and
+their experience and
 exposure,
 similar
-activity  carried  out  for
-the  Bank  or  other
-banks,  availability  of
+activity carried out for
+the Bank or other
+banks, availability of
 adequate
 trained
-resources,  location  of
-the audit unit etc.  The
-monthly  fees  payable
-to  the  auditors  will  be
+resources, location of
+the audit unit etc. The
+monthly fees payable
+to the auditors will be
 approved
 the
-delegated  authority  on
+delegated authority on
 the recommendation of
-said  Committee  taking
-into  consideration  the
-nature  of  assignment
+said Committee taking
+into consideration the
+nature of assignment
 and
 the
 within
 fees
 maximum
-approved  by  Audit
+approved by Audit
 Committee of Board
 
 by
@@ -648,58 +645,58 @@ by
 
 6 (g)
 
-Existing  policy  does  not
-specify  anything  on  this
+Existing policy does not
+specify anything on this
 point.
 
 11.
 
 6.(l)
 
-Existing  policy  does  not
-specify  anything  on  this
+Existing policy does not
+specify anything on this
 point.
 
 to
 
 taking
 
-similar  activity  carried  out
-the  Bank  or  other
+similar activity carried out
+the Bank or other
 for
 of
 availability
 banks,
-adequate  trained  resources,
-location  of  the  audit  unit
-etc.  The same would need
+adequate trained resources,
+location of the audit unit
+etc. The same would need
 to be informed/ reported to
 Head-Audit
 before
 appointment.
 b.
 Head-Audit shall be
-responsible  for  the  quality
-review  of  the  work  of  the
+responsible for the quality
+review of the work of the
 Auditors
 Concurrent
-(including  skill  sets  of  the
+(including skill sets of the
 staff employed)
 c.
-The  monthly  fees
-the  auditors
+The monthly fees
+the auditors
 payable
-shall  be  approved  by  the
-delegated  authority  on  the
-recommendation  of  said
+shall be approved by the
+delegated authority on the
+recommendation of said
 into
 Committee
-consideration  the  nature  of
-assignment  and  within  the
-maximum  fees  approved
-by  Audit  Committee  of
-Board.    The  remuneration
-shall  be
+consideration the nature of
+assignment and within the
+maximum fees approved
+by Audit Committee of
+Board. The remuneration
+shall be
 commensurate
 and
 the
@@ -707,23 +704,23 @@ with
 coverage of audit, skill sets
 required
 the
-assignment,  number  of
-audit  staff  to  be  deployed
-and  the  time  to  be  devoted
+assignment, number of
+audit staff to be deployed
+and the time to be devoted
 for the assignment.
-6  (g)  The  tenure  of  the
+6 (g) The tenure of the
 Concurrent
 Auditors
 should not be more than 05
-years  on  a  continuous
+years on a continuous
 basis.
 6(l)
 Concurrent
-Auditors  would  need  to
-define  the  risk  severity  of
-the  observations  made  by
-them.    The  definition  of
-Risk  Severity  is  given  in
+Auditors would need to
+define the risk severity of
+the observations made by
+them. The definition of
+Risk Severity is given in
 Appendix -II.
 
 scope
@@ -734,21 +731,20 @@ for
 
 5
 
-Changes  proposed  in  light
-of  RBI  Circular  dated
+Changes proposed in light
+of RBI Circular dated
 18.09.2019
 
-As  per  Quality  Assurance
-Audit  (QAA)  Consultants
-report  who  had  conducted
-an  exhaustive  review,  Risk
-ratings  are  required  to  be
-assigned  to  the  Concurrent
+As per Quality Assurance
+Audit (QAA) Consultants
+report who had conducted
+an exhaustive review, Risk
+ratings are required to be
+assigned to the Concurrent
 Audit observations. .
 
-Sr.
-No.
-12.
+Sr.
+No. 12.
 
 Para
 No.
@@ -771,39 +767,39 @@ in
 6(o)
 major
 The
-deficiencies/  aberrations
+deficiencies/ aberrations
 noticed during audit shall
-be  highlighted
+be highlighted
 a
-special  note  and  given
+special note and given
 immediately to the bank's
 branch controlling offices
-under  intimation  to  the
+under intimation to the
 concerned
 ZAO/HO-
 IAD.
-Existing  policy  does  not
-specify  anything  on  this
+Existing policy does not
+specify anything on this
 point.
 
-Changes  proposed  in  light
-of  RBI
+Changes proposed in light
+of RBI
 dated
 18.09.2019.
 
 circular
 
-Timelines  for  release  of
-Concurrent  Audit
+Timelines for release of
+Concurrent Audit
 reports
-was  not  part  of  the  CA
+was not part of the CA
 Policy.
 
 Penalty has been imposed to
-timely  release  of
+timely release of
 ensure
-reports  by  the  Concurrent
-Auditors.      The  delegation
+reports by the Concurrent
+Auditors. The delegation
 would be with CGM, IAD.
 
 The
@@ -816,70 +812,69 @@ noticed during audit should
 be immediately highlighted
 to
 Zonal/
-Controlling  Offices  of  the
-concerned  branch/  centre/
+Controlling Offices of the
+concerned branch/ centre/
 unit
 
 IAD-HO/
 
 timelines
 
-7(a)  The
+7(a) The
 for
-submission  of  Concurrent
-Audit  reports  would  be  as
+submission of Concurrent
+Audit reports would be as
 under:
-  CA  Report
+ CA Report
 
 be
 released
 the
-Concurrent  Auditors  by
-10th  of  the  following
+Concurrent Auditors by
+10th of the following
 month.
 
 by
 
 to
 
- Auditee  Units  to  give
-the  compliances  to  the
-CA  Report  by  20th  of
+ Auditee Units to give
+the compliances to the
+CA Report by 20th of
 the following month.
- After  submission  of  the
-in  Audit
+ After submission of the
+in Audit
 compliances
 Management
 System
 (‘AMS’) by the Auditee
-the  Concurrent
+the Concurrent
 Unit,
-Auditor  is  required  to
-submit  the  final  copy  of
-the  vetted  compliance
+Auditor is required to
+submit the final copy of
+the vetted compliance
 Audit report by 30th of
 the following month.
-  If  the  report  is  delayed
+ If the report is delayed
 proper
 any
 without
-justification  beyond  10th
-of  the  following  month,
-5%  of  the  fees  payable
-will  be  deducted  for
-every  05  days  or  any
-part  thereof  or  further
-delay.  The authority for
+justification beyond 10th
+of the following month,
+5% of the fees payable
+will be deducted for
+every 05 days or any
+part thereof or further
+delay. The authority for
 deciding whether to levy
-the  penalty  for  delay  or
-not  would  be  with
+the penalty for delay or
+not would be with
 CGM-IAD.
 
 6
 
-Sr.
-No.
-14.
+Sr.
+No. 14.
 
 Para
 No.
@@ -899,14 +894,14 @@ Justification
 
 The same has been included
 to ensure that monitoring of
-Non  Performing  Assets
-including  FTNPA,  Quick
-Mortality,  SMA  accounts
+Non Performing Assets
+including FTNPA, Quick
+Mortality, SMA accounts
 due
 are
 importance
 the
-Concurrent  Auditor  during
+Concurrent Auditor during
 audit.
 
 the
@@ -914,48 +909,48 @@ by
 
 given
 
-Changes  proposed  in  light
-of  RBI
+Changes proposed in light
+of RBI
 dated
 18.09.2019.
 
 circular
 
-Existing  policy  does  not
-specify  anything  on  this
+Existing policy does not
+specify anything on this
 point.
 
 on
 
 cases,
 
-Concurrent  Auditor  should
+Concurrent Auditor should
 comment
 the
 identification & monitoring
-of  non-performing  assets,
-including  FTNPA,  Quick
+of non-performing assets,
+including FTNPA, Quick
 SMA
 Mortality
-status  of  accounts,  follow
+status of accounts, follow
 up of NPAs by the branch,
-etc.  Further,  Concurrent
+etc. Further, Concurrent
 to
 Auditor
-verify  and  comment  on
+verify and comment on
 exceptional
 transactions,
-if  not  corrected
+if not corrected
 which
-immediately  may  result  in
+immediately may result in
 in
-slippage  of  accounts
+slippage of accounts
 quality
 non-
 due
-financial  reasons  (such  as
-non-renewal  of  limits,  not
-entering  DP  in  the  system,
+financial reasons (such as
+non-renewal of limits, not
+entering DP in the system,
 etc).
 
 required
@@ -972,55 +967,55 @@ All
 
 7(e)
 serious
-irregularities  are  to  be
+irregularities are to be
 the
 submitted
-Concurrent  Auditor  to
-the  concerned  ZAO,
+Concurrent Auditor to
+the concerned ZAO,
 which
 be
 are
-reviewed  by  ZAC  on
-monthly  basis  and  the
-to  be
+reviewed by ZAC on
+monthly basis and the
+to be
 minutes
 are
-to  Head
+to Head
 submitted
 Office. Significant Zone
 wise observations of the
 Concurrent
 Audit
 reports would be placed
-before  the  Zonal  Audit
+before the Zonal Audit
 Committee
 (ZAC)/
-Audit  Committee  of
-Executives  (ACE)  on  a
-basis.  Any
+Audit Committee of
+Executives (ACE) on a
+basis. Any
 monthly
 observation
 serious
-to  be  placed
+to be placed
 needs
 before Audit Committee
-of  Board  at  the  first
+of Board at the first
 available opportunity.
 
 All
 
 serious
 7(g)
-to  be
-irregularities  are
+to be
+irregularities are
 the
 by
 submitted
-Concurrent  Auditor  to  the
+Concurrent Auditor to the
 concerned ZAO, which are
-to  be  reviewed  by  Zonal
-Audit  Committee  (ZAC)
-on  quarterly  basis  and  the
+to be reviewed by Zonal
+Audit Committee (ZAC)
+on quarterly basis and the
 minutes are to be submitted
 to Head Office.
 review
@@ -1029,22 +1024,22 @@ quarterly
 containing
 important
 features brought out during
-Concurrent  Audits  should
-be  placed  before  the  Audit
-Committee  of  Executives
+Concurrent Audits should
+be placed before the Audit
+Committee of Executives
 (ACE)
 Audit
 and
 Board
 Committee
-(ACB).    Significant  Zone
-wise  observations  of  the
-Concurrent  Audit  reports
+(ACB). Significant Zone
+wise observations of the
+Concurrent Audit reports
 would be placed before the
 ZAC, ACE & ACB.
-Any  serious  observation
-needs  to  be  placed  before
-Audit  Committee of Board
+Any serious observation
+needs to be placed before
+Audit Committee of Board
 available
 first
 at
@@ -1055,7 +1050,7 @@ of
 
 7
 
-Sr.
+Sr.
 No.
 
 Para
@@ -1079,43 +1074,43 @@ to
 
 of
 
-7  (i)  The  performance
-the  Concurrent
+7 (i) The performance
+the Concurrent
 of
 Auditors
 be
 shall
 monitored by the Zonal
-Audit  Offices,  on  a
-monthly  basis.  If  any
+Audit Offices, on a
+monthly basis. If any
 shortcomings
 are
-noticed  in  the  quality
-of  audit,  attendance,
+noticed in the quality
+of audit, attendance,
 areas
 coverage,
 reporting etc., the same
 shall be advised by the
-respective  Zonal  Audit
+respective Zonal Audit
 Office
 the
 Concurrent Auditor for
 improvement.
-  The
+The
 Bank would review the
 performance
 all
-Concurrent  Auditors
-on  a  half-yearly  basis
+Concurrent Auditors
+on a half-yearly basis
 to
 course
 corrections, if required.
 performance
 The
-review  and  rating  of
+review and rating of
 the
 Concurrent
-Auditors  shall  be  done
+Auditors shall be done
 on
 of
 parameters given under
@@ -1139,15 +1134,15 @@ the
 The
 performance
 the
-Concurrent  Auditors  to  be
-given  by  GM,  ZAO,  who
+Concurrent Auditors to be
+given by GM, ZAO, who
 shall
 for
 recommend
-continuation/  termination  of
-the  auditors  to  CGM-IAD
-the  parameters
-based  on
+continuation/ termination of
+the auditors to CGM-IAD
+the parameters
+based on
 indicated.
 
 If
@@ -1157,11 +1152,11 @@ quality
 of
 areas
 
-7  (k)  The  performance  of
-the  Concurrent  Auditors
-shall  be  monitored  by  the
-Zonal  Audit  Offices,  on  a
-monthly  basis.
+7 (k) The performance of
+the Concurrent Auditors
+shall be monitored by the
+Zonal Audit Offices, on a
+monthly basis.
 any
 shortcomings are noticed in
 audit,
@@ -1169,34 +1164,34 @@ the
 of
 attendance,
 coverage,
-reporting  etc.,
-the  same  shall  be  advised
-the  respective  Zonal
+reporting etc.,
+the same shall be advised
+the respective Zonal
 by
 the
 to
-Audit  Office
-Concurrent  Auditor
+Audit Office
+Concurrent Auditor
 for
-improvement.    The  Bank
+improvement. The Bank
 the
 would
 performance
 all
-Concurrent  Auditors  on  an
-annual  basis  in  April  of
+Concurrent Auditors on an
+annual basis in April of
 The
 every
 performance
-review  and
-rating  of  the  Concurrent
-Auditors  shall  be  done  on
-the  basis  of  parameters
-given  under  Appendix–  III
+review and
+rating of the Concurrent
+Auditors shall be done on
+the basis of parameters
+given under Appendix– III
 and
 shall
 GM-ZAO
-recommend  for  approval
+recommend for approval
 by CGM-IAD based on the
 parameters.
 
@@ -1205,29 +1200,29 @@ of
 
 year.
 
-******************
+---
 
 8
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 CONFIDENTIAL
 
-This  policy  document  (hereinafter  referred  to  as  "the  policy")  is  the  property  of  the
+This policy document (hereinafter referred to as "the policy") is the property of the
 
-IDBI Bank Limited (hereinafter referred to as "the bank"). No staff  member or other
+IDBI Bank Limited (hereinafter referred to as "the bank"). No staff member or other
 
-user  of  the  policy  may  without  the  prior  written  permission  of  the  MD  &  CEO,
+user of the policy may without the prior written permission of the MD & CEO,
 
 disseminate the contents in whole or in part to any person outside the Bank. Contents
 
-of  this  policy  document  contain  information  that  is  of  competitive  value;  hence
+of this policy document contain information that is of competitive value; hence
 
 absolute confidentiality of the contents needs to be maintained.
 
 9
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Chapter
 
@@ -1251,17 +1246,17 @@ Page No.
 9.
 10.
 
-the  audit  firms  for  conducting
+the audit firms for conducting
 
 Preamble:
 Regulatory Requirement
 Concurrent Audit Coverage
 Selection of the Branches and other offices for
 Concurrent Audit
-Selection  of
+Selection of
 concurrent
 audit
-Appointment  of  Concurrent  Auditors,  their  fees
+Appointment of Concurrent Auditors, their fees
 and
 other conditions
 Conduct and follow up of Concurrent Audits
@@ -1289,7 +1284,7 @@ Appendix III
 
 10
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Concurrent Audit Policy
 
@@ -1299,15 +1294,15 @@ Preamble:
 
 The Bank should put in place an effective Concurrent Audit system to comply with the
 
-RBI  guidelines  as  also  to  supplement  the  efforts  of  the  Internal  Audit  Department  to
+RBI guidelines as also to supplement the efforts of the Internal Audit Department to
 
 strengthen the internal control system.
 
-The  Concurrent  Audit  system  will  be  a  part  of  Bank's  early-warning  system  to  detect
+The Concurrent Audit system will be a part of Bank's early-warning system to detect
 
-irregularities  and  lapses,  which  helps  checking  repeated  /  recurring  violations  of  the
+irregularities and lapses, which helps checking repeated / recurring violations of the
 
-internal  and  regulatory  guidelines,  controlling  risks  and  in  preventing  fraudulent
+internal and regulatory guidelines, controlling risks and in preventing fraudulent
 
 transactions.
 
@@ -1321,17 +1316,17 @@ less than 50% of credit and other risk exposure of the Bank under Concurrent Aud
 
 ensured on an on-going basis. Similarly the RBI requirement that the Department at the
 
-Head  Office  dealing  with  Treasury  functions  is  to  be  subjected  to  Concurrent  Audit  is
+Head Office dealing with Treasury functions is to be subjected to Concurrent Audit is
 
 complied with. The RBI guidelines as indicated under circular No. DOS. No.B.C.16 / 08-
 
-91/021/96  dated  14.08.1996,  Circular  No.  RBI/2015-16/133  DBS.CO.  ARS.  No.
+91/021/96 dated 14.08.1996, Circular No. RBI/2015-16/133 DBS.CO. ARS. No.
 
-BC.2/08.91.021/2015-16  dated  16.07.2015  and  Circular  No.  DBS.CO.ARS.No.BC.
+BC.2/08.91.021/2015-16 dated 16.07.2015 and Circular No. DBS.CO.ARS.No.BC.
 
-01/08/91.021/2019-20  dated  18.09.2019  on  Concurrent  Audit  System,  other  Regulatory
+01/08/91.021/2019-20 dated 18.09.2019 on Concurrent Audit System, other Regulatory
 
-guidelines  issued  from  time  to  time,  to  be  taken  into  consideration  while  implementing
+guidelines issued from time to time, to be taken into consideration while implementing
 
 the Concurrent Audit systems in the Bank.
 
@@ -1339,7 +1334,7 @@ the Concurrent Audit systems in the Bank.
 
 Concurrent Audit Coverage:
 
-The  Concurrent  Audit  shall  cover  atleast  70%  of  deposits  and  70%  of  advances  of  the
+The Concurrent Audit shall cover atleast 70% of deposits and 70% of advances of the
 
 Bank as against RBI’s stipulation for coverage at minimum of 50% of deposits and 50%
 
@@ -1347,7 +1342,7 @@ of advances.
 
 1
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 A large number of activities / operations are being carried out in a centralized manner at
 
@@ -1361,49 +1356,49 @@ scale operations such non-branch units also shall be subjected to Concurrent Aud
 
 Centres, Critical Head Office Departments and any specialized activities, such as, wealth
 
-management,  portfolio  management  services,  Card  Products  Division,  etc.  also  shall  be
+management, portfolio management services, Card Products Division, etc. also shall be
 
 subject to Concurrent Audit.
 
-The  following  branches,  business  activities/verticals  of  a  bank  may  be  subject  to
+The following branches, business activities/verticals of a bank may be subject to
 
 Concurrent Audit:
 
-(i)  Branches rated as high risk or above in the last Risk Based Internal Audit (RBIA)
+(i) Branches rated as high risk or above in the last Risk Based Internal Audit (RBIA)
 
 or serious deficiencies found in Internal Audit.
 
-(ii)  All  specialized  branches  like  Large  Corporate,  Mid  Corporate,  exceptionally
+(ii) All specialized branches like Large Corporate, Mid Corporate, exceptionally
 
 large/very large branches (ELBs/VLBs), SME, etc.
 
-(iii)  All  Centralised  Processing  Centres  (business  origination  and  monitoring)  like
+(iii) All Centralised Processing Centres (business origination and monitoring) like
 
-Credit  Solutions  Centre  Hubs,  service  branches,  centralised  account  opening
+Credit Solutions Centre Hubs, service branches, centralised account opening
 
 divisions, etc.
 
-(iv)  Any  specialized  activities  such  as  wealth  management,  portfolio  management
+(iv) Any specialized activities such as wealth management, portfolio management
 
 services, Card Products Division, etc.
 
-(v)  Data Centres.
+(v) Data Centres.
 
-(vi)  Treasury/branches  handling  foreign  exchange  business,  investment  banking,  etc.
+(vi) Treasury/branches handling foreign exchange business, investment banking, etc.
 
 and bigger overseas branches.
 
-(vii)  Critical Head Office Departments.
+(vii) Critical Head Office Departments.
 
-(viii)  All Retail Asset Centres, Trade Finance Centres & Currency Chests;
+(viii) All Retail Asset Centres, Trade Finance Centres & Currency Chests;
 
-(ix)  Any other branches or departments where, in the opinion of the bank, Concurrent
+(ix) Any other branches or departments where, in the opinion of the bank, Concurrent
 
 Audit is desirable.
 
 2
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Further, the minimum areas of coverage which are to be included in the formats, under
 
@@ -1413,11 +1408,11 @@ The broad areas to be covered under Concurrent Audit shall be based on identifie
 
 the auditee unit and must include random transactions, testing of sufficiently large sample
 
-of  such  transactions,  wherever  required.    The  scope  of  work  to  be  entrusted  to  the
+of such transactions, wherever required. The scope of work to be entrusted to the
 
 Concurrent Auditors, coverage of business/branches, etc. is to be decided by Head-Audit
 
-with  due  approval  of  Audit  Committee  of  Board  (“ACB”).  The  detailed  scope  of  the
+with due approval of Audit Committee of Board (“ACB”). The detailed scope of the
 
 Concurrent Audit may be defined and approved by ACB.
 
@@ -1425,13 +1420,13 @@ Concurrent Audit may be defined and approved by ACB.
 
 Selection of the Branches and other offices for Concurrent Audit:
 
-Head  –  Audit  /  ED  –  Audit  may  identify  the  branches  and  other  units  /  offices  for
+Head – Audit / ED – Audit may identify the branches and other units / offices for
 
 Concurrent Audit from time to time. Audit Committee of Board would be kept informed
 
-of  the  developments  /  progress  by  way  of  reporting  of  the  significant  observations
+of the developments / progress by way of reporting of the significant observations
 
-through  the  minutes  of  ACE  on  regular  basis,  in  case  of  branches  /  units  which  are
+through the minutes of ACE on regular basis, in case of branches / units which are
 
 managed by ZAO. In case of units handled by IAD – HO, the same shall be reported to
 
@@ -1439,7 +1434,7 @@ ACB by way of reporting of the significant observations.
 
 The Concurrent Audit assignments may be undertaken internally by the Bank's Officers
 
-(including retired officers not exceeding age beyond 70  years) and may also outsourced
+(including retired officers not exceeding age beyond 70 years) and may also outsourced
 
 to external audit firms. Head-Audit to identify the audits to be undertaken by outsourced
 
@@ -1447,7 +1442,7 @@ agency.
 
 The retired officers identified for Concurrent Audit need to be experienced, well trained
 
-and  sufficiently  senior  and  would  have  no  dealings  in  the  branch/unit/centres  where
+and sufficiently senior and would have no dealings in the branch/unit/centres where
 
 Concurrent Audit is to be conducted. [Experience of more than 10 years and in the grade
 
@@ -1455,7 +1450,7 @@ of Assistant General Manager and above would be considered for the same].
 
 3
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 5.
 
@@ -1469,13 +1464,13 @@ Audit assignments: -
 
 (b) The firm should have standing of minimum five years for audit of branches. The
 
-firm  shall  be  selected  from  the  RBI  panel  whose  firm  has  the  RBI  Unique  code
+firm shall be selected from the RBI panel whose firm has the RBI Unique code
 
 and is empanelled with us for Concurrent Audit. A separate category / panel of CA
 
-firms  for  Concurrent  Audit  assignments  are  not  available  on  RBI’s  web-site.
+firms for Concurrent Audit assignments are not available on RBI’s web-site.
 
-However,  the  RBI’s  norms  for  categorization  of  CA  firms  for  appointment  as
+However, the RBI’s norms for categorization of CA firms for appointment as
 
 Branch Statutory Auditors of PSBs are available. In light of the above, Concurrent
 
@@ -1488,18 +1483,18 @@ No.
 
 Branch category
 
-1  LCG,  NMG  branches,
+1 LCG, NMG branches,
 
 Treasury
 
-2  MCG
-3  Trade Finance Centres
-4  RBG,
+2 MCG
+3 Trade Finance Centres
+4 RBG,
 
 Credit
 RAC,
-Solutions  Centres  Hubs
-(CSC  Hubs),  NBS,  (other
+Solutions Centres Hubs
+(CSC Hubs), NBS, (other
 than Treasury)
 
 Eligible
@@ -1512,29 +1507,29 @@ I & II
 I & II
 I, II, III & IV
 
-(c) Preference  shall  be  given  to  the  firms  where  the  partners  themselves  were  ex-
+(c) Preference shall be given to the firms where the partners themselves were ex-
 
-bankers  or  the  firm  has  got  tie-up  with ex-bankers  with  requisite  experience  and
+bankers or the firm has got tie-up with ex-bankers with requisite experience and
 
-exposure,  the  firms  having  qualified  Information  System  Auditor  (CISA/DISA)
+exposure, the firms having qualified Information System Auditor (CISA/DISA)
 
-with  necessary  exposure  of  systems  audit  and  CA  firms  wherein  partners  have
+with necessary exposure of systems audit and CA firms wherein partners have
 
 completed the ‘Certificate Course in Concurrent Audit’ conducted by ICAI.
 
-(d) It  is  to  be  ensured  that  the  audit  firm  or  any  sister  /  associate  concern  are  not
+(d) It is to be ensured that the audit firm or any sister / associate concern are not
 
 conducting the statutory audit of the Bank or any of its branches.
 
 4
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-(e) The  firm  should  have  necessary  exposure  in  conducting  Concurrent  Audit  of  the
+(e) The firm should have necessary exposure in conducting Concurrent Audit of the
 
 Bank branches for a few public sector / major private sector banks.
 
-(f) The  firm  should  have  necessary  office  set  up  and  adequate  personnel  to  ensure
+(f) The firm should have necessary office set up and adequate personnel to ensure
 
 proper deployment and timely completion of the assignments.
 
@@ -1546,27 +1541,27 @@ format prescribed by the Bank.
 
 misconduct, negligence or any serious acts of omission or commission are noticed
 
-in  the  working  of  the  Concurrent  Auditors,  their  appointment  may  be  cancelled
+in the working of the Concurrent Auditors, their appointment may be cancelled
 
 after giving them reasonable opportunity to be heard and the fact shall be reported
 
 by the Bank to ACB/ ICAI / RBI under the guidelines from time to time.
 
-(i) The  firm  should  not  sub-contract  the  audit  work  assigned  to  any  outside  firm  or
+(i) The firm should not sub-contract the audit work assigned to any outside firm or
 
 other persons even though such persons are qualified chartered accountants.
 
 (j) A declaration to be furnished by the firm that credit facilities availed by the firm or
 
-partners  or  firms  in  which  they  are  partners  or  directors  including  any  facility
+partners or firms in which they are partners or directors including any facility
 
 availed by a third party for which the firm or its partners are guarantor/s have not
 
-turned  or  are  existing  as  non-  performing  assets  as  per  the  prudential  norms  of
+turned or are existing as non- performing assets as per the prudential norms of
 
-RBI.  In  case  the  declaration  is  found  incorrect,  the  assignment  would  get
+RBI. In case the declaration is found incorrect, the assignment would get
 
-terminated  besides  the  firm  being  liable  for  any  action  under  ICAI  /  RBI
+terminated besides the firm being liable for any action under ICAI / RBI
 
 guidelines.
 
@@ -1578,57 +1573,57 @@ on a case-to-case basis.
 
 Appointment of Concurrent Auditors, their fees and other conditions:
 
-a.  The  appointment  of  Concurrent  Auditors  for  various  Concurrent  Audit
+a. The appointment of Concurrent Auditors for various Concurrent Audit
 
-assignments  shall  be  approved  by  CGM  –  Audit  centrally  based  on  the
+assignments shall be approved by CGM – Audit centrally based on the
 
 recommendations of Committee of two General Managers at IAD-HO. Names of
 
-firms would be identified for each assignment and same would be  recommended
+firms would be identified for each assignment and same would be recommended
 
 taking into account their experience and exposure, similar activity carried out for
 
 5
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 the Bank or other banks, availability of adequate trained resources, location of the
 
-audit  unit  etc.    The  same  would  need  to  be  informed/  reported  to  Head-Audit
+audit unit etc. The same would need to be informed/ reported to Head-Audit
 
 before appointment.
 
-b.  Head-Audit  shall  be  responsible  for  the  quality  review  of  the  work  of  the
+b. Head-Audit shall be responsible for the quality review of the work of the
 
 Concurrent Auditors (including skill sets of the staff employed).
 
-c.  The  monthly  fees  payable  to  the  auditors  shall  be  approved  by  the  delegated
+c. The monthly fees payable to the auditors shall be approved by the delegated
 
 authority on the recommendation of said Committee taking into consideration the
 
 nature of assignment and within the maximum fees approved by Audit Committee
 
-of Board.  The remuneration shall be commensurate with the scope and coverage
+of Board. The remuneration shall be commensurate with the scope and coverage
 
-of  audit,  skill  sets  required  for  the  assignment,  number  of  audit  staff  to  be
+of audit, skill sets required for the assignment, number of audit staff to be
 
 deployed and the time to be devoted for the assignment.
 
-d.  In view of large corporate exposure by way of term loans and working capital at
+d. In view of large corporate exposure by way of term loans and working capital at
 
 major centers, a team comprising CGM-Audit and GM (Audit) could identify the
 
-prospective  CA  firms  to  ensure  that  the  Bank  gets  qualified  and  experienced
+prospective CA firms to ensure that the Bank gets qualified and experienced
 
 auditors.
 
-e.  The tenure of the Concurrent Audit would be initially for one year and would be
+e. The tenure of the Concurrent Audit would be initially for one year and would be
 
 extended for a further period of two years (overall three years).
 
-f.  After  completion  of  specific  period,  the  firms  may  be  considered  for  audit
+f. After completion of specific period, the firms may be considered for audit
 
-assignment  in  other  locations  or  areas.  Cooling  period  of  two  years  would  be
+assignment in other locations or areas. Cooling period of two years would be
 
 observed for a firm to become eligible for appointment in the same audit unit. This
 
@@ -1636,27 +1631,27 @@ will be purely at the discretion of the Bank and no rights whatsoever accrue to 
 
 firm for such appointment.
 
-g.  The  tenure  of  the  Concurrent  Auditors  should  not  be  more  than  05  years  on  a
+g. The tenure of the Concurrent Auditors should not be more than 05 years on a
 
 continuous basis.
 
-h.  At any one point of time, not more than one audit assignment would be awarded to
+h. At any one point of time, not more than one audit assignment would be awarded to
 
-any  single  firm.  An  audit  assignment  that  needs  to  be  carried  out  across  the
+any single firm. An audit assignment that needs to be carried out across the
 
 branches / units at different locations would be considered as a single assignment
 
 for this purpose.
 
-i.  The  Concurrent  Auditor  should  adhere  to  the  audit  coverage  strictly  as  per  the
+i. The Concurrent Auditor should adhere to the audit coverage strictly as per the
 
 6
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-scope  as  may  be  decided  by  the  Bank  /  regulatory  authorities  from  time  to  time.
+scope as may be decided by the Bank / regulatory authorities from time to time.
 
-The  detailed  scope  of  the  Concurrent  Audit  should  be  clearly  and  uniformly
+The detailed scope of the Concurrent Audit should be clearly and uniformly
 
 determined for the bank as a whole by the bank's Audit Department in consultation
 
@@ -1664,99 +1659,99 @@ with the Bank’s Audit Committee of Executives (ACE) and the same be reported
 
 to Audit Committee of the Board of Directors (ACB) by way of minutes.
 
-j.  The Concurrent Auditors should not undertake any other activities / assignment on
+j. The Concurrent Auditors should not undertake any other activities / assignment on
 
-behalf  of  the  branch  or  unit  without  obtaining  the  concurrence  of  the  audit
+behalf of the branch or unit without obtaining the concurrence of the audit
 
 department in writing.
 
-k.  No  out  of  pocket  expenses  or  travelling  allowance  /  halting  allowance  would  be
+k. No out of pocket expenses or travelling allowance / halting allowance would be
 
 paid to the Concurrent Audit firms for carrying out the assignment. However, the
 
-service tax, education  cess etc. would be paid as applicable from  time to time in
+service tax, education cess etc. would be paid as applicable from time to time in
 
-addition  to  the  basic  fees.  The  payment  to  the  Concurrent  Auditors  would  be
+addition to the basic fees. The payment to the Concurrent Auditors would be
 
 subject to deduction of tax at source at appropriate rates. The Concurrent Auditors
 
-would  need  to  paid  travel  allowance  for  the  units  visited  by  the  auditors  in  a
+would need to paid travel allowance for the units visited by the auditors in a
 
-month.  All  necessary  certificates  would  be  given  by  the  audit  firm  under  its
+month. All necessary certificates would be given by the audit firm under its
 
-letterhead  without  any  additional  certification  fee.  The  certificates  required  shall
+letterhead without any additional certification fee. The certificates required shall
 
-be  conveyed  to  the  Concurrent  Auditors  by  audit  department  /  auditee  unit
+be conveyed to the Concurrent Auditors by audit department / auditee unit
 
-(Indicative  list  of  certification  currently  needed  are  (Bills  of  Entry  verification,
+(Indicative list of certification currently needed are (Bills of Entry verification,
 
 A1/A2 Forms, Interest Equalization Certificates etc.).
 
-l.  The  Concurrent  Auditors  would  give  rating  or  grade  either  numerical  or  phrased
+l. The Concurrent Auditors would give rating or grade either numerical or phrased
 
 one for the audit entity. This rating should be based on observations about branch
 
-functioning.  All  observations  relating  to  fraud,  FTNPA/quick  mortality,  non-
+functioning. All observations relating to fraud, FTNPA/quick mortality, non-
 
 creation of security, income leakage detected and breaches for more than 10% of
 
-the  sample  size  will  be  treated  as  high  risk  observations.      The  Concurrent
+the sample size will be treated as high risk observations. The Concurrent
 
 Auditors would need to define the risk severity of the observations made by them.
 
-The  definitions  of  Risk  Severity  as  High  Risk,  Medium  Risk  and  Low  Risk  are
+The definitions of Risk Severity as High Risk, Medium Risk and Low Risk are
 
 given in Appendix-II.
 
-m. A  detailed  checklist  and  other  operating  guidelines  will  be  provided  to  the
+m. A detailed checklist and other operating guidelines will be provided to the
 
 concurrent auditors. Necessary training / consultation required would be provided
 
 7
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 to them for enhancing the quality of the audit. They would be made aware of the
 
-guidelines  and  circulars  issued  subsequent  to  commencement  of  assignment  and
+guidelines and circulars issued subsequent to commencement of assignment and
 
 having impact on the concurrent audit, to keep them abreast of the changes in the
 
 operational and regulatory guidelines.
 
-n.  Necessary  arrangement  should  be  made  for  providing  space,  workstation  and
+n. Necessary arrangement should be made for providing space, workstation and
 
-access  to  systems  (viewing  rights  only)  to  the  Concurrent  Auditors  for  ensuring
+access to systems (viewing rights only) to the Concurrent Auditors for ensuring
 
-smooth  conduct  of  audit  assignment.  This  would  be  the  responsibility  of  the
+smooth conduct of audit assignment. This would be the responsibility of the
 
 controller of the audit unit / Branch Head.
 
-o.  The Bank will prescribe structured formats for the audit reports and also stipulate
+o. The Bank will prescribe structured formats for the audit reports and also stipulate
 
 the time limits for submission of the reports. The audit formats would be reviewed
 
-on  an  annual  basis.  The  firms  should  strictly  adhere  to  the  format  and  the  time
+on an annual basis. The firms should strictly adhere to the format and the time
 
-limit.  Bank  may  prescribe  different  periodicity  for  different  reports  within  the
+limit. Bank may prescribe different periodicity for different reports within the
 
 same audit unit.
 
-p.  Whenever  fraudulent  transactions  are  detected,  they  should  immediately  be
+p. Whenever fraudulent transactions are detected, they should immediately be
 
-reported  to  IAD-HO  as  also  to  the  Chief  Vigilance  Officer  as  well  as  Branch
+reported to IAD-HO as also to the Chief Vigilance Officer as well as Branch
 
-Managers  concerned  (unless  the  branch  manager  is  involved)  by  the  Concurrent
+Managers concerned (unless the branch manager is involved) by the Concurrent
 
 Auditor.
 
-q.  The  major  deficiencies/  aberrations  noticed  during  audit  should  be  immediately
+q. The major deficiencies/ aberrations noticed during audit should be immediately
 
 highlighted
 
 to
 
-IAD-HO/Zonal/Controlling  Offices
+IAD-HO/Zonal/Controlling Offices
 
 of
 
@@ -1772,55 +1767,55 @@ Conduct and follow up of Concurrent Audits:
 
 a)
 
-The  timelines  for  submission  of  Concurrent  Audit  reports  would  be  as
+The timelines for submission of Concurrent Audit reports would be as
 
 under:
-CA  Report  to  be  released  by  the  Concurrent  Auditors  by  10th  of  the
+CA Report to be released by the Concurrent Auditors by 10th of the
 
 
 
 following month.
 
-  Auditee  Units  to  give  the  compliances  to  the  CA  Report  by  20th  of  the
+ Auditee Units to give the compliances to the CA Report by 20th of the
 
 following month.
 
-  After submission of the compliances in Audit Management System (‘AMS’)
+ After submission of the compliances in Audit Management System (‘AMS’)
 
 8
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 by the Auditee Unit, the Concurrent Auditor is required to submit the final
-copy  of  the  vetted  compliance  Audit  report  by  30th  of  the  following
+copy of the vetted compliance Audit report by 30th of the following
 
 month.
 
-b)  If  the  report  is  delayed  without  any  proper  justification  beyond  10th  of  the
+b) If the report is delayed without any proper justification beyond 10th of the
 
 following month, 5% of the fees payable will be deducted for every 05 days or any
 
-part  thereof  or  further  delay.    The  authority  for  deciding  whether  to  levy  the
+part thereof or further delay. The authority for deciding whether to levy the
 
 penalty for delay or not would be with CGM-IAD.
 
-c)  The Concurrent Auditors will share audit observations/audit report  to the auditee
+c) The Concurrent Auditors will share audit observations/audit report to the auditee
 
-units frequently, at least once in a week. They  shall provide immediate guidance
+units frequently, at least once in a week. They shall provide immediate guidance
 
-on  the  corrective  and  preventive  measures  that  can  be  initiated  by  the  auditee  to
+on the corrective and preventive measures that can be initiated by the auditee to
 
-rectify  the  deficiencies/observations  on  the  spot  and  thus  minimize  the  audit
+rectify the deficiencies/observations on the spot and thus minimize the audit
 
-observations  and
+observations and
 
 improve
 
-the  adherence.  Serious
+the adherence. Serious
 
-irregularities  shall  be
+irregularities shall be
 
-straightaway  reported  to  the  Controlling  Offices/  Head  Offices  for  immediate
+straightaway reported to the Controlling Offices/ Head Offices for immediate
 
 action. The observations relating to (a) Fraud, (b) Quick Mortality, (c) items that
 
@@ -1830,43 +1825,43 @@ business (25% or more of outstanding / volume of business during previous year),
 
 shall be treated as serious irregularities.
 
-d)  Concurrent  Auditor  should  comment  on  the  identification  &  monitoring  of  non-
+d) Concurrent Auditor should comment on the identification & monitoring of non-
 
-performing  assets,  including  FTNPA,  Quick  Mortality  cases,  SMA  status  of
+performing assets, including FTNPA, Quick Mortality cases, SMA status of
 
-accounts,  follow  up  of  NPAs  by  the  branch,  etc.  Further,  Concurrent  Auditor  is
+accounts, follow up of NPAs by the branch, etc. Further, Concurrent Auditor is
 
 required to verify and comment on exceptional transactions, which if not corrected
 
-immediately  may  result  in  slippage  of  accounts  in  quality  due  to  non-financial
+immediately may result in slippage of accounts in quality due to non-financial
 
 reasons (such as non-renewal of limits, not entering DP in the system, etc).
 
-e)  Each branch / audit unit should identify nodal officer/s as a single point contact for
+e) Each branch / audit unit should identify nodal officer/s as a single point contact for
 
-coordinating  the  Concurrent  Audit  work.  The  audit  units  should  ensure
+coordinating the Concurrent Audit work. The audit units should ensure
 
 rectification of the deficiencies without any loss of time so as to achieve the very
 
 purpose of Concurrent Audit.
 
-f)  Head-Audit / CGM – Audit to put in place necessary systems to initiate follow up
+f) Head-Audit / CGM – Audit to put in place necessary systems to initiate follow up
 
-on  the  Concurrent  Audit  reports  with  the  respective  branches  /  units  under
+on the Concurrent Audit reports with the respective branches / units under
 
 9
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-intimation  to  the  controllers  of  the  functions.  However  the  Controllers  will  be
+intimation to the controllers of the functions. However the Controllers will be
 
 responsible for further follow up with the branches / units to ensure compliance.
 
-g)  A  formal  wrap-up  discussion  of  branches  including  non-branch  segments  along
+g) A formal wrap-up discussion of branches including non-branch segments along
 
-with  Concurrent  Auditors  shall  be  held  every  month  before  release  of  the
+with Concurrent Auditors shall be held every month before release of the
 
-Concurrent  Audit  Reports.  As  a  supervisory  control,  a  formal  meeting  by
+Concurrent Audit Reports. As a supervisory control, a formal meeting by
 
 GM/DGM-ZAO shall be conducted with the Concurrent Auditors and auditee unit
 
@@ -1874,136 +1869,136 @@ once in every three months. This meeting shall be conducted in every region and
 
 the minutes of the same shall be forwarded to CGM – Audit.
 
-h)  All  serious  irregularities  are  to  be  submitted  by  the  Concurrent  Auditor  to  the
+h) All serious irregularities are to be submitted by the Concurrent Auditor to the
 
-concerned ZAO, which are to be reviewed by  Zonal Audit Committee (ZAC) on
+concerned ZAO, which are to be reviewed by Zonal Audit Committee (ZAC) on
 
-quarterly  basis  and  the  minutes  are  to  be  submitted  to  Head  Office.    A  quarterly
+quarterly basis and the minutes are to be submitted to Head Office. A quarterly
 
 review containing important features brought out during Concurrent Audits should
 
 be placed before the Audit Committee of Executives (ACE) and Audit Committee
 
-of  Board  (ACB).    Significant  Zone  wise  observations  of  the  Concurrent  Audit
+of Board (ACB). Significant Zone wise observations of the Concurrent Audit
 
-reports would be placed before the ZAC, ACE & ACB.  Any serious observation
+reports would be placed before the ZAC, ACE & ACB. Any serious observation
 
-needs  to  be  placed  before  Audit  Committee  of  Board  at  the  first  available
+needs to be placed before Audit Committee of Board at the first available
 
 opportunity.
 
-i)  The  pending  issues  of  the  previous  reports  need  to  be  mentioned  as  a  persisting
+i) The pending issues of the previous reports need to be mentioned as a persisting
 
 irregularity/ deficiency in the subsequent reports. If irregularities continue without
 
-rectification  for
+rectification for
 
-three  months,
+three months,
 
-it  has
+it has
 
-to  be  escalated
+to be escalated
 
-to  IAD-HO  for
+to IAD-HO for
 
 review/guidance.
 
-j)  Compliance  of  un-rectified  irregularities  of  serious  nature,  which  may  lead  to
+j) Compliance of un-rectified irregularities of serious nature, which may lead to
 
 fraud/ monetary loss to the Bank/ slippage in the quality of asset shall be put up to
 
 ACE once in a quarter for review/ guidance.
 
-k)  While carrying out internal audits, the quality of compliance with the Concurrent
+k) While carrying out internal audits, the quality of compliance with the Concurrent
 
 Audit report would be covered and commented upon by the Internal Auditors.
 
-l)  The performance of the Concurrent Auditors shall be monitored by the Zonal
+l) The performance of the Concurrent Auditors shall be monitored by the Zonal
 
-Audit  Offices,  on  a  monthly  basis.  If  any  shortcomings  are  noticed  in  the
+Audit Offices, on a monthly basis. If any shortcomings are noticed in the
 
 quality of audit, attendance, areas of coverage, reporting etc., the same shall
 
 10
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-be  advised  by  the  respective  Zonal  Audit  Office  to  the  Concurrent  Auditor
+be advised by the respective Zonal Audit Office to the Concurrent Auditor
 
-for improvement.  The Bank would review the performance of all Concurrent
+for improvement. The Bank would review the performance of all Concurrent
 
-Auditors on an annual basis in April of every year.  The performance review
+Auditors on an annual basis in April of every year. The performance review
 
-and  rating  of  the  Concurrent  Auditors  shall  be  done  on  the  basis  of
+and rating of the Concurrent Auditors shall be done on the basis of
 
-parameters  given  under  Appendix–  III  and  GM-ZAO  shall  recommend  for
+parameters given under Appendix– III and GM-ZAO shall recommend for
 
 approval by CGM-IAD based on the parameters.
 
 m) The Bank shall give feedback to Concurrent Auditors on the frauds involving the
 
-Branch  audited  by  them.    Further,  since  incidence  of  fraud  indicates  inherent
+Branch audited by them. Further, since incidence of fraud indicates inherent
 
 deficiencies in internal controls of a Branch, modus operandi of frauds identified
 
 in a branch are to be shared with all Concurrent Auditors.
 
-n)  To avoid conflict of interest, an undertaking should be taken from the Concurrent
+n) To avoid conflict of interest, an undertaking should be taken from the Concurrent
 
 Auditors that they will not have any professional or commercial relationship with
 
 the borrowers of the Branch / Department which they are auditing.
 
-o)  The Auditor should sign on the Do’s & Don’ts statement in order to have proper
+o) The Auditor should sign on the Do’s & Don’ts statement in order to have proper
 
 arms length relationship with the Branch / Department which they are conducting
 
 Audit.
 
-p)  It  should  be  ensured  that  there  is  no  delay  in  submission  of  the  monthly  audit
+p) It should be ensured that there is no delay in submission of the monthly audit
 
-report  and  the  deadline  for  submission  of  audit  reports  needs  to  be  adhered  to
+report and the deadline for submission of audit reports needs to be adhered to
 
-strictly.  If  frequent  delays  are  observed  without  prior  intimation  of  sufficient
+strictly. If frequent delays are observed without prior intimation of sufficient
 
 reasons, Bank may disengage the assignment.
 
-q)  Wherever a Chartered  Accountant certificate, property  valuation certificate, legal
+q) Wherever a Chartered Accountant certificate, property valuation certificate, legal
 
-certificate,  guarantee/line  of  credit  or  any  other  third  party  certification  is
+certificate, guarantee/line of credit or any other third party certification is
 
 submitted by the borrower, the bank should independently verify the authenticity
 
-of  such  certification  by  directly  communicating  with  the  concerned  authority
+of such certification by directly communicating with the concerned authority
 
 issuing the certificate; indirect confirmation may also be resorted to, i.e. indicating
 
-to  the  issuer  that  in  case  there  is  no  response  by  a  certain  deadline,  it  would  be
+to the issuer that in case there is no response by a certain deadline, it would be
 
 assumed that the certificate is genuine.
 
-r)  Wherever securities beyond a threshold limit are not insured/ under-insured or the
+r) Wherever securities beyond a threshold limit are not insured/ under-insured or the
 
-insurance  policy  has  expired  and  not  renewed,  or  Bank  clause  is  not  included  in
+insurance policy has expired and not renewed, or Bank clause is not included in
 
 11
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-the policy, the Concurrent Auditor shall submit a special  report to  the concerned
+the policy, the Concurrent Auditor shall submit a special report to the concerned
 
 ZAO.
 
-8.  Performance  Review  of  the  Concurrent  Audit  System  and  monitoring
-mechanism:
+8.  Performance Review of the Concurrent Audit System and monitoring
+    mechanism:
 
-a)  The  Concurrent  Audit  system  should  be  subjected  to  annual  review  as  prescribed
+a) The Concurrent Audit system should be subjected to annual review as prescribed
 
 under RBI guidelines. Annual review shall comprise of areas like (indicative only)
 
-regulatory  guidelines,  activities  which  are  covered  under  Concurrent  Audit,  brief
+regulatory guidelines, activities which are covered under Concurrent Audit, brief
 
-process  on  the  appointment  of  Concurrent  Auditors,  their  tenure,  mechanism  of
+process on the appointment of Concurrent Auditors, their tenure, mechanism of
 
 performance appraisal of the auditors, fees structure paid to the auditors, process of
 
@@ -2011,71 +2006,71 @@ submission of Concurrent Audit reports, reporting of the significant observation
 
 ZAC / ACE, revenue leakages detected by the Concurrent Auditors and its recovery,
 
-etc.  Such  annual  review  of  above  mentioned  areas  would  be  carried  out  by
+etc. Such annual review of above mentioned areas would be carried out by
 
 September end every year.
 
-b)  Monitoring Mechanism:
+b) Monitoring Mechanism:
 
-  The performance of the Concurrent Auditors is to be monitored and reviewed on
+ The performance of the Concurrent Auditors is to be monitored and reviewed on
 
 a monthly basis and the review has to be reported to the Zonal Audit Committee
 
-(ZAC)  on  a  quarterly  basis.  Feedback  on  performance  of  the  auditors  to  be
+(ZAC) on a quarterly basis. Feedback on performance of the auditors to be
 
 obtained from the auditee unit on quarterly basis.
 
-  The agenda and minutes of the meeting shall be forwarded to IAD – HO within a
+ The agenda and minutes of the meeting shall be forwarded to IAD – HO within a
 
 week from the date of ZAC meeting.
 
-  The review memorandum shall comprise all important areas (indicative only) like
+ The review memorandum shall comprise all important areas (indicative only) like
 
-timely  submission  of  report  and  vetting  of  report,  attendance  of  the  audit  staff,
+timely submission of report and vetting of report, attendance of the audit staff,
 
 coverage of the audit, content quality, observation on genuineness of title deeds,
 
-pointing  out  observations  concurrently  for  rectification,  visit  to  Borrower’s
+pointing out observations concurrently for rectification, visit to Borrower’s
 
-location,  persistent  irregularities,  revenue  leakages  detected  by  the  Concurrent
+location, persistent irregularities, revenue leakages detected by the Concurrent
 
 Auditors and its recovery, etc.
 
-  Instances  of  unsatisfactory  performance  of  the  Concurrent  Auditor  inspite  of
+ Instances of unsatisfactory performance of the Concurrent Auditor inspite of
 
 written communication shall be forwarded to IAD – HO for necessary action.
 
 12
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-  The  minutes  of  the  ZAC  Meetings  would  be  reported  to  ACE  for  directions,  if
+ The minutes of the ZAC Meetings would be reported to ACE for directions, if
 
 any.
 
-  Wrap up discussions to be held every month by the Concurrent Auditors
+ Wrap up discussions to be held every month by the Concurrent Auditors
 
-  Formal meeting of the Concurrent Auditors and the auditee unit to be held every
+ Formal meeting of the Concurrent Auditors and the auditee unit to be held every
 
-quarter  by  the  ZAO  to  give  feedback  on  Concurrent  Auditor’s  performance  and
+quarter by the ZAO to give feedback on Concurrent Auditor’s performance and
 
 guidance for better reporting.
 
-  Feedback  to  be  given  to  auditors  for  improvement  by  way  of  written
+ Feedback to be given to auditors for improvement by way of written
 
 communication.
 
-  Orientation/Familiarisation  Programme  for  all  Concurrent  Auditors  to  be
+ Orientation/Familiarisation Programme for all Concurrent Auditors to be
 
 conducted every year.
 
-  The Zonal Audit Offices would be guided by the Operational guidelines issued by
+ The Zonal Audit Offices would be guided by the Operational guidelines issued by
 
 IAD Corporate Centre
 
-c)    The guidelines issued by Reserve Bank of India from time to time with regard to
+c) The guidelines issued by Reserve Bank of India from time to time with regard to
 
-supervision  and  control  of  banking  operations  by  the  banks  shall  prevail  over  this
+supervision and control of banking operations by the banks shall prevail over this
 
 Policy.
 
@@ -2083,35 +2078,35 @@ Policy.
 
 Periodicity of review:
 
-The  Concurrent  Audit  Policy  shall  be  subjected  to  annual  review  and  referred  to
+The Concurrent Audit Policy shall be subjected to annual review and referred to
 
 ACE, ACB and thereafter Board.
 
-10.  Any modifications in the Concurrent Audit Policy would be done after the approval
+10. Any modifications in the Concurrent Audit Policy would be done after the approval
 
-of  Head-Audit  and  subsequently  the  same  would  be  reported  to  ACE,  ACB  and
+of Head-Audit and subsequently the same would be reported to ACE, ACB and
 
 thereafter the Board.
 
-******************
+---
 
 13
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Appendix-I
 
 Minimum Areas of Coverage
 
-(a)  Cash transactions including physical verification of cash, etc.
+(a) Cash transactions including physical verification of cash, etc.
 
-(b)  Loans & Advances including physical verification of securities, delegation of Powers for
+(b) Loans & Advances including physical verification of securities, delegation of Powers for
 
 sanction, Security Charge Creation, end use verification of funds, monitoring of accounts
 
 with excess drawings, monitoring of projects, etc.
 
-(c)  Adherence  to  KYC  /  AML  guidelines  including  monitoring  of  transactions  in  accounts,
+(c) Adherence to KYC / AML guidelines including monitoring of transactions in accounts,
 
 compliance with Foreign Account Tax Compliance Act (FATCA) and Common Reporting
 
@@ -2119,58 +2114,58 @@ Standards (CRS), monitoring of transactions in new accounts/staff accounts, repo
 
 CTR/STR, etc.
 
-(d)  Remittances/  Bills  for  Collection  including  SWIFT  transactions,  monitoring  of  overdue
+(d) Remittances/ Bills for Collection including SWIFT transactions, monitoring of overdue
 
 statements (bills purchased / discounted / negotiated, etc.).
 
-(e)  House  Keeping  including  reconciliation  of  accounts,  monitoring  of  General  Ledger/
+(e) House Keeping including reconciliation of accounts, monitoring of General Ledger/
 
 Subsidiary General Ledger/ Parking Accounts, opening of internal accounts, etc.
 
-(f)  Treasury operations.
+(f) Treasury operations.
 
-(g)  Non fund based business.
+(g) Non fund based business.
 
-(h)  Foreign Exchange transactions.
+(h) Foreign Exchange transactions.
 
-(i)  Clearing transactions.
+(i) Clearing transactions.
 
-(j)  Verification of Merchant Banking Business.
+(j) Verification of Merchant Banking Business.
 
-(k)  Verification of Credit Card / Debit card business.
+(k) Verification of Credit Card / Debit card business.
 
-(l)  Conduct of employees, mis-selling of products, etc.
+(l) Conduct of employees, mis-selling of products, etc.
 
-(m)  Compliance to RBI guidelines and internal Policy guidelines issued from time to time.
+(m) Compliance to RBI guidelines and internal Policy guidelines issued from time to time.
 
 The above listed items are only an indicative list.
 
 14
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Appendix-II
 Risk Severity of Observations
 
 High Risk severity is defined as audit findings which
 
-  highlight significant matters requiring urgent management action;
+ highlight significant matters requiring urgent management action;
 
-  indicate  a  weakness  in  the  internal  control  system  which  presents  a  significant  risk  of  error
+ indicate a weakness in the internal control system which presents a significant risk of error
 
 that may have a material impact on the financial statements of the Bank;
 
-  indicate a weakness where the risk of error, though less likely, involves amounts which may
+ indicate a weakness where the risk of error, though less likely, involves amounts which may
 
 have a major impact on the financial statements;
 
-  indicate a weakness which puts the assets of the Bank at risk; and/ or
+ indicate a weakness which puts the assets of the Bank at risk; and/ or
 
-  Indicate a fraud or suspicion of a fraud.
+ Indicate a fraud or suspicion of a fraud.
 
 Medium Risk severity is defined as audit findings which
 
-  highlight less significant matters requiring management action;
+ highlight less significant matters requiring management action;
 
 
 
@@ -2178,17 +2173,17 @@ indicate weakness in the internal control system which presents a significant ri
 
 will not have a material impact on the financial statements;
 
-  suggest constructive suggestions which might result in significant improvement in efficiency
+ suggest constructive suggestions which might result in significant improvement in efficiency
 
 or reduction in cost; and
 
-  suggest improvements relating to the prevailing regulatory environment or procedures which
+ suggest improvements relating to the prevailing regulatory environment or procedures which
 
 are necessary to avoid minor or technical breaches
 
 Low Risk severity is defined as audit findings which
 
-  highlight trivial matters which require to be brought to the attention of the management but
+ highlight trivial matters which require to be brought to the attention of the management but
 
 do not warrant any action;
 
@@ -2202,23 +2197,23 @@ which do not have a material impact on the internal control environment
 
 isolated errors
 
-  sundry  regulatory  related  errors  which  have  been  rectified  and  which  are  unlikely  to  cause
+ sundry regulatory related errors which have been rectified and which are unlikely to cause
 
 criticism from the regulatory authorities, shareholders and customers
 
-  General suggestions relating to efficiency of staff or activity.
+ General suggestions relating to efficiency of staff or activity.
 
-The  above  listed  observations  are  only  an  indicative  list  and  may  include  additional
+The above listed observations are only an indicative list and may include additional
 
 observations.
 
 15
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 Appendix-III
 Performance Evaluation And Rating Of Concurrent Auditors Feedback Report
-For The Period Ended _____________
+For The Period Ended **\*\***\_**\*\***
 
 1
 2
@@ -2245,7 +2240,7 @@ Performance Evaluation
 
 Parameter
 
-Norms for Assigning score  Max. Marks
+Norms for Assigning score Max. Marks
 
 Marks
 awarde
@@ -2257,7 +2252,7 @@ Attendance
 
 2
 
-Visits  of  partner
+Visits of partner
 &
 attending
 briefing sessions
@@ -2326,7 +2321,7 @@ of the succeeding mth.
 
 5
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
 5
 
@@ -2335,7 +2330,7 @@ of the succeeding mth.
 Adequacy
 coverage
 quality of report
-a.  Quality
+a. Quality
 Coverage
 report
 
@@ -2345,10 +2340,10 @@ and
 and
 of
 
-b.  Comments  on
+b. Comments on
 compliance
 of
-KYC/AML  norms
+KYC/AML norms
 in new A/cs.
 
 c.
@@ -2360,7 +2355,7 @@ Asset
 as
 IRAC
 
-d.  Reporting  of
+d. Reporting of
 persisting
 irregularities
 regularly
@@ -2370,9 +2365,9 @@ of
 Effectiveness
 Concurrent
 Auditor
-a.  Efforts  put  in
+a. Efforts put in
 by and steps taken
-by  the  Concurrent
+by the Concurrent
 Auditors to get the
 irregularities
 and
@@ -2381,12 +2376,12 @@ leakage
 revenue
 recovered
 and
-overall  efforts  in
+overall efforts in
 bringing
 improvement
 Branch
 functioning.
-b.  Whether  there
+b. Whether there
 
 in
 
@@ -2463,11 +2458,11 @@ Unsatisfactory
 
 15
 
-                                                                                                                           Concurrent Audit Policy 2020
+Concurrent Audit Policy 2020
 
-was  any  instance
-of  the  Concurrent
-Auditor  pointing
+was any instance
+of the Concurrent
+Auditor pointing
 serious
 out
 irregularities
@@ -2497,12 +2492,12 @@ month.
 5*
 5*
 
-5*
+5\*
 100
 
 25
 
-*In case there is any instance of Concurrent Auditors not pointing out any of
+\*In case there is any instance of Concurrent Auditors not pointing out any of
 the above, zero marks may be given. If not, full marks to be given.
 
 OVERALL ASSESSMENT OF PERFORMANCE
@@ -2534,5 +2529,3 @@ Sign of GM –
 ZAO
 
 18
-
-

@@ -5,14 +5,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
-import { SaveCashVerificationSchema, type SaveCashVerificationInput } from "@/actions/audit-execution/schemas";
+import {
+  SaveCashVerificationSchema,
+  type SaveCashVerificationInput,
+} from "@/actions/audit-execution/schemas";
 import { saveCashVerification } from "@/actions/audit-execution/cash-verification";
 import { DenominationTable } from "./denomination-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
@@ -43,16 +52,18 @@ export function CashVerificationForm({
 }: CashVerificationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRetentionWarning, setShowRetentionWarning] = useState(false);
-  const [denominationData, setDenominationData] = useState<Record<string, number>>(
-    existingData?.denominationData || {}
-  );
+  const [denominationData, setDenominationData] = useState<
+    Record<string, number>
+  >(existingData?.denominationData || {});
   const [atmEntries, setAtmEntries] = useState<AtmEntry[]>(() => {
     if (existingData?.atmBalances) {
-      return Object.entries(existingData.atmBalances).map(([name, balance], idx) => ({
-        id: `${idx}`,
-        name,
-        balance,
-      }));
+      return Object.entries(existingData.atmBalances).map(
+        ([name, balance], idx) => ({
+          id: `${idx}`,
+          name,
+          balance,
+        }),
+      );
     }
     return [];
   });
@@ -72,9 +83,12 @@ export function CashVerificationForm({
 
   // Auto-compute cash in hand from denomination data
   useEffect(() => {
-    const total = Object.entries(denominationData).reduce((sum, [denom, count]) => {
-      return sum + parseInt(denom) * count;
-    }, 0);
+    const total = Object.entries(denominationData).reduce(
+      (sum, [denom, count]) => {
+        return sum + parseInt(denom) * count;
+      },
+      0,
+    );
     form.setValue("cashInHand", total);
   }, [denominationData, form]);
 
@@ -104,11 +118,15 @@ export function CashVerificationForm({
     setAtmEntries(atmEntries.filter((entry) => entry.id !== id));
   };
 
-  const handleAtmChange = (id: string, field: "name" | "balance", value: string | number) => {
+  const handleAtmChange = (
+    id: string,
+    field: "name" | "balance",
+    value: string | number,
+  ) => {
     setAtmEntries(
       atmEntries.map((entry) =>
-        entry.id === id ? { ...entry, [field]: value } : entry
-      )
+        entry.id === id ? { ...entry, [field]: value } : entry,
+      ),
     );
   };
 
@@ -116,17 +134,21 @@ export function CashVerificationForm({
     setIsSubmitting(true);
 
     // Convert ATM entries to record
-    const atmBalances = atmEntries.reduce((acc, entry) => {
-      if (entry.name && entry.balance > 0) {
-        acc[entry.name] = entry.balance;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const atmBalances = atmEntries.reduce(
+      (acc, entry) => {
+        if (entry.name && entry.balance > 0) {
+          acc[entry.name] = entry.balance;
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     const payload: SaveCashVerificationInput = {
       ...data,
       denominationData,
-      atmBalances: Object.keys(atmBalances).length > 0 ? atmBalances : undefined,
+      atmBalances:
+        Object.keys(atmBalances).length > 0 ? atmBalances : undefined,
     };
 
     const result = await saveCashVerification(payload);
@@ -151,9 +173,7 @@ export function CashVerificationForm({
       <Card>
         <CardHeader>
           <CardTitle>Cash Summary</CardTitle>
-          <CardDescription>
-            Cash position for {branchName}
-          </CardDescription>
+          <CardDescription>Cash position for {branchName}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -167,11 +187,11 @@ export function CashVerificationForm({
                 className="font-mono"
                 readOnly
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Auto-computed from denomination breakdown
               </p>
               {form.formState.errors.cashInHand && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {form.formState.errors.cashInHand.message}
                 </p>
               )}
@@ -188,7 +208,7 @@ export function CashVerificationForm({
                 placeholder="0.00"
               />
               {form.formState.errors.bookBalance && (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {form.formState.errors.bookBalance.message}
                 </p>
               )}
@@ -205,11 +225,11 @@ export function CashVerificationForm({
                   difference > 0
                     ? "text-green-600"
                     : difference < 0
-                    ? "text-red-600"
-                    : ""
+                      ? "text-red-600"
+                      : ""
                 }`}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Auto-computed: Cash in Hand - Book Balance
               </p>
             </div>
@@ -221,9 +241,7 @@ export function CashVerificationForm({
       <Card>
         <CardHeader>
           <CardTitle>Denomination Breakdown</CardTitle>
-          <CardDescription>
-            Count of each currency denomination
-          </CardDescription>
+          <CardDescription>Count of each currency denomination</CardDescription>
         </CardHeader>
         <CardContent>
           <DenominationTable
@@ -238,9 +256,7 @@ export function CashVerificationForm({
       <Card>
         <CardHeader>
           <CardTitle>ATM Balances</CardTitle>
-          <CardDescription>
-            Cash balances in ATMs (optional)
-          </CardDescription>
+          <CardDescription>Cash balances in ATMs (optional)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {atmEntries.map((entry) => (
@@ -251,7 +267,9 @@ export function CashVerificationForm({
                   id={`atm-name-${entry.id}`}
                   type="text"
                   value={entry.name}
-                  onChange={(e) => handleAtmChange(entry.id, "name", e.target.value)}
+                  onChange={(e) =>
+                    handleAtmChange(entry.id, "name", e.target.value)
+                  }
                   placeholder="e.g., ATM-01"
                   disabled={isSubmitting}
                 />
@@ -264,7 +282,11 @@ export function CashVerificationForm({
                   step="0.01"
                   value={entry.balance || ""}
                   onChange={(e) =>
-                    handleAtmChange(entry.id, "balance", parseFloat(e.target.value) || 0)
+                    handleAtmChange(
+                      entry.id,
+                      "balance",
+                      parseFloat(e.target.value) || 0,
+                    )
                   }
                   placeholder="0.00"
                   className="font-mono"
@@ -315,7 +337,7 @@ export function CashVerificationForm({
               disabled={isSubmitting}
             />
             {form.formState.errors.retentionLimit && (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {form.formState.errors.retentionLimit.message}
               </p>
             )}
@@ -326,9 +348,9 @@ export function CashVerificationForm({
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Retention Limit Exceeded</AlertTitle>
               <AlertDescription>
-                Cash in hand (₹{cashInHand.toLocaleString("en-IN")}) exceeds the retention
-                limit (₹{retentionLimit?.toLocaleString("en-IN")}). Please verify and
-                document the reason for excess cash.
+                Cash in hand (₹{cashInHand.toLocaleString("en-IN")}) exceeds the
+                retention limit (₹{retentionLimit?.toLocaleString("en-IN")}).
+                Please verify and document the reason for excess cash.
               </AlertDescription>
             </Alert>
           )}
@@ -352,7 +374,7 @@ export function CashVerificationForm({
             maxLength={2000}
           />
           {form.formState.errors.remarks && (
-            <p className="text-sm text-destructive">
+            <p className="text-destructive text-sm">
               {form.formState.errors.remarks.message}
             </p>
           )}
@@ -361,7 +383,10 @@ export function CashVerificationForm({
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button type="submit" disabled={isSubmitting || form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting || form.formState.isSubmitting}
+        >
           {isSubmitting ? "Saving..." : "Save Cash Verification"}
         </Button>
       </div>

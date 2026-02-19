@@ -11,7 +11,7 @@ export async function getQaSelfAssessments(
     assessmentYear?: number;
     iiaStandard?: string;
     gapIdentified?: boolean;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -19,16 +19,15 @@ export async function getQaSelfAssessments(
   return db.qaSelfAssessment.findMany({
     where: {
       tenantId,
-      ...(options?.assessmentYear && { assessmentYear: options.assessmentYear }),
+      ...(options?.assessmentYear && {
+        assessmentYear: options.assessmentYear,
+      }),
       ...(options?.iiaStandard && { iiaStandard: options.iiaStandard }),
       ...(options?.gapIdentified !== undefined && {
         gapIdentified: options.gapIdentified,
       }),
     },
-    orderBy: [
-      { assessmentYear: "desc" },
-      { iiaStandard: "asc" },
-    ],
+    orderBy: [{ assessmentYear: "desc" }, { iiaStandard: "asc" }],
   });
 }
 
@@ -37,7 +36,7 @@ export async function getQaSelfAssessments(
  */
 export async function getQaSelfAssessment(
   session: Session,
-  assessmentId: string
+  assessmentId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -52,7 +51,7 @@ export async function getQaSelfAssessment(
  */
 export async function getQaAssessmentsByYear(
   session: Session,
-  assessmentYear: number
+  assessmentYear: number,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -70,11 +69,10 @@ export async function getQaAssessmentsByYear(
     total: assessments.length,
     conforms: assessments.filter((a) => a.response === "CONFORMS").length,
     partiallyConforms: assessments.filter(
-      (a) => a.response === "PARTIALLY_CONFORMS"
+      (a) => a.response === "PARTIALLY_CONFORMS",
     ).length,
-    doesNotConform: assessments.filter(
-      (a) => a.response === "DOES_NOT_CONFORM"
-    ).length,
+    doesNotConform: assessments.filter((a) => a.response === "DOES_NOT_CONFORM")
+      .length,
     notApplicable: assessments.filter((a) => a.response === "NOT_APPLICABLE")
       .length,
     gapsIdentified: assessments.filter((a) => a.gapIdentified).length,
@@ -97,10 +95,7 @@ export async function getUnconvertedGaps(session: Session) {
       gapIdentified: true,
       issueCreated: false,
     },
-    orderBy: [
-      { assessmentYear: "desc" },
-      { iiaStandard: "asc" },
-    ],
+    orderBy: [{ assessmentYear: "desc" }, { iiaStandard: "asc" }],
   });
 }
 
@@ -109,7 +104,7 @@ export async function getUnconvertedGaps(session: Session) {
  */
 export async function getQaSummaryByStandard(
   session: Session,
-  assessmentYear: number
+  assessmentYear: number,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -238,9 +233,9 @@ export async function getAuditEffectivenessKpis(session: Session) {
           (sum, o) =>
             sum +
             Math.ceil(
-              (o.updatedAt.getTime() - o.createdAt.getTime()) / 86400000
+              (o.updatedAt.getTime() - o.createdAt.getTime()) / 86400000,
             ),
-          0
+          0,
         ) / closedObs.length
       : 0;
 
@@ -257,7 +252,7 @@ export async function getAuditEffectivenessKpis(session: Session) {
     select: { response: true },
   });
   const conforming = qaAssessments.filter(
-    (a) => a.response === "CONFORMS"
+    (a) => a.response === "CONFORMS",
   ).length;
   const qaConformanceRate =
     qaAssessments.length > 0 ? (conforming / qaAssessments.length) * 100 : 0;

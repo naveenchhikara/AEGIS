@@ -20,7 +20,11 @@ export interface TestResultInput {
 
 export interface ControlEffectivenessResult {
   score: number; // 0-100
-  rating: "HIGHLY_EFFECTIVE" | "EFFECTIVE" | "PARTIALLY_EFFECTIVE" | "INEFFECTIVE";
+  rating:
+    | "HIGHLY_EFFECTIVE"
+    | "EFFECTIVE"
+    | "PARTIALLY_EFFECTIVE"
+    | "INEFFECTIVE";
   totalTests: number;
   effectiveTests: number;
   partialTests: number;
@@ -45,7 +49,7 @@ export interface ControlEffectivenessResult {
  * @returns Effectiveness score and rating
  */
 export function calculateControlEffectiveness(
-  testResults: TestResultInput[]
+  testResults: TestResultInput[],
 ): ControlEffectivenessResult {
   if (testResults.length === 0) {
     throw new Error("Cannot calculate effectiveness with zero test results");
@@ -109,9 +113,7 @@ export function calculateControlEffectiveness(
  * @param historicalScores - Array of historical effectiveness scores (oldest to newest)
  * @returns Trend direction and magnitude
  */
-export function analyzeEffectivenessTrend(
-  historicalScores: number[]
-): {
+export function analyzeEffectivenessTrend(historicalScores: number[]): {
   trend: "IMPROVING" | "STABLE" | "DEGRADING";
   change: number; // Percentage change from first to last
   changePoints: number; // Absolute change
@@ -149,7 +151,7 @@ export function analyzeEffectivenessTrend(
  * @returns Array of effectiveness results with control IDs
  */
 export function batchCalculateControlEffectiveness(
-  controls: Array<{ id: string; name: string; testResults: TestResultInput[] }>
+  controls: Array<{ id: string; name: string; testResults: TestResultInput[] }>,
 ): Array<ControlEffectivenessResult & { id: string; name: string }> {
   return controls
     .filter((c) => c.testResults.length > 0)
@@ -170,12 +172,11 @@ export function batchCalculateControlEffectiveness(
  * @returns Filtered array of controls needing attention
  */
 export function getControlsRequiringAttention(
-  controls: Array<ControlEffectivenessResult & { id: string; name: string }>
+  controls: Array<ControlEffectivenessResult & { id: string; name: string }>,
 ) {
   return controls
     .filter(
-      (c) =>
-        c.rating === "INEFFECTIVE" || c.rating === "PARTIALLY_EFFECTIVE"
+      (c) => c.rating === "INEFFECTIVE" || c.rating === "PARTIALLY_EFFECTIVE",
     )
     .sort((a, b) => a.score - b.score); // Lowest scores first
 }
@@ -188,12 +189,12 @@ export function getControlsRequiringAttention(
  * @returns Coverage percentage (0-100)
  */
 export function calculateKeyControlCoverage(
-  keyControls: Array<ControlEffectivenessResult>
+  keyControls: Array<ControlEffectivenessResult>,
 ): number {
   if (keyControls.length === 0) return 0;
 
   const effectiveCount = keyControls.filter(
-    (c) => c.rating === "EFFECTIVE" || c.rating === "HIGHLY_EFFECTIVE"
+    (c) => c.rating === "EFFECTIVE" || c.rating === "HIGHLY_EFFECTIVE",
   ).length;
 
   return Math.round((effectiveCount / keyControls.length) * 100 * 100) / 100;

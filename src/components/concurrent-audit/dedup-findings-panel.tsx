@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,7 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { IrregularityEscalationDialog } from "./irregularity-escalation-dialog";
-import { AlertTriangle, ChevronDown, ChevronRight, Link2, CheckCircle2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  Link2,
+  CheckCircle2,
+} from "lucide-react";
 import { format } from "date-fns";
 
 type RbiaDuplicate = {
@@ -40,7 +52,9 @@ interface DedupFindingsPanelProps {
 
 export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [escalateDialogOpen, setEscalateDialogOpen] = useState<string | null>(null);
+  const [escalateDialogOpen, setEscalateDialogOpen] = useState<string | null>(
+    null,
+  );
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
@@ -57,7 +71,7 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
 
   const totalFindings = findings.length;
   const potentialDuplicates = findingsWithDuplicates.filter(
-    (f) => f.potentialRbiaDuplicates.length > 0
+    (f) => f.potentialRbiaDuplicates.length > 0,
   ).length;
 
   const getSeverityColor = (severity: string) => {
@@ -78,9 +92,9 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
   if (findings.length === 0) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
+        <CardContent className="text-muted-foreground py-8 text-center">
           <p>No concurrent audit findings to display.</p>
-          <p className="text-sm mt-2">
+          <p className="mt-2 text-sm">
             Create observations via the Rapid Entry tab to see them here.
           </p>
         </CardContent>
@@ -92,13 +106,13 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">Findings De-duplication</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Review concurrent findings and identify potential RBIA duplicates
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Total Concurrent Findings</CardDescription>
@@ -114,7 +128,9 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Unique Findings</CardDescription>
-            <CardTitle className="text-3xl">{totalFindings - potentialDuplicates}</CardTitle>
+            <CardTitle className="text-3xl">
+              {totalFindings - potentialDuplicates}
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -124,7 +140,8 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
         <CardHeader>
           <CardTitle>Concurrent Audit Findings</CardTitle>
           <CardDescription>
-            Findings marked in yellow have potential duplicates in RBIA observations
+            Findings marked in yellow have potential duplicates in RBIA
+            observations
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,14 +159,17 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
             </TableHeader>
             <TableBody>
               {findingsWithDuplicates.map((finding) => {
-                const hasDuplicates = finding.potentialRbiaDuplicates.length > 0;
+                const hasDuplicates =
+                  finding.potentialRbiaDuplicates.length > 0;
                 const isExpanded = expandedRows.has(finding.id);
 
                 return (
                   <>
                     <TableRow
                       key={finding.id}
-                      className={hasDuplicates ? "bg-yellow-50 hover:bg-yellow-100" : ""}
+                      className={
+                        hasDuplicates ? "bg-yellow-50 hover:bg-yellow-100" : ""
+                      }
                     >
                       <TableCell>
                         {hasDuplicates && (
@@ -169,11 +189,11 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
                       <TableCell>
                         <div className="flex items-start gap-2">
                           {hasDuplicates && (
-                            <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-600" />
                           )}
                           <div>
                             <div className="font-medium">{finding.title}</div>
-                            <div className="text-sm text-muted-foreground line-clamp-1">
+                            <div className="text-muted-foreground line-clamp-1 text-sm">
                               {finding.condition}
                             </div>
                           </div>
@@ -181,14 +201,16 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
                       </TableCell>
                       <TableCell>{finding.branch?.name || "N/A"}</TableCell>
                       <TableCell>
-                        <Badge variant={getSeverityColor(finding.severity) as any}>
+                        <Badge
+                          variant={getSeverityColor(finding.severity) as any}
+                        >
                           {finding.severity}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">{finding.status}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-sm">
                         {format(new Date(finding.createdAt), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell className="text-right">
@@ -214,34 +236,39 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
                     {hasDuplicates && isExpanded && (
                       <TableRow>
                         <TableCell colSpan={7} className="bg-muted/50">
-                          <div className="py-4 px-6">
-                            <h4 className="font-semibold mb-3 text-sm">
-                              Potential RBIA Duplicates ({finding.potentialRbiaDuplicates.length})
+                          <div className="px-6 py-4">
+                            <h4 className="mb-3 text-sm font-semibold">
+                              Potential RBIA Duplicates (
+                              {finding.potentialRbiaDuplicates.length})
                             </h4>
                             <div className="space-y-2">
-                              {finding.potentialRbiaDuplicates.map((duplicate: any) => (
-                                <div
-                                  key={duplicate.id}
-                                  className="flex items-start justify-between bg-background rounded-md p-3 border"
-                                >
-                                  <div className="flex-1">
-                                    <div className="font-medium text-sm">{duplicate.title}</div>
-                                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                      {duplicate.condition}
+                              {finding.potentialRbiaDuplicates.map(
+                                (duplicate: any) => (
+                                  <div
+                                    key={duplicate.id}
+                                    className="bg-background flex items-start justify-between rounded-md border p-3"
+                                  >
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium">
+                                        {duplicate.title}
+                                      </div>
+                                      <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                                        {duplicate.condition}
+                                      </div>
+                                    </div>
+                                    <div className="ml-4 flex gap-2">
+                                      <Button variant="outline" size="sm">
+                                        <Link2 className="mr-2 h-3 w-3" />
+                                        Link to RBIA
+                                      </Button>
+                                      <Button variant="ghost" size="sm">
+                                        <CheckCircle2 className="mr-2 h-3 w-3" />
+                                        Mark Unique
+                                      </Button>
                                     </div>
                                   </div>
-                                  <div className="flex gap-2 ml-4">
-                                    <Button variant="outline" size="sm">
-                                      <Link2 className="mr-2 h-3 w-3" />
-                                      Link to RBIA
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <CheckCircle2 className="mr-2 h-3 w-3" />
-                                      Mark Unique
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
+                                ),
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -260,27 +287,27 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
         <CardHeader>
           <CardTitle className="text-base">About De-duplication</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
+        <CardContent className="text-muted-foreground space-y-2 text-sm">
           <p>
-            This panel identifies concurrent audit findings that may duplicate RBIA observations
-            to avoid redundant work during annual planning.
+            This panel identifies concurrent audit findings that may duplicate
+            RBIA observations to avoid redundant work during annual planning.
           </p>
-          <ul className="list-disc list-inside space-y-1 ml-2">
+          <ul className="ml-2 list-inside list-disc space-y-1">
             <li>
-              <strong>Yellow highlighting:</strong> Indicates potential duplicates based on title
-              and branch similarity
+              <strong>Yellow highlighting:</strong> Indicates potential
+              duplicates based on title and branch similarity
             </li>
             <li>
-              <strong>Link to RBIA:</strong> Associate concurrent finding with existing RBIA
-              observation
+              <strong>Link to RBIA:</strong> Associate concurrent finding with
+              existing RBIA observation
             </li>
             <li>
-              <strong>Mark Unique:</strong> Confirm finding is unique and should be planned
-              separately
+              <strong>Mark Unique:</strong> Confirm finding is unique and should
+              be planned separately
             </li>
             <li>
-              <strong>Escalate:</strong> Flag serious irregularities for immediate management
-              attention
+              <strong>Escalate:</strong> Flag serious irregularities for
+              immediate management attention
             </li>
           </ul>
         </CardContent>

@@ -33,8 +33,7 @@ export async function convertGapToIssue(input: ConvertGapToIssueInput) {
   ) {
     return {
       success: false as const,
-      error:
-        "You do not have permission to convert QA gaps to issues.",
+      error: "You do not have permission to convert QA gaps to issues.",
     };
   }
 
@@ -145,7 +144,7 @@ export async function convertGapToIssue(input: ConvertGapToIssueInput) {
 export async function bulkConvertGapsToIssues(
   assessmentIds: string[],
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
-  ownerId?: string
+  ownerId?: string,
 ) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
@@ -185,7 +184,11 @@ export async function bulkConvertGapsToIssues(
           where: { id: assessmentId, tenantId },
         });
 
-        if (!assessment || !assessment.gapIdentified || assessment.issueCreated) {
+        if (
+          !assessment ||
+          !assessment.gapIdentified ||
+          assessment.issueCreated
+        ) {
           continue; // Skip invalid/already converted
         }
 
@@ -235,7 +238,7 @@ export async function bulkConvertGapsToIssues(
         : "Failed to bulk convert gaps to issues.";
     logger.error(
       { error, action: "bulk_convert_gaps_to_issues", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

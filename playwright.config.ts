@@ -67,5 +67,10 @@ export default defineConfig({
     },
   ],
 
-  // No webServer — we test against the running Docker container
+  webServer: {
+    command: "pnpm build && pnpm start",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 });

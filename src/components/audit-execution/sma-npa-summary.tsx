@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -45,7 +51,10 @@ interface CategoryRow {
   remarks: string;
 }
 
-export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryProps) {
+export function SmaNpaSummary({
+  engagementId,
+  existingEntries,
+}: SmaNpaSummaryProps) {
   const [rows, setRows] = useState<CategoryRow[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -64,7 +73,11 @@ export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryPr
     setRows(initialRows);
   }, [existingEntries]);
 
-  const handleChange = (index: number, field: keyof CategoryRow, value: any) => {
+  const handleChange = (
+    index: number,
+    field: keyof CategoryRow,
+    value: any,
+  ) => {
     const updated = [...rows];
     updated[index] = { ...updated[index], [field]: value };
     setRows(updated);
@@ -136,7 +149,11 @@ export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryPr
                       min="0"
                       value={row.accountCount}
                       onChange={(e) =>
-                        handleChange(idx, "accountCount", parseInt(e.target.value, 10) || 0)
+                        handleChange(
+                          idx,
+                          "accountCount",
+                          parseInt(e.target.value, 10) || 0,
+                        )
                       }
                       className="w-full"
                     />
@@ -148,7 +165,11 @@ export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryPr
                       step="0.01"
                       value={row.totalAmount}
                       onChange={(e) =>
-                        handleChange(idx, "totalAmount", parseFloat(e.target.value) || 0)
+                        handleChange(
+                          idx,
+                          "totalAmount",
+                          parseFloat(e.target.value) || 0,
+                        )
                       }
                       className="w-full"
                     />
@@ -156,7 +177,9 @@ export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryPr
                   <TableCell>
                     <Input
                       value={row.remarks}
-                      onChange={(e) => handleChange(idx, "remarks", e.target.value)}
+                      onChange={(e) =>
+                        handleChange(idx, "remarks", e.target.value)
+                      }
                       placeholder="Optional remarks"
                       maxLength={500}
                       className="w-full"
@@ -169,7 +192,9 @@ export function SmaNpaSummary({ engagementId, existingEntries }: SmaNpaSummaryPr
               <TableRow>
                 <TableCell className="font-semibold">Total</TableCell>
                 <TableCell className="font-semibold">{totalAccounts}</TableCell>
-                <TableCell className="font-semibold">{formatAmount(totalAmount)}</TableCell>
+                <TableCell className="font-semibold">
+                  {formatAmount(totalAmount)}
+                </TableCell>
                 <TableCell />
               </TableRow>
             </TableFooter>

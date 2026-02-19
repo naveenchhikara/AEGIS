@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,10 +30,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AlertCircle, CheckCircle2, Loader2 } from "@/lib/icons";
 import { toast } from "sonner";
-import { convertGapToIssue, bulkConvertGapsToIssues } from "@/actions/qa-assessment/gap-to-issue";
+import {
+  convertGapToIssue,
+  bulkConvertGapsToIssues,
+} from "@/actions/qa-assessment/gap-to-issue";
 
 interface GapConversionPanelProps {
   gaps: Array<{
@@ -43,8 +59,13 @@ interface GapConversionPanelProps {
   canManage: boolean;
 }
 
-export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps) {
-  const [selectedGaps, setSelectedGaps] = React.useState<Set<string>>(new Set());
+export function GapConversionPanel({
+  gaps,
+  canManage,
+}: GapConversionPanelProps) {
+  const [selectedGaps, setSelectedGaps] = React.useState<Set<string>>(
+    new Set(),
+  );
   const [isConverting, setIsConverting] = React.useState(false);
   const [isBulkConverting, setIsBulkConverting] = React.useState(false);
   const [singleGapId, setSingleGapId] = React.useState<string | null>(null);
@@ -52,10 +73,14 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
   // Single conversion dialog state
   const [issueTitle, setIssueTitle] = React.useState("");
   const [issueDescription, setIssueDescription] = React.useState("");
-  const [severity, setSeverity] = React.useState<"CRITICAL" | "HIGH" | "MEDIUM" | "LOW">("HIGH");
+  const [severity, setSeverity] = React.useState<
+    "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
+  >("HIGH");
 
   // Bulk conversion state
-  const [bulkSeverity, setBulkSeverity] = React.useState<"CRITICAL" | "HIGH" | "MEDIUM" | "LOW">("MEDIUM");
+  const [bulkSeverity, setBulkSeverity] = React.useState<
+    "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
+  >("MEDIUM");
 
   const toggleGapSelection = (gapId: string) => {
     const newSelected = new Set(selectedGaps);
@@ -75,17 +100,17 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
     }
   };
 
-  const openSingleConversionDialog = (gap: typeof gaps[0]) => {
+  const openSingleConversionDialog = (gap: (typeof gaps)[0]) => {
     setSingleGapId(gap.id);
     setIssueTitle(`QA Gap: ${gap.iiaStandard}`);
     setIssueDescription(
       `QA Self-Assessment Gap Identified\n\n` +
-      `IIA Standard: ${gap.iiaStandard}\n` +
-      `Question: ${gap.question}\n` +
-      `Response: ${gap.response}\n` +
-      `Evidence: ${gap.evidence || "None provided"}`
+        `IIA Standard: ${gap.iiaStandard}\n` +
+        `Question: ${gap.question}\n` +
+        `Response: ${gap.response}\n` +
+        `Evidence: ${gap.evidence || "None provided"}`,
     );
-    
+
     // Auto-determine severity
     if (gap.response === "DOES_NOT_CONFORM") {
       setSeverity("HIGH");
@@ -125,11 +150,13 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
     setIsBulkConverting(true);
     const result = await bulkConvertGapsToIssues(
       Array.from(selectedGaps),
-      bulkSeverity
+      bulkSeverity,
     );
 
     if (result.success) {
-      toast.success(`Created ${result.data.created} issues from ${result.data.total} selected gaps`);
+      toast.success(
+        `Created ${result.data.created} issues from ${result.data.total} selected gaps`,
+      );
       setSelectedGaps(new Set());
     } else {
       toast.error(result.error);
@@ -141,8 +168,8 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-green-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Unconverted Gaps</h3>
+          <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-green-500" />
+          <h3 className="mb-2 text-lg font-semibold">No Unconverted Gaps</h3>
           <p className="text-muted-foreground mb-4">
             All identified gaps have been converted to issues.
           </p>
@@ -164,7 +191,7 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{gaps.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               Awaiting conversion to issues
             </p>
           </CardContent>
@@ -176,7 +203,7 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{selectedGaps.size}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-xs">
               Ready for bulk conversion
             </p>
           </CardContent>
@@ -230,7 +257,9 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                       onClick={handleBulkConversion}
                       disabled={isBulkConverting}
                     >
-                      {isBulkConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isBulkConverting && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Convert {selectedGaps.size} Gaps
                     </Button>
                   </DialogFooter>
@@ -256,7 +285,9 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                 {canManage && (
                   <TableHead className="w-[50px]">
                     <Checkbox
-                      checked={selectedGaps.size === gaps.length && gaps.length > 0}
+                      checked={
+                        selectedGaps.size === gaps.length && gaps.length > 0
+                      }
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
@@ -265,7 +296,9 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                 <TableHead>Question</TableHead>
                 <TableHead className="w-[180px]">Response</TableHead>
                 <TableHead className="w-[200px]">Evidence</TableHead>
-                {canManage && <TableHead className="w-[120px]">Actions</TableHead>}
+                {canManage && (
+                  <TableHead className="w-[120px]">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -295,7 +328,7 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                       {gap.response?.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-xs">
                     {gap.evidence || "—"}
                   </TableCell>
                   {canManage && (
@@ -327,11 +360,15 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="issue-description">Description</Label>
+                              <Label htmlFor="issue-description">
+                                Description
+                              </Label>
                               <Textarea
                                 id="issue-description"
                                 value={issueDescription}
-                                onChange={(e) => setIssueDescription(e.target.value)}
+                                onChange={(e) =>
+                                  setIssueDescription(e.target.value)
+                                }
                                 rows={6}
                               />
                             </div>
@@ -345,7 +382,9 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="CRITICAL">Critical</SelectItem>
+                                  <SelectItem value="CRITICAL">
+                                    Critical
+                                  </SelectItem>
                                   <SelectItem value="HIGH">High</SelectItem>
                                   <SelectItem value="MEDIUM">Medium</SelectItem>
                                   <SelectItem value="LOW">Low</SelectItem>
@@ -358,7 +397,9 @@ export function GapConversionPanel({ gaps, canManage }: GapConversionPanelProps)
                               onClick={handleSingleConversion}
                               disabled={isConverting}
                             >
-                              {isConverting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                              {isConverting && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              )}
                               Create Issue
                             </Button>
                           </DialogFooter>

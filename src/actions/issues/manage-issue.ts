@@ -29,9 +29,7 @@ const ManageIssueSchema = z.object({
   controlId: z.string().uuid().optional(),
   complianceItemId: z.string().uuid().optional(),
   ownerId: z.string().uuid().optional(),
-  status: z
-    .enum(["OPEN", "IN_PROGRESS", "CLOSED", "ACCEPTED_RISK"])
-    .optional(),
+  status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED", "ACCEPTED_RISK"]).optional(),
 });
 
 type ManageIssueInput = z.infer<typeof ManageIssueSchema>;
@@ -174,7 +172,7 @@ export async function closeIssue(issueId: string) {
 
       if (pendingActions > 0) {
         throw new Error(
-          `Cannot close issue: ${pendingActions} action plan(s) still pending`
+          `Cannot close issue: ${pendingActions} action plan(s) still pending`,
         );
       }
 

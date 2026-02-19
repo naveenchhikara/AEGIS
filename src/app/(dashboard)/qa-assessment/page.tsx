@@ -27,7 +27,10 @@ export default async function QaAssessmentPage() {
   const currentYear = new Date().getFullYear();
 
   try {
-    const { assessments, summary } = await getQaAssessmentsByYear(session, currentYear);
+    const { assessments, summary } = await getQaAssessmentsByYear(
+      session,
+      currentYear,
+    );
     const unconvertedGaps = await getUnconvertedGaps(session);
     const progress = await getQaAssessmentProgress(session);
     const standardSummary = await getQaSummaryByStandard(session, currentYear);
@@ -35,7 +38,9 @@ export default async function QaAssessmentPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">QA Self-Assessment</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            QA Self-Assessment
+          </h1>
           <p className="text-muted-foreground">
             Quality Assurance — IIA Standards compliance self-assessment
           </p>
@@ -80,13 +85,15 @@ export default async function QaAssessmentPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">QA Self-Assessment</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            QA Self-Assessment
+          </h1>
           <p className="text-muted-foreground">
             Quality Assurance — IIA Standards compliance self-assessment
           </p>
         </div>
-        <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
-          <p className="text-sm text-destructive">
+        <div className="border-destructive bg-destructive/10 rounded-lg border p-4">
+          <p className="text-destructive text-sm">
             Failed to load QA assessment data. Please try again later.
           </p>
         </div>

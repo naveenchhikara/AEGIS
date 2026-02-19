@@ -9,11 +9,21 @@
     "scoringCriteria": {
       "description": "Year-on-year deposit growth percentage",
       "ranges": [
-        { "min": null, "max": 0, "score": 5, "label": "Negative growth — highest risk" },
+        {
+          "min": null,
+          "max": 0,
+          "score": 5,
+          "label": "Negative growth — highest risk"
+        },
         { "min": 0, "max": 5, "score": 4, "label": "Low growth" },
         { "min": 5, "max": 10, "score": 3, "label": "Moderate growth" },
         { "min": 10, "max": 20, "score": 2, "label": "Good growth" },
-        { "min": 20, "max": null, "score": 1, "label": "High growth — lowest risk" }
+        {
+          "min": 20,
+          "max": null,
+          "score": 1,
+          "label": "High growth — lowest risk"
+        }
       ]
     }
   },
@@ -45,7 +55,12 @@
     "scoringCriteria": {
       "description": "Capital adequacy ratio — RBI minimum 9% for UCBs",
       "ranges": [
-        { "min": null, "max": 9, "score": 5, "label": "Below regulatory minimum" },
+        {
+          "min": null,
+          "max": 9,
+          "score": 5,
+          "label": "Below regulatory minimum"
+        },
         { "min": 9, "max": 10, "score": 4, "label": "Marginal compliance" },
         { "min": 10, "max": 12, "score": 3, "label": "Adequate" },
         { "min": 12, "max": 15, "score": 2, "label": "Well capitalised" },
@@ -99,7 +114,12 @@
     "scoringCriteria": {
       "description": "Provisions as % of gross NPAs — higher is better",
       "ranges": [
-        { "min": null, "max": 40, "score": 5, "label": "Inadequate provisioning" },
+        {
+          "min": null,
+          "max": 40,
+          "score": 5,
+          "label": "Inadequate provisioning"
+        },
         { "min": 40, "max": 50, "score": 4, "label": "Low coverage" },
         { "min": 50, "max": 60, "score": 3, "label": "Moderate coverage" },
         { "min": 60, "max": 70, "score": 2, "label": "Good coverage" },
@@ -135,7 +155,12 @@
     "scoringCriteria": {
       "description": "Total business (deposits + advances) per employee in lakhs",
       "ranges": [
-        { "min": null, "max": 200, "score": 5, "label": "Very low productivity" },
+        {
+          "min": null,
+          "max": 200,
+          "score": 5,
+          "label": "Very low productivity"
+        },
         { "min": 200, "max": 400, "score": 4, "label": "Low productivity" },
         { "min": 400, "max": 600, "score": 3, "label": "Average" },
         { "min": 600, "max": 800, "score": 2, "label": "Good" },
@@ -190,7 +215,12 @@
       "description": "Last RBIA audit rating for this branch",
       "note": "Qualitative parameter — auditor selects score directly based on prior rating",
       "ranges": [
-        { "min": null, "max": null, "score": 5, "label": "Poor / No prior audit" },
+        {
+          "min": null,
+          "max": null,
+          "score": 5,
+          "label": "Poor / No prior audit"
+        },
         { "min": null, "max": null, "score": 4, "label": "Moderate" },
         { "min": null, "max": null, "score": 3, "label": "Satisfactory" },
         { "min": null, "max": null, "score": 2, "label": "Good" },
@@ -228,9 +258,19 @@
       "description": "Adequacy of IS/IT controls at the branch",
       "note": "Qualitative parameter",
       "ranges": [
-        { "min": null, "max": null, "score": 5, "label": "Critical gaps in IS controls" },
+        {
+          "min": null,
+          "max": null,
+          "score": 5,
+          "label": "Critical gaps in IS controls"
+        },
         { "min": null, "max": null, "score": 4, "label": "Major gaps" },
-        { "min": null, "max": null, "score": 3, "label": "Some gaps, being addressed" },
+        {
+          "min": null,
+          "max": null,
+          "score": 3,
+          "label": "Some gaps, being addressed"
+        },
         { "min": null, "max": null, "score": 2, "label": "Adequate controls" },
         { "min": null, "max": null, "score": 1, "label": "Strong IS controls" }
       ]
@@ -247,8 +287,18 @@
       "description": "Adherence to KYC/AML norms — deficiencies increase risk",
       "note": "Qualitative parameter",
       "ranges": [
-        { "min": null, "max": null, "score": 5, "label": "Serious KYC deficiencies" },
-        { "min": null, "max": null, "score": 4, "label": "Multiple deficiencies" },
+        {
+          "min": null,
+          "max": null,
+          "score": 5,
+          "label": "Serious KYC deficiencies"
+        },
+        {
+          "min": null,
+          "max": null,
+          "score": 4,
+          "label": "Multiple deficiencies"
+        },
         { "min": null, "max": null, "score": 3, "label": "Minor lapses" },
         { "min": null, "max": null, "score": 2, "label": "Largely compliant" },
         { "min": null, "max": null, "score": 1, "label": "Fully compliant" }
@@ -266,11 +316,21 @@
       "description": "Staff discipline, rotation, leave policy compliance",
       "note": "Qualitative parameter",
       "ranges": [
-        { "min": null, "max": null, "score": 5, "label": "Serious staff accountability issues" },
+        {
+          "min": null,
+          "max": null,
+          "score": 5,
+          "label": "Serious staff accountability issues"
+        },
         { "min": null, "max": null, "score": 4, "label": "Multiple HR lapses" },
         { "min": null, "max": null, "score": 3, "label": "Minor lapses" },
         { "min": null, "max": null, "score": 2, "label": "Good compliance" },
-        { "min": null, "max": null, "score": 1, "label": "Excellent HR controls" }
+        {
+          "min": null,
+          "max": null,
+          "score": 1,
+          "label": "Excellent HR controls"
+        }
       ]
     }
   },
@@ -286,10 +346,20 @@
       "note": "Qualitative parameter",
       "ranges": [
         { "min": null, "max": null, "score": 5, "label": "Major violations" },
-        { "min": null, "max": null, "score": 4, "label": "Significant deviations" },
+        {
+          "min": null,
+          "max": null,
+          "score": 4,
+          "label": "Significant deviations"
+        },
         { "min": null, "max": null, "score": 3, "label": "Minor deviations" },
         { "min": null, "max": null, "score": 2, "label": "Compliant" },
-        { "min": null, "max": null, "score": 1, "label": "Fully compliant with strong controls" }
+        {
+          "min": null,
+          "max": null,
+          "score": 1,
+          "label": "Fully compliant with strong controls"
+        }
       ]
     }
   },
@@ -322,11 +392,21 @@
       "description": "Record maintenance, reconciliation, suspense account management",
       "note": "Qualitative parameter",
       "ranges": [
-        { "min": null, "max": null, "score": 5, "label": "Chronic housekeeping failures" },
+        {
+          "min": null,
+          "max": null,
+          "score": 5,
+          "label": "Chronic housekeeping failures"
+        },
         { "min": null, "max": null, "score": 4, "label": "Significant lapses" },
         { "min": null, "max": null, "score": 3, "label": "Some lapses" },
         { "min": null, "max": null, "score": 2, "label": "Good standards" },
-        { "min": null, "max": null, "score": 1, "label": "Excellent housekeeping" }
+        {
+          "min": null,
+          "max": null,
+          "score": 1,
+          "label": "Excellent housekeeping"
+        }
       ]
     }
   },

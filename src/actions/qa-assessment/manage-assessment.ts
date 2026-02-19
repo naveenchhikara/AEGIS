@@ -14,7 +14,12 @@ const ManageQaAssessmentSchema = z.object({
   iiaStandard: z.string().min(1, "IIA Standard is required"),
   question: z.string().min(10, "Question must be at least 10 characters"),
   response: z
-    .enum(["CONFORMS", "PARTIALLY_CONFORMS", "DOES_NOT_CONFORM", "NOT_APPLICABLE"])
+    .enum([
+      "CONFORMS",
+      "PARTIALLY_CONFORMS",
+      "DOES_NOT_CONFORM",
+      "NOT_APPLICABLE",
+    ])
     .optional(),
   evidence: z.string().optional(),
   gapIdentified: z.boolean().optional(),
@@ -117,7 +122,7 @@ export async function manageQaAssessment(input: ManageQaAssessmentInput) {
  */
 export async function createQaAssessmentsFromTemplate(
   assessmentYear: number,
-  questions: Array<{ iiaStandard: string; question: string }>
+  questions: Array<{ iiaStandard: string; question: string }>,
 ) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
@@ -190,7 +195,7 @@ export async function createQaAssessmentsFromTemplate(
         : "Failed to create QA assessments from template.";
     logger.error(
       { error, action: "create_qa_assessments_from_template", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

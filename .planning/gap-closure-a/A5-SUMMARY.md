@@ -20,10 +20,12 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 **File:** `src/data-access/cash-verification.ts`
 
 **Created:**
+
 - `getCashCheckForEngagement()` — Fetches existing cash check for an engagement
 - `getEngagementForCashVerification()` — Fetches engagement context (branch, audit plan)
 
 **Key Features:**
+
 - Uses `prismaForTenant()` for tenant isolation
 - Returns `null` if no cash check exists (upsert pattern support)
 - Includes branch and audit plan context for UI
@@ -35,15 +37,18 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 ### ✅ Task 2: Schemas + server action — Cash verification CRUD
 
 **Files:**
+
 - `src/actions/audit-execution/schemas.ts` (updated)
 - `src/actions/audit-execution/cash-verification.ts` (created)
 
 **Schemas Added:**
+
 - `DenominationDataSchema` — All Indian currency denominations (₹2000 to ₹1)
 - `AtmBalancesSchema` — Dynamic key-value for ATM balances
 - `SaveCashVerificationSchema` — Main validation schema with JSONB fields
 
 **Server Actions:**
+
 - `saveCashVerification()` — Create/update cash verification (upsert pattern)
   - Auto-computes `difference = cashInHand - bookBalance`
   - Returns `retentionExceeded` flag for UI warning
@@ -52,6 +57,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 - `getCashVerificationAction()` — Fetch action for client components (bonus)
 
 **Key Features:**
+
 - Follows standard server action boilerplate (7-step pattern)
 - Upsert on `engagementId` (@@unique constraint)
 - Decimal conversion handled server-side
@@ -65,10 +71,12 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 ### ✅ Task 3: Client components — Cash verification form + denomination table
 
 **Files:**
+
 - `src/components/audit-execution/denomination-table.tsx` (created)
 - `src/components/audit-execution/cash-verification-form.tsx` (created)
 
 **DenominationTable Component:**
+
 - Editable table for all 10 Indian currency denominations
 - Auto-computes amount per denomination (count × value)
 - Shows total cash at bottom (footer row)
@@ -76,6 +84,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 - Disabled state support for form submission
 
 **CashVerificationForm Component:**
+
 - **Section 1: Cash Summary**
   - Cash in hand (read-only, auto-computed from denominations)
   - Book balance (editable)
@@ -95,6 +104,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
   - Textarea for additional notes (max 2000 chars)
 
 **Form Features:**
+
 - react-hook-form + zodResolver integration
 - Pre-fills with existing data (edit mode)
 - Toast notifications for success/error/warning
@@ -111,6 +121,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 **File:** `src/app/(dashboard)/audit-execution/[engagementId]/cash-verification/page.tsx`
 
 **Implementation:**
+
 - Server component with async data fetching
 - Uses DAL functions: `getEngagementForCashVerification()`, `getCashCheckForEngagement()`
 - Converts Decimal to number for client component compatibility
@@ -128,24 +139,25 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 
 ## Success Criteria Validation
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| R19 gap closed (CashCheck CRUD) | ✅ | Upsert pattern works end-to-end |
-| R24 gap closed (denomination capture) | ✅ | All 10 denominations captured at section level |
-| Denomination data (₹2000 to ₹1) | ✅ | JSONB field with Zod validation |
-| ATM balances (dynamic key-value) | ✅ | JSONB field with add/remove UI |
-| Retention limit validation | ✅ | Warning alert (non-blocking) when exceeded |
-| Cash verification page accessible | ✅ | Route: `/audit-execution/[engagementId]/cash-verification` |
-| Difference auto-compute | ✅ | Server-side: cashInHand - bookBalance |
-| Upsert pattern (one per engagement) | ✅ | @@unique on engagementId |
-| TypeScript compilation | ✅ | No errors in new files |
-| Conventions followed | ✅ | Server action boilerplate, DAL, react-hook-form |
+| Criterion                             | Status | Notes                                                      |
+| ------------------------------------- | ------ | ---------------------------------------------------------- |
+| R19 gap closed (CashCheck CRUD)       | ✅     | Upsert pattern works end-to-end                            |
+| R24 gap closed (denomination capture) | ✅     | All 10 denominations captured at section level             |
+| Denomination data (₹2000 to ₹1)       | ✅     | JSONB field with Zod validation                            |
+| ATM balances (dynamic key-value)      | ✅     | JSONB field with add/remove UI                             |
+| Retention limit validation            | ✅     | Warning alert (non-blocking) when exceeded                 |
+| Cash verification page accessible     | ✅     | Route: `/audit-execution/[engagementId]/cash-verification` |
+| Difference auto-compute               | ✅     | Server-side: cashInHand - bookBalance                      |
+| Upsert pattern (one per engagement)   | ✅     | @@unique on engagementId                                   |
+| TypeScript compilation                | ✅     | No errors in new files                                     |
+| Conventions followed                  | ✅     | Server action boilerplate, DAL, react-hook-form            |
 
 ---
 
 ## Files Created/Modified
 
 ### Created (6 files):
+
 1. `src/data-access/cash-verification.ts` (1.1 KB)
 2. `src/actions/audit-execution/cash-verification.ts` (5.8 KB)
 3. `src/components/audit-execution/denomination-table.tsx` (2.7 KB)
@@ -154,6 +166,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 6. `.planning/gap-closure-a/A5-SUMMARY.md` (this file)
 
 ### Modified (1 file):
+
 1. `src/actions/audit-execution/schemas.ts` (+28 lines: DenominationDataSchema, AtmBalancesSchema, SaveCashVerificationSchema)
 
 **Total:** 7 files, ~23.6 KB of new code
@@ -207,7 +220,7 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 ✅ Next.js 16 App Router: `params` as Promise  
 ✅ Path aliases (`@/*`)  
 ✅ No TypeScript enums (Prisma enums only)  
-✅ Error handling: return objects, not throws  
+✅ Error handling: return objects, not throws
 
 ---
 
@@ -243,24 +256,24 @@ Implement R19 (CashCheck model CRUD) and R24 (cash verification form with denomi
 ```typescript
 test("should create and update cash verification", async ({ page }) => {
   await page.goto("/audit-execution/{engagementId}/cash-verification");
-  
+
   // Enter denominations
   await page.fill('input[id^="denomination-2000"]', "10");
   await page.fill('input[id^="denomination-500"]', "50");
-  
+
   // Verify auto-computed cash in hand
   const cashInHand = await page.inputValue("#cashInHand");
   expect(cashInHand).toBe("45000"); // 10*2000 + 50*500
-  
+
   // Enter book balance
   await page.fill("#bookBalance", "44000");
-  
+
   // Submit
   await page.click("button[type=submit]");
-  
+
   // Verify success toast
   await expect(page.locator("text=Cash verification saved")).toBeVisible();
-  
+
   // Reload and verify data persists
   await page.reload();
   expect(await page.inputValue("#cashInHand")).toBe("45000");
@@ -315,6 +328,7 @@ test("should create and update cash verification", async ({ page }) => {
 ✅ **Plan A5 executed successfully.**
 
 All tasks completed, all verification checks passed, TypeScript compilation successful. The CashCheck CRUD system is now fully operational with:
+
 - Comprehensive denomination-level capture
 - ATM balance tracking
 - Retention limit validation
@@ -324,6 +338,7 @@ All tasks completed, all verification checks passed, TypeScript compilation succ
 The implementation follows all AEGIS conventions and is ready for integration into the audit execution workflow.
 
 **Next Steps:**
+
 1. Add navigation link to cash verification page in audit execution UI
 2. Manual testing with real audit data
 3. Review with product owner for Section 1 format alignment

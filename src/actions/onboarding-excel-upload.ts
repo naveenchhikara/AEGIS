@@ -57,7 +57,10 @@ export async function downloadOrgStructureTemplate(): Promise<DownloadResult> {
       filename: "aegis-org-structure-template.xlsx",
     };
   } catch (error) {
-    logger.error({ error, action: "download_org_structure_template" }, "Failed to generate org structure template");
+    logger.error(
+      { error, action: "download_org_structure_template" },
+      "Failed to generate org structure template",
+    );
     return {
       success: false,
       error:
@@ -143,7 +146,10 @@ export async function uploadOrgStructureExcel(
     // Return parse result directly (it already has success/error shape)
     return parseResult;
   } catch (error) {
-    logger.error({ error, action: "upload_org_structure_excel" }, "Failed to upload and parse org structure Excel");
+    logger.error(
+      { error, action: "upload_org_structure_excel" },
+      "Failed to upload and parse org structure Excel",
+    );
     return {
       success: false,
       error:

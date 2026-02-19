@@ -109,10 +109,14 @@ const styles = StyleSheet.create({
 export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
   auditData,
 }) => {
-  const criticalObs = auditData.observations?.filter((o: any) => o.severity === "CRITICAL") || [];
-  const highObs = auditData.observations?.filter((o: any) => o.severity === "HIGH") || [];
-  const mediumObs = auditData.observations?.filter((o: any) => o.severity === "MEDIUM") || [];
-  const lowObs = auditData.observations?.filter((o: any) => o.severity === "LOW") || [];
+  const criticalObs =
+    auditData.observations?.filter((o: any) => o.severity === "CRITICAL") || [];
+  const highObs =
+    auditData.observations?.filter((o: any) => o.severity === "HIGH") || [];
+  const mediumObs =
+    auditData.observations?.filter((o: any) => o.severity === "MEDIUM") || [];
+  const lowObs =
+    auditData.observations?.filter((o: any) => o.severity === "LOW") || [];
 
   return (
     <Document>
@@ -171,12 +175,19 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Executive Summary</Text>
           <Text style={{ marginTop: 5, lineHeight: 1.5 }}>
-            This audit was conducted at {auditData.branch?.name || "the branch"} covering the
-            period from {auditData.periodFrom ? new Date(auditData.periodFrom).toLocaleDateString() : "N/A"} to{" "}
-            {auditData.periodTo ? new Date(auditData.periodTo).toLocaleDateString() : "N/A"}. A total of{" "}
-            {auditData.observations?.length || 0} observations were identified during the audit,
-            comprising {criticalObs.length} critical, {highObs.length} high, {mediumObs.length} medium,
-            and {lowObs.length} low severity findings.
+            This audit was conducted at {auditData.branch?.name || "the branch"}{" "}
+            covering the period from{" "}
+            {auditData.periodFrom
+              ? new Date(auditData.periodFrom).toLocaleDateString()
+              : "N/A"}{" "}
+            to{" "}
+            {auditData.periodTo
+              ? new Date(auditData.periodTo).toLocaleDateString()
+              : "N/A"}
+            . A total of {auditData.observations?.length || 0} observations were
+            identified during the audit, comprising {criticalObs.length}{" "}
+            critical, {highObs.length} high, {mediumObs.length} medium, and{" "}
+            {lowObs.length} low severity findings.
           </Text>
         </View>
 
@@ -194,7 +205,10 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
               <Text style={{ width: "20%" }}>{criticalObs.length}</Text>
               <Text style={{ width: "50%" }}>
                 {auditData.observations?.length
-                  ? ((criticalObs.length / auditData.observations.length) * 100).toFixed(1)
+                  ? (
+                      (criticalObs.length / auditData.observations.length) *
+                      100
+                    ).toFixed(1)
                   : 0}
                 %
               </Text>
@@ -204,7 +218,10 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
               <Text style={{ width: "20%" }}>{highObs.length}</Text>
               <Text style={{ width: "50%" }}>
                 {auditData.observations?.length
-                  ? ((highObs.length / auditData.observations.length) * 100).toFixed(1)
+                  ? (
+                      (highObs.length / auditData.observations.length) *
+                      100
+                    ).toFixed(1)
                   : 0}
                 %
               </Text>
@@ -214,7 +231,10 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
               <Text style={{ width: "20%" }}>{mediumObs.length}</Text>
               <Text style={{ width: "50%" }}>
                 {auditData.observations?.length
-                  ? ((mediumObs.length / auditData.observations.length) * 100).toFixed(1)
+                  ? (
+                      (mediumObs.length / auditData.observations.length) *
+                      100
+                    ).toFixed(1)
                   : 0}
                 %
               </Text>
@@ -224,7 +244,10 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
               <Text style={{ width: "20%" }}>{lowObs.length}</Text>
               <Text style={{ width: "50%" }}>
                 {auditData.observations?.length
-                  ? ((lowObs.length / auditData.observations.length) * 100).toFixed(1)
+                  ? (
+                      (lowObs.length / auditData.observations.length) *
+                      100
+                    ).toFixed(1)
                   : 0}
                 %
               </Text>
@@ -245,7 +268,9 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
         {/* Critical Findings */}
         {criticalObs.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Critical Severity Observations</Text>
+            <Text style={styles.sectionTitle}>
+              Critical Severity Observations
+            </Text>
             {criticalObs.slice(0, 5).map((obs: any, idx: number) => (
               <View key={obs.id} style={{ marginBottom: 10 }}>
                 <Text style={{ fontWeight: "bold" }}>
@@ -294,7 +319,8 @@ export const AuditSummaryDocument: React.FC<AuditSummaryDocumentProps> = ({
         />
 
         <Text style={styles.footer}>
-          Generated by AEGIS Audit System on {new Date().toLocaleString()} | Page 2 of 2
+          Generated by AEGIS Audit System on {new Date().toLocaleString()} |
+          Page 2 of 2
         </Text>
       </Page>
     </Document>

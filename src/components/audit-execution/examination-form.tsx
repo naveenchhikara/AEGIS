@@ -139,14 +139,12 @@ function ExaminationItemForm({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-base">
-              Item {item.itemNumber}
-            </CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <CardTitle className="text-base">Item {item.itemNumber}</CardTitle>
+            <p className="text-muted-foreground mt-1 text-sm">
               {item.particulars}
             </p>
             {item.regulatoryRef && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-xs">
                 Ref: {item.regulatoryRef}
               </p>
             )}
@@ -202,10 +200,7 @@ function ExaminationItemForm({
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="NOT_APPLICABLE"
-                  id={`${item.id}-na`}
-                />
+                <RadioGroupItem value="NOT_APPLICABLE" id={`${item.id}-na`} />
                 <Label
                   htmlFor={`${item.id}-na`}
                   className="cursor-pointer font-normal"
@@ -280,7 +275,7 @@ function ExaminationItemForm({
         {/* Evidence section - only shown if response exists */}
         {hasResponse && existingResponse && (
           <div className="mt-4 border-t pt-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <div className="text-muted-foreground mb-3 flex items-center gap-2 text-sm font-medium">
               <FileText className="h-4 w-4" />
               <span>Evidence ({existingResponse.evidence?.length ?? 0})</span>
             </div>
@@ -319,8 +314,9 @@ export function ExaminationForm({
 
   // Calculate progress
   const totalItems = items.length;
-  const respondedItems = items.filter((item) => item.responses.length > 0)
-    .length;
+  const respondedItems = items.filter(
+    (item) => item.responses.length > 0,
+  ).length;
   const progressPercent =
     totalItems > 0 ? (respondedItems / totalItems) * 100 : 0;
 

@@ -7,9 +7,11 @@
 ## Tasks Completed
 
 ### ✅ Task 1: DAL — BH certificate data access
+
 **File:** `src/data-access/bh-certificate.ts`
 
 Created data access layer with:
+
 - `deriveBhCertStatus()` function to derive status from engagement fields (PENDING → SIGNED → COUNTERSIGNED)
 - `getEngagementForBhCertificate()` function to fetch engagement with all BH certificate fields, team members, and observations
 - Proper tenant-scoped data access using `prismaForTenant()`
@@ -17,23 +19,28 @@ Created data access layer with:
 **Verification:** ✅ File created and exports both functions
 
 ### ✅ Task 2: Schema Migration + Schemas
-**Files:** 
+
+**Files:**
+
 - `prisma/schema.prisma` — Added countersign fields
 - `src/actions/audit-execution/schemas.ts` — Added validation schemas
 
 Schema changes:
+
 ```prisma
 bhCertCountersignedById String?   @db.Uuid
 bhCertCountersignedAt   DateTime?
 ```
 
 Validation schemas added:
+
 - `SignBhCertificateSchema` — validates sign action with mandatory comments and declaration acceptance
 - `CountersignBhCertificateSchema` — validates countersign action with optional comments
 
 **Verification:** ✅ Schema pushed to database, Prisma client regenerated, schemas exported
 
 ### ✅ Task 3: Server Actions — Sign and Countersign
+
 **File:** `src/actions/audit-execution/bh-certificate.ts`
 
 Created three server actions:
@@ -56,18 +63,22 @@ Created three server actions:
    - Read-only status check
    - Returns current certificate state
 
-**Verification:** 
+**Verification:**
+
 - ✅ 2 main action exports confirmed
 - ✅ BRANCH_HEAD role check present
 - ✅ LEAD_AUDITOR/AUDIT_MANAGER role check present
 - ✅ Follows server action boilerplate pattern from CONVENTIONS.md
 
 ### ✅ Task 4: Client Components — Workflow UI
+
 **Files:**
+
 - `src/components/audit-execution/bh-signature-capture.tsx` — Signature capture UI
 - `src/components/audit-execution/bh-certificate-workflow.tsx` — Main workflow component
 
 **BhSignatureCapture Component:**
+
 - Declaration text with `[SIGNER_NAME]` replacement
 - Checkbox for declaration acceptance (required)
 - Mandatory comments textarea (1-2000 chars)
@@ -75,6 +86,7 @@ Created three server actions:
 - Uses pragmatic v1 approach: declaration + checkbox (not canvas drawing)
 
 **BhCertificateWorkflow Component:**
+
 - Three-step progress indicator (PENDING → SIGNED → COUNTERSIGNED)
 - Observation summary card (critical/high/medium/low counts)
 - Role-based rendering:
@@ -89,9 +101,11 @@ Created three server actions:
 **Verification:** ✅ Files created with proper client components
 
 ### ✅ Task 5: PDF Section — Render Signed Certificate
+
 **File:** `src/components/pdf-report/bh-certificate-section.tsx`
 
 Created dedicated PDF section component with:
+
 - Branch and audit period metadata
 - Declaration text (formal certification statement)
 - Signature block with:
@@ -105,15 +119,18 @@ Created dedicated PDF section component with:
 - Professional styling using @react-pdf/renderer
 
 **Integration:**
+
 - Updated `src/data-access/reports.ts` → `getAuditReportData()` to fetch and resolve signer/countersigner names
 - Updated `src/components/pdf-report/audit-summary-document.tsx` to import and render `BhCertificateSection`
 
 **Verification:** ✅ BhCertificateSection component exists and exported
 
 ### ✅ Task 6: Page — /audit-execution/[id]/bh-certificate
+
 **File:** `src/app/(dashboard)/audit-execution/[id]/bh-certificate/page.tsx`
 
 Created server component page:
+
 - Fetches engagement via `getEngagementForBhCertificate()`
 - Derives BH certificate status via `deriveBhCertStatus()`
 - Computes observation summary (critical/high/medium/low counts)
@@ -127,6 +144,7 @@ Created server component page:
 ## Convention Compliance
 
 ✅ **Server Action Pattern:** All server actions follow the standard boilerplate:
+
 - Step 1: Authentication
 - Step 2: Permission/Role Check
 - Step 3: Input Validation
@@ -138,7 +156,8 @@ Created server component page:
 
 ✅ **Database Access:** All queries use `prismaForTenant(tenantId)` — never raw `prisma`
 
-✅ **Role-Based Access:** 
+✅ **Role-Based Access:**
+
 - BRANCH_HEAD for signing
 - LEAD_AUDITOR/AUDIT_MANAGER for countersigning
 - Using `userRoles.includes()` pattern for multi-role support
@@ -166,6 +185,7 @@ Created server component page:
 ## Files Created/Modified
 
 ### Created (8 files)
+
 1. `src/data-access/bh-certificate.ts`
 2. `src/actions/audit-execution/bh-certificate.ts`
 3. `src/components/audit-execution/bh-signature-capture.tsx`
@@ -175,6 +195,7 @@ Created server component page:
 7. `.planning/gap-closure-a/A7-SUMMARY.md` (this file)
 
 ### Modified (4 files)
+
 1. `prisma/schema.prisma` — Added `bhCertCountersignedById` and `bhCertCountersignedAt`
 2. `src/actions/audit-execution/schemas.ts` — Added BH certificate schemas
 3. `src/data-access/reports.ts` — Extended `getAuditReportData()` to resolve signer names
@@ -185,6 +206,7 @@ Created server component page:
 **Migration:** Schema extended via `pnpm prisma db push` (dev environment)
 
 **New Fields:**
+
 ```prisma
 model AuditEngagement {
   // ... existing fields

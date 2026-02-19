@@ -7,7 +7,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, Circle, AlertCircle, FileText } from "lucide-react";
 import { ReportApprovalPanel } from "./report-approval-panel";
 import type { ReportStatus } from "@/actions/reports/schemas";
-import { REPORT_TRANSITIONS, TRANSITION_ROLES } from "@/actions/reports/schemas";
+import {
+  REPORT_TRANSITIONS,
+  TRANSITION_ROLES,
+} from "@/actions/reports/schemas";
 
 interface ReportStatusWorkflowProps {
   engagementId: string;
@@ -22,7 +25,12 @@ interface ReportStatusWorkflowProps {
   overallRating: string | null;
 }
 
-const STATUS_ORDER: ReportStatus[] = ["DRAFT", "REVIEWED", "APPROVED", "ISSUED"];
+const STATUS_ORDER: ReportStatus[] = [
+  "DRAFT",
+  "REVIEWED",
+  "APPROVED",
+  "ISSUED",
+];
 
 export function ReportStatusWorkflow({
   engagementId,
@@ -72,7 +80,7 @@ export function ReportStatusWorkflow({
     <div className="space-y-6">
       {/* Status Stepper */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Report Status</h2>
+        <h2 className="mb-4 text-lg font-semibold">Report Status</h2>
         <div className="flex items-center justify-between">
           {STATUS_ORDER.map((status, index) => {
             const isCompleted = index < currentStepIndex;
@@ -110,7 +118,7 @@ export function ReportStatusWorkflow({
                 {/* Connector Line */}
                 {index < STATUS_ORDER.length - 1 && (
                   <div
-                    className={`h-1 flex-1 mx-4 ${
+                    className={`mx-4 h-1 flex-1 ${
                       isCompleted ? "bg-green-500" : "bg-gray-200"
                     }`}
                   />
@@ -123,14 +131,14 @@ export function ReportStatusWorkflow({
 
       {/* Status Details */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Workflow History</h2>
+        <h2 className="mb-4 text-lg font-semibold">Workflow History</h2>
         <div className="space-y-3">
           {reviewedBy && (
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
               <div>
                 <p className="text-sm font-medium">Reviewed</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   By {reviewedBy.name} on {reviewedBy.at}
                 </p>
               </div>
@@ -139,10 +147,10 @@ export function ReportStatusWorkflow({
 
           {approvedBy && (
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
               <div>
                 <p className="text-sm font-medium">Approved</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   By {approvedBy.name} on {approvedBy.at}
                 </p>
               </div>
@@ -151,10 +159,10 @@ export function ReportStatusWorkflow({
 
           {issuedBy && (
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
               <div>
                 <p className="text-sm font-medium">Issued</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   By {issuedBy.name} on {issuedBy.at}
                 </p>
               </div>
@@ -162,7 +170,7 @@ export function ReportStatusWorkflow({
           )}
 
           {!reviewedBy && !approvedBy && !issuedBy && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No workflow actions recorded yet.
             </p>
           )}
@@ -171,25 +179,25 @@ export function ReportStatusWorkflow({
 
       {/* Report Summary */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <FileText className="h-5 w-5" />
           Report Summary
         </h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Branch</p>
+            <p className="text-muted-foreground text-sm">Branch</p>
             <p className="font-medium">{branchName}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Observations</p>
+            <p className="text-muted-foreground text-sm">Observations</p>
             <p className="font-medium">{observationCount}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Overall Rating</p>
+            <p className="text-muted-foreground text-sm">Overall Rating</p>
             <p className="font-medium">{overallRating || "Not computed"}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">BH Certificate</p>
+            <p className="text-muted-foreground text-sm">BH Certificate</p>
             <Badge variant={bhCertSigned ? "default" : "secondary"}>
               {bhCertSigned ? "Signed" : "Pending"}
             </Badge>
@@ -200,7 +208,7 @@ export function ReportStatusWorkflow({
       {/* Available Actions */}
       {currentStatus !== "ISSUED" && (
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Available Actions</h2>
+          <h2 className="mb-4 text-lg font-semibold">Available Actions</h2>
 
           {availableTransitions.length === 0 ? (
             <Alert>
@@ -222,7 +230,7 @@ export function ReportStatusWorkflow({
                       <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
-                          <ul className="list-disc list-inside">
+                          <ul className="list-inside list-disc">
                             {warnings.map((warning, idx) => (
                               <li key={idx}>{warning}</li>
                             ))}
@@ -246,7 +254,9 @@ export function ReportStatusWorkflow({
                         <AlertDescription>
                           You do not have permission to transition to{" "}
                           {targetStatus}. Required roles:{" "}
-                          {TRANSITION_ROLES[`${currentStatus}→${targetStatus}`]?.join(", ")}
+                          {TRANSITION_ROLES[
+                            `${currentStatus}→${targetStatus}`
+                          ]?.join(", ")}
                         </AlertDescription>
                       </Alert>
                     )}

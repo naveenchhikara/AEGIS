@@ -13,15 +13,25 @@ import { logger } from "@/lib/logger";
  */
 const ManageTemplateSchema = z.object({
   templateId: z.string().uuid().optional(),
-  scopeArea: z.enum(["CASH", "INVESTMENTS", "ADVANCES", "OFF_BS", "DEPOSITS", "KYC", "EDP"]),
+  scopeArea: z.enum([
+    "CASH",
+    "INVESTMENTS",
+    "ADVANCES",
+    "OFF_BS",
+    "DEPOSITS",
+    "KYC",
+    "EDP",
+  ]),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
-  checklistItems: z.array(z.object({
-    id: z.string().optional(),
-    particulars: z.string(),
-    riskCategory: z.string().optional(),
-    regulatoryRef: z.string().optional(),
-  })),
+  checklistItems: z.array(
+    z.object({
+      id: z.string().optional(),
+      particulars: z.string(),
+      riskCategory: z.string().optional(),
+      regulatoryRef: z.string().optional(),
+    }),
+  ),
   isActive: z.boolean().optional(),
 });
 
@@ -107,7 +117,10 @@ export async function manageTemplate(input: ManageTemplateInput) {
       error instanceof Error
         ? error.message
         : "Failed to manage concurrent audit template.";
-    logger.error({ error, action: "manage_concurrent_template", tenantId }, message);
+    logger.error(
+      { error, action: "manage_concurrent_template", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }
@@ -153,7 +166,10 @@ export async function deleteTemplate(templateId: string) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to delete template.";
-    logger.error({ error, action: "delete_concurrent_template", tenantId }, message);
+    logger.error(
+      { error, action: "delete_concurrent_template", tenantId },
+      message,
+    );
     return { success: false as const, error: message };
   }
 }

@@ -37,7 +37,9 @@ export function ZacReviewPanel({
 }: ZacReviewPanelProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [decision, setDecision] = React.useState<"APPROVED" | "REJECTED" | "REQUEST_INFO">("APPROVED");
+  const [decision, setDecision] = React.useState<
+    "APPROVED" | "REJECTED" | "REQUEST_INFO"
+  >("APPROVED");
   const [comments, setComments] = React.useState("");
 
   const handleSubmit = async () => {
@@ -55,7 +57,9 @@ export function ZacReviewPanel({
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success(`Review ${decision.toLowerCase()} - compliance item updated`);
+      toast.success(
+        `Review ${decision.toLowerCase()} - compliance item updated`,
+      );
       onOpenChange(false);
       router.refresh();
     } else {
@@ -69,13 +73,17 @@ export function ZacReviewPanel({
         <DialogHeader>
           <DialogTitle>ZAC Review</DialogTitle>
           <DialogDescription>
-            Review the branch response and provide your decision as a Zonal Audit Committee member.
+            Review the branch response and provide your decision as a Zonal
+            Audit Committee member.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="decision">Decision</Label>
-            <Select value={decision} onValueChange={(val: any) => setDecision(val)}>
+            <Select
+              value={decision}
+              onValueChange={(val: any) => setDecision(val)}
+            >
               <SelectTrigger id="decision">
                 <SelectValue />
               </SelectTrigger>
@@ -115,8 +123,9 @@ export function ZacReviewPanel({
           </div>
 
           {decision === "REQUEST_INFO" && (
-            <p className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded">
-              This will send the item back to the branch for additional information.
+            <p className="rounded bg-yellow-50 p-3 text-sm text-yellow-600">
+              This will send the item back to the branch for additional
+              information.
             </p>
           )}
         </div>

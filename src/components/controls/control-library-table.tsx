@@ -92,7 +92,7 @@ type FormState = {
 
 async function submitControlAction(
   _prev: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   const frameworkMappingRaw = formData.get("frameworkMapping") as string;
   let frameworkMapping = undefined;
@@ -125,7 +125,10 @@ export function ControlLibraryTable({
 }: ControlLibraryTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [state, formAction, isPending] = useActionState(submitControlAction, {});
+  const [state, formAction, isPending] = useActionState(
+    submitControlAction,
+    {},
+  );
 
   // Handle success/error feedback
   React.useEffect(() => {
@@ -208,7 +211,9 @@ export function ControlLibraryTable({
                           <SelectValue placeholder="Select frequency" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="TRANSACTION">Transaction</SelectItem>
+                          <SelectItem value="TRANSACTION">
+                            Transaction
+                          </SelectItem>
                           <SelectItem value="DAILY">Daily</SelectItem>
                           <SelectItem value="WEEKLY">Weekly</SelectItem>
                           <SelectItem value="MONTHLY">Monthly</SelectItem>
@@ -303,22 +308,23 @@ export function ControlLibraryTable({
             {controls.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  No controls in library. Create your first control to get started.
+                  No controls in library. Create your first control to get
+                  started.
                 </TableCell>
               </TableRow>
             ) : (
               controls.map((control) => {
                 const effectivenessLevel = getEffectivenessLevel(
-                  control.effectivenessScore
+                  control.effectivenessScore,
                 );
                 const openIssuesCount = control.issues.filter(
-                  (i) => i.severity === "HIGH" || i.severity === "CRITICAL"
+                  (i) => i.severity === "HIGH" || i.severity === "CRITICAL",
                 ).length;
 
                 return (
                   <TableRow
                     key={control.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="hover:bg-muted/50 cursor-pointer"
                     onClick={() => router.push(`/controls/${control.id}`)}
                   >
                     <TableCell className="font-medium">
@@ -332,7 +338,9 @@ export function ControlLibraryTable({
                     <TableCell className="max-w-md truncate">
                       {control.description}
                     </TableCell>
-                    <TableCell>{formatProcessArea(control.processArea)}</TableCell>
+                    <TableCell>
+                      {formatProcessArea(control.processArea)}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -342,7 +350,7 @@ export function ControlLibraryTable({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {control.testProcedures.length} procedure
                         {control.testProcedures.length !== 1 ? "s" : ""}
                       </span>
@@ -369,7 +377,7 @@ export function ControlLibraryTable({
                       {openIssuesCount > 0 ? (
                         <Badge variant="destructive">{openIssuesCount}</Badge>
                       ) : (
-                        <span className="text-sm text-muted-foreground">—</span>
+                        <span className="text-muted-foreground text-sm">—</span>
                       )}
                     </TableCell>
                   </TableRow>

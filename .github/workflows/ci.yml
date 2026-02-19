@@ -165,6 +165,7 @@ jobs:
       - name: Run Playwright E2E tests
         run: pnpm test:e2e
         env:
+          SKIP_ENV_VALIDATION: "1"
           DATABASE_URL: postgresql://aegis:testpassword123@localhost:5432/aegis_test
           BETTER_AUTH_SECRET: ci_test_secret_that_is_at_least_32chars_long
           BETTER_AUTH_URL: http://localhost:3000

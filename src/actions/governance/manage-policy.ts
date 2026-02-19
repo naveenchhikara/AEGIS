@@ -26,7 +26,9 @@ const ManagePolicySchema = z.object({
   approvalDate: z.coerce.date().optional(),
   reviewDueDate: z.coerce.date().optional(),
   version: z.string().optional(),
-  status: z.enum(["DRAFT", "APPROVED", "UNDER_REVIEW", "SUPERSEDED"]).optional(),
+  status: z
+    .enum(["DRAFT", "APPROVED", "UNDER_REVIEW", "SUPERSEDED"])
+    .optional(),
   documentUrl: z.string().optional(),
   summary: z.string().optional(),
 });

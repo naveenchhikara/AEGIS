@@ -122,7 +122,15 @@ export async function resolveFieldwork(input: ResolveFieldworkInput) {
       data: { id: validated.observationId },
     };
   } catch (error) {
-    logger.error({ error, action: "resolve_fieldwork", tenantId, observationId: validated.observationId }, "Failed to resolve observation");
+    logger.error(
+      {
+        error,
+        action: "resolve_fieldwork",
+        tenantId,
+        observationId: validated.observationId,
+      },
+      "Failed to resolve observation",
+    );
     return {
       success: false as const,
       error: "Failed to resolve observation. Please try again.",

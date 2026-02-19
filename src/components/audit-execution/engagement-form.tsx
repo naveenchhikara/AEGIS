@@ -97,7 +97,9 @@ export function EngagementForm({
             </SelectContent>
           </Select>
           {errors.auditPlanId && (
-            <p className="text-sm text-destructive">{errors.auditPlanId.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.auditPlanId.message}
+            </p>
           )}
         </div>
 
@@ -121,7 +123,9 @@ export function EngagementForm({
             </SelectContent>
           </Select>
           {errors.branchId && (
-            <p className="text-sm text-destructive">{errors.branchId.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.branchId.message}
+            </p>
           )}
         </div>
 
@@ -130,7 +134,9 @@ export function EngagementForm({
           <Label htmlFor="auditAreaId">Audit Area</Label>
           <Select
             value={watch("auditAreaId") || ""}
-            onValueChange={(value) => setValue("auditAreaId", value || undefined)}
+            onValueChange={(value) =>
+              setValue("auditAreaId", value || undefined)
+            }
             disabled={isSubmitting}
           >
             <SelectTrigger>
@@ -144,11 +150,13 @@ export function EngagementForm({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Optional - specific area or thematic focus
           </p>
           {errors.auditAreaId && (
-            <p className="text-sm text-destructive">{errors.auditAreaId.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.auditAreaId.message}
+            </p>
           )}
         </div>
 
@@ -161,11 +169,13 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("auditNumber")}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Unique audit reference number
           </p>
           {errors.auditNumber && (
-            <p className="text-sm text-destructive">{errors.auditNumber.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.auditNumber.message}
+            </p>
           )}
         </div>
 
@@ -189,7 +199,9 @@ export function EngagementForm({
             </SelectContent>
           </Select>
           {errors.auditType && (
-            <p className="text-sm text-destructive">{errors.auditType.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.auditType.message}
+            </p>
           )}
         </div>
 
@@ -203,11 +215,13 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("visitNumber", { valueAsNumber: true })}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             1 for first visit, 2 for second, etc.
           </p>
           {errors.visitNumber && (
-            <p className="text-sm text-destructive">{errors.visitNumber.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.visitNumber.message}
+            </p>
           )}
         </div>
 
@@ -220,11 +234,13 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("periodFrom")}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Start of audit coverage period
           </p>
           {errors.periodFrom && (
-            <p className="text-sm text-destructive">{errors.periodFrom.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.periodFrom.message}
+            </p>
           )}
         </div>
 
@@ -237,11 +253,13 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("periodTo")}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             End of audit coverage period
           </p>
           {errors.periodTo && (
-            <p className="text-sm text-destructive">{errors.periodTo.message}</p>
+            <p className="text-destructive text-sm">
+              {errors.periodTo.message}
+            </p>
           )}
         </div>
 
@@ -254,11 +272,11 @@ export function EngagementForm({
             disabled={isSubmitting}
             {...register("scheduledStartDate")}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             When the audit is planned to begin
           </p>
           {errors.scheduledStartDate && (
-            <p className="text-sm text-destructive">
+            <p className="text-destructive text-sm">
               {errors.scheduledStartDate.message}
             </p>
           )}

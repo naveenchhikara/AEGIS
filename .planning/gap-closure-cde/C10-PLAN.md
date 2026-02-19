@@ -145,12 +145,14 @@ export default async function HousekeepingPage() {
 ```
 
 Also update nav-items.ts to include the `/housekeeping` route if not present.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 cd /root/.openclaw/workspace/AEGIS
 pnpm exec tsc --noEmit --pretty false 2>&1 | grep -c "error TS"
 ```
+
   </verify>
   <done>
 - `/housekeeping` route created with 3 tabs
@@ -183,12 +185,18 @@ Create housekeeping risk metrics capture UI (R80):
    - Remarks (text)
 
 4. Create action — use DAL directly since no server action exists:
+
    ```typescript
    // Create server action for housekeeping metrics
    "use server";
-   import { createHousekeepingMetric, updateHousekeepingMetric } from "@/data-access/governance";
+   import {
+     createHousekeepingMetric,
+     updateHousekeepingMetric,
+   } from "@/data-access/governance";
    ```
+
    Actually, create a new server action `src/actions/housekeeping/manage-metric.ts`:
+
    ```typescript
    "use server";
    const ManageMetricSchema = z.object({
@@ -212,17 +220,18 @@ Create housekeeping risk metrics capture UI (R80):
    - Edit/delete actions
 
 6. Filters: branch, metric type, period
-  </action>
-  <verify>
-Metrics capture form creates and updates housekeeping metrics.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Metrics capture form creates and updates housekeeping metrics.
+   </verify>
+   <done>
+
 - Housekeeping metrics capture form with branch/period selection
 - Server action created for metric CRUD
 - High-risk aging alerts
 - Table with color-coded aging indicators
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Risk Management MIS Dashboards</name>
@@ -234,6 +243,7 @@ Metrics capture form creates and updates housekeeping metrics.
 Create risk management MIS dashboards (R87):
 
 1. Create new DAL file `src/data-access/housekeeping-mis.ts`:
+
    ```typescript
    import "server-only";
    import { prismaForTenant } from "./prisma";
@@ -245,28 +255,51 @@ Create risk management MIS dashboards (R87):
 
      // CRAR Indicators (from housekeeping metrics or manual input)
      const crarMetrics = await db.housekeepingMetric.findMany({
-       where: { tenantId, metricType: { in: ["CRAR_TIER1", "CRAR_TIER2", "CRAR_TOTAL", "RISK_WEIGHTED_ASSETS"] } },
+       where: {
+         tenantId,
+         metricType: {
+           in: [
+             "CRAR_TIER1",
+             "CRAR_TIER2",
+             "CRAR_TOTAL",
+             "RISK_WEIGHTED_ASSETS",
+           ],
+         },
+       },
        orderBy: { period: "desc" },
        take: 8, // Last 8 quarters
      });
 
      // Asset Quality
      const assetQuality = await db.housekeepingMetric.findMany({
-       where: { tenantId, metricType: { in: ["GROSS_NPA", "NET_NPA", "PROVISION_COVERAGE", "SLIPPAGE_RATIO"] } },
+       where: {
+         tenantId,
+         metricType: {
+           in: ["GROSS_NPA", "NET_NPA", "PROVISION_COVERAGE", "SLIPPAGE_RATIO"],
+         },
+       },
        orderBy: { period: "desc" },
        take: 8,
      });
 
      // Liquidity
      const liquidity = await db.housekeepingMetric.findMany({
-       where: { tenantId, metricType: { in: ["SLR_MAINTAINED", "CRR_MAINTAINED", "LCR", "CD_RATIO"] } },
+       where: {
+         tenantId,
+         metricType: {
+           in: ["SLR_MAINTAINED", "CRR_MAINTAINED", "LCR", "CD_RATIO"],
+         },
+       },
        orderBy: { period: "desc" },
        take: 8,
      });
 
      // Operational Risk
      const operational = await db.housekeepingMetric.findMany({
-       where: { tenantId, metricType: { in: ["INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"] } },
+       where: {
+         tenantId,
+         metricType: { in: ["INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"] },
+       },
        include: { branch: { select: { name: true } } },
        orderBy: { period: "desc" },
      });
@@ -308,17 +341,18 @@ Create risk management MIS dashboards (R87):
    - Expand metric types in the capture form to include CRAR/asset quality/liquidity types
 
 4. Use Card, Table, Badge, Progress components
-  </action>
-  <verify>
-MIS dashboard renders 4 risk sections from housekeeping data.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   MIS dashboard renders 4 risk sections from housekeeping data.
+   </verify>
+   <done>
+
 - CRAR, Asset Quality, Liquidity, Operational risk dashboards
 - Trend data from housekeeping metrics
 - Regulatory threshold alerts
 - "Data not available" prompts for missing metrics
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Inter-bank Exposure Monitor</name>
@@ -330,6 +364,7 @@ MIS dashboard renders 4 risk sections from housekeeping data.
 Create inter-bank exposure monitoring (R88):
 
 1. First, create the server action file `src/actions/housekeeping/manage-metric.ts`:
+
    ```typescript
    "use server";
    import { revalidatePath } from "next/cache";
@@ -352,7 +387,9 @@ Create inter-bank exposure monitoring (R88):
      remarks: z.string().optional(),
    });
 
-   export async function manageHousekeepingMetric(input: z.infer<typeof ManageMetricSchema>) {
+   export async function manageHousekeepingMetric(
+     input: z.infer<typeof ManageMetricSchema>,
+   ) {
      const session = await getRequiredSession();
      const userRoles = ((session.user as any).roles ?? []) as Role[];
      const tenantId = (session.user as any).tenantId as string;
@@ -363,7 +400,10 @@ Create inter-bank exposure monitoring (R88):
 
      const parsed = ManageMetricSchema.safeParse(input);
      if (!parsed.success) {
-       return { success: false as const, error: parsed.error.issues[0].message };
+       return {
+         success: false as const,
+         error: parsed.error.issues[0].message,
+       };
      }
 
      const db = prismaForTenant(tenantId);
@@ -371,8 +411,12 @@ Create inter-bank exposure monitoring (R88):
      try {
        const result = await db.$transaction(async (tx: any) => {
          await setAuditContext(tx, {
-           actionType: parsed.data.id ? "housekeeping.metric_updated" : "housekeeping.metric_created",
-           userId: session.user.id, tenantId, sessionId: session.session.id,
+           actionType: parsed.data.id
+             ? "housekeeping.metric_updated"
+             : "housekeeping.metric_created",
+           userId: session.user.id,
+           tenantId,
+           sessionId: session.session.id,
          });
 
          if (parsed.data.id) {
@@ -388,14 +432,21 @@ Create inter-bank exposure monitoring (R88):
            });
          }
          return tx.housekeepingMetric.create({
-           data: { tenantId, ...parsed.data, entriesCount: parsed.data.entriesCount || 0 },
+           data: {
+             tenantId,
+             ...parsed.data,
+             entriesCount: parsed.data.entriesCount || 0,
+           },
          });
        });
 
        revalidatePath("/housekeeping");
        return { success: true as const, data: { id: result.id } };
      } catch (error) {
-       logger.error({ error, action: "manage_housekeeping_metric", tenantId }, "Failed");
+       logger.error(
+         { error, action: "manage_housekeeping_metric", tenantId },
+         "Failed",
+       );
        return { success: false as const, error: "Failed to manage metric." };
      }
    }
@@ -436,17 +487,18 @@ Create inter-bank exposure monitoring (R88):
    - Remarks
 
 3. Regulatory reference: "Total inter-bank exposure shall not exceed 20% of net worth. Exposure to any single bank shall not exceed 5% of net worth (RBI Master Circular on Exposure Norms)"
-  </action>
-  <verify>
-Inter-bank exposure monitor shows utilization with alerts.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Inter-bank exposure monitor shows utilization with alerts.
+   </verify>
+   <done>
+
 - Inter-bank exposure monitoring with 20% total / 5% per-bank limits
 - Server action for housekeeping metric CRUD created
 - Per-bank exposure table with breach alerts
 - Regulatory limit compliance indicators
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -461,6 +513,7 @@ Inter-bank exposure monitor shows utilization with alerts.
 </verification>
 
 <success_criteria>
+
 - ✅ `/housekeeping` page created with metrics capture UI
 - ✅ Housekeeping risk metrics (inter-branch, suspense, clearing) capturable
 - ✅ Risk management MIS dashboards (CRAR, asset quality, liquidity, operational)
@@ -468,7 +521,7 @@ Inter-bank exposure monitor shows utilization with alerts.
 - ✅ Server action for housekeeping metric management
 - ✅ TypeScript compilation clean
 - ✅ R80, R87, R88 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

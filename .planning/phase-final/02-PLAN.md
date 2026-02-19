@@ -60,28 +60,32 @@ Existing branch codes: HO, BR-PUNE, BR-NASHIK
   - 1 OVERDUE (100 days, L3)
   - 1 CLOSED (resolved)
 
-  These link to existing observations from `findings.json`. Use placeholder observation IDs — the seed script will resolve them at runtime.
+These link to existing observations from `findings.json`. Use placeholder observation IDs — the seed script will resolve them at runtime.
 
-  **report-templates.json**: 3 templates:
-  - "Standard Audit Report" (REPORT_HEADER)
-  - "Cash Verification Checklist" (CHECKLIST)
-  - "Examination Section Template" (AUDIT_SECTION)
+**report-templates.json**: 3 templates:
 
-  Each with `templateData` containing section headers, field definitions, and formatting rules as JSONB.
+- "Standard Audit Report" (REPORT_HEADER)
+- "Cash Verification Checklist" (CHECKLIST)
+- "Examination Section Template" (AUDIT_SECTION)
 
-  **calendar-events.json**: 6 events:
-  - 2 RBIA audits (Q1, Q2 2026)
-  - 1 CONCURRENT audit
-  - 1 IS_EDP audit
-  - 1 STATUTORY audit
-  - 1 MEETING (ACB quarterly)
+Each with `templateData` containing section headers, field definitions, and formatting rules as JSONB.
+
+**calendar-events.json**: 6 events:
+
+- 2 RBIA audits (Q1, Q2 2026)
+- 1 CONCURRENT audit
+- 1 IS_EDP audit
+- 1 STATUTORY audit
+- 1 MEETING (ACB quarterly)
   </action>
   <verify>
-  ```bash
-  node -e "const d = require('./src/data/seed/compliance-items-seed.json'); console.log(d.length + ' compliance items')"
-  node -e "const d = require('./src/data/seed/report-templates.json'); console.log(d.length + ' templates')"
-  node -e "const d = require('./src/data/seed/calendar-events.json'); console.log(d.length + ' events')"
-  ```
+
+```bash
+node -e "const d = require('./src/data/seed/compliance-items-seed.json'); console.log(d.length + ' compliance items')"
+node -e "const d = require('./src/data/seed/report-templates.json'); console.log(d.length + ' templates')"
+node -e "const d = require('./src/data/seed/calendar-events.json'); console.log(d.length + ' events')"
+```
+
   </verify>
   <done>
   - 5 compliance items across lifecycle stages
@@ -106,50 +110,56 @@ Existing branch codes: HO, BR-PUNE, BR-NASHIK
   - 2 PROCESS entities (Lending, KYC/AML)
   - 1 CHANNEL entity (Internet Banking)
 
-  Each with riskScore (1.0-5.0), lastAuditDate, requiredFrequency.
+Each with riskScore (1.0-5.0), lastAuditDate, requiredFrequency.
 
-  **risk-registers.json**: 12 risk entries:
-  - 3 CREDIT risks (loan concentration, NPA, collateral)
-  - 3 OPERATIONAL risks (fraud, IT failure, staff)
-  - 2 COMPLIANCE risks (KYC, RBI reporting)
-  - 2 MARKET risks (interest rate, liquidity)
-  - 2 IT risks (cyber, data loss)
+**risk-registers.json**: 12 risk entries:
 
-  Each with inherentScore, controlScore, residualScore (1.0-5.0), riskOwner, status.
+- 3 CREDIT risks (loan concentration, NPA, collateral)
+- 3 OPERATIONAL risks (fraud, IT failure, staff)
+- 2 COMPLIANCE risks (KYC, RBI reporting)
+- 2 MARKET risks (interest rate, liquidity)
+- 2 IT risks (cyber, data loss)
 
-  Include 2 KRIs per risk: e.g., NPA ratio (threshold 5%), loan concentration (threshold 15%).
+Each with inherentScore, controlScore, residualScore (1.0-5.0), riskOwner, status.
 
-  **controls.json**: 15 controls across process areas:
-  - 4 LENDING (loan sanction, disbursement, review, NPA classification)
-  - 3 KYC_AML (customer verification, transaction monitoring, STR filing)
-  - 3 IT_OPERATIONS (access control, backup, change management)
-  - 3 TREASURY (investment approval, SGL reconciliation, broker limits)
-  - 2 DEPOSITS (interest computation, premature withdrawal)
+Include 2 KRIs per risk: e.g., NPA ratio (threshold 5%), loan concentration (threshold 15%).
 
-  Each with controlCode, controlType, frequency, isKeyControl, frameworkMapping.
+**controls.json**: 15 controls across process areas:
 
-  Include 1-2 test procedures per control.
+- 4 LENDING (loan sanction, disbursement, review, NPA classification)
+- 3 KYC_AML (customer verification, transaction monitoring, STR filing)
+- 3 IT_OPERATIONS (access control, backup, change management)
+- 3 TREASURY (investment approval, SGL reconciliation, broker limits)
+- 2 DEPOSITS (interest computation, premature withdrawal)
 
-  **issues-seed.json**: 8 issues:
-  - 2 INTERNAL_AUDIT source
-  - 2 REGULATORY source
-  - 2 SELF_ASSESSMENT source
-  - 1 EXTERNAL_AUDIT source
-  - 1 CONCURRENT source
+Each with controlCode, controlType, frequency, isKeyControl, frameworkMapping.
 
-  Mix of severities and statuses. Include 1-2 action plans per issue.
+Include 1-2 test procedures per control.
 
-  **qa-assessment-seed.json**: 10 IIA Standard questions:
-  - Standards 1000 (Purpose/Authority), 1100 (Independence), 2100 (Nature of Work)
-  - Mix of CONFORMS, PARTIALLY_CONFORMS, DOES_NOT_CONFORM responses
-  - 3 with gapIdentified: true
+**issues-seed.json**: 8 issues:
+
+- 2 INTERNAL_AUDIT source
+- 2 REGULATORY source
+- 2 SELF_ASSESSMENT source
+- 1 EXTERNAL_AUDIT source
+- 1 CONCURRENT source
+
+Mix of severities and statuses. Include 1-2 action plans per issue.
+
+**qa-assessment-seed.json**: 10 IIA Standard questions:
+
+- Standards 1000 (Purpose/Authority), 1100 (Independence), 2100 (Nature of Work)
+- Mix of CONFORMS, PARTIALLY_CONFORMS, DOES_NOT_CONFORM responses
+- 3 with gapIdentified: true
   </action>
   <verify>
-  ```bash
-  for f in audit-universe risk-registers controls issues-seed qa-assessment-seed; do
-    node -e "const d = require('./src/data/seed/${f}.json'); console.log('${f}: ' + (Array.isArray(d) ? d.length : Object.keys(d).length) + ' entries')"
-  done
-  ```
+
+```bash
+for f in audit-universe risk-registers controls issues-seed qa-assessment-seed; do
+  node -e "const d = require('./src/data/seed/${f}.json'); console.log('${f}: ' + (Array.isArray(d) ? d.length : Object.keys(d).length) + ' entries')"
+done
+```
+
   </verify>
   <done>
   - 8 audit universe entities across 4 types
@@ -177,50 +187,59 @@ Existing branch codes: HO, BR-PUNE, BR-NASHIK
   - CASH, INVESTMENTS, ADVANCES, OFF_BS, DEPOSITS, KYC, EDP
   Each with 5-8 checklist items in the `checklistItems` JSON array.
 
-  **regulatory-observations.json**: 4 entries:
-  - 2 RBI_INSPECTION (1 SUBMITTED, 1 DRAFT ATR)
-  - 1 NABARD (ACCEPTED)
-  - 1 STATUTORY_AUDITOR (FURTHER_INFO)
+**regulatory-observations.json**: 4 entries:
 
-  **policies.json**: 8 policy documents:
-  - LENDING, INVESTMENT, KYC_AML, IT_SECURITY, HR, AUDIT, RISK_MANAGEMENT + 1 more
+- 2 RBI_INSPECTION (1 SUBMITTED, 1 DRAFT ATR)
+- 1 NABARD (ACCEPTED)
+- 1 STATUTORY_AUDITOR (FURTHER_INFO)
+
+**policies.json**: 8 policy documents:
+
+- LENDING, INVESTMENT, KYC_AML, IT_SECURITY, HR, AUDIT, RISK_MANAGEMENT + 1 more
   Mix of APPROVED/UNDER_REVIEW. Include reviewDueDate for some.
 
-  **committees.json**: 4 committees:
-  - ACB (Audit Committee of Board), RISK_MANAGEMENT, ALCO, IT_STRATEGY
+**committees.json**: 4 committees:
+
+- ACB (Audit Committee of Board), RISK_MANAGEMENT, ALCO, IT_STRATEGY
   Each with 3-4 members (roles: CHAIRMAN, MEMBER, SECRETARY).
 
-  **housekeeping-metrics.json**: 6 metrics:
-  - 2 INTER_BRANCH (HO, Pune)
-  - 2 SUSPENSE (HO, Nashik)
-  - 2 CLEARING (Pune, Nashik)
+**housekeeping-metrics.json**: 6 metrics:
+
+- 2 INTER_BRANCH (HO, Pune)
+- 2 SUSPENSE (HO, Nashik)
+- 2 CLEARING (Pune, Nashik)
   With opening/closing balances and aging.
 
-  **investments.json**: 8 records:
-  - 3 SLR (HTM classification)
-  - 3 NON_SLR (AFS classification)
-  - 2 with broker data (for 5% cap monitoring)
+**investments.json**: 8 records:
 
-  **app-inventory.json**: 6 applications:
-  - CBS (CRITICAL, ON_PREMISE)
-  - Internet Banking (HIGH, CLOUD)
-  - Mobile Banking (HIGH, CLOUD)
-  - HRMS (MEDIUM, ON_PREMISE)
-  - Email (MEDIUM, CLOUD)
-  - ATM Switch (CRITICAL, ON_PREMISE)
+- 3 SLR (HTM classification)
+- 3 NON_SLR (AFS classification)
+- 2 with broker data (for 5% cap monitoring)
+
+**app-inventory.json**: 6 applications:
+
+- CBS (CRITICAL, ON_PREMISE)
+- Internet Banking (HIGH, CLOUD)
+- Mobile Banking (HIGH, CLOUD)
+- HRMS (MEDIUM, ON_PREMISE)
+- Email (MEDIUM, CLOUD)
+- ATM Switch (CRITICAL, ON_PREMISE)
   With DR test dates and vendor info.
 
-  **is-checklists.json**: 3 checklists:
-  - CBS (10 items: interest rate params, product masters, user privileges)
-  - BCP_DR (8 items: backup, recovery plan, DR testing, RPO/RTO)
-  - CYBER_SECURITY (10 items: firewall, IDS, vulnerability scanning, access review)
+**is-checklists.json**: 3 checklists:
+
+- CBS (10 items: interest rate params, product masters, user privileges)
+- BCP_DR (8 items: backup, recovery plan, DR testing, RPO/RTO)
+- CYBER_SECURITY (10 items: firewall, IDS, vulnerability scanning, access review)
   </action>
   <verify>
-  ```bash
-  for f in concurrent-templates regulatory-observations policies committees housekeeping-metrics investments app-inventory is-checklists; do
-    node -e "const d = require('./src/data/seed/${f}.json'); console.log('${f}: ' + (Array.isArray(d) ? d.length : Object.keys(d).length) + ' entries')"
-  done
-  ```
+
+```bash
+for f in concurrent-templates regulatory-observations policies committees housekeeping-metrics investments app-inventory is-checklists; do
+  node -e "const d = require('./src/data/seed/${f}.json'); console.log('${f}: ' + (Array.isArray(d) ? d.length : Object.keys(d).length) + ' entries')"
+done
+```
+
   </verify>
   <done>
   - 7 concurrent audit templates covering all scope areas
@@ -240,41 +259,47 @@ Existing branch codes: HO, BR-PUNE, BR-NASHIK
   <action>
   Read the existing `prisma/seed.ts` to understand the pattern (dynamic imports, upsert, tenant-scoped).
 
-  Add seeder functions for each new JSON file. Order matters — respect foreign key dependencies:
+Add seeder functions for each new JSON file. Order matters — respect foreign key dependencies:
 
-  1. First: audit-universe entities (no FK deps)
-  2. Then: risk-registers (depends on audit-universe)
-  3. Then: controls (depends on risk-registers optionally)
-  4. Then: issues (depends on observations, controls optionally)
-  5. Then: compliance-items (depends on observations)
-  6. Then: everything else (templates, calendar, policies, committees, etc.)
+1. First: audit-universe entities (no FK deps)
+2. Then: risk-registers (depends on audit-universe)
+3. Then: controls (depends on risk-registers optionally)
+4. Then: issues (depends on observations, controls optionally)
+5. Then: compliance-items (depends on observations)
+6. Then: everything else (templates, calendar, policies, committees, etc.)
 
-  Each seeder should:
-  - Import JSON via dynamic import
-  - Use `prisma.model.upsert()` with a unique key where possible, or `createMany({ skipDuplicates: true })`
-  - Set `tenantId` to the seed tenant
-  - Log count of created records
+Each seeder should:
 
-  Add a `seedPhase2to6()` function that calls all new seeders in order, then call it from the main `seed()` function after existing seeders.
-  </action>
-  <verify>
-  ```bash
-  cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -c "error TS"
-  ```
-  Must be 0.
-  Then run the actual seed:
-  ```bash
-  DATABASE_URL="postgresql://aegis:aegisdev2026@172.18.0.2:5432/aegis" pnpm prisma db seed 2>&1 | tail -20
-  ```
-  Must complete without errors.
-  </verify>
-  <done>
-  - seed.ts compiles without errors
-  - All new seed data loads into production DB
-  - Every new page has data to display
-  - Seed is idempotent (can run multiple times safely)
+- Import JSON via dynamic import
+- Use `prisma.model.upsert()` with a unique key where possible, or `createMany({ skipDuplicates: true })`
+- Set `tenantId` to the seed tenant
+- Log count of created records
+
+Add a `seedPhase2to6()` function that calls all new seeders in order, then call it from the main `seed()` function after existing seeders.
+</action>
+<verify>
+
+```bash
+cd /root/.openclaw/workspace/AEGIS && pnpm exec tsc --noEmit 2>&1 | grep -c "error TS"
+```
+
+Must be 0.
+Then run the actual seed:
+
+```bash
+DATABASE_URL="postgresql://aegis:aegisdev2026@172.18.0.2:5432/aegis" pnpm prisma db seed 2>&1 | tail -20
+```
+
+Must complete without errors.
+</verify>
+<done>
+
+- seed.ts compiles without errors
+- All new seed data loads into production DB
+- Every new page has data to display
+- Seed is idempotent (can run multiple times safely)
   </done>
-</task>
+  </task>
 
 ## Success Criteria
 

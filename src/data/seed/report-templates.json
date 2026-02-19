@@ -19,7 +19,12 @@
           "title": "Audit Scope & Methodology",
           "order": 2,
           "required": true,
-          "fields": ["auditPeriod", "auditType", "samplingApproach", "areasReviewed"]
+          "fields": [
+            "auditPeriod",
+            "auditType",
+            "samplingApproach",
+            "areasReviewed"
+          ]
         },
         {
           "id": "detailed-findings",
@@ -33,7 +38,11 @@
           "title": "Recommendations & Action Plans",
           "order": 4,
           "required": true,
-          "fields": ["recommendationsList", "timelineSuggested", "responsibleParties"]
+          "fields": [
+            "recommendationsList",
+            "timelineSuggested",
+            "responsibleParties"
+          ]
         },
         {
           "id": "annexures",

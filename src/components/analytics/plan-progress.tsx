@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ClipboardList } from "@/lib/icons";
 
@@ -31,7 +37,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5 text-primary" />
+          <ClipboardList className="text-primary h-5 w-5" />
           <CardTitle>Audit Plan Progress</CardTitle>
         </div>
         <CardDescription>
@@ -41,7 +47,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
       <CardContent>
         <div className="space-y-6">
           {data.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-muted-foreground py-8 text-center">
               No audit plans found.
             </p>
           ) : (
@@ -52,7 +58,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
                     <h3 className="font-semibold">
                       FY {plan.year} - {plan.quarter}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {plan.completed} of {plan.total} engagements completed
                     </p>
                   </div>
@@ -65,7 +71,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
                     {/* Completed */}
                     {plan.completed > 0 && (
                       <div
-                        className="bg-green-500 flex items-center justify-center text-xs font-medium text-white"
+                        className="flex items-center justify-center bg-green-500 text-xs font-medium text-white"
                         style={{
                           width: `${(plan.completed / plan.total) * 100}%`,
                         }}
@@ -76,7 +82,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
                     {/* In Progress */}
                     {plan.inProgress > 0 && (
                       <div
-                        className="bg-blue-500 flex items-center justify-center text-xs font-medium text-white"
+                        className="flex items-center justify-center bg-blue-500 text-xs font-medium text-white"
                         style={{
                           width: `${(plan.inProgress / plan.total) * 100}%`,
                         }}
@@ -87,7 +93,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
                     {/* Planned */}
                     {plan.planned > 0 && (
                       <div
-                        className="bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700"
+                        className="flex items-center justify-center bg-gray-300 text-xs font-medium text-gray-700"
                         style={{
                           width: `${(plan.planned / plan.total) * 100}%`,
                         }}
@@ -96,7 +102,7 @@ export function PlanProgress({ data }: PlanProgressProps) {
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
+                  <div className="text-muted-foreground flex justify-between text-xs">
                     <span>Completed: {plan.completed}</span>
                     <span>In Progress: {plan.inProgress}</span>
                     <span>Planned: {plan.planned}</span>

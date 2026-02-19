@@ -4,7 +4,9 @@ export const CreateComplianceItemsSchema = z.object({
   engagementId: z.string().uuid("Invalid engagement ID"),
 });
 
-export type CreateComplianceItemsInput = z.infer<typeof CreateComplianceItemsSchema>;
+export type CreateComplianceItemsInput = z.infer<
+  typeof CreateComplianceItemsSchema
+>;
 
 export const SubmitBranchResponseSchema = z.object({
   complianceItemId: z.string().uuid("Invalid compliance item ID"),
@@ -12,7 +14,9 @@ export const SubmitBranchResponseSchema = z.object({
   evidenceS3Keys: z.array(z.string()).optional(),
 });
 
-export type SubmitBranchResponseInput = z.infer<typeof SubmitBranchResponseSchema>;
+export type SubmitBranchResponseInput = z.infer<
+  typeof SubmitBranchResponseSchema
+>;
 
 export const ZacReviewSchema = z.object({
   complianceItemId: z.string().uuid("Invalid compliance item ID"),
@@ -37,7 +41,9 @@ export const ProcessAceQuarterlySchema = z.object({
 });
 
 export type ReviewAceItemInput = z.infer<typeof ReviewAceItemSchema>;
-export type ProcessAceQuarterlyInput = z.infer<typeof ProcessAceQuarterlySchema>;
+export type ProcessAceQuarterlyInput = z.infer<
+  typeof ProcessAceQuarterlySchema
+>;
 
 // ─── ACB Reporting ────────────────────────────────────────────
 export const GenerateAcbReportSchema = z.object({

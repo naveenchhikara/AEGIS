@@ -117,9 +117,9 @@ export function BoardView({
   allActiveIssues,
 }: BoardViewProps) {
   const router = useRouter();
-  const [groupBy, setGroupBy] = React.useState<"source" | "severity" | "riskTheme">(
-    "source"
-  );
+  const [groupBy, setGroupBy] = React.useState<
+    "source" | "severity" | "riskTheme"
+  >("source");
   const [filterSource, setFilterSource] = React.useState<string>("all");
   const [filterSeverity, setFilterSeverity] = React.useState<string>("all");
 
@@ -129,7 +129,8 @@ export function BoardView({
   // Filter issues based on selected filters
   const filteredIssues = allActiveIssues.filter((issue) => {
     if (filterSource !== "all" && issue.source !== filterSource) return false;
-    if (filterSeverity !== "all" && issue.severity !== filterSeverity) return false;
+    if (filterSeverity !== "all" && issue.severity !== filterSeverity)
+      return false;
     return true;
   });
 
@@ -151,7 +152,8 @@ export function BoardView({
         label: severity,
         issues: allActiveIssues.filter((issue) => {
           if (issue.severity !== severity) return false;
-          if (filterSource !== "all" && issue.source !== filterSource) return false;
+          if (filterSource !== "all" && issue.source !== filterSource)
+            return false;
           return true;
         }),
       }));
@@ -169,7 +171,7 @@ export function BoardView({
               return false;
             return true;
           }),
-        })
+        }),
       );
     }
   }, [groupBy, filterSource, filterSeverity, allActiveIssues, bySource]);
@@ -180,12 +182,14 @@ export function BoardView({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Open Issues</CardTitle>
-            <FileWarning className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">
+              Total Open Issues
+            </CardTitle>
+            <FileWarning className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalIssues}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Across all sources and risk themes
             </p>
           </CardContent>
@@ -202,7 +206,7 @@ export function BoardView({
             <div className="text-2xl font-bold text-red-600">
               {criticalHighCount}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {bySeverity.critical} Critical, {bySeverity.high} High
             </p>
           </CardContent>
@@ -214,8 +218,10 @@ export function BoardView({
             <Shield className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{bySource.REGULATORY.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold">
+              {bySource.REGULATORY.length}
+            </div>
+            <p className="text-muted-foreground text-xs">
               Regulatory inspection issues
             </p>
           </CardContent>
@@ -223,21 +229,23 @@ export function BoardView({
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Risk Theme</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">
+              Top Risk Theme
+            </CardTitle>
+            <TrendingUp className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {
                 Object.entries(byRiskTheme).sort(
-                  ([, a], [, b]) => (b as number) - (a as number)
+                  ([, a], [, b]) => (b as number) - (a as number),
                 )[0][0]
               }
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {
                 Object.entries(byRiskTheme).sort(
-                  ([, a], [, b]) => (b as number) - (a as number)
+                  ([, a], [, b]) => (b as number) - (a as number),
                 )[0][1]
               }{" "}
               issues
@@ -250,7 +258,9 @@ export function BoardView({
       <Card>
         <CardHeader>
           <CardTitle>Issues by Source</CardTitle>
-          <CardDescription>Breakdown of open issues by audit source</CardDescription>
+          <CardDescription>
+            Breakdown of open issues by audit source
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -264,10 +274,11 @@ export function BoardView({
                     {source.replace(/_/g, " ")}
                   </Badge>
                   <div className="text-2xl font-bold">{issues.length}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {
                       issues.filter(
-                        (i) => i.severity === "CRITICAL" || i.severity === "HIGH"
+                        (i) =>
+                          i.severity === "CRITICAL" || i.severity === "HIGH",
                       ).length
                     }{" "}
                     critical/high
@@ -318,7 +329,9 @@ export function BoardView({
                   <SelectItem value="INTERNAL_AUDIT">Internal Audit</SelectItem>
                   <SelectItem value="REGULATORY">Regulatory</SelectItem>
                   <SelectItem value="EXTERNAL_AUDIT">External Audit</SelectItem>
-                  <SelectItem value="SELF_ASSESSMENT">Self Assessment</SelectItem>
+                  <SelectItem value="SELF_ASSESSMENT">
+                    Self Assessment
+                  </SelectItem>
                   <SelectItem value="CONCURRENT">Concurrent</SelectItem>
                 </SelectContent>
               </Select>
@@ -347,10 +360,12 @@ export function BoardView({
               <div key={group.key} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold">{group.label}</h4>
-                  <Badge variant="secondary">{group.issues.length} issues</Badge>
+                  <Badge variant="secondary">
+                    {group.issues.length} issues
+                  </Badge>
                 </div>
                 {group.issues.length === 0 ? (
-                  <div className="rounded-md border p-4 text-center text-sm text-muted-foreground">
+                  <div className="text-muted-foreground rounded-md border p-4 text-center text-sm">
                     No issues in this group
                   </div>
                 ) : (
@@ -370,14 +385,17 @@ export function BoardView({
                         {group.issues.map((issue) => (
                           <TableRow
                             key={issue.id}
-                            className="cursor-pointer hover:bg-muted/50"
+                            className="hover:bg-muted/50 cursor-pointer"
                             onClick={() => router.push(`/issues/${issue.id}`)}
                           >
                             <TableCell>
                               <div className="space-y-1">
                                 <div className="font-medium">{issue.title}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {format(new Date(issue.createdAt), "MMM d, yyyy")}
+                                <div className="text-muted-foreground text-xs">
+                                  {format(
+                                    new Date(issue.createdAt),
+                                    "MMM d, yyyy",
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
@@ -392,16 +410,20 @@ export function BoardView({
                             <TableCell>
                               <Badge
                                 variant="outline"
-                                className={SEVERITY_COLORS[issue.severity] ?? ""}
+                                className={
+                                  SEVERITY_COLORS[issue.severity] ?? ""
+                                }
                               >
                                 {issue.severity}
                               </Badge>
                             </TableCell>
                             <TableCell>
                               {issue.riskTheme ? (
-                                <Badge variant="outline">{issue.riskTheme}</Badge>
+                                <Badge variant="outline">
+                                  {issue.riskTheme}
+                                </Badge>
                               ) : (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-muted-foreground text-xs">
                                   N/A
                                 </span>
                               )}
@@ -420,7 +442,7 @@ export function BoardView({
                                   {issue.actionPlans.length} plan(s)
                                 </Badge>
                               ) : (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-muted-foreground text-xs">
                                   None
                                 </span>
                               )}

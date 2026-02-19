@@ -92,14 +92,19 @@ export function AtrForm({ observationId, onSuccess, onCancel }: AtrFormProps) {
             <Upload className="mr-2 h-4 w-4" />
             Upload Files
           </Button>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             No files uploaded
           </span>
         </div>
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>

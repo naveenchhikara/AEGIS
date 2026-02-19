@@ -4,7 +4,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Upload, FileText, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
@@ -61,7 +67,10 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
     const lines = text.trim().split("\n");
     if (lines.length < 2) return [];
 
-    const headers = lines[0].toLowerCase().split(",").map((h) => h.trim());
+    const headers = lines[0]
+      .toLowerCase()
+      .split(",")
+      .map((h) => h.trim());
 
     const rows: ParsedRow[] = [];
     for (let i = 1; i < lines.length; i++) {
@@ -76,17 +85,25 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
       // Map CSV columns to schema fields
       try {
         rows.push({
-          accountNo: row.account_no || row.accountno || row["account number"] || "",
-          borrowerName: row.borrower_name || row.borrowername || row.borrower || "",
+          accountNo:
+            row.account_no || row.accountno || row["account number"] || "",
+          borrowerName:
+            row.borrower_name || row.borrowername || row.borrower || "",
           productType: row.product_type || row.producttype || row.product || "",
-          sanctionAmount: parseFloat(row.sanction_amount || row.sanctionamount || "0"),
+          sanctionAmount: parseFloat(
+            row.sanction_amount || row.sanctionamount || "0",
+          ),
           outstandingAmount: parseFloat(
-            row.outstanding_amount || row.outstandingamount || "0"
+            row.outstanding_amount || row.outstandingamount || "0",
           ),
           assetClass:
-            row.asset_class || row.assetclass || row["asset class"] || "STANDARD",
+            row.asset_class ||
+            row.assetclass ||
+            row["asset class"] ||
+            "STANDARD",
           dpd: parseInt(row.dpd || "0", 10),
-          auditObservation: row.audit_observation || row.observation || undefined,
+          auditObservation:
+            row.audit_observation || row.observation || undefined,
         });
       } catch (error) {
         console.error("Failed to parse row:", row, error);
@@ -122,7 +139,9 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
         });
 
         if (result.success) {
-          toast.success(`Successfully imported ${result.data.imported} loan reviews`);
+          toast.success(
+            `Successfully imported ${result.data.imported} loan reviews`,
+          );
           setFile(null);
           setPreviewRows([]);
         } else {
@@ -152,22 +171,22 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
           CSV Import
         </CardTitle>
         <CardDescription>
-          Import loan accounts from a CSV file. This will replace all existing loan reviews
-          for this engagement.
+          Import loan accounts from a CSV file. This will replace all existing
+          loan reviews for this engagement.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Warning:</strong> CSV import will delete all existing loan reviews for
-            this engagement and replace them with the imported data.
+            <strong>Warning:</strong> CSV import will delete all existing loan
+            reviews for this engagement and replace them with the imported data.
           </AlertDescription>
         </Alert>
 
         <div className="space-y-2">
           <div className="text-sm font-medium">Expected CSV Format:</div>
-          <div className="rounded-md bg-muted p-3 text-xs font-mono">
+          <div className="bg-muted rounded-md p-3 font-mono text-xs">
             account_no,borrower_name,product_type,sanction_amount,outstanding_amount,asset_class,dpd
             <br />
             LA001,John Doe,Term Loan,1000000,850000,STANDARD,0
@@ -178,7 +197,7 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
 
         <div className="flex items-center gap-4">
           <label htmlFor="csv-upload" className="cursor-pointer">
-            <div className="flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 hover:bg-accent">
+            <div className="border-input bg-background hover:bg-accent flex items-center gap-2 rounded-md border px-4 py-2">
               <Upload className="h-4 w-4" />
               <span className="text-sm">Choose CSV File</span>
             </div>
@@ -191,8 +210,12 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
             />
           </label>
           {file && (
-            <span className="text-sm text-muted-foreground">
-              {file.name} ({previewRows.length > 0 ? `${previewRows.length}+ rows` : "0 rows"})
+            <span className="text-muted-foreground text-sm">
+              {file.name} (
+              {previewRows.length > 0
+                ? `${previewRows.length}+ rows`
+                : "0 rows"}
+              )
             </span>
           )}
         </div>
@@ -216,7 +239,9 @@ export function LoanCsvImport({ engagementId }: LoanCsvImportProps) {
                 <TableBody>
                   {previewRows.map((row, idx) => (
                     <TableRow key={idx}>
-                      <TableCell className="font-medium">{row.accountNo}</TableCell>
+                      <TableCell className="font-medium">
+                        {row.accountNo}
+                      </TableCell>
                       <TableCell>{row.borrowerName}</TableCell>
                       <TableCell>{row.productType}</TableCell>
                       <TableCell className="text-right">

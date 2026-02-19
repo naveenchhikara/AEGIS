@@ -32,11 +32,15 @@ export default async function IssuesBoardPage() {
 
   // Aggregate by source
   const bySource = {
-    INTERNAL_AUDIT: allActiveIssues.filter((i) => i.source === "INTERNAL_AUDIT"),
+    INTERNAL_AUDIT: allActiveIssues.filter(
+      (i) => i.source === "INTERNAL_AUDIT",
+    ),
     REGULATORY: allActiveIssues.filter((i) => i.source === "REGULATORY"),
-    EXTERNAL_AUDIT: allActiveIssues.filter((i) => i.source === "EXTERNAL_AUDIT"),
+    EXTERNAL_AUDIT: allActiveIssues.filter(
+      (i) => i.source === "EXTERNAL_AUDIT",
+    ),
     SELF_ASSESSMENT: allActiveIssues.filter(
-      (i) => i.source === "SELF_ASSESSMENT"
+      (i) => i.source === "SELF_ASSESSMENT",
     ),
     CONCURRENT: allActiveIssues.filter((i) => i.source === "CONCURRENT"),
   };
@@ -54,9 +58,11 @@ export default async function IssuesBoardPage() {
     CREDIT: allActiveIssues.filter((i) => i.riskTheme === "CREDIT").length,
     OPERATIONAL: allActiveIssues.filter((i) => i.riskTheme === "OPERATIONAL")
       .length,
-    COMPLIANCE: allActiveIssues.filter((i) => i.riskTheme === "COMPLIANCE").length,
+    COMPLIANCE: allActiveIssues.filter((i) => i.riskTheme === "COMPLIANCE")
+      .length,
     IT: allActiveIssues.filter((i) => i.riskTheme === "IT").length,
-    GOVERNANCE: allActiveIssues.filter((i) => i.riskTheme === "GOVERNANCE").length,
+    GOVERNANCE: allActiveIssues.filter((i) => i.riskTheme === "GOVERNANCE")
+      .length,
   };
 
   return (

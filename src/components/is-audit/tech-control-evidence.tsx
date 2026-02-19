@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -93,17 +99,17 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
   // Extract gaps from checklists
   React.useEffect(() => {
     const gaps: Record<string, GapItem> = {};
-    
+
     checklists.forEach((checklist) => {
       const items = Array.isArray(checklist.items) ? checklist.items : [];
       items.forEach((item: any, idx: number) => {
         if (item.response === "NON_COMPLIANT" || item.response === "PARTIAL") {
           const key = `${checklist.id}-${idx}`;
-          
+
           // Determine risk level based on category and keywords
           let riskLevel: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" = "MEDIUM";
           const lowerQuestion = item.question.toLowerCase();
-          
+
           if (
             lowerQuestion.includes("critical") ||
             lowerQuestion.includes("maker-checker") ||
@@ -120,12 +126,11 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
           ) {
             riskLevel = "HIGH";
           }
-          
+
           // Determine evidence status
-          const evidenceStatus: "COLLECTED" | "PENDING" | "NOT_AVAILABLE" = item.evidence
-            ? "COLLECTED"
-            : "PENDING";
-          
+          const evidenceStatus: "COLLECTED" | "PENDING" | "NOT_AVAILABLE" =
+            item.evidence ? "COLLECTED" : "PENDING";
+
           gaps[key] = {
             category: checklist.category,
             checklistName: checklist.checklistName,
@@ -139,7 +144,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
         }
       });
     });
-    
+
     setGapItems(gaps);
   }, [checklists]);
 
@@ -155,7 +160,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
 
   function calculateGapMatrix() {
     const matrix: Record<string, Record<string, number>> = {};
-    
+
     Object.values(CATEGORY_LABELS).forEach((category) => {
       matrix[category] = {
         CRITICAL: 0,
@@ -164,26 +169,31 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
         LOW: 0,
       };
     });
-    
+
     Object.values(gapItems).forEach((gap) => {
       const categoryLabel = CATEGORY_LABELS[gap.category] || gap.category;
       matrix[categoryLabel][gap.riskLevel]++;
     });
-    
+
     return matrix;
   }
 
   function calculateSummaryStats() {
     const allGaps = Object.values(gapItems);
     const totalGaps = allGaps.length;
-    const gapsWithEvidence = allGaps.filter((g) => g.evidenceStatus === "COLLECTED").length;
-    const gapsWithoutEvidence = allGaps.filter(
-      (g) => g.evidenceStatus === "PENDING" || g.evidenceStatus === "NOT_AVAILABLE"
+    const gapsWithEvidence = allGaps.filter(
+      (g) => g.evidenceStatus === "COLLECTED",
     ).length;
-    const openGaps = allGaps.filter((g) => !g.remediationPlan || g.remediationPlan === "")
-      .length;
-    const inProgress = allGaps.filter((g) => g.remediationPlan && g.remediationPlan !== "")
-      .length;
+    const gapsWithoutEvidence = allGaps.filter(
+      (g) =>
+        g.evidenceStatus === "PENDING" || g.evidenceStatus === "NOT_AVAILABLE",
+    ).length;
+    const openGaps = allGaps.filter(
+      (g) => !g.remediationPlan || g.remediationPlan === "",
+    ).length;
+    const inProgress = allGaps.filter(
+      (g) => g.remediationPlan && g.remediationPlan !== "",
+    ).length;
 
     return {
       totalGaps,
@@ -199,7 +209,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
     const reportData = Object.values(gapItems)
       .map(
         (gap) =>
-          `${CATEGORY_LABELS[gap.category]},${gap.item},${gap.riskLevel},${gap.evidenceStatus},${gap.remediationPlan || ""},${gap.targetDate || ""},${gap.owner || ""}`
+          `${CATEGORY_LABELS[gap.category]},${gap.item},${gap.riskLevel},${gap.evidenceStatus},${gap.remediationPlan || ""},${gap.targetDate || ""},${gap.owner || ""}`,
       )
       .join("\n");
 
@@ -226,7 +236,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
     selectedCategory === "ALL"
       ? Object.entries(gapItems)
       : Object.entries(gapItems).filter(
-          ([_, gap]) => CATEGORY_LABELS[gap.category] === selectedCategory
+          ([_, gap]) => CATEGORY_LABELS[gap.category] === selectedCategory,
         );
 
   return (
@@ -235,13 +245,17 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Total Gaps Found</CardDescription>
-            <CardTitle className="text-3xl text-red-600">{stats.totalGaps}</CardTitle>
+            <CardTitle className="text-3xl text-red-600">
+              {stats.totalGaps}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Gaps with Evidence</CardDescription>
-            <CardTitle className="text-3xl text-green-600">{stats.gapsWithEvidence}</CardTitle>
+            <CardTitle className="text-3xl text-green-600">
+              {stats.gapsWithEvidence}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -255,7 +269,9 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Remediation In Progress</CardDescription>
-            <CardTitle className="text-3xl text-blue-600">{stats.inProgress}</CardTitle>
+            <CardTitle className="text-3xl text-blue-600">
+              {stats.inProgress}
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -277,7 +293,10 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                     Attach evidence for non-compliant items
                   </CardDescription>
                 </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
@@ -294,18 +313,20 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
             </CardHeader>
             <CardContent>
               {filteredGaps.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle2 className="mx-auto h-12 w-12 text-green-600 mb-2" />
+                <div className="text-muted-foreground py-8 text-center">
+                  <CheckCircle2 className="mx-auto mb-2 h-12 w-12 text-green-600" />
                   <div>No gaps found. All controls are compliant!</div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {filteredGaps.map(([key, gap]) => (
-                    <div key={key} className="border rounded-lg p-4 space-y-3">
+                    <div key={key} className="space-y-3 rounded-lg border p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline">{CATEGORY_LABELS[gap.category]}</Badge>
+                          <div className="mb-2 flex items-center gap-2">
+                            <Badge variant="outline">
+                              {CATEGORY_LABELS[gap.category]}
+                            </Badge>
                             <Badge
                               variant="outline"
                               className={RISK_LEVEL_COLORS[gap.riskLevel]}
@@ -314,7 +335,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                             </Badge>
                           </div>
                           <div className="text-sm font-medium">{gap.item}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-muted-foreground mt-1 text-xs">
                             {gap.checklistName}
                           </div>
                         </div>
@@ -330,18 +351,26 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                           <SelectContent>
                             <SelectItem value="COLLECTED">Collected</SelectItem>
                             <SelectItem value="PENDING">Pending</SelectItem>
-                            <SelectItem value="NOT_AVAILABLE">Not Available</SelectItem>
+                            <SelectItem value="NOT_AVAILABLE">
+                              Not Available
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="text-xs">Evidence Reference / Notes</Label>
+                        <Label className="text-xs">
+                          Evidence Reference / Notes
+                        </Label>
                         <Textarea
                           placeholder="Enter evidence reference, file path, or notes"
                           value={gap.remediationPlan || ""}
                           onChange={(e) =>
-                            updateGapItem(key, "remediationPlan", e.target.value)
+                            updateGapItem(
+                              key,
+                              "remediationPlan",
+                              e.target.value,
+                            )
                           }
                           rows={2}
                         />
@@ -412,7 +441,9 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={EVIDENCE_STATUS_COLORS[gap.evidenceStatus]}
+                            className={
+                              EVIDENCE_STATUS_COLORS[gap.evidenceStatus]
+                            }
                           >
                             {gap.evidenceStatus.replace("_", " ")}
                           </Badge>
@@ -422,7 +453,11 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                             placeholder="Remediation plan"
                             value={gap.remediationPlan || ""}
                             onChange={(e) =>
-                              updateGapItem(key, "remediationPlan", e.target.value)
+                              updateGapItem(
+                                key,
+                                "remediationPlan",
+                                e.target.value,
+                              )
                             }
                             rows={2}
                             className="text-xs"
@@ -432,14 +467,18 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                           <Input
                             type="date"
                             value={gap.targetDate || ""}
-                            onChange={(e) => updateGapItem(key, "targetDate", e.target.value)}
+                            onChange={(e) =>
+                              updateGapItem(key, "targetDate", e.target.value)
+                            }
                           />
                         </TableCell>
                         <TableCell>
                           <Input
                             placeholder="Owner"
                             value={gap.owner || ""}
-                            onChange={(e) => updateGapItem(key, "owner", e.target.value)}
+                            onChange={(e) =>
+                              updateGapItem(key, "owner", e.target.value)
+                            }
                           />
                         </TableCell>
                       </TableRow>
@@ -477,24 +516,32 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                       risks.CRITICAL + risks.HIGH + risks.MEDIUM + risks.LOW;
                     return (
                       <TableRow key={category}>
-                        <TableCell className="font-medium">{category}</TableCell>
+                        <TableCell className="font-medium">
+                          {category}
+                        </TableCell>
                         <TableCell className="text-center">
                           {risks.CRITICAL > 0 ? (
-                            <Badge className="bg-red-600">{risks.CRITICAL}</Badge>
+                            <Badge className="bg-red-600">
+                              {risks.CRITICAL}
+                            </Badge>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
                           {risks.HIGH > 0 ? (
-                            <Badge className="bg-orange-600">{risks.HIGH}</Badge>
+                            <Badge className="bg-orange-600">
+                              {risks.HIGH}
+                            </Badge>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
                           {risks.MEDIUM > 0 ? (
-                            <Badge className="bg-amber-600">{risks.MEDIUM}</Badge>
+                            <Badge className="bg-amber-600">
+                              {risks.MEDIUM}
+                            </Badge>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
@@ -519,7 +566,7 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
                 High Priority Gaps
               </CardTitle>
@@ -531,14 +578,15 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
               <div className="space-y-3">
                 {Object.entries(gapItems)
                   .filter(
-                    ([_, gap]) => gap.riskLevel === "CRITICAL" || gap.riskLevel === "HIGH"
+                    ([_, gap]) =>
+                      gap.riskLevel === "CRITICAL" || gap.riskLevel === "HIGH",
                   )
                   .map(([key, gap]) => (
                     <div
                       key={key}
-                      className="border-l-4 border-red-600 pl-4 py-2 bg-red-50 rounded-r"
+                      className="rounded-r border-l-4 border-red-600 bg-red-50 py-2 pl-4"
                     >
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <Badge
                           variant="outline"
                           className={RISK_LEVEL_COLORS[gap.riskLevel]}
@@ -551,17 +599,18 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                       </div>
                       <div className="text-sm">{gap.item}</div>
                       {gap.remediationPlan && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-muted-foreground mt-1 text-xs">
                           Plan: {gap.remediationPlan}
                         </div>
                       )}
                     </div>
                   ))}
                 {Object.entries(gapItems).filter(
-                  ([_, gap]) => gap.riskLevel === "CRITICAL" || gap.riskLevel === "HIGH"
+                  ([_, gap]) =>
+                    gap.riskLevel === "CRITICAL" || gap.riskLevel === "HIGH",
                 ).length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="mx-auto h-12 w-12 text-green-600 mb-2" />
+                  <div className="text-muted-foreground py-8 text-center">
+                    <CheckCircle2 className="mx-auto mb-2 h-12 w-12 text-green-600" />
                     <div>No critical or high-risk gaps found!</div>
                   </div>
                 )}

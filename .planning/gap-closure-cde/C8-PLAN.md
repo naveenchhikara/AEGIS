@@ -92,19 +92,25 @@ Wire the `/investments` page to real database and build investment/treasury comp
 Replace mock data with real DAL calls and expand to 6 tabs:
 
 1. Import DAL functions:
+
    ```typescript
    import {
-     getInvestmentRecords, getBrokerConcentration,
-     getUnreconciledInvestments
+     getInvestmentRecords,
+     getBrokerConcentration,
+     getUnreconciledInvestments,
    } from "@/data-access/investment";
    ```
 
 2. Replace `const investments: any[] = [];`:
+
    ```typescript
    const investments = await getInvestmentRecords(session);
    const currentPeriod = `${new Date().getFullYear()}-Q${Math.ceil((new Date().getMonth() + 1) / 3)}`;
    const brokerData = await getBrokerConcentration(session, currentPeriod);
-   const unreconciled = await getUnreconciledInvestments(session, currentPeriod);
+   const unreconciled = await getUnreconciledInvestments(
+     session,
+     currentPeriod,
+   );
    ```
 
 3. Expand to 6-tab layout:
@@ -138,15 +144,16 @@ Replace mock data with real DAL calls and expand to 6 tabs:
      </TabsContent>
    </Tabs>
    ```
-  </action>
-  <verify>
-TypeScript clean, investments page loads with 6 tabs and real data.
-  </verify>
-  <done>
+     </action>
+     <verify>
+   TypeScript clean, investments page loads with 6 tabs and real data.
+     </verify>
+     <done>
+
 - Investments page fetches real InvestmentRecord data
 - 6-tab layout: Portfolio, SGL/CSGL, Broker, Non-SLR, Classification, Certification
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Wire InvestmentTable to real actions</name>
@@ -182,8 +189,12 @@ Update InvestmentTable with real data handling:
 7. Summary stats row: Total face value, book value, market value, reconciliation %
 
 ```typescript
-import { manageInvestmentRecord, markReconciled } from "@/actions/investment/manage-records";
+import {
+  manageInvestmentRecord,
+  markReconciled,
+} from "@/actions/investment/manage-records";
 ```
+
   </action>
   <verify>
 Investment table renders real data with CRUD and reconciliation.
@@ -225,6 +236,7 @@ Create SGL/CSGL reconciliation tracking (R93):
 ```typescript
 import { markReconciled } from "@/actions/investment/manage-records";
 ```
+
   </action>
   <verify>
 Reconciliation dashboard shows SGL/CSGL status and supports bulk reconciliation.
@@ -262,16 +274,17 @@ Create broker compliance analytics with 5% cap enforcement (R94):
 5. Period selector to view different quarters
 
 6. Regulatory reference: "Per RBI circular, no single broker should handle more than 5% of total investment transactions"
-  </action>
-  <verify>
-Broker analytics shows concentration with 5% cap alerts.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Broker analytics shows concentration with 5% cap alerts.
+   </verify>
+   <done>
+
 - Broker concentration analytics with 5% cap enforcement
 - Visual alerts for cap breaches
 - Period-wise analysis
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Non-SLR Cap Monitor</name>
@@ -284,16 +297,17 @@ Create non-SLR investment cap monitoring (R95):
 1. Props: `investments` array
 
 2. Calculate non-SLR totals:
+
    ```typescript
    const nonSlrTotal = investments
-     .filter(i => i.securityType === "NON_SLR")
+     .filter((i) => i.securityType === "NON_SLR")
      .reduce((sum, i) => sum + Number(i.faceValue), 0);
    ```
 
 3. Display:
    - Total deposits (from HousekeepingMetric TOTAL_DEPOSITS or manual input)
    - Non-SLR investment total
-   - Cap utilization: nonSlrTotal / (totalDeposits * 0.10) * 100
+   - Cap utilization: nonSlrTotal / (totalDeposits _ 0.10) _ 100
    - Progress bar showing utilization
    - Alert if utilization > 90% (WARNING) or > 100% (BREACH)
 
@@ -302,16 +316,17 @@ Create non-SLR investment cap monitoring (R95):
 5. Regulatory reference: "Non-SLR investments must not exceed 10% of total deposits as per RBI norms"
 
 6. If total deposits not available, show input field to manually enter or note to capture via housekeeping metrics
-  </action>
-  <verify>
-Non-SLR cap monitor shows utilization against 10% threshold.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Non-SLR cap monitor shows utilization against 10% threshold.
+   </verify>
+   <done>
+
 - Non-SLR cap monitoring with 10% threshold
 - Utilization progress bar with alerts
 - Classification breakdown
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build HTM/HFT/AFS Classification Checklist</name>
@@ -322,18 +337,60 @@ Non-SLR cap monitor shows utilization against 10% threshold.
 Create HTM/HFT/AFS classification audit checklist (R96):
 
 1. Classification rules checklist (per RBI norms):
+
    ```typescript
    const CLASSIFICATION_CHECKS = [
-     { id: "htmLimit", question: "HTM portfolio does not exceed 25% of total investments (or applicable limit)", category: "HTM" },
-     { id: "htmSale", question: "No sale from HTM except with RBI approval or per policy", category: "HTM" },
-     { id: "htmValuation", question: "HTM securities valued at acquisition cost (amortized)", category: "HTM" },
-     { id: "hftIntent", question: "HFT securities held for trading, sold within 90 days", category: "HFT" },
-     { id: "hftMtm", question: "HFT portfolio marked-to-market at monthly intervals", category: "HFT" },
-     { id: "afsReclass", question: "AFS reclassification only at start of accounting year", category: "AFS" },
-     { id: "afsValuation", question: "AFS securities marked-to-market quarterly", category: "AFS" },
-     { id: "depreciationProvision", question: "Depreciation provision created for AFS/HFT net losses", category: "PROVISION" },
-     { id: "shiftingNorms", question: "Inter-category shifting complies with RBI circular norms", category: "GENERAL" },
-     { id: "boardApproval", question: "Board-approved investment policy reviewed annually", category: "GENERAL" },
+     {
+       id: "htmLimit",
+       question:
+         "HTM portfolio does not exceed 25% of total investments (or applicable limit)",
+       category: "HTM",
+     },
+     {
+       id: "htmSale",
+       question: "No sale from HTM except with RBI approval or per policy",
+       category: "HTM",
+     },
+     {
+       id: "htmValuation",
+       question: "HTM securities valued at acquisition cost (amortized)",
+       category: "HTM",
+     },
+     {
+       id: "hftIntent",
+       question: "HFT securities held for trading, sold within 90 days",
+       category: "HFT",
+     },
+     {
+       id: "hftMtm",
+       question: "HFT portfolio marked-to-market at monthly intervals",
+       category: "HFT",
+     },
+     {
+       id: "afsReclass",
+       question: "AFS reclassification only at start of accounting year",
+       category: "AFS",
+     },
+     {
+       id: "afsValuation",
+       question: "AFS securities marked-to-market quarterly",
+       category: "AFS",
+     },
+     {
+       id: "depreciationProvision",
+       question: "Depreciation provision created for AFS/HFT net losses",
+       category: "PROVISION",
+     },
+     {
+       id: "shiftingNorms",
+       question: "Inter-category shifting complies with RBI circular norms",
+       category: "GENERAL",
+     },
+     {
+       id: "boardApproval",
+       question: "Board-approved investment policy reviewed annually",
+       category: "GENERAL",
+     },
    ];
    ```
 
@@ -347,16 +404,17 @@ Create HTM/HFT/AFS classification audit checklist (R96):
    - AFS last MTM date → auto-check afsValuation
 
 4. Summary: X of Y checks compliant, overall rating
-  </action>
-  <verify>
-Classification checklist displays checks and captures compliance responses.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Classification checklist displays checks and captures compliance responses.
+   </verify>
+   <done>
+
 - 10-item classification audit checklist per RBI norms
 - Grouped by HTM/HFT/AFS/General
 - Compliance capture with evidence
   </done>
-</task>
+  </task>
 
 <task type="auto">
   <name>Build Quarterly Certification Workflow</name>
@@ -368,17 +426,20 @@ Classification checklist displays checks and captures compliance responses.
 Create quarterly auditor certification workflow (R97):
 
 1. Create server action `quarterly-certification.ts`:
+
    ```typescript
    "use server";
    const CertificationSchema = z.object({
      year: z.number(),
      quarter: z.enum(["Q1", "Q2", "Q3", "Q4"]),
      certifiedBy: z.string().uuid(),
-     certificationChecks: z.array(z.object({
-       checkId: z.string(),
-       compliant: z.boolean(),
-       remarks: z.string().optional(),
-     })),
+     certificationChecks: z.array(
+       z.object({
+         checkId: z.string(),
+         compliant: z.boolean(),
+         remarks: z.string().optional(),
+       }),
+     ),
      overallOpinion: z.enum(["SATISFACTORY", "QUALIFIED", "ADVERSE"]),
      remarks: z.string().optional(),
    });
@@ -404,16 +465,17 @@ Create quarterly auditor certification workflow (R97):
    - Submit → creates certification record
 
 3. Previous certifications list showing history
-  </action>
-  <verify>
-Quarterly certification workflow captures and saves certification.
-  </verify>
-  <done>
+   </action>
+   <verify>
+   Quarterly certification workflow captures and saves certification.
+   </verify>
+   <done>
+
 - Quarterly certification form with investment-specific checks
 - Overall opinion with remarks
 - Certification record created and tracked
   </done>
-</task>
+  </task>
 
 </tasks>
 
@@ -428,6 +490,7 @@ Quarterly certification workflow captures and saves certification.
 </verification>
 
 <success_criteria>
+
 - ✅ `/investments` page uses real DAL instead of mock data
 - ✅ SGL/CSGL reconciliation tracking with reconciled/pending status
 - ✅ Broker compliance analytics with 5% cap enforcement
@@ -436,7 +499,7 @@ Quarterly certification workflow captures and saves certification.
 - ✅ Quarterly auditor certification workflow
 - ✅ TypeScript compilation clean
 - ✅ R93-R97 requirements closed
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, update VALIDATION-REPORT.md:

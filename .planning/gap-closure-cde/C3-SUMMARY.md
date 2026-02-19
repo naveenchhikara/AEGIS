@@ -19,11 +19,13 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ### Task 1: Wire Issues Page to Real DAL with Filtering ✅
 
 **Files Modified:**
+
 - `src/app/(dashboard)/issues/page.tsx` - Integrated getIssues DAL, added search params for filtering
 - `src/components/issues/issues-table.tsx` - Completely rewired with real data, actions, and dialogs
 - `src/components/issues/action-plan-panel.tsx` - Full action plan CRUD with progress tracking
 
 **Key Changes:**
+
 1. **Issues Page (`page.tsx`):**
    - Imported and called `getIssues()` from DAL with filter options
    - Added Next.js 16 async searchParams handling (await params)
@@ -50,6 +52,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
    - Toast feedback and auto-refresh
 
 **Verification:**
+
 - TypeScript compilation: ✅ Clean (no new errors)
 - All components use tenant-scoped data via `getIssues()` DAL
 - Forms submit to server actions with proper validation
@@ -60,10 +63,12 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ### Task 2: Create Board Consolidated View (R63) ✅
 
 **Files Created:**
+
 - `src/app/(dashboard)/issues/board/page.tsx` - Board-level route with permission gating
 - `src/components/issues/board-view.tsx` - Executive dashboard component
 
 **Key Changes:**
+
 1. **Board Page (`board/page.tsx`):**
    - Permission gating for ACB_MEMBER, CAE, CEO, RISK_HEAD roles
    - Fetches all OPEN and IN_PROGRESS issues
@@ -91,6 +96,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
    - Client-side interactivity with real-time filtering/grouping
 
 **Verification:**
+
 - TypeScript compilation: ✅ Clean (no new errors)
 - Permission gating enforced (ACB_MEMBER/CAE/CEO/RISK_HEAD only)
 - Board view aggregates across all sources
@@ -100,19 +106,20 @@ Successfully wired the `/issues` page to real database and created the board-lev
 
 ## Requirements Closed
 
-| Requirement | Description | Status |
-|-------------|-------------|--------|
-| R59 | Unified issue tracking across all sources (internal audit, regulatory, external, self-assessment, concurrent) | ✅ COMPLETE |
-| R60 | Issue fields: source, type, severity, root cause, risk theme, linked observation/control/compliance | ✅ COMPLETE |
-| R61 | Action plan with milestones, partial closure, evidence tracking, progress % | ✅ COMPLETE |
-| R62 | Accepted risk tracking with formal sign-off via `acceptRisk` action (CAE/CEO/RISK_HEAD) | ✅ COMPLETE |
-| R63 | Consolidated Board view of all open issues with drill-down by source/severity | ✅ COMPLETE |
+| Requirement | Description                                                                                                   | Status      |
+| ----------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
+| R59         | Unified issue tracking across all sources (internal audit, regulatory, external, self-assessment, concurrent) | ✅ COMPLETE |
+| R60         | Issue fields: source, type, severity, root cause, risk theme, linked observation/control/compliance           | ✅ COMPLETE |
+| R61         | Action plan with milestones, partial closure, evidence tracking, progress %                                   | ✅ COMPLETE |
+| R62         | Accepted risk tracking with formal sign-off via `acceptRisk` action (CAE/CEO/RISK_HEAD)                       | ✅ COMPLETE |
+| R63         | Consolidated Board view of all open issues with drill-down by source/severity                                 | ✅ COMPLETE |
 
 ---
 
 ## Technical Highlights
 
 ### Conventions Followed
+
 - ✅ Used `prismaForTenant(tenantId)` for all database access (via DAL)
 - ✅ Next.js 16 App Router: `params` is a Promise (await it)
 - ✅ Replaced mock data with real DAL calls (`getIssues`)
@@ -125,9 +132,10 @@ Successfully wired the `/issues` page to real database and created the board-lev
 - ✅ Cache revalidation with `router.refresh()` after mutations
 
 ### Data Flow
+
 ```
-[Issues Page (Server)] 
-  → getIssues(session, filters) 
+[Issues Page (Server)]
+  → getIssues(session, filters)
   → [IssuesTable (Client)]
     → manageIssue() [Create/Edit]
     → acceptRisk() [Risk Acceptance]
@@ -144,6 +152,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ```
 
 ### Type Safety
+
 - All components use proper TypeScript interfaces matching DAL return types
 - Issue interface includes:
   - Core fields: title, description, source, issueType, severity, status, riskTheme, rootCause
@@ -155,6 +164,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ## Testing Notes
 
 ### Manual Testing Checklist
+
 - [x] `/issues` page loads with real issues
 - [x] Filter by source → updates table
 - [x] Filter by severity → updates table
@@ -174,6 +184,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
 - [x] Click issue row → navigates to detail
 
 ### TypeScript Status
+
 - **New Errors:** 0
 - **Pre-existing Errors:** 20 (unrelated to issues module)
 - **Files Changed:** 5 (all pass type checks)
@@ -183,10 +194,12 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ## Files Changed
 
 ### Created (2)
+
 1. `src/app/(dashboard)/issues/board/page.tsx` - 84 lines
 2. `src/components/issues/board-view.tsx` - 438 lines
 
 ### Modified (3)
+
 1. `src/app/(dashboard)/issues/page.tsx` - Replaced mock data with real DAL, added filters
 2. `src/components/issues/issues-table.tsx` - Complete rewrite with actions integration
 3. `src/components/issues/action-plan-panel.tsx` - Complete rewrite with CRUD operations
@@ -196,6 +209,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
 ## Next Steps
 
 ### Recommended
+
 1. Add issue detail page at `/issues/[id]` for full CRUD
 2. Add navigation link to board view in sidebar (for ACB_MEMBER+ roles)
 3. Implement email notifications for overdue action plans
@@ -203,6 +217,7 @@ Successfully wired the `/issues` page to real database and created the board-lev
 5. Create dashboard widgets for issue metrics
 
 ### Optional Enhancements
+
 - Rich text editor for issue descriptions
 - File upload for evidence in action plans
 - Issue assignment workflow with notifications

@@ -11,7 +11,9 @@ import { logger } from "@/lib/logger";
 const ExecuteWorkProgramItemSchema = z.object({
   workProgramItemId: z.string().uuid(),
   status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "NOT_APPLICABLE"]),
-  result: z.enum(["EFFECTIVE", "PARTIALLY_EFFECTIVE", "INEFFECTIVE"]).optional(),
+  result: z
+    .enum(["EFFECTIVE", "PARTIALLY_EFFECTIVE", "INEFFECTIVE"])
+    .optional(),
   findings: z.string().optional(),
   evidence: z.array(z.string()).optional(), // S3 keys
 });
@@ -22,7 +24,9 @@ type ExecuteWorkProgramItemInput = z.infer<typeof ExecuteWorkProgramItemSchema>;
  * Execute a work program item - record result and evidence (R57).
  * Security: Requires work_program:execute permission.
  */
-export async function executeWorkProgramItem(input: ExecuteWorkProgramItemInput) {
+export async function executeWorkProgramItem(
+  input: ExecuteWorkProgramItemInput,
+) {
   const session = await getRequiredSession();
   const userRoles = ((session.user as any).roles ?? []) as Role[];
   const tenantId = (session.user as any).tenantId as string;
@@ -118,7 +122,7 @@ export async function executeWorkProgramItem(input: ExecuteWorkProgramItemInput)
         const effectivenessScore =
           total > 0
             ? Math.round(
-                ((effectiveCount * 100 + partialCount * 50) / total) * 100
+                ((effectiveCount * 100 + partialCount * 50) / total) * 100,
               ) / 100
             : null;
 
@@ -138,7 +142,7 @@ export async function executeWorkProgramItem(input: ExecuteWorkProgramItemInput)
     revalidatePath("/work-program");
     revalidatePath(`/work-program/${parsed.data.workProgramItemId}`);
     revalidatePath(
-      `/audit-plans/${workProgramItem.engagement.id}/work-program`
+      `/audit-plans/${workProgramItem.engagement.id}/work-program`,
     );
 
     return {
@@ -152,7 +156,7 @@ export async function executeWorkProgramItem(input: ExecuteWorkProgramItemInput)
         : "Failed to execute work program item.";
     logger.error(
       { error, action: "execute_work_program_item", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }
@@ -164,7 +168,7 @@ export async function executeWorkProgramItem(input: ExecuteWorkProgramItemInput)
  */
 export async function assignWorkProgramItem(
   workProgramItemId: string,
-  assignedToId: string
+  assignedToId: string,
 ) {
   if (!z.string().uuid().safeParse(workProgramItemId).success || !z.string().uuid().safeParse(assignedToId).success) {
     return { success: false as const, error: "Invalid ID format." };
@@ -214,7 +218,7 @@ export async function assignWorkProgramItem(
         : "Failed to assign work program item.";
     logger.error(
       { error, action: "assign_work_program_item", tenantId },
-      message
+      message,
     );
     return { success: false as const, error: message };
   }

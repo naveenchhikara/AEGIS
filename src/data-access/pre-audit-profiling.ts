@@ -5,16 +5,16 @@ import type { Session } from "@/lib/auth";
 
 /**
  * R12: Pre-audit branch profiling data
- * 
+ *
  * Aggregates comprehensive branch context for pre-audit review:
  * - Branch details and metadata
  * - Last audit engagement data
  * - Latest RAM assessment with breakdown (BUSINESS_RISK vs CONTROL_RISK)
  * - Prior findings summary (grouped by severity + top 5)
  * - Compliance status summary (grouped by status)
- * 
+ *
  * Security: tenantId from session, all queries filtered by tenantId
- * 
+ *
  * @param session - Authenticated user session
  * @param branchId - Branch UUID to profile
  * @returns Branch profile data with aggregations, or null if branch not found
@@ -77,8 +77,9 @@ export async function getBranchProfileData(session: Session, branchId: string) {
 
   if (ramAssessment?.scores) {
     for (const scoreRecord of ramAssessment.scores) {
-      const weightedScore = Number(scoreRecord.score) * Number(scoreRecord.paramConfig.weight);
-      
+      const weightedScore =
+        Number(scoreRecord.score) * Number(scoreRecord.paramConfig.weight);
+
       if (scoreRecord.paramConfig.category === "BUSINESS_RISK") {
         businessRiskScore += weightedScore;
       } else if (scoreRecord.paramConfig.category === "CONTROL_RISK") {
@@ -88,8 +89,8 @@ export async function getBranchProfileData(session: Session, branchId: string) {
   }
 
   const ramBreakdown = {
-    compositeScore: ramAssessment?.compositeScore 
-      ? Number(ramAssessment.compositeScore) 
+    compositeScore: ramAssessment?.compositeScore
+      ? Number(ramAssessment.compositeScore)
       : 0,
     businessRiskScore: Math.round(businessRiskScore * 100) / 100,
     controlRiskScore: Math.round(controlRiskScore * 100) / 100,
@@ -109,9 +110,9 @@ export async function getBranchProfileData(session: Session, branchId: string) {
   });
 
   const topFindings = await db.observation.findMany({
-    where: { 
-      branchId, 
-      tenantId, 
+    where: {
+      branchId,
+      tenantId,
       severity: { in: ["CRITICAL", "HIGH"] },
       status: { in: ["ISSUED", "RESPONSE", "COMPLIANCE", "CLOSED"] },
     },
@@ -160,4 +161,6 @@ export async function getBranchProfileData(session: Session, branchId: string) {
 /**
  * Return type for getBranchProfileData
  */
-export type BranchProfileData = Awaited<ReturnType<typeof getBranchProfileData>>;
+export type BranchProfileData = Awaited<
+  ReturnType<typeof getBranchProfileData>
+>;

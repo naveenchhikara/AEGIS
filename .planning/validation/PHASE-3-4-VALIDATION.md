@@ -5,11 +5,13 @@ Scope: RBIAS **Phase 3 (GRC & Issue Management)** + **Phase 4 (UCB Regulatory & 
 Repo: `/root/.openclaw/workspace/AEGIS`
 
 ## Validation rubric applied
+
 For each requirement I checked:
-1) **Real implementation** (not stubs/mocks)  
-2) **Tenant scoping** in DAL via `prismaForTenant` (per instruction)  
-3) **UI is wired to real data** (no placeholder arrays driving the UI)  
-4) **Server actions validate inputs with Zod** (at least for create/update paths)
+
+1. **Real implementation** (not stubs/mocks)
+2. **Tenant scoping** in DAL via `prismaForTenant` (per instruction)
+3. **UI is wired to real data** (no placeholder arrays driving the UI)
+4. **Server actions validate inputs with Zod** (at least for create/update paths)
 
 ---
 

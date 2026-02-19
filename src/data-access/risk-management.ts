@@ -10,7 +10,7 @@ export async function getAuditUniverseEntities(
   options?: {
     entityType?: string;
     branchId?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -26,7 +26,12 @@ export async function getAuditUniverseEntities(
         select: { id: true, code: true, name: true, city: true },
       },
       riskRegisters: {
-        select: { id: true, riskStatement: true, riskCategory: true, residualScore: true },
+        select: {
+          id: true,
+          riskStatement: true,
+          riskCategory: true,
+          residualScore: true,
+        },
         orderBy: { residualScore: "desc" },
         take: 5,
       },
@@ -40,7 +45,7 @@ export async function getAuditUniverseEntities(
  */
 export async function getAuditUniverseEntity(
   session: Session,
-  entityId: string
+  entityId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -54,7 +59,12 @@ export async function getAuditUniverseEntity(
       riskRegisters: {
         include: {
           kris: {
-            select: { id: true, name: true, breachStatus: true, currentValue: true },
+            select: {
+              id: true,
+              name: true,
+              breachStatus: true,
+              currentValue: true,
+            },
           },
         },
         orderBy: { residualScore: "desc" },
@@ -85,7 +95,7 @@ export async function getRiskRegisters(
     entityId?: string;
     riskCategory?: string;
     status?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -102,10 +112,20 @@ export async function getRiskRegisters(
         select: { id: true, name: true, entityType: true },
       },
       kris: {
-        select: { id: true, name: true, breachStatus: true, currentValue: true },
+        select: {
+          id: true,
+          name: true,
+          breachStatus: true,
+          currentValue: true,
+        },
       },
       linkedControls: {
-        select: { id: true, controlCode: true, description: true, effectivenessScore: true },
+        select: {
+          id: true,
+          controlCode: true,
+          description: true,
+          effectivenessScore: true,
+        },
       },
     },
     orderBy: { residualScore: "desc" },
@@ -156,7 +176,7 @@ export async function getRiskRegister(session: Session, riskId: string) {
  */
 export async function getKeyRiskIndicators(
   session: Session,
-  riskRegisterId: string
+  riskRegisterId: string,
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -205,7 +225,7 @@ export async function getRiskAuditLinkages(
     entityId?: string;
     engagementId?: string;
     thematicArea?: string;
-  }
+  },
 ) {
   const tenantId = (session.user as any).tenantId as string;
   const db = prismaForTenant(tenantId);
@@ -222,7 +242,12 @@ export async function getRiskAuditLinkages(
         select: { id: true, name: true, entityType: true },
       },
       riskRegister: {
-        select: { id: true, riskStatement: true, riskCategory: true, residualScore: true },
+        select: {
+          id: true,
+          riskStatement: true,
+          riskCategory: true,
+          residualScore: true,
+        },
       },
       engagement: {
         select: { id: true, auditNumber: true, status: true },
@@ -280,9 +305,6 @@ export async function getBreachedKRIs(session: Session) {
         },
       },
     },
-    orderBy: [
-      { breachStatus: "desc" },
-      { lastUpdated: "desc" },
-    ],
+    orderBy: [{ breachStatus: "desc" }, { lastUpdated: "desc" }],
   });
 }

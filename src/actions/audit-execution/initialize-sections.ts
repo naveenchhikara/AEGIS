@@ -20,7 +20,10 @@ export async function initializeSections(input: { engagementId: string }) {
   const tenantId = (session.user as any).tenantId as string;
 
   if (!hasPermission(userRoles, "audit_execution:manage_sections")) {
-    return { success: false as const, error: "You do not have permission to manage audit sections." };
+    return {
+      success: false as const,
+      error: "You do not have permission to manage audit sections.",
+    };
   }
 
   const parsed = InitializeSectionsSchema.safeParse(input);
@@ -58,7 +61,9 @@ export async function initializeSections(input: { engagementId: string }) {
         where: { engagementId: parsed.data.engagementId, tenantId },
         select: { sectionCode: true },
       });
-      const existingCodes = new Set(existingSections.map((s: any) => s.sectionCode));
+      const existingCodes = new Set(
+        existingSections.map((s: any) => s.sectionCode),
+      );
 
       // Create section instances for areas that don't have one yet
       const newSections = [];
@@ -77,13 +82,18 @@ export async function initializeSections(input: { engagementId: string }) {
         }
       }
 
-      return { total: areas.length, created: newSections.length, skipped: existingCodes.size };
+      return {
+        total: areas.length,
+        created: newSections.length,
+        skipped: existingCodes.size,
+      };
     });
 
     revalidatePath("/audit-execution");
     return { success: true as const, data: result };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to initialize sections.";
+    const message =
+      error instanceof Error ? error.message : "Failed to initialize sections.";
     logger.error({ error, action: "initialize_sections", tenantId }, message);
     return { success: false as const, error: message };
   }

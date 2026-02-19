@@ -83,9 +83,11 @@ export function QuarterlyCertification() {
     | "Q4";
 
   const [year, setYear] = useState<number>(currentYear);
-  const [quarter, setQuarter] = useState<"Q1" | "Q2" | "Q3" | "Q4">(currentQuarter);
+  const [quarter, setQuarter] = useState<"Q1" | "Q2" | "Q3" | "Q4">(
+    currentQuarter,
+  );
   const [checks, setChecks] = useState<CertificationCheck[]>(
-    CERTIFICATION_CHECKS.map((c) => ({ ...c, compliant: false, remarks: "" }))
+    CERTIFICATION_CHECKS.map((c) => ({ ...c, compliant: false, remarks: "" })),
   );
   const [overallOpinion, setOverallOpinion] = useState<
     "SATISFACTORY" | "QUALIFIED" | "ADVERSE"
@@ -108,13 +110,13 @@ export function QuarterlyCertification() {
 
   const handleCheckChange = (checkId: string, compliant: boolean) => {
     setChecks((prev) =>
-      prev.map((c) => (c.checkId === checkId ? { ...c, compliant } : c))
+      prev.map((c) => (c.checkId === checkId ? { ...c, compliant } : c)),
     );
   };
 
   const handleRemarksChange = (checkId: string, remarks: string) => {
     setChecks((prev) =>
-      prev.map((c) => (c.checkId === checkId ? { ...c, remarks } : c))
+      prev.map((c) => (c.checkId === checkId ? { ...c, remarks } : c)),
     );
   };
 
@@ -123,7 +125,7 @@ export function QuarterlyCertification() {
     if (compliantCount < checks.length * 0.5) {
       if (
         !confirm(
-          "Less than 50% of checks are compliant. Are you sure you want to submit this certification?"
+          "Less than 50% of checks are compliant. Are you sure you want to submit this certification?",
         )
       ) {
         return;
@@ -147,7 +149,13 @@ export function QuarterlyCertification() {
       if (result.success) {
         alert("Quarterly certification submitted successfully");
         // Reset form
-        setChecks(CERTIFICATION_CHECKS.map((c) => ({ ...c, compliant: false, remarks: "" })));
+        setChecks(
+          CERTIFICATION_CHECKS.map((c) => ({
+            ...c,
+            compliant: false,
+            remarks: "",
+          })),
+        );
         setOverallOpinion("SATISFACTORY");
         setRemarks("");
         // Reload certifications
@@ -176,9 +184,11 @@ export function QuarterlyCertification() {
         <Info className="h-4 w-4" />
         <AlertTitle>Quarterly Investment Certification</AlertTitle>
         <AlertDescription>
-          Quarterly certification of investment portfolio compliance with RBI norms, to be completed
-          by ACB members or authorized auditors. This certification tracks key compliance areas
-          including SGL reconciliation, broker concentration, non-SLR cap, and classification norms.
+          Quarterly certification of investment portfolio compliance with RBI
+          norms, to be completed by ACB members or authorized auditors. This
+          certification tracks key compliance areas including SGL
+          reconciliation, broker concentration, non-SLR cap, and classification
+          norms.
         </AlertDescription>
       </Alert>
 
@@ -186,7 +196,7 @@ export function QuarterlyCertification() {
       <Card>
         <CardHeader>
           <CardTitle>New Certification</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Complete investment compliance checklist for the quarter
           </p>
         </CardHeader>
@@ -195,7 +205,10 @@ export function QuarterlyCertification() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="year">Financial Year</Label>
-              <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
+              <Select
+                value={year.toString()}
+                onValueChange={(v) => setYear(parseInt(v))}
+              >
                 <SelectTrigger id="year">
                   <SelectValue />
                 </SelectTrigger>
@@ -211,7 +224,10 @@ export function QuarterlyCertification() {
 
             <div className="space-y-2">
               <Label htmlFor="quarter">Quarter</Label>
-              <Select value={quarter} onValueChange={(v) => setQuarter(v as any)}>
+              <Select
+                value={quarter}
+                onValueChange={(v) => setQuarter(v as any)}
+              >
                 <SelectTrigger id="quarter">
                   <SelectValue />
                 </SelectTrigger>
@@ -226,23 +242,24 @@ export function QuarterlyCertification() {
           </div>
 
           {/* Compliance Progress */}
-          <div className="p-4 rounded-lg bg-muted">
-            <div className="flex items-center justify-between mb-2">
+          <div className="bg-muted rounded-lg p-4">
+            <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium">Compliance Progress</span>
               <span className="text-sm font-semibold">
-                {compliantCount}/{checks.length} ({compliancePercent.toFixed(0)}%)
+                {compliantCount}/{checks.length} ({compliancePercent.toFixed(0)}
+                %)
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="h-2 w-full rounded-full bg-gray-200">
               <div
                 className={`h-2 rounded-full transition-all ${
                   compliancePercent === 100
                     ? "bg-green-500"
                     : compliancePercent >= 80
-                    ? "bg-blue-500"
-                    : compliancePercent >= 50
-                    ? "bg-amber-500"
-                    : "bg-red-500"
+                      ? "bg-blue-500"
+                      : compliancePercent >= 50
+                        ? "bg-amber-500"
+                        : "bg-red-500"
                 }`}
                 style={{ width: `${compliancePercent}%` }}
               />
@@ -251,9 +268,14 @@ export function QuarterlyCertification() {
 
           {/* Certification Checklist */}
           <div className="space-y-4">
-            <Label className="text-base font-semibold">Certification Checklist</Label>
+            <Label className="text-base font-semibold">
+              Certification Checklist
+            </Label>
             {checks.map((check, idx) => (
-              <div key={check.checkId} className="border rounded-lg p-4 space-y-3">
+              <div
+                key={check.checkId}
+                className="space-y-3 rounded-lg border p-4"
+              >
                 <div className="flex items-start gap-3">
                   <Checkbox
                     id={check.checkId}
@@ -264,19 +286,24 @@ export function QuarterlyCertification() {
                     className="mt-1"
                   />
                   <div className="flex-1">
-                    <Label htmlFor={check.checkId} className="font-medium cursor-pointer">
+                    <Label
+                      htmlFor={check.checkId}
+                      className="cursor-pointer font-medium"
+                    >
                       {idx + 1}. {check.question}
                     </Label>
                     <Textarea
                       value={check.remarks}
-                      onChange={(e) => handleRemarksChange(check.checkId, e.target.value)}
+                      onChange={(e) =>
+                        handleRemarksChange(check.checkId, e.target.value)
+                      }
                       placeholder="Remarks or evidence (optional)"
                       rows={2}
                       className="mt-2"
                     />
                   </div>
                   {check.compliant && (
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="mt-1 h-5 w-5 flex-shrink-0 text-green-600" />
                   )}
                 </div>
               </div>
@@ -286,7 +313,10 @@ export function QuarterlyCertification() {
           {/* Overall Opinion */}
           <div className="space-y-2">
             <Label htmlFor="overallOpinion">Overall Opinion *</Label>
-            <Select value={overallOpinion} onValueChange={(v) => setOverallOpinion(v as any)}>
+            <Select
+              value={overallOpinion}
+              onValueChange={(v) => setOverallOpinion(v as any)}
+            >
               <SelectTrigger id="overallOpinion">
                 <SelectValue />
               </SelectTrigger>
@@ -297,7 +327,9 @@ export function QuarterlyCertification() {
                 <SelectItem value="QUALIFIED">
                   Qualified (Minor Issues Noted)
                 </SelectItem>
-                <SelectItem value="ADVERSE">Adverse (Significant Non-Compliance)</SelectItem>
+                <SelectItem value="ADVERSE">
+                  Adverse (Significant Non-Compliance)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -315,9 +347,9 @@ export function QuarterlyCertification() {
           </div>
 
           {/* Submit */}
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="text-sm text-muted-foreground">
-              <Clock className="inline h-4 w-4 mr-1" />
+          <div className="flex items-center justify-between border-t pt-4">
+            <div className="text-muted-foreground text-sm">
+              <Clock className="mr-1 inline h-4 w-4" />
               Certification will be timestamped and recorded
             </div>
             <Button onClick={handleSubmit} disabled={submitting} size="lg">
@@ -332,15 +364,17 @@ export function QuarterlyCertification() {
       <Card>
         <CardHeader>
           <CardTitle>Previous Certifications</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Historical quarterly investment certifications
           </p>
         </CardHeader>
         <CardContent>
           {loadingCerts ? (
-            <p className="text-center text-muted-foreground py-8">Loading certifications...</p>
+            <p className="text-muted-foreground py-8 text-center">
+              Loading certifications...
+            </p>
           ) : previousCerts.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-muted-foreground py-8 text-center">
               No previous certifications found.
             </p>
           ) : (
@@ -359,12 +393,16 @@ export function QuarterlyCertification() {
                   {previousCerts.map((cert) => {
                     const certData = cert.items as any;
                     const checks = certData?.checks || [];
-                    const compliantChecks = checks.filter((c: any) => c.compliant).length;
+                    const compliantChecks = checks.filter(
+                      (c: any) => c.compliant,
+                    ).length;
                     const totalChecks = checks.length;
 
                     return (
                       <TableRow key={cert.id}>
-                        <TableCell className="font-medium">{cert.checklistName}</TableCell>
+                        <TableCell className="font-medium">
+                          {cert.checklistName}
+                        </TableCell>
                         <TableCell>{cert.completedById || "—"}</TableCell>
                         <TableCell>
                           {cert.completedAt
@@ -376,10 +414,10 @@ export function QuarterlyCertification() {
                             variant="outline"
                             className={
                               cert.overallRating === "SATISFACTORY"
-                                ? "bg-green-100 text-green-800 border-green-300"
+                                ? "border-green-300 bg-green-100 text-green-800"
                                 : cert.overallRating === "QUALIFIED"
-                                ? "bg-amber-100 text-amber-800 border-amber-300"
-                                : "bg-red-100 text-red-800 border-red-300"
+                                  ? "border-amber-300 bg-amber-100 text-amber-800"
+                                  : "border-red-300 bg-red-100 text-red-800"
                             }
                           >
                             {cert.overallRating}
@@ -389,7 +427,10 @@ export function QuarterlyCertification() {
                           {totalChecks > 0 ? (
                             <span>
                               {compliantChecks}/{totalChecks} (
-                              {((compliantChecks / totalChecks) * 100).toFixed(0)}%)
+                              {((compliantChecks / totalChecks) * 100).toFixed(
+                                0,
+                              )}
+                              %)
                             </span>
                           ) : (
                             "—"

@@ -5,16 +5,18 @@ Repo: `/root/.openclaw/workspace/AEGIS`
 Scope: M17 (Investments/Treasury) + M18 (IS/EDP Audit)
 
 Validation focus (per task):
-1) Real implementation (no stubs/mocks)
-2) DAL uses `prismaForTenant` (tenant-scoped)
-3) UI wired to real data (not `const x: any[] = []`)
-4) Server actions validate input with Zod
+
+1. Real implementation (no stubs/mocks)
+2. DAL uses `prismaForTenant` (tenant-scoped)
+3. UI wired to real data (not `const x: any[] = []`)
+4. Server actions validate input with Zod
 
 ---
 
 ## Results (per requirement)
 
 One-line verdicts (requested format):
+
 - R93: ⚠️ PARTIAL (markReconciled lacks Zod validation; updates rely on RLS-only `where: {id}`)
 - R94: ✅ PASS
 - R95: ⚠️ PARTIAL (deposit source not wired; UI uses manual deposits)
@@ -29,6 +31,7 @@ One-line verdicts (requested format):
 - R104: ⚠️ PARTIAL (gap analysis not persisted; can crash if checklist `items` is non-array)
 
 ### R93: ⚠️ PARTIAL (reconciliation works, but server action lacks Zod + tenant-safe `where`)
+
 - Evidence:
   - UI: `src/components/investments/sgl-reconciliation.tsx`
   - Page wiring: `src/app/(dashboard)/investments/page.tsx` (uses `getInvestmentRecords`, `getUnreconciledInvestments`)
@@ -41,6 +44,7 @@ One-line verdicts (requested format):
   - ⚠️ `tx.investmentRecord.update({ where: { id: recordId }})` has no explicit `tenantId` predicate (relies on RLS via `prismaForTenant`).
 
 ### R94: ✅ PASS (broker 5% analytics + compliance check)
+
 - Evidence:
   - UI: `src/components/investments/broker-analytics.tsx`
   - Page wiring: `src/app/(dashboard)/investments/page.tsx` → `getBrokerConcentration(session, period)`
@@ -51,6 +55,7 @@ One-line verdicts (requested format):
   - Broker concentration is computed from `faceValue` totals for the period; UI flags ≥4% warning and ≥5% breach.
 
 ### R95: ⚠️ PARTIAL (cap logic exists, but deposits are not reliably sourced in UI)
+
 - Evidence:
   - UI: `src/components/investments/non-slr-monitor.tsx`
   - Enforcement point: `src/actions/investment/manage-records.ts#manageInvestmentRecord` → `checkNonSlrCap`
@@ -61,6 +66,7 @@ One-line verdicts (requested format):
   - ❌ UI uses **manual** `totalDeposits` state (`TODO: fetch from HousekeepingMetric`) and is not period-scoped.
 
 ### R96: ❌ FAIL (checklist not persisted; save is TODO)
+
 - Evidence:
   - UI: `src/components/investments/classification-checklist.tsx`
 - Findings:
@@ -69,6 +75,7 @@ One-line verdicts (requested format):
   - ❌ No server action / DAL persistence for classification audit results.
 
 ### R97: ✅ PASS (quarterly certification persisted + history shown)
+
 - Evidence:
   - UI: `src/components/investments/quarterly-certification.tsx`
   - Server actions: `src/actions/investment/quarterly-certification.ts` (Zod validation on submit)
@@ -82,6 +89,7 @@ One-line verdicts (requested format):
 ---
 
 ### R98: ✅ PASS (ApplicationInventory model + CRUD wired to real DB)
+
 - Evidence:
   - Prisma: `prisma/schema.prisma` → `ApplicationInventory`
   - DAL: `src/data-access/investment.ts#getApplicationInventory/createApplication/updateApplication/getApplicationsPendingDrTest` (uses `prismaForTenant`)
@@ -92,6 +100,7 @@ One-line verdicts (requested format):
   - UI supports add/edit and highlights DR overdue based on DAL output.
 
 ### R99: ⚠️ PARTIAL (checklist model/actions exist, but UI cannot practically fill/complete)
+
 - Evidence:
   - Prisma: `prisma/schema.prisma` → `IsAuditChecklist`
   - DAL: `src/data-access/investment.ts#getIsAuditChecklists/createIsAuditChecklist/updateIsAuditChecklist` (uses `prismaForTenant`)
@@ -103,6 +112,7 @@ One-line verdicts (requested format):
   - ❌ “Mark as Complete” attempts `completedById: "current-user-id"` (not a UUID) → server-side Zod validation will fail.
 
 ### R100: ⚠️ PARTIAL (vendor risk tracking works for create; edit path is buggy)
+
 - Evidence:
   - Prisma: `prisma/schema.prisma` → `VendorRiskAssessment`
   - DAL: `src/data-access/investment.ts#getVendorRiskAssessments` (uses `prismaForTenant`)
@@ -114,6 +124,7 @@ One-line verdicts (requested format):
   - ⚠️ Update action doesn’t update `vendorName/applicationId/contractStart` (only a subset of fields).
 
 ### R101: ⚠️ PARTIAL (CBS parameter items exist; save creates records but no load/complete)
+
 - Evidence:
   - UI: `src/components/is-audit/cbs-parameter-audit.tsx` (interest rates, product masters, privileges, etc.)
   - Action: `src/actions/investment/manage-is-audit.ts#manageIsAuditChecklist` (Zod)
@@ -123,6 +134,7 @@ One-line verdicts (requested format):
   - ❌ Completion uses `completedById: "current-user-id"` (not UUID) → completion will fail.
 
 ### R102: ✅ PASS (IS_AUDITOR role present + access enforced)
+
 - Evidence:
   - Role enum: `prisma/schema.prisma` / generated enums
   - Permissions: `src/lib/permissions.ts` includes `IS_AUDITOR`
@@ -130,6 +142,7 @@ One-line verdicts (requested format):
   - Actions: `src/actions/investment/manage-is-audit.ts` + `src/actions/investment/manage-records.ts` include IS_AUDITOR checks
 
 ### R103: ⚠️ PARTIAL (cyber checklist exists but not 122 questions + completion bug)
+
 - Evidence:
   - UI: `src/components/is-audit/cyber-security-checklist.tsx`
   - Action: `src/actions/investment/manage-is-audit.ts#manageIsAuditChecklist` (Zod)
@@ -140,6 +153,7 @@ One-line verdicts (requested format):
   - ❌ Completion uses `completedById: "current-user-id"` (not UUID) → completion will fail.
 
 ### R104: ⚠️ PARTIAL (gap analysis UI exists, but no persistence; can crash on non-array items)
+
 - Evidence:
   - UI: `src/components/is-audit/tech-control-evidence.tsx`
   - Page wiring: `src/app/(dashboard)/is-audit/page.tsx` passes `checklists` from DAL
@@ -152,12 +166,12 @@ One-line verdicts (requested format):
 
 ## Cross-cutting issues observed
 
-1) **Tenant-safe updates**: multiple DAL/actions use `update({ where: { id } })` without `tenantId` in predicate.
+1. **Tenant-safe updates**: multiple DAL/actions use `update({ where: { id } })` without `tenantId` in predicate.
    - Examples: `src/actions/investment/manage-records.ts`, `src/actions/investment/manage-is-audit.ts`, `src/data-access/investment.ts`.
    - This relies on Postgres RLS (via `prismaForTenant`) rather than explicit tenant filtering.
 
-2) **UI placeholders break completion flows**:
+2. **UI placeholders break completion flows**:
    - `completedById: "current-user-id"` appears in multiple IS-audit components and will fail server-side Zod (`uuid`) validation.
 
-3) **Cache invalidation paths**:
+3. **Cache invalidation paths**:
    - Some actions call `revalidatePath` with routes that don’t match the dashboard URLs (may be harmless due to `router.refresh()`, but is inconsistent).

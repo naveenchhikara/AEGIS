@@ -35,25 +35,28 @@ export function RiskMisDashboard({ metrics }: Props) {
   // Extract different metric types
   const crarMetrics = metrics.filter((m) =>
     ["CRAR_TIER1", "CRAR_TIER2", "CRAR_TOTAL", "RISK_WEIGHTED_ASSETS"].includes(
-      m.metricType
-    )
+      m.metricType,
+    ),
   );
   const assetQualityMetrics = metrics.filter((m) =>
     ["GROSS_NPA", "NET_NPA", "PROVISION_COVERAGE", "SLIPPAGE_RATIO"].includes(
-      m.metricType
-    )
+      m.metricType,
+    ),
   );
   const liquidityMetrics = metrics.filter((m) =>
     ["SLR_MAINTAINED", "CRR_MAINTAINED", "LCR", "CD_RATIO"].includes(
-      m.metricType
-    )
+      m.metricType,
+    ),
   );
   const operationalMetrics = metrics.filter((m) =>
-    ["INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"].includes(m.metricType)
+    ["INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"].includes(m.metricType),
   );
 
   // Helper to get latest metric by type
-  const getLatestMetric = (metricType: string, metricsArray: HousekeepingMetric[]) => {
+  const getLatestMetric = (
+    metricType: string,
+    metricsArray: HousekeepingMetric[],
+  ) => {
     return metricsArray
       .filter((m) => m.metricType === metricType)
       .sort((a, b) => b.period.localeCompare(a.period))[0];
@@ -80,7 +83,7 @@ export function RiskMisDashboard({ metrics }: Props) {
   const netNpa = getLatestMetric("NET_NPA", assetQualityMetrics);
   const provisionCoverage = getLatestMetric(
     "PROVISION_COVERAGE",
-    assetQualityMetrics
+    assetQualityMetrics,
   );
   const slippageRatio = getLatestMetric("SLIPPAGE_RATIO", assetQualityMetrics);
 
@@ -112,20 +115,26 @@ export function RiskMisDashboard({ metrics }: Props) {
   const operationalSummary = ["INTER_BRANCH", "SUSPENSE", "CLEARING", "SUNDRY"]
     .map((type) => {
       const typeMetrics = operationalMetrics.filter(
-        (m) => m.metricType === type
+        (m) => m.metricType === type,
       );
       const totalBalance = typeMetrics.reduce(
         (sum, m) => sum + Number(m.closingBalance),
-        0
+        0,
       );
       const avgAging =
         typeMetrics.reduce((sum, m) => sum + (m.agingDays || 0), 0) /
-          (typeMetrics.length || 1);
+        (typeMetrics.length || 1);
       const highRiskCount = typeMetrics.filter(
-        (m) => m.agingDays && m.agingDays > 90
+        (m) => m.agingDays && m.agingDays > 90,
       ).length;
 
-      return { type, totalBalance, avgAging, highRiskCount, count: typeMetrics.length };
+      return {
+        type,
+        totalBalance,
+        avgAging,
+        highRiskCount,
+        count: typeMetrics.length,
+      };
     })
     .filter((s) => s.count > 0);
 
@@ -142,15 +151,15 @@ export function RiskMisDashboard({ metrics }: Props) {
               <Info className="h-4 w-4" />
               <AlertTitle>Data Not Available</AlertTitle>
               <AlertDescription>
-                Enter CRAR metrics via the Metrics Capture tab. Use metric types:
-                CRAR_TOTAL, CRAR_TIER1, CRAR_TIER2, RISK_WEIGHTED_ASSETS
+                Enter CRAR metrics via the Metrics Capture tab. Use metric
+                types: CRAR_TOTAL, CRAR_TIER1, CRAR_TIER2, RISK_WEIGHTED_ASSETS
               </AlertDescription>
             </Alert>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Total CRAR</p>
+                  <p className="text-muted-foreground text-sm">Total CRAR</p>
                   <p className="text-3xl font-bold">
                     {formatPercent(crarValue)}
                   </p>
@@ -162,21 +171,25 @@ export function RiskMisDashboard({ metrics }: Props) {
                     ) : (
                       <Badge variant="destructive">Below Minimum</Badge>
                     )}
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Min: {regulatoryCrarMin}%
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Tier 1 Capital</p>
+                  <p className="text-muted-foreground text-sm">
+                    Tier 1 Capital
+                  </p>
                   <p className="text-2xl font-bold">
                     {formatPercent(tier1Value)}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Tier 2 Capital</p>
+                  <p className="text-muted-foreground text-sm">
+                    Tier 2 Capital
+                  </p>
                   <p className="text-2xl font-bold">
                     {formatPercent(tier2Value)}
                   </p>
@@ -195,7 +208,7 @@ export function RiskMisDashboard({ metrics }: Props) {
               )}
 
               {crarTotal && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Period: {crarTotal.period}
                 </p>
               )}
@@ -215,15 +228,15 @@ export function RiskMisDashboard({ metrics }: Props) {
               <Info className="h-4 w-4" />
               <AlertTitle>Data Not Available</AlertTitle>
               <AlertDescription>
-                Enter asset quality metrics via Metrics Capture. Use metric types:
-                GROSS_NPA, NET_NPA, PROVISION_COVERAGE, SLIPPAGE_RATIO
+                Enter asset quality metrics via Metrics Capture. Use metric
+                types: GROSS_NPA, NET_NPA, PROVISION_COVERAGE, SLIPPAGE_RATIO
               </AlertDescription>
             </Alert>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Gross NPA %</p>
+                  <p className="text-muted-foreground text-sm">Gross NPA %</p>
                   <p className="text-2xl font-bold">
                     {formatPercent(grossNpaValue)}
                   </p>
@@ -233,14 +246,14 @@ export function RiskMisDashboard({ metrics }: Props) {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Net NPA %</p>
+                  <p className="text-muted-foreground text-sm">Net NPA %</p>
                   <p className="text-2xl font-bold">
                     {formatPercent(netNpaValue)}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Provision Coverage
                   </p>
                   <p className="text-2xl font-bold">
@@ -252,7 +265,9 @@ export function RiskMisDashboard({ metrics }: Props) {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Slippage Ratio</p>
+                  <p className="text-muted-foreground text-sm">
+                    Slippage Ratio
+                  </p>
                   <p className="text-2xl font-bold">
                     {formatPercent(slippageValue)}
                   </p>
@@ -294,11 +309,11 @@ export function RiskMisDashboard({ metrics }: Props) {
               <div className="space-y-4">
                 {/* SLR */}
                 <div>
-                  <div className="flex justify-between mb-2">
+                  <div className="mb-2 flex justify-between">
                     <span className="text-sm font-medium">
                       SLR Maintained: {formatPercent(slrValue)}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Required: {slrRequired}%
                     </span>
                   </div>
@@ -315,11 +330,11 @@ export function RiskMisDashboard({ metrics }: Props) {
 
                 {/* CRR */}
                 <div>
-                  <div className="flex justify-between mb-2">
+                  <div className="mb-2 flex justify-between">
                     <span className="text-sm font-medium">
                       CRR Maintained: {formatPercent(crrValue)}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Required: {crrRequired}%
                     </span>
                   </div>
@@ -337,11 +352,11 @@ export function RiskMisDashboard({ metrics }: Props) {
                 {/* LCR */}
                 {lcrValue !== undefined && (
                   <div>
-                    <div className="flex justify-between mb-2">
+                    <div className="mb-2 flex justify-between">
                       <span className="text-sm font-medium">
                         Liquidity Coverage Ratio: {formatPercent(lcrValue)}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         Min: {lcrRequired}%
                       </span>
                     </div>
@@ -360,7 +375,7 @@ export function RiskMisDashboard({ metrics }: Props) {
                 {/* CD Ratio */}
                 {cdRatioValue !== undefined && (
                   <div className="mt-4">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Credit-Deposit Ratio
                     </p>
                     <p className="text-2xl font-bold">
@@ -413,7 +428,9 @@ export function RiskMisDashboard({ metrics }: Props) {
                   <TableHead>Account Type</TableHead>
                   <TableHead className="text-right">Total Balance</TableHead>
                   <TableHead className="text-right">Avg Aging (Days)</TableHead>
-                  <TableHead className="text-right">High Risk (&gt;90d)</TableHead>
+                  <TableHead className="text-right">
+                    High Risk (&gt;90d)
+                  </TableHead>
                   <TableHead className="text-right">Total Entries</TableHead>
                 </TableRow>
               </TableHeader>
@@ -430,10 +447,10 @@ export function RiskMisDashboard({ metrics }: Props) {
                       <span
                         className={
                           item.avgAging > 90
-                            ? "text-red-600 font-semibold"
+                            ? "font-semibold text-red-600"
                             : item.avgAging > 30
-                            ? "text-yellow-600"
-                            : ""
+                              ? "text-yellow-600"
+                              : ""
                         }
                       >
                         {item.avgAging.toFixed(0)}
@@ -441,7 +458,9 @@ export function RiskMisDashboard({ metrics }: Props) {
                     </TableCell>
                     <TableCell className="text-right">
                       {item.highRiskCount > 0 ? (
-                        <Badge variant="destructive">{item.highRiskCount}</Badge>
+                        <Badge variant="destructive">
+                          {item.highRiskCount}
+                        </Badge>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}

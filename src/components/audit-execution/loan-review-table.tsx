@@ -52,7 +52,9 @@ function formatAmount(amount: number): string {
   }).format(amount);
 }
 
-function getAssetClassVariant(assetClass: string): "default" | "secondary" | "destructive" {
+function getAssetClassVariant(
+  assetClass: string,
+): "default" | "secondary" | "destructive" {
   if (assetClass === "STANDARD") return "default";
   if (assetClass.startsWith("SMA")) return "secondary";
   return "destructive";
@@ -81,10 +83,13 @@ export function LoanReviewTable({
     setIsDeleting(false);
   };
 
-  const totalSanction = loanReviews.reduce((sum, lr) => sum + Number(lr.sanctionAmount), 0);
+  const totalSanction = loanReviews.reduce(
+    (sum, lr) => sum + Number(lr.sanctionAmount),
+    0,
+  );
   const totalOutstanding = loanReviews.reduce(
     (sum, lr) => sum + Number(lr.outstandingAmount),
-    0
+    0,
   );
 
   return (
@@ -107,7 +112,8 @@ export function LoanReviewTable({
             {loanReviews.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">
-                  No loan reviews found. Add records manually or import from CSV.
+                  No loan reviews found. Add records manually or import from
+                  CSV.
                 </TableCell>
               </TableRow>
             ) : (
@@ -174,8 +180,8 @@ export function LoanReviewTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Loan Review</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this loan review? This action cannot be
-              undone.
+              Are you sure you want to delete this loan review? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

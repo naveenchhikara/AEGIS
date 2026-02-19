@@ -10,7 +10,9 @@ import { logger } from "@/lib/logger";
 
 const AcceptRiskSchema = z.object({
   issueId: z.string().uuid(),
-  acceptanceReason: z.string().min(20, "Acceptance reason must be at least 20 characters"),
+  acceptanceReason: z
+    .string()
+    .min(20, "Acceptance reason must be at least 20 characters"),
 });
 
 type AcceptRiskInput = z.infer<typeof AcceptRiskSchema>;

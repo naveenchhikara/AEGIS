@@ -184,111 +184,109 @@ export async function getQaAssessmentProgress(session: Session) {
 
 /**
  * Get 10 Internal Audit Effectiveness KPIs (R66).
+ * Fixes serial query chain: wraps all 13 independent queries in Promise.all.
+ * KPI 5 uses raw SQL AVG() instead of fetching all closed observations into memory.
  */
 export async function getAuditEffectivenessKpis(session: Session) {
   const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
   const currentYear = new Date().getFullYear();
+  const now = new Date();
 
-  // KPI 1: Audit Plan Coverage (planned vs universe)
-  const totalEntities = await db.auditUniverseEntity.count({
-    where: { tenantId },
-  });
-  const plannedAudits = await db.auditEngagement.count({
-    where: { tenantId, status: { not: "CANCELLED" } },
-  });
+  // All 13 independent queries executed in parallel
+  const [
+    totalEntities,
+    plannedAudits,
+    completedAudits,
+    totalFindings,
+    closedFindings,
+    repeatFindings,
+    avgDaysResult,
+    highCritical,
+    qaAssessments,
+    totalCompliance,
+    overdueCompliance,
+    auditors,
+    zacReviewed,
+  ] = await Promise.all([
+    // KPI 1: Audit Plan Coverage (planned vs universe)
+    db.auditUniverseEntity.count({ where: { tenantId } }),
+    db.auditEngagement.count({
+      where: { tenantId, status: { not: "CANCELLED" } },
+    }),
+    // KPI 2: Audit Plan Completion Rate
+    db.auditEngagement.count({ where: { tenantId, status: "COMPLETED" } }),
+    // KPI 3: Finding Closure Rate
+    db.observation.count({ where: { tenantId } }),
+    db.observation.count({ where: { tenantId, status: "CLOSED" } }),
+    // KPI 4: Repeat Finding Rate
+    db.observation.count({ where: { tenantId, repeatOfId: { not: null } } }),
+    // KPI 5: Average Days to Close — raw SQL AVG() instead of fetching all rows
+    db.$queryRaw<{ avg_days: number | null }[]>`
+      SELECT AVG(EXTRACT(EPOCH FROM ("updatedAt" - "createdAt")) / 86400) AS avg_days
+      FROM "Observation"
+      WHERE "tenantId" = ${tenantId}::uuid AND "status" = 'CLOSED'
+    `,
+    // KPI 6: High/Critical Finding Ratio
+    db.observation.count({
+      where: { tenantId, severity: { in: ["HIGH", "CRITICAL"] } },
+    }),
+    // KPI 7: QA Conformance Rate
+    db.qaSelfAssessment.groupBy({
+      by: ["response"],
+      where: { tenantId, assessmentYear: currentYear },
+      _count: { id: true },
+    }),
+    // KPI 8: Compliance Item Overdue Rate
+    db.complianceItem.count({ where: { tenantId } }),
+    db.complianceItem.count({
+      where: {
+        tenantId,
+        status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] },
+        dueDate: { lt: now },
+      },
+    }),
+    // KPI 9: Staff Utilization
+    db.user.count({
+      where: {
+        tenantId,
+        roles: { hasSome: ["AUDITOR", "LEAD_AUDITOR", "FIELD_AUDITOR"] },
+      },
+    }),
+    // KPI 10: Stakeholder Satisfaction (ZAC first-pass rate)
+    db.complianceItem.count({
+      where: {
+        tenantId,
+        status: { in: ["ZAC_APPROVED", "ACE_REVIEW", "ACB_REVIEW", "CLOSED"] },
+      },
+    }),
+  ]);
+
+  // Compute derived values
   const auditCoverage =
     totalEntities > 0 ? (plannedAudits / totalEntities) * 100 : 0;
-
-  // KPI 2: Audit Plan Completion Rate
-  const completedAudits = await db.auditEngagement.count({
-    where: { tenantId, status: "COMPLETED" },
-  });
   const planCompletionRate =
     plannedAudits > 0 ? (completedAudits / plannedAudits) * 100 : 0;
-
-  // KPI 3: Finding Closure Rate (within SLA)
-  const totalFindings = await db.observation.count({ where: { tenantId } });
-  const closedFindings = await db.observation.count({
-    where: { tenantId, status: "CLOSED" },
-  });
   const findingClosureRate =
     totalFindings > 0 ? (closedFindings / totalFindings) * 100 : 0;
-
-  // KPI 4: Repeat Finding Rate (use repeatOfId as proxy for repeat findings)
-  const repeatFindings = await db.observation.count({
-    where: { tenantId, repeatOfId: { not: null } },
-  });
   const repeatFindingRate =
     totalFindings > 0 ? (repeatFindings / totalFindings) * 100 : 0;
-
-  // KPI 5: Average Days to Close Findings (use updatedAt as proxy for closedAt)
-  const closedObs = await db.observation.findMany({
-    where: { tenantId, status: "CLOSED" },
-    select: { createdAt: true, updatedAt: true },
-  });
-  const avgDaysToClose =
-    closedObs.length > 0
-      ? closedObs.reduce(
-          (sum, o) =>
-            sum +
-            Math.ceil(
-              (o.updatedAt.getTime() - o.createdAt.getTime()) / 86400000,
-            ),
-          0,
-        ) / closedObs.length
-      : 0;
-
-  // KPI 6: High/Critical Finding Ratio
-  const highCritical = await db.observation.count({
-    where: { tenantId, severity: { in: ["HIGH", "CRITICAL"] } },
-  });
+  const avgDaysToClose = Number(avgDaysResult[0]?.avg_days ?? 0);
   const highCriticalRatio =
     totalFindings > 0 ? (highCritical / totalFindings) * 100 : 0;
 
-  // KPI 7: QA Conformance Rate
-  const qaAssessments = await db.qaSelfAssessment.findMany({
-    where: { tenantId, assessmentYear: currentYear },
-    select: { response: true },
-  });
-  const conforming = qaAssessments.filter(
-    (a) => a.response === "CONFORMS",
-  ).length;
-  const qaConformanceRate =
-    qaAssessments.length > 0 ? (conforming / qaAssessments.length) * 100 : 0;
+  // QA conformance from groupBy result
+  let qaTotal = 0;
+  let conforming = 0;
+  for (const g of qaAssessments) {
+    qaTotal += g._count.id;
+    if (g.response === "CONFORMS") conforming = g._count.id;
+  }
+  const qaConformanceRate = qaTotal > 0 ? (conforming / qaTotal) * 100 : 0;
 
-  // KPI 8: Compliance Item Overdue Rate
-  const totalCompliance = await db.complianceItem.count({
-    where: { tenantId },
-  });
-  const overdueCompliance = await db.complianceItem.count({
-    where: {
-      tenantId,
-      status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] },
-      dueDate: { lt: new Date() },
-    },
-  });
   const overdueRate =
     totalCompliance > 0 ? (overdueCompliance / totalCompliance) * 100 : 0;
-
-  // KPI 9: Staff Utilization (audits per auditor)
-  const auditors = await db.user.count({
-    where: {
-      tenantId,
-      roles: { hasSome: ["AUDITOR", "LEAD_AUDITOR", "FIELD_AUDITOR"] },
-    },
-  });
   const staffUtilization = auditors > 0 ? completedAudits / auditors : 0;
-
-  // KPI 10: Stakeholder Satisfaction (% accepted at first ZAC review)
-  const zacReviewed = await db.complianceItem.count({
-    where: {
-      tenantId,
-      status: {
-        in: ["ZAC_APPROVED", "ACE_REVIEW", "ACB_REVIEW", "CLOSED"],
-      },
-    },
-  });
   const firstPassRate =
     totalCompliance > 0 ? (zacReviewed / totalCompliance) * 100 : 0;
 

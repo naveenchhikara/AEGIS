@@ -53,14 +53,17 @@ export default async function AuditExecutionPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <EngagementHeader engagement={engagement} />
+      <EngagementHeader engagement={engagement as any} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main content: Section tabs (3/4 width on desktop) */}
         <div className="lg:col-span-3">
           <SectionTabs
             engagementId={engagementId}
-            sections={engagement.sectionInstances}
+            sections={(engagement as any).sectionInstances?.map((s: any) => ({
+              ...s,
+              assignedToName: null, // R18: resolved via separate lookup if needed
+            })) ?? []}
             canManageSections={canManageSections}
           />
         </div>
@@ -69,7 +72,7 @@ export default async function AuditExecutionPage({ params }: PageProps) {
         <div className="lg:col-span-1">
           <TeamPanel
             engagementId={engagementId}
-            teamMembers={engagement.teamMembers}
+            teamMembers={(engagement as any).teamMembers}
             canManageTeam={canManageTeam}
             availableUsers={availableUsers.map((u) => ({
               id: u.id,

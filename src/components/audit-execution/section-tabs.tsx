@@ -19,6 +19,9 @@ interface SectionTabsProps {
     status: string;
     completedAt: Date | null;
     reviewedAt: Date | null;
+    assignedToId?: string | null;
+    assignedToName?: string | null;
+    sectionData?: Record<string, unknown> | null;
   }>;
   canManageSections: boolean;
 }
@@ -120,6 +123,11 @@ export function SectionTabs({
                   <span className="text-xs">
                     {section.sectionCode}
                   </span>
+                  {section.assignedToName && (
+                    <span className="text-[10px] text-muted-foreground ml-1">
+                      ({section.assignedToName.split(" ")[0]})
+                    </span>
+                  )}
                 </Button>
               );
             })}

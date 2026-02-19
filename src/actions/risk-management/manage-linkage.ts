@@ -58,9 +58,14 @@ export async function manageRiskAuditLinkage(input: ManageRiskAuditLinkageInput)
       });
 
       if (parsed.data.id) {
-        // Update existing linkage
-        return tx.riskAuditLinkage.update({
+        // Update existing linkage — safe tenant isolation pattern
+        const existing = await tx.riskAuditLinkage.findFirst({
           where: { id: parsed.data.id, tenantId },
+        });
+        if (!existing) throw new Error("Linkage not found");
+
+        return tx.riskAuditLinkage.update({
+          where: { id: parsed.data.id },
           data: {
             entityId: parsed.data.entityId,
             riskRegisterId: parsed.data.riskRegisterId,

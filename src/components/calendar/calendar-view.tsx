@@ -64,6 +64,7 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
   const [endDate, setEndDate] = React.useState("");
   const [allDay, setAllDay] = React.useState(false);
   const [description, setDescription] = React.useState("");
+  const [recurrenceRule, setRecurrenceRule] = React.useState("");
 
   // Filter events by type
   const filteredEvents = React.useMemo(() => {
@@ -103,6 +104,7 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
       endDate: endDate ? new Date(endDate).toISOString() : undefined,
       allDay,
       description: description || undefined,
+      recurrenceRule: recurrenceRule || undefined,
     });
     setIsSubmitting(false);
 
@@ -114,6 +116,7 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
       setStartDate("");
       setEndDate("");
       setDescription("");
+      setRecurrenceRule("");
       router.refresh();
     } else {
       toast.error(result.error);
@@ -221,6 +224,24 @@ export function CalendarView({ events, canManage }: CalendarViewProps) {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
+                </div>
+                {/* Periodicity / Recurrence Rule (R70) */}
+                <div className="space-y-2">
+                  <Label htmlFor="recurrence">Recurrence (optional)</Label>
+                  <Select value={recurrenceRule} onValueChange={setRecurrenceRule}>
+                    <SelectTrigger id="recurrence">
+                      <SelectValue placeholder="No recurrence" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None (one-time)</SelectItem>
+                      <SelectItem value="WEEKLY">Weekly</SelectItem>
+                      <SelectItem value="BIWEEKLY">Every 2 Weeks</SelectItem>
+                      <SelectItem value="MONTHLY">Monthly</SelectItem>
+                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                      <SelectItem value="HALF_YEARLY">Half-Yearly</SelectItem>
+                      <SelectItem value="ANNUAL">Annual</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <DialogFooter>

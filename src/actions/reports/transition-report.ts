@@ -167,11 +167,9 @@ export async function transitionReportStatus(input: TransitionReportInput) {
       }
 
       // Update engagement with tenant scope
+      // Update by id only (tenant already verified by findFirst above)
       await tx.auditEngagement.update({
-        where: {
-          id: validated.engagementId,
-          tenantId,
-        },
+        where: { id: validated.engagementId },
         data: updateData,
       });
 

@@ -206,15 +206,31 @@ export async function getNpaMovement(tenantId: string) {
     { SMA0: number; SMA1: number; SMA2: number; NPA: number }
   >();
 
+  // Map category values (including NPA_* variants) to bucket keys
+  function mapCategory(category: string | null): keyof typeof bucket | null {
+    if (!category) return "SMA0";
+    const upper = category.toUpperCase().replace(/[_-]/g, "");
+    if (upper === "SMA0" || upper === "SMA 0") return "SMA0";
+    if (upper === "SMA1" || upper === "SMA 1") return "SMA1";
+    if (upper === "SMA2" || upper === "SMA 2") return "SMA2";
+    if (upper.startsWith("NPA")) return "NPA"; // Catches NPA, NPA_SUBSTANDARD, NPA_DOUBTFUL, NPA_LOSS
+    return null;
+  }
+
+  const bucket = { SMA0: 0, SMA1: 0, SMA2: 0, NPA: 0 };
+
   for (const entry of entries) {
     const date = entry.createdAt;
     const q = `${date.getFullYear()}-Q${Math.ceil((date.getMonth() + 1) / 3)}`;
     if (!quarters.has(q)) {
       quarters.set(q, { SMA0: 0, SMA1: 0, SMA2: 0, NPA: 0 });
     }
-    const bucket = quarters.get(q)!;
-    const cat = (entry.category ?? "SMA0") as string;
-    if (cat in bucket) (bucket as Record<string, number>)[cat]++;
+    const qBucket = quarters.get(q)!;
+    const mappedCat = mapCategory(entry.category);
+    if (mappedCat) {
+      // Sum accountCount instead of incrementing by 1
+      qBucket[mappedCat] += entry.accountCount ?? 1;
+    }
   }
 
   return Array.from(quarters.entries())

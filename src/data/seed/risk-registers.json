@@ -194,7 +194,7 @@
   },
   {
     "id": "b0000000-0000-0000-0000-000000000049",
-    "entityType": "b0000000-0000-0000-0000-000000000034",
+    "entityId": "b0000000-0000-0000-0000-000000000034",
     "riskStatement": "Interest rate risk due to asset-liability maturity mismatch in treasury portfolio",
     "riskCategory": "MARKET",
     "inherentScore": 3.8,

@@ -81,7 +81,7 @@ export async function updateConcurrentAuditTemplate(
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.update({
-    where: { id: templateId },
+    where: { id: templateId, tenantId },
     data,
   });
 }
@@ -97,7 +97,7 @@ export async function deleteConcurrentAuditTemplate(
   const db = prismaForTenant(tenantId);
 
   return db.concurrentAuditTemplate.delete({
-    where: { id: templateId },
+    where: { id: templateId, tenantId },
   });
 }
 

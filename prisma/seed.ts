@@ -1350,14 +1350,32 @@ async function main() {
       },
     });
 
-    // Create committee members (using placeholder user IDs - they'll be matched to real users if they exist)
+    // Create committee members — map placeholder names to seeded users, skip duplicates
     if (committee.members && committee.members.length > 0) {
+      const seenUserIds = new Set<string>();
+      const userPool = [
+        userCAE.id,
+        userCEO.id,
+        userCCO.id,
+        userAuditor.id,
+        userAuditee.id,
+      ];
+      let poolIdx = 0;
+
       for (const member of committee.members) {
-        // Use existing users or skip if placeholder
-        let userId = userCAE.id; // Default to CAE
+        let userId: string;
         if (member.name === "Rajesh Deshmukh") userId = userCEO.id;
-        if (member.name === "Priya Sharma") userId = userCAE.id;
-        if (member.name === "Amit Joshi") userId = userCCO.id;
+        else if (member.name === "Priya Sharma") userId = userCAE.id;
+        else if (member.name === "Amit Joshi") userId = userCCO.id;
+        else {
+          // Round-robin through available users for unrecognized names
+          userId = userPool[poolIdx % userPool.length];
+          poolIdx++;
+        }
+
+        // Skip duplicate (committeeId, userId) pairs
+        if (seenUserIds.has(userId)) continue;
+        seenUserIds.add(userId);
 
         await prisma.committeeMember.create({
           data: {

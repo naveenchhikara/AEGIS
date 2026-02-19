@@ -101,11 +101,125 @@ export async function runEscalationJobInternal(tenantId: string) {
       "Computed escalation updates",
     );
 
-    // Step 3: Process each escalation update
+    // Step 3: Pre-fetch recipients per escalation level (at most 4 levels)
+    // This avoids re-querying recipients for every item in the loop
+    const uniqueLevels = [
+      ...new Set(
+        updates.filter((u) => u.shouldNotify).map((u) => u.newEscalationLevel),
+      ),
+    ];
+
+    // Map: escalationLevel → { route, recipients }
+    const levelRecipientMap = new Map<
+      number,
+      {
+        route: ReturnType<typeof getEscalationRoute>;
+        baseRecipients: { id: string; email: string; name: string }[];
+      }
+    >();
+
+    for (const level of uniqueLevels) {
+      const route = getEscalationRoute(level, {
+        observationTitle: "",
+        branchName: "",
+        daysOverdue: 0,
+      });
+      if (!route) continue;
+
+      const baseRecipients = await db.user.findMany({
+        where: {
+          tenantId,
+          roles: { hasSome: route.recipientRoles as any },
+        },
+        select: { id: true, email: true, name: true },
+      });
+
+      levelRecipientMap.set(level, { route, baseRecipients });
+    }
+
+    // Pre-fetch branch-head users per branch (for items needing BRANCH_HEAD escalation)
+    const branchHeadLevels = uniqueLevels.filter((level) => {
+      const entry = levelRecipientMap.get(level);
+      return entry?.route?.recipientRoles.includes("BRANCH_HEAD");
+    });
+
+    const branchIdsNeeded =
+      branchHeadLevels.length > 0
+        ? [
+            ...new Set(
+              updates
+                .filter(
+                  (u) =>
+                    u.shouldNotify &&
+                    branchHeadLevels.includes(u.newEscalationLevel),
+                )
+                .map((u) => items.find((i) => i.id === u.id)?.branchId)
+                .filter((id): id is string => !!id),
+            ),
+          ]
+        : [];
+
+    // Map: branchId → branch-head users
+    const branchHeadMap = new Map<
+      string,
+      { id: string; email: string; name: string }[]
+    >();
+
+    if (branchIdsNeeded.length > 0) {
+      // Fetch all branch-head assignments in a single query
+      const allBranchHeads = await db.user.findMany({
+        where: {
+          tenantId,
+          roles: { has: "BRANCH_HEAD" as any },
+          branchAssignments: { some: { branchId: { in: branchIdsNeeded } } },
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          branchAssignments: { select: { branchId: true } },
+        },
+      });
+
+      // Group by branchId
+      for (const user of allBranchHeads) {
+        for (const assignment of user.branchAssignments) {
+          if (!branchHeadMap.has(assignment.branchId)) {
+            branchHeadMap.set(assignment.branchId, []);
+          }
+          branchHeadMap.get(assignment.branchId)!.push({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          });
+        }
+      }
+    }
+
+    // Step 4: Process updates — batch notifications and item updates
     let notificationsSent = 0;
+    const notificationsToCreate: {
+      tenantId: string;
+      recipientId: string;
+      type: string;
+      payload: object;
+    }[] = [];
+    const itemUpdates: {
+      id: string;
+      escalationLevel: number;
+      daysOpen: number;
+    }[] = [];
 
     for (const update of updates) {
-      if (!update.shouldNotify) continue; // Only notify on level increase
+      if (!update.shouldNotify) {
+        // Still collect non-notifying updates for the item daysOpen sync
+        itemUpdates.push({
+          id: update.id,
+          escalationLevel: update.newEscalationLevel,
+          daysOpen: update.daysOpen,
+        });
+        continue;
+      }
 
       const item = items.find((i) => i.id === update.id);
       if (!item) continue;
@@ -116,36 +230,21 @@ export async function runEscalationJobInternal(tenantId: string) {
         daysOverdue: update.daysOverdue,
       };
 
-      // Get escalation route for this level
-      const route = getEscalationRoute(update.newEscalationLevel, itemContext);
+      const levelEntry = levelRecipientMap.get(update.newEscalationLevel);
+      if (!levelEntry) continue;
 
-      if (!route) continue; // L0 or no route
+      const { route, baseRecipients } = levelEntry;
+      if (!route) continue;
 
-      // Resolve recipients for this escalation level
-      const recipients = await db.user.findMany({
-        where: {
-          tenantId,
-          roles: { hasSome: route.recipientRoles as any },
-        },
-        select: { id: true, email: true, name: true },
-      });
+      // Build recipient list using pre-fetched data
+      const recipientMap = new Map(baseRecipients.map((r) => [r.id, r]));
 
-      // For BRANCH_HEAD, also include branch-specific users
       if (route.recipientRoles.includes("BRANCH_HEAD") && item.branchId) {
-        const branchUsers = await db.user.findMany({
-          where: {
-            tenantId,
-            roles: { has: "BRANCH_HEAD" },
-            branchAssignments: { some: { branchId: item.branchId } },
-          },
-          select: { id: true, email: true, name: true },
-        });
-
-        // Deduplicate
-        const map = new Map(recipients.map((r) => [r.id, r]));
-        branchUsers.forEach((u) => map.set(u.id, u));
-        recipients.splice(0, recipients.length, ...Array.from(map.values()));
+        const branchHeads = branchHeadMap.get(item.branchId) ?? [];
+        branchHeads.forEach((u) => recipientMap.set(u.id, u));
       }
+
+      const recipients = Array.from(recipientMap.values());
 
       logger.info(
         {
@@ -157,37 +256,51 @@ export async function runEscalationJobInternal(tenantId: string) {
         "Routing escalation notification",
       );
 
-      // Create NotificationQueue entries
+      // Collect notification payloads for batch insert
       for (const recipient of recipients) {
-        await db.notificationQueue.create({
-          data: {
-            tenantId,
-            recipientId: recipient.id,
-            type: route.notificationType,
-            payload: {
-              subject: route.subject,
-              message: route.messageTemplate,
-              complianceItemId: item.id,
-              escalationLevel: route.level,
-              branchName: itemContext.branchName,
-              observationTitle: itemContext.observationTitle,
-              daysOverdue: update.daysOverdue,
-              urgency: route.urgency,
-            } as object,
+        notificationsToCreate.push({
+          tenantId,
+          recipientId: recipient.id,
+          type: route.notificationType,
+          payload: {
+            subject: route.subject,
+            message: route.messageTemplate,
+            complianceItemId: item.id,
+            escalationLevel: route.level,
+            branchName: itemContext.branchName,
+            observationTitle: itemContext.observationTitle,
+            daysOverdue: update.daysOverdue,
+            urgency: route.urgency,
           },
         });
-
         notificationsSent++;
       }
 
-      // Update ComplianceItem with new escalation level
-      await db.complianceItem.update({
-        where: { id: item.id },
-        data: {
-          escalationLevel: update.newEscalationLevel,
-          daysOpen: update.daysOpen,
-        },
+      itemUpdates.push({
+        id: update.id,
+        escalationLevel: update.newEscalationLevel,
+        daysOpen: update.daysOpen,
       });
+    }
+
+    // Batch-create notifications in a single transaction
+    if (notificationsToCreate.length > 0) {
+      await db.notificationQueue.createMany({
+        data: notificationsToCreate,
+        skipDuplicates: true,
+      });
+    }
+
+    // Batch-update compliance items in a transaction
+    if (itemUpdates.length > 0) {
+      await db.$transaction(
+        itemUpdates.map((u) =>
+          db.complianceItem.update({
+            where: { id: u.id },
+            data: { escalationLevel: u.escalationLevel, daysOpen: u.daysOpen },
+          }),
+        ),
+      );
     }
 
     const summary = {

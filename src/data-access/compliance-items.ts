@@ -1,5 +1,5 @@
 import { prismaForTenant } from "./prisma";
-import type { Session } from "@/lib/auth";
+import type { AuthSession as Session } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 /**
@@ -309,7 +309,7 @@ export async function getComplianceEscalationSummary(session: Session) {
   const summary = await db.complianceItem.groupBy({
     by: ["escalationLevel"],
     where: { tenantId, status: { notIn: ["CLOSED"] } },
-    _count: true,
+    _count: { id: true },
   });
 
   const totals = {
@@ -323,7 +323,7 @@ export async function getComplianceEscalationSummary(session: Session) {
 
   for (const group of summary) {
     const level = group.escalationLevel;
-    const count = group._count;
+    const count = group._count.id;
     totals.total += count;
 
     if (level === 0) totals.l0 = count;

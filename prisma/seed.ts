@@ -1028,8 +1028,8 @@ async function main() {
     const riskRecord = await prisma.riskRegister.create({
       data: {
         id: risk.id,
-        tenantId: tenantA.id,
-        entityId: risk.entityId,
+        tenant: { connect: { id: tenantA.id } },
+        entity: { connect: { id: risk.entityId } },
         riskStatement: risk.riskStatement,
         riskCategory: risk.riskCategory,
         inherentScore: risk.inherentScore,
@@ -1047,8 +1047,8 @@ async function main() {
       for (const kri of risk.kris) {
         await prisma.keyRiskIndicator.create({
           data: {
-            tenantId: tenantA.id,
-            riskRegisterId: riskRecord.id,
+            tenant: { connect: { id: tenantA.id } },
+            riskRegister: { connect: { id: riskRecord.id } },
             name: kri.name,
             description: kri.description,
             currentValue: kri.currentValue,
@@ -1078,7 +1078,7 @@ async function main() {
     const controlRecord = await prisma.controlLibrary.create({
       data: {
         id: control.id,
-        tenantId: tenantA.id,
+        tenant: { connect: { id: tenantA.id } },
         controlCode: control.controlCode,
         processArea: control.processArea,
         controlType: control.controlType,
@@ -1100,8 +1100,8 @@ async function main() {
       for (const proc of control.testProcedures) {
         await prisma.testProcedure.create({
           data: {
-            tenantId: tenantA.id,
-            controlId: controlRecord.id,
+            tenant: { connect: { id: tenantA.id } },
+            control: { connect: { id: controlRecord.id } },
             name: proc.name,
             description: proc.description,
             sampleMethodology: proc.sampleMethodology,
@@ -1130,7 +1130,7 @@ async function main() {
     const issueRecord = await prisma.issue.create({
       data: {
         id: issue.id,
-        tenantId: tenantA.id,
+        tenant: { connect: { id: tenantA.id } },
         title: issue.title,
         description: issue.description,
         source: issue.source,
@@ -1151,8 +1151,8 @@ async function main() {
       for (const ap of issue.actionPlans) {
         await prisma.actionPlan.create({
           data: {
-            tenantId: tenantA.id,
-            issueId: issueRecord.id,
+            tenant: { connect: { id: tenantA.id } },
+            issue: { connect: { id: issueRecord.id } },
             title: ap.title,
             description: ap.description,
             milestone: ap.milestone,
@@ -1361,8 +1361,8 @@ async function main() {
 
         await prisma.committeeMember.create({
           data: {
-            committeeId: committeeRecord.id,
-            userId,
+            committee: { connect: { id: committeeRecord.id } },
+            user: { connect: { id: userId } },
             role: member.role,
           },
         });
@@ -1515,8 +1515,8 @@ async function main() {
   for (const meeting of committeeMeetingData) {
     await prisma.committeeMeeting.create({
       data: {
-        committeeId: meeting.committeeId,
-        tenantId: tenantA.id,
+        committee: { connect: { id: meeting.committeeId } },
+        tenant: { connect: { id: tenantA.id } },
         meetingDate: meeting.meetingDate,
         status: meeting.status,
         agendaItems: meeting.agendaItems,
@@ -1542,8 +1542,8 @@ async function main() {
     await prisma.housekeepingMetric.create({
       data: {
         id: metric.id,
-        tenantId: tenantA.id,
-        branchId,
+        tenant: { connect: { id: tenantA.id } },
+        branch: { connect: { id: branchId } },
         metricType: metric.metricType,
         period: metric.period,
         openingBalance: metric.openingBalance,
@@ -1566,7 +1566,7 @@ async function main() {
     await prisma.investmentRecord.create({
       data: {
         id: investment.id,
-        tenantId: tenantA.id,
+        tenant: { connect: { id: tenantA.id } },
         securityType: investment.securityType,
         classification: investment.classification,
         isin: investment.isin,
@@ -1593,7 +1593,7 @@ async function main() {
     await prisma.applicationInventory.create({
       data: {
         id: app.id,
-        tenantId: tenantA.id,
+        tenant: { connect: { id: tenantA.id } },
         appName: app.appName,
         vendor: app.vendor,
         version: app.version,
@@ -1625,7 +1625,7 @@ async function main() {
     await prisma.isAuditChecklist.create({
       data: {
         id: checklist.id,
-        tenantId: tenantA.id,
+        tenant: { connect: { id: tenantA.id } },
         category: checklist.category,
         checklistName: checklist.checklistName,
         items: checklist.items,

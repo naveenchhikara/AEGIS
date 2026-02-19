@@ -107,7 +107,7 @@ export async function updateRegulatoryObservation(
   const db = prismaForTenant(tenantId);
 
   return db.regulatoryObservation.update({
-    where: { id: observationId },
+    where: { id: observationId, tenantId },
     data,
   });
 }

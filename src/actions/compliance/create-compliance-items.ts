@@ -65,35 +65,43 @@ export async function createComplianceItems(input: CreateComplianceItemsInput) {
         throw new Error("No issued observations found for this engagement");
       }
 
-      // Create compliance item for each observation (if not exists)
-      const createdItems = [];
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 30); // 30-day SLA per R35
 
-      for (const obs of observations) {
-        // Check if compliance item already exists
-        const existing = await tx.complianceItem.findUnique({
-          where: { observationId: obs.id },
-        });
+      // Fetch all existing compliance items for the engagement in one query
+      const existingItems = await tx.complianceItem.findMany({
+        where: {
+          tenantId,
+          auditId: parsed.data.engagementId,
+        },
+        select: { observationId: true },
+      });
 
-        if (!existing) {
-          const item = await tx.complianceItem.create({
-            data: {
-              tenantId,
-              observationId: obs.id,
-              auditId: parsed.data.engagementId,
-              branchId: obs.branchId,
-              status: "OPEN",
-              dueDate,
-              escalationLevel: 0,
-              daysOpen: 0,
-            },
-          });
-          createdItems.push(item);
-        }
+      const existingObsIds = new Set(existingItems.map((i) => i.observationId));
+
+      // Filter to only new observations that need compliance items
+      const newObservations = observations.filter(
+        (obs) => !existingObsIds.has(obs.id),
+      );
+
+      // Batch-create all new compliance items with createMany
+      if (newObservations.length > 0) {
+        await tx.complianceItem.createMany({
+          data: newObservations.map((obs) => ({
+            tenantId,
+            observationId: obs.id,
+            auditId: parsed.data.engagementId,
+            branchId: obs.branchId,
+            status: "OPEN" as const,
+            dueDate,
+            escalationLevel: 0,
+            daysOpen: 0,
+          })),
+          skipDuplicates: true,
+        });
       }
 
-      return { created: createdItems.length, total: observations.length };
+      return { created: newObservations.length, total: observations.length };
     });
 
     revalidatePath("/compliance");

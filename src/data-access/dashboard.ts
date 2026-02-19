@@ -338,22 +338,43 @@ async function computeSeverityFallback(
   db: ReturnType<typeof prismaForTenant>,
   tenantId: string,
 ): Promise<ObservationSeverityData> {
-  const observations = await db.observation.findMany({
+  // Uses groupBy instead of full table scan — avoids loading all observations into memory
+  const groups = await db.observation.groupBy({
+    by: ["severity", "status"],
     where: { tenantId },
-    select: { severity: true, status: true },
+    _count: { id: true },
   });
 
-  const total = observations.length;
-  const closed = observations.filter((o: any) => o.status === "CLOSED").length;
-  const open = observations.filter((o: any) => o.status !== "CLOSED");
+  let total = 0;
+  let closed = 0;
+  let criticalOpen = 0;
+  let highOpen = 0;
+  let mediumOpen = 0;
+  let lowOpen = 0;
+
+  for (const g of groups) {
+    const count = g._count.id;
+    total += count;
+    const isOpen = g.status !== "CLOSED";
+    if (!isOpen) {
+      closed += count;
+      continue;
+    }
+    if (g.severity === "CRITICAL") criticalOpen += count;
+    else if (g.severity === "HIGH") highOpen += count;
+    else if (g.severity === "MEDIUM") mediumOpen += count;
+    else if (g.severity === "LOW") lowOpen += count;
+  }
+
+  const totalOpen = criticalOpen + highOpen + mediumOpen + lowOpen;
 
   return {
     total,
-    totalOpen: open.length,
-    criticalOpen: open.filter((o: any) => o.severity === "CRITICAL").length,
-    highOpen: open.filter((o: any) => o.severity === "HIGH").length,
-    mediumOpen: open.filter((o: any) => o.severity === "MEDIUM").length,
-    lowOpen: open.filter((o: any) => o.severity === "LOW").length,
+    totalOpen,
+    criticalOpen,
+    highOpen,
+    mediumOpen,
+    lowOpen,
     closed,
   };
 }
@@ -563,42 +584,49 @@ async function computeWorkloadFallback(
   db: ReturnType<typeof prismaForTenant>,
   tenantId: string,
 ): Promise<AuditorWorkloadItem[]> {
-  const observations = await db.observation.findMany({
+  // Uses groupBy instead of full table scan — avoids loading all observations into memory
+  const groups = await db.observation.groupBy({
+    by: ["assignedToId", "severity", "status"],
     where: { tenantId, assignedToId: { not: null } },
-    select: {
-      assignedToId: true,
-      assignedTo: { select: { name: true } },
-      severity: true,
-      status: true,
-    },
+    _count: { id: true },
   });
 
   const map = new Map<
     string,
-    { name: string; total: number; open: number; highCritical: number }
+    { total: number; open: number; highCritical: number }
   >();
 
-  for (const o of observations as any[]) {
-    if (!o.assignedToId) continue;
-    const entry = map.get(o.assignedToId) ?? {
-      name: o.assignedTo?.name ?? "Unknown",
+  const userIds = new Set<string>();
+
+  for (const g of groups) {
+    if (!g.assignedToId) continue;
+    userIds.add(g.assignedToId);
+    const entry = map.get(g.assignedToId) ?? {
       total: 0,
       open: 0,
       highCritical: 0,
     };
-    entry.total++;
-    if (o.status !== "CLOSED") {
-      entry.open++;
-      if (o.severity === "CRITICAL" || o.severity === "HIGH") {
-        entry.highCritical++;
+    const count = g._count.id;
+    entry.total += count;
+    if (g.status !== "CLOSED") {
+      entry.open += count;
+      if (g.severity === "CRITICAL" || g.severity === "HIGH") {
+        entry.highCritical += count;
       }
     }
-    map.set(o.assignedToId, entry);
+    map.set(g.assignedToId, entry);
   }
+
+  // Fetch user names in a single query
+  const users = await db.user.findMany({
+    where: { id: { in: Array.from(userIds) } },
+    select: { id: true, name: true },
+  });
+  const nameMap = new Map(users.map((u) => [u.id, u.name]));
 
   return Array.from(map.entries()).map(([id, data]) => ({
     auditorId: id,
-    auditorName: data.name,
+    auditorName: nameMap.get(id) ?? "Unknown",
     totalAssigned: data.total,
     openCount: data.open,
     highCriticalOpen: data.highCritical,
@@ -838,38 +866,46 @@ export async function getBranchRiskData(
   db: ReturnType<typeof prismaForTenant>,
   tenantId: string,
 ): Promise<BranchRiskItem[]> {
-  const observations = await db.observation.findMany({
+  // Uses groupBy instead of full table scan — avoids loading all observations into memory
+  const groups = await db.observation.groupBy({
+    by: ["branchId", "severity"],
     where: { tenantId, status: { not: "CLOSED" }, branchId: { not: null } },
-    select: {
-      branchId: true,
-      branch: { select: { name: true } },
-      severity: true,
-    },
+    _count: { id: true },
   });
 
   const branchMap = new Map<
     string,
-    { name: string; open: number; critical: number; high: number }
+    { open: number; critical: number; high: number }
   >();
 
-  for (const o of observations as any[]) {
-    if (!o.branchId) continue;
-    const entry = branchMap.get(o.branchId) ?? {
-      name: o.branch?.name ?? "Unknown",
+  const branchIds = new Set<string>();
+
+  for (const g of groups) {
+    if (!g.branchId) continue;
+    branchIds.add(g.branchId);
+    const entry = branchMap.get(g.branchId) ?? {
       open: 0,
       critical: 0,
       high: 0,
     };
-    entry.open++;
-    if (o.severity === "CRITICAL") entry.critical++;
-    else if (o.severity === "HIGH") entry.high++;
-    branchMap.set(o.branchId, entry);
+    const count = g._count.id;
+    entry.open += count;
+    if (g.severity === "CRITICAL") entry.critical += count;
+    else if (g.severity === "HIGH") entry.high += count;
+    branchMap.set(g.branchId, entry);
   }
+
+  // Fetch branch names in a single query
+  const branches = await db.branch.findMany({
+    where: { id: { in: Array.from(branchIds) } },
+    select: { id: true, name: true },
+  });
+  const nameMap = new Map(branches.map((b) => [b.id, b.name]));
 
   return Array.from(branchMap.entries())
     .map(([id, data]) => ({
       branchId: id,
-      branchName: data.name,
+      branchName: nameMap.get(id) ?? "Unknown",
       openCount: data.open,
       criticalCount: data.critical,
       highCount: data.high,

@@ -64,7 +64,7 @@ export async function updateUserRoles(
   await prisma.$executeRaw`SELECT set_config('app.current_action', 'user.role_changed', TRUE)`;
 
   const user = await prismaForTenant(tenantId).user.update({
-    where: { id: userId },
+    where: { id: userId, tenantId },
     data: {
       roles: roles,
     },

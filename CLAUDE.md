@@ -2,82 +2,185 @@
 
 ## Project Overview
 
-AEGIS is a multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage internal audits and track compliance with RBI regulations. Built for the Indian banking sector with multi-language support (English, Hindi, Marathi, Gujarati).
+AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-**Current Phase:** Clickable prototype with demo data for Apex Sahakari Bank. No backend/auth yet — all data from JSON files.
-
-**Current State:** Phases 1-3 complete (project setup, core screens, finding management & reports). Phase 4 (i18n, responsive polish, AWS deploy) is next.
+**Live:** https://aegis.nexlyadvisory.com
+**Scale:** 559 source files · 1,999-line Prisma schema · 63 DB models · 381 commits · 104 requirements across 18 modules
+**Status:** 86/104 requirements complete. Production deployed with 4 user accounts (CEO, Auditor, CAE, CCO).
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 with App Router + Turbopack
 - **UI:** shadcn/ui + Radix UI + Tailwind CSS v4
-- **Language:** TypeScript
-- **Data:** JSON files in `src/data/` (demo data for prototype)
+- **Language:** TypeScript 5.9
+- **Database:** PostgreSQL 16 with Prisma 7 ORM (`@prisma/adapter-pg`)
+- **Auth:** Better Auth with bcrypt hashing, session cookies, RBAC (17 roles, 60+ permissions)
+- **i18n:** next-intl with 4 locales (English, Hindi, Marathi, Gujarati) — `messages/{en,hi,mr,gu}.json`
+- **State:** Zustand (client), React Query (server state)
+- **File Storage:** AWS S3 (Mumbai region, ap-south-1)
+- **Email:** AWS SES with DKIM verification
+- **Reports:** ExcelJS (XLSX), @react-pdf/renderer (PDF)
+- **Job Queue:** pg-boss
+- **Logging:** pino + pino-pretty
+- **Testing:** Playwright (E2E), Vitest (unit)
 - **Package Manager:** pnpm
 
 ## Quick Commands
 
 ```bash
-pnpm install          # Install dependencies
-pnpm dev              # Start dev server (http://localhost:3000)
-pnpm build            # Production build
-pnpm start            # Start production server
-pnpm lint             # Run ESLint
+pnpm install              # Install dependencies
+pnpm dev                  # Start dev server (http://localhost:3000) with Turbopack
+pnpm build                # Production build
+pnpm start                # Start production server
+pnpm lint                 # Run ESLint
+pnpm db:generate          # Generate Prisma client
+pnpm db:push              # Push schema to DB (no migration)
+pnpm db:migrate           # Run Prisma migrations
+pnpm db:seed              # Seed database (tsx prisma/seed.ts)
+pnpm db:studio            # Open Prisma Studio
+pnpm seed:master-directions  # Seed RBI master directions
+pnpm test:e2e             # Run Playwright E2E tests
+pnpm test:e2e:ui          # Run E2E tests with Playwright UI
 ```
 
 ## Architecture
 
 ```
-.planning/                  # GSD workflow docs (PROJECT, ROADMAP, STATE, REQUIREMENTS)
-Project Doc/                # Business docs, blueprints, RBI circulars reference
+.planning/                     # GSD workflow docs (PROJECT, ROADMAP, STATE, REQUIREMENTS)
+Project Doc/                   # Business docs, SDD, RBI circulars reference
+infra/                         # AWS CDK infrastructure-as-code
+messages/                      # i18n message files (en.json, hi.json, mr.json, gu.json)
+deploy/                        # Deployment scripts, Nginx config, PM2, demo scripts
+scripts/                       # Utility scripts (account creation, S3 setup, translations)
+prisma/
+├── schema.prisma              # 63 models, 16 enums, 1999 lines
+├── seed.ts                    # Database seeder (1,690 lines, 10 users, 2 tenants)
+├── migrations/                # Prisma + standalone SQL migrations
+└── *.sql                      # Manual SQL (triggers, views)
+tests/
+├── e2e/                       # Playwright E2E specs
+└── auth.setup.ts              # Auth setup for E2E
 src/
-├── data/
-│   ├── demo/              # Demo data JSON files (Apex Sahakari Bank)
-│   ├── rbi-regulations/   # RBI regulation knowledge base (JSON + TS modules)
-│   └── index.ts           # Barrel export for all demo data
-├── app/
-│   ├── (auth)/login/      # Login page
-│   └── (dashboard)/       # All sidebar pages (dashboard, compliance, audit-plans, findings, reports, settings, auditee)
-├── components/
-│   ├── ui/                # shadcn/ui primitives
-│   ├── layout/            # AppSidebar, TopBar
-│   ├── dashboard/         # Dashboard widget components
-│   ├── compliance/        # Compliance table, filters, dialog, trend chart
-│   ├── audit/             # Audit calendar, engagement cards, detail sheet
-│   ├── findings/          # Findings table, filters, detail, timeline
-│   └── reports/           # Board report sections (executive summary, scorecard, etc.)
-├── lib/                   # Utilities (utils.ts, constants.ts, icons.ts, report-utils.ts, nav-items.ts)
-├── hooks/                 # Custom hooks (use-mobile.tsx)
-└── types/                 # TypeScript type definitions (index.ts)
+├── actions/                   # Server actions (79 files across 15 domains)
+├── app/                       # Next.js App Router (52 pages)
+│   ├── (auth)/                # Login, signup
+│   ├── (dashboard)/           # All authenticated pages
+│   ├── (onboarding)/          # Tenant onboarding wizard
+│   ├── api/                   # REST endpoints (auth, health, exports, cron, reports)
+│   └── page.tsx               # Root redirect → /login
+├── components/                # 212 files across 30 dirs (ui/, layout/, domain-specific/)
+├── data/                      # RBI regulations (production), seed JSON (deprecated)
+├── data-access/               # Data Access Layer (39 files) — DB queries with tenant isolation
+├── emails/                    # React Email templates (assignment, escalation, digest)
+├── generated/prisma/          # Prisma-generated client
+├── hooks/                     # Custom React hooks
+├── jobs/                      # pg-boss background jobs (reminders, escalation, digest)
+├── lib/                       # Core utilities (35 files) — auth, permissions, engines, S3, SES
+├── providers/                 # React context providers
+├── services/                  # Business logic (risk-rating computation)
+├── stores/                    # Zustand stores
+├── instrumentation.ts         # Next.js instrumentation hook (pg-boss job registration)
+└── types/                     # TypeScript type definitions
 ```
 
-## Key Demo Data Files
+## Routes (52 pages)
 
-| File                                         | Purpose                                       |
-| -------------------------------------------- | --------------------------------------------- |
-| `src/data/demo/bank-profile.json`            | Apex Sahakari Bank details                    |
-| `src/data/demo/staff.json`                   | Bank staff/auditors                           |
-| `src/data/demo/branches.json`                | Branch network                                |
-| `src/data/demo/compliance-requirements.json` | 55 RBI requirements with status               |
-| `src/data/demo/audit-plans.json`             | Annual audit plan                             |
-| `src/data/demo/findings.json`                | 35 audit findings with RBI-style observations |
-| `src/data/demo/rbi-circulars.json`           | RBI circular references                       |
+| Group           | Routes                                                                                                       | Purpose                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login/signup, invitations, tenant setup           |
+| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | KPI widgets, analytics dashboards, audit log      |
+| RAM & Planning  | `/ram/[id]`, `/audit-plans`                                                                                  | 19-parameter risk scoring, annual plan simulation |
+| Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report}`                                                 | Field audit with section examination (568 items)  |
+| Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                               | Observation lifecycle with timeline               |
+| Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                     | Compliance tracking, branch responses             |
+| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk register, control library, issue management  |
+| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | UCB-specific regulatory modules                   |
+| Reports         | `/reports`                                                                                                   | XLSX multi-tab + PDF generation                   |
+| Admin           | `/admin/{users,branches,zones,templates,ram-config}`, `/settings`                                            | User/branch management, configuration             |
+| API             | `/api/{auth,health,dashboard,exports,reports,cron,download}`                                                 | REST endpoints                                    |
+
+## Authentication & Authorization
+
+- **Auth Provider:** Better Auth with email/password
+- **Password Hashing:** bcrypt (via bcryptjs)
+- **Session Storage:** Database-backed via Prisma adapter
+- **Session Cookies:** `__Secure-better-auth.session_token` (production), `better-auth.session_token` (dev)
+- **Middleware:** Edge-compatible cookie check in `src/middleware.ts`, full session validation in dashboard layout
+- **Rate Limiting:** 10 login attempts per IP per 15 minutes
+- **Account Lockout:** 5 failed attempts → 30-minute lockout
+- **Concurrent Sessions:** Max 2 per user
+- **RBAC:** 17 roles (AUDITOR, AUDIT_MANAGER, CAE, CCO, CEO, AUDITEE, BOARD_OBSERVER, LEAD_AUDITOR, FIELD_AUDITOR, BRANCH_HEAD, ZONAL_AUDITOR, ACE_OFFICER, CONCURRENT_AUDITOR, IS_AUDITOR, RISK_HEAD, ACB_MEMBER, SYSTEM_ADMIN)
+- **Multi-role:** Users can hold multiple roles; permission is union of all role permissions
+- **Tenant Isolation:** Application-level WHERE clauses via `prismaForTenant(tenantId)` — tenantId from session only
+
+## Database
+
+- **Engine:** PostgreSQL 16 with pgcrypto + pg_trgm extensions
+- **ORM:** Prisma 7 with PostgreSQL adapter (`@prisma/adapter-pg`)
+- **Connection Pool:** pg.Pool with max 25 connections
+- **Models:** 63 models (User, Tenant, Observation, AuditEngagement, RiskRegister, ControlLibrary, etc.)
+- **Enums:** 16 enums (Role, Severity, ObservationStatus, ComplianceStatus, etc.)
+- **Views:** 4 PostgreSQL views/functions for dashboard (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) — applied via standalone SQL, not in Prisma migrations
+- **Seed Data:** 10 users, 2 tenants, 39 examination areas, 568 examination items, RAM parameters
+- **Prisma Client:** Generated to `src/generated/prisma/`
+
+## Data Layer Pattern
+
+```
+Page (server component)
+  → getRequiredSession()        # Auth check, get tenantId
+  → DAL function (data-access/) # Queries with WHERE tenantId = ?
+    → prismaForTenant(tenantId) # Returns singleton Prisma client
+  → Component (client/server)   # Renders data
+```
+
+- **DAL functions** are in `src/data-access/*.ts` — 39 files covering all domains
+- **Server actions** are in `src/actions/` — 79 files with auth + permission checks
+- **Session helper:** `getRequiredSession()` from `@/data-access/session` — ALWAYS use this, never accept tenantId from URL/body
+
+## Deployment
+
+- **Live URL:** https://aegis.nexlyadvisory.com
+- **VPS:** 4 vCPU, 16GB RAM, Ubuntu
+- **Runtime:** Node.js standalone output (Next.js)
+- **Database:** PostgreSQL 16 (local on VPS)
+- **Reverse Proxy:** Nginx with SSL (Certbot, valid till 2026-05-18)
+- **Process Manager:** systemd (`aegis.service`)
+- **Docker:** Dockerfile (multi-stage build), docker-compose.yml, docker-compose.dev.yml, docker-compose.prod.yml
+- **Infrastructure as Code:** AWS CDK in `infra/` directory
+- **CI/CD:** GitHub Actions — `ci.yml` (build + test), `claude.yml` (Claude Code), `claude-code-review.yml`
+- **Region:** AWS ap-south-1 (Mumbai) for RBI data localization
+
+## Environment Variables
+
+See `.env.example` for full list. Key variables:
+
+| Variable                                      | Purpose                                      |
+| --------------------------------------------- | -------------------------------------------- |
+| `DATABASE_URL`                                | PostgreSQL connection string                 |
+| `BETTER_AUTH_SECRET`                          | Auth secret (min 32 chars)                   |
+| `BETTER_AUTH_URL`                             | Auth base URL                                |
+| `AWS_REGION`                                  | AWS region (ap-south-1)                      |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS credentials                              |
+| `S3_BUCKET_NAME`                              | Evidence storage bucket                      |
+| `AWS_SES_REGION` / `SES_FROM_EMAIL`           | Email sending (optional in dev)              |
+| `NEXT_PUBLIC_APP_URL`                         | Client-side app URL                          |
+| `SKIP_ENV_VALIDATION`                         | Set to `1` for Docker builds without secrets |
+
+Validated at build time via `@t3-oss/env-nextjs` + Zod in `src/env.ts`.
 
 ## Domain Context
 
-- **Target:** Urban Cooperative Banks (UCBs) in India — Tier III/IV banks with limited IT
+- **Target:** Urban Cooperative Banks (UCBs) in India — Tier III/IV banks under RBI supervision
 - **Regulator:** Reserve Bank of India (RBI)
 - **Key Requirements:**
   - Data must remain in India (AWS Mumbai region ap-south-1)
   - Multi-language UI (English, Hindi, Marathi, Gujarati)
   - DAKSH score visualization (RBI supervisory score)
   - PCA status (Prompt Corrective Action)
-
-## Deployment
-
-- Target: AWS Mumbai (ap-south-1) for RBI data localization
-- Current: Prototype/demo phase — no production deployment yet
+  - RAM (Risk Assessment Model) based audit planning per RBI RBIA policy
+  - Compliance lifecycle: Branch Response → ZAC Review → ACE → ACB
+  - Escalation engine (L1-L4 with role-based routing)
 
 ## Code Style
 
@@ -85,16 +188,15 @@ src/
 - shadcn/ui "new-york" style variant (see `components.json`)
 - Path alias: `@/*` maps to `./src/*`
 - Tailwind CSS v4 with native CSS variables
-
-## Planning & Workflow
-
-- GSD (Get Stuff Done) workflow — see `.planning/STATE.md` for current progress
-- Roadmap in `.planning/ROADMAP.md` (4 phases)
-- Requirements in `.planning/REQUIREMENTS.md` (49 v1 requirements)
+- Icons: always import from `@/lib/icons` (barrel export), not directly from `lucide-react`
+- Zod v4 with `zodResolver(Schema as any)` for react-hook-form compatibility
+- Server actions: always use `getRequiredSession()` + permission checks
+- DAL functions: always add `WHERE tenantId = ?` for tenant isolation
+- Forms: react-hook-form + @hookform/resolvers + Zod schemas
 
 ## Preflight Check
 
-Before running E2E tests or deploying, run `/preflight` to validate:
+Before running E2E tests or deploying, verify:
 
 1. `DATABASE_URL` has no special characters in password (`/`, `@`, `#`, `%`)
 2. `BETTER_AUTH_URL` port matches `NEXT_PUBLIC_APP_URL` port
@@ -128,14 +230,27 @@ Before running E2E tests or deploying, run `/preflight` to validate:
 - Default test password: `Test@12345` with pre-computed bcrypt hash
 - After seeding, verify with: `SELECT a."userId", LENGTH(a.password) FROM "Account" a WHERE a."providerId" = 'credential'`
 - Prisma uses PascalCase table names: `User`, `Account`, `Session`, `FailedLoginAttempt` (not snake_case)
+- E2E tests: Playwright specs in `tests/e2e/` with auth setup in `tests/auth.setup.ts`
+- Unit tests: Vitest with happy-dom, test files in `src/lib/__tests__/`
 
 ## Gotchas
 
-- Demo data is hardcoded — no real authentication or database
+- **Tenant isolation is application-level** — no PostgreSQL RLS policies exist; `prismaForTenant()` returns the singleton client, DAL functions enforce WHERE clauses
 - Radix UI causes hydration warnings in Next.js — use `suppressHydrationWarning` on `<html>` tag
 - Dev server uses Turbopack (`pnpm dev` runs `next dev --turbopack`)
 - Turbopack cache corruption: if pages show stale content, delete `.next/` and restart dev server
 - Recharts center overlays (e.g., "2/8 Audits" text on donut charts) need `pointer-events-none` or they block chart tooltips
 - `formatDate()` in `src/lib/utils.ts` formats dates in Indian locale (en-IN) — use it instead of raw ISO strings
-- Demo data counts: 55 compliance requirements, 35 findings, 8 audit plans — JSON imports need `as unknown as Type` casting
 - Icons: always import from `@/lib/icons` (barrel export), not directly from `lucide-react`
+- Dashboard views (`v_compliance_summary`, etc.) must be applied manually after fresh deploy — not tracked in Prisma migrations
+- `src/data/seed/` JSON files are **deprecated** for runtime use — pages should query the database via DAL functions
+- Server actions body size limit is 5MB (configured in `next.config.ts`)
+- `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from the server bundle (`serverExternalPackages`)
+
+## Known Issues
+
+1. **Dashboard NaN values** — Risk indicators show "NaN" when observation aggregation has null values
+2. **SES sandbox mode** — Email only goes to verified addresses; production access pending
+3. **Missing index pages** — `/audit-execution` and `/admin` return 404 (only nested routes exist)
+4. **DB views not in migrations** — 4 PostgreSQL views require manual SQL application after fresh deploy
+5. **Seed data mismatch** — Production DB may have old minimal seed vs comprehensive local seed

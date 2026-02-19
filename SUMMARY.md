@@ -1,133 +1,126 @@
-# Category C (Stub/TODO Code) - Fix Summary
+# AEGIS — Project Summary
 
-## Task Overview
-Fixed Category C issues (Stub/TODO code) in `/root/.openclaw/workspace/AEGIS` as requested.
+## What is AEGIS?
 
-## Issues Fixed
+AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Internal Audit System (RBIAS)** built as a multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India. It covers the complete internal audit lifecycle under RBI supervision — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance.
 
-### ✅ R13: Team Assignment UI
-**Status:** Already Complete - No Changes Needed
+## Live Instance
 
-**Finding:**
-- The team assignment panel in `src/components/audit-execution/team-assignment-panel.tsx` is fully implemented
-- Uses proper server actions from `src/actions/audit-execution/assign-team.ts`
-- Includes add/remove team members, role assignment, and section allocation
-- Section initialization is properly wired via `src/actions/audit-execution/initialize-sections.ts`
+- **URL:** https://aegis.nexlyadvisory.com
+- **Users:** 4 accounts (CEO, Auditor, CAE, CCO) with role-based access
+- **Infrastructure:** VPS (4 vCPU, 16GB RAM) · PostgreSQL 16 · Nginx + SSL · systemd
 
-**Components Verified:**
-- `src/components/audit-execution/team-assignment-panel.tsx` - Full implementation with form, table, and remove dialog
-- `src/actions/audit-execution/assign-team.ts` - `assignTeamMember` and `removeTeamMember` server actions
-- `src/actions/audit-execution/initialize-sections.ts` - `initializeSections` server action
+## Tech Stack
 
----
+| Layer        | Technology                                    |
+| ------------ | --------------------------------------------- |
+| Framework    | Next.js 16 (App Router, Turbopack)            |
+| Language     | TypeScript 5.9                                |
+| UI           | shadcn/ui + Radix UI + Tailwind CSS v4        |
+| Database     | PostgreSQL 16 + Prisma 7 ORM                  |
+| Auth         | Better Auth (bcrypt, RBAC, session cookies)   |
+| i18n         | next-intl (English, Hindi, Marathi, Gujarati) |
+| File Storage | AWS S3 (Mumbai region)                        |
+| Email        | AWS SES (DKIM verified)                       |
+| Reports      | ExcelJS (XLSX) + @react-pdf/renderer (PDF)    |
+| Testing      | Playwright (E2E) + Vitest (unit)              |
+| Deployment   | Docker Compose, Nginx, Certbot SSL, systemd   |
+| IaC          | AWS CDK (in `infra/`)                         |
+| CI/CD        | GitHub Actions                                |
 
-### ✅ R76: Dedup Findings Panel - Wire to Real Data
-**Status:** Fixed
+## Scale
 
-**Problem:**
-- Component was using mocked empty array for RBIA duplicates
-- Page was directly querying observations instead of using DAL function with duplicate detection
+| Metric                | Count       |
+| --------------------- | ----------- |
+| Source files          | 559         |
+| Prisma schema         | 1,999 lines |
+| Database models       | 63          |
+| Database enums        | 16          |
+| Page routes           | 52          |
+| Component files       | 212         |
+| Server actions        | 78          |
+| Data access files     | 39          |
+| Library/utility files | 34          |
+| RBAC roles            | 17          |
+| Permissions           | 60+         |
+| Git commits           | 381         |
+| Requirements (total)  | 104         |
+| Requirements (done)   | 86          |
 
-**Solution:**
-1. Updated `src/app/(dashboard)/concurrent-audit/page.tsx`:
-   - Changed from direct Prisma query to use `getConcurrentFindingsForDedup(session)`
-   - This function already exists in `src/data-access/concurrent-audit.ts` and includes RBIA duplicate detection logic
+## Modules
 
-2. Updated `src/components/concurrent-audit/dedup-findings-panel.tsx`:
-   - Updated type definitions to include `RbiaDuplicate` type
-   - Updated component to accept findings with `potentialRbiaDuplicates` array already populated
-   - Removed mock data assignment
+### Core Audit (Phase 1 — 27/28 done)
 
-**Files Modified:**
-- `src/app/(dashboard)/concurrent-audit/page.tsx` - Import and use `getConcurrentFindingsForDedup`
-- `src/components/concurrent-audit/dedup-findings-panel.tsx` - Updated types to handle real data
+- RAM engine: 19 configurable parameters, weighted scoring, risk categories
+- Annual audit plan generation from RAM scores + frequency rules
+- Audit engagement management with team assignment and section allocation
+- Section-based examination across 39 functional areas with 568 value statements
+- Cash verification, loan review, SMA/NPA entry forms
+- BH Certificate digital sign-off workflow
+- Evidence upload pipeline (AWS S3)
+- Pre-audit branch profiling with prior findings
 
-**How It Works:**
-- `getConcurrentFindingsForDedup` queries concurrent audit observations
-- Compares them with RBIA observations for the same branch
-- Uses title similarity detection (substring matching) to identify potential duplicates
-- Returns findings with `potentialRbiaDuplicates` array populated
+### Reporting & Compliance (Phase 2 — 18/20 done)
 
----
+- XLSX multi-tab report generation + PDF summary with BH Certificate
+- Risk rating computation with 1.5x repeat finding multiplier
+- Report routing workflow (draft -> reviewed -> approved -> issued)
+- Compliance lifecycle: Branch Response -> ZAC Review -> ACE -> ACB
+- Escalation engine (L1-L4 with role-based routing)
+- NPA movement waterfall analytics
+- Template management admin
 
-### ✅ R96: Classification Checklist Save
-**Status:** Fixed
+### GRC & Issue Management (Phase 3 — 16/20 done)
 
-**Problem:**
-- Component had TODO stub for save action: `alert("Classification checklist saved (integrate with server action)")`
-- No server action existed to persist checklist responses
+- Enterprise risk register with inherent/residual scoring and KRI tracking
+- Control library with test procedures and effectiveness analytics
+- Auto-generated work programs on engagement creation
+- Unified issue management across sources (internal/regulatory/external)
+- Action plans with evidence, partial closure, safe tenant isolation
+- What-if simulation for audit planning
+- Risk-audit linkage mapping
 
-**Solution:**
-1. Created `src/actions/investment/save-classification-checklist.ts`:
-   - Server action `saveClassificationChecklist` to persist checklist data
-   - Uses `IsAuditChecklist` model from Prisma schema
-   - Supports both create and update (upsert pattern based on engagementId)
-   - Includes proper authentication, permission checks, and audit logging
-   - Permission: `concurrent_audit:execute` (aligned with other investment actions)
+### UCB Regulatory & Governance (Phase 4 — 18/24 done)
 
-2. Updated `src/components/investments/classification-checklist.tsx`:
-   - Added imports for `saveClassificationChecklist` action, `toast`, and `Loader2` icon
-   - Added `engagementId` optional prop
-   - Added `isSaving` state for loading indicator
-   - Implemented `handleSave` function to call server action
-   - Updated Save button to show loading state with spinner
-   - Added toast notifications for success/error feedback
+- Audit universe entity registry
+- Unified calendar with RBIA + concurrent + IS/EDP + statutory
+- Concurrent audit scope templates and rapid entry workbench
+- Finding de-duplication panel
+- Regulatory observation hub with ATR workflow
+- ACB workspace with auto-generated agenda builder
+- Policy library, committee governance with member management
+- Risk MIS dashboards
+- Surprise audit scheduling
 
-**Files Created:**
-- `src/actions/investment/save-classification-checklist.ts` - New server action
+### Specialized Regulatory (Phase 6 — 7/12 done)
 
-**Files Modified:**
-- `src/components/investments/classification-checklist.tsx` - Wired save functionality
+- SGL/CSGL reconciliation tracking
+- Broker compliance analytics
+- Investment classification audit checklist
+- Application inventory management
+- IS audit checklists (CBS, channels, access, BCP/DR)
+- Cyber security checklist framework
+- Technology control evidence collection
 
-**Schema Used:**
-- Model: `IsAuditChecklist`
-- Fields: `category`, `checklistName`, `items` (JSON), `overallRating`, `completedById`, `completedAt`, `engagementId`
-- Category: "CLASSIFICATION"
+## Architecture Highlights
 
----
+- **Multi-tenant isolation:** Application-level WHERE clauses (no PostgreSQL RLS); tenantId from authenticated session only
+- **Two-layer auth:** Edge middleware (cookie check) + server-side session validation in dashboard layout
+- **Data access pattern:** Page -> getRequiredSession() -> DAL function (with tenantId WHERE) -> Prisma -> PostgreSQL
+- **RBAC:** 17 roles with multi-role support; permission = union of all role permissions
+- **Security:** Rate limiting, account lockout, CSRF protection, secure cookies, max 2 concurrent sessions
+- **State management:** Zustand (client), React Query (server), react-hook-form + Zod (forms)
 
-## TypeScript Compilation
+## Remaining Gaps (18 items)
 
-**Command Run:** `pnpm exec tsc --noEmit 2>&1 | grep "error TS"`
+See `PROJECT-STATUS.md` for detailed breakdown of pending requirements across Phase 1 (1), Phase 2 (2), Phase 3 (4), Phase 4 (6), and Phase 6 (5).
 
-**Results:**
-- Total errors: 4 (all pre-existing, none in modified files)
-- Pre-existing errors in:
-  - `src/actions/control-library/update-control.ts` (3 errors)
-  - `src/components/issues/issues-table.tsx` (1 error)
+Key gaps: zone management UI, report download tracking, work program execution, board consolidated view, IS/risk role enforcement, IS audit checklist completion flows.
 
-**Modified Files - No Errors:**
-- ✅ `src/app/(dashboard)/concurrent-audit/page.tsx`
-- ✅ `src/components/concurrent-audit/dedup-findings-panel.tsx`
-- ✅ `src/components/investments/classification-checklist.tsx`
-- ✅ `src/actions/investment/save-classification-checklist.ts`
+## Known Issues
 
----
-
-## Conventions Followed
-
-✅ **Icons:** Imported from `@/lib/icons` (Loader2, Save, CheckCircle2)
-✅ **Forms:** Used `zodResolver(Schema as any)` for Zod v4 compatibility
-✅ **DB:** Used `prismaForTenant(tenantId)` from `@/data-access/prisma`
-✅ **Session:** Used `getRequiredSession()` from `@/data-access/session`
-✅ **Fields:** Verified actual field names in `prisma/schema.prisma`
-
----
-
-## Summary
-
-**Total Issues Fixed:** 2 of 3 (R13 was already complete)
-
-**Lines of Code:**
-- Created: ~150 lines (save-classification-checklist.ts)
-- Modified: ~30 lines across 3 files
-
-**Impact:**
-- R76: Concurrent audit findings now properly detect RBIA duplicates using real data
-- R96: Classification checklist can now be saved and persisted to database
-
-**Testing Recommendations:**
-1. Test dedup panel with concurrent and RBIA observations for same branch
-2. Test classification checklist save with and without engagementId
-3. Verify toast notifications appear on save success/failure
-4. Verify IsAuditChecklist records are created in database
+1. Dashboard NaN values in risk indicators (null aggregation)
+2. AWS SES in sandbox mode (email to verified addresses only)
+3. Missing index pages for `/audit-execution` and `/admin`
+4. Dashboard PostgreSQL views not tracked in Prisma migrations
+5. Seed data mismatch between local and production

@@ -105,3 +105,24 @@ export const auth = betterAuth({
  * Better Auth TypeScript types for type inference
  */
 export type Session = typeof auth.$Infer.Session;
+
+import type { Role } from "@/generated/prisma";
+
+/**
+ * Narrowed session user type for authenticated, onboarded users.
+ * In AEGIS, every authenticated user has tenantId: string and roles: Role[].
+ * The single boundary cast happens in getRequiredSession() — all downstream
+ * code uses these clean types without any `as any`.
+ */
+export type SessionUser = Session["user"] & {
+  tenantId: string;
+  roles: Role[];
+};
+
+/**
+ * Typed session for authenticated, onboarded AEGIS users.
+ * Replaces the ~417 `as any` casts scattered across DAL/actions/pages.
+ */
+export type AuthSession = Omit<Session, "user"> & {
+  user: SessionUser;
+};

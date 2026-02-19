@@ -1,5 +1,7 @@
 import "server-only";
 import { auth } from "@/lib/auth";
+import type { AuthSession } from "@/lib/auth";
+import type { Role } from "@/generated/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -11,8 +13,11 @@ import { redirect } from "next/navigation";
  * - tenantId MUST come from this session ONLY
  * - NEVER accept tenantId from URL params, request body, or query string
  * - DAL functions accept session object returned by this function
+ *
+ * Single boundary cast: session is cast to AuthSession here so all downstream
+ * code gets clean types (tenantId: string, roles: Role[]) without `as any`.
  */
-export async function getRequiredSession() {
+export async function getRequiredSession(): Promise<AuthSession> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -21,7 +26,8 @@ export async function getRequiredSession() {
     redirect("/login");
   }
 
-  return session;
+  // Single cast at the boundary — all downstream code gets clean types
+  return session as unknown as AuthSession;
 }
 
 /**
@@ -40,9 +46,7 @@ export async function getOptionalSession() {
  */
 export async function getCurrentTenantId(): Promise<string> {
   const session = await getRequiredSession();
-  // TODO: Update this when we add organization/multi-tenant support
-  // For now, users have a tenantId field on their record
-  return (session.user as any).tenantId as string;
+  return session.user.tenantId; // No cast needed — AuthSession types it as string
 }
 
 /**
@@ -50,12 +54,9 @@ export async function getCurrentTenantId(): Promise<string> {
  *
  * Returns the roles array from the authenticated user.
  */
-export async function getSessionRoles(): Promise<string[]> {
+export async function getSessionRoles(): Promise<Role[]> {
   const session = await getRequiredSession();
-  // Extract roles from user object
-  // Note: User model has roles as Role[] enum array
-  const roles = (session.user as any).roles || [];
-  return roles;
+  return session.user.roles; // No cast needed — AuthSession types it as Role[]
 }
 
 /**
@@ -64,7 +65,7 @@ export async function getSessionRoles(): Promise<string[]> {
  * @param role - Role to check for
  * @returns true if user has the role, false otherwise
  */
-export async function hasRole(role: string): Promise<boolean> {
+export async function hasRole(role: Role): Promise<boolean> {
   const roles = await getSessionRoles();
   return roles.includes(role);
 }
@@ -75,7 +76,7 @@ export async function hasRole(role: string): Promise<boolean> {
  * @param roles - Array of roles to check for
  * @returns true if user has any of the roles, false otherwise
  */
-export async function hasAnyRole(roles: string[]): Promise<boolean> {
+export async function hasAnyRole(roles: Role[]): Promise<boolean> {
   const userRoles = await getSessionRoles();
   return roles.some((role) => userRoles.includes(role));
 }
@@ -86,7 +87,7 @@ export async function hasAnyRole(roles: string[]): Promise<boolean> {
  * @param roles - Array of roles to check for
  * @returns true if user has all of the roles, false otherwise
  */
-export async function hasAllRoles(roles: string[]): Promise<boolean> {
+export async function hasAllRoles(roles: Role[]): Promise<boolean> {
   const userRoles = await getSessionRoles();
   return roles.every((role) => userRoles.includes(role));
 }

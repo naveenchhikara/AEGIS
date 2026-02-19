@@ -123,6 +123,23 @@
 
 ---
 
+## Phase 17: Critical Security & Quality
+
+**Goal:** Eliminate critical security vulnerabilities, type safety issues, and quality gaps identified in the security audit. Non-functional improvements that harden existing features.
+
+**Plans:**
+
+| Plan | Title                                         | Status   | Commit    |
+| ---- | --------------------------------------------- | -------- | --------- |
+| 01   | IDOR hardening across all mutations           | -        | -         |
+| 02   | Stored XSS Fix — documentUrl protocol val.    | COMPLETE | `9689632` |
+| 03   | Typed Session Helpers — eliminate ~417 as any | COMPLETE | `ff4678b` |
+| 04   | Input validation & sanitization gaps          | -        | -         |
+
+**Depends on:** All prior phases (hardening existing features)
+
+---
+
 ## Phase Dependencies
 
 ```

@@ -54,6 +54,7 @@
 | 01   | IDOR Tenant Isolation — tenantId in WHERE  | COMPLETE | `d098335` |
 | 02   | Stored XSS Fix — documentUrl Protocol Val. | COMPLETE | `9689632` |
 | 03   | Typed Session Helpers — Eliminate as any   | COMPLETE | `ff4678b` |
+| 04   | N+1 Queries & Unbounded Fetches            | COMPLETE | `f393413` |
 
 ## Commits
 
@@ -75,11 +76,22 @@
 - `f0b085e` — fix(17-01): add tenantId to WHERE clauses in action-layer mutations
 - `7479884` — fix(17-01): add tenantId to WHERE clauses in user-invitations.ts
 - `d098335` — fix(17-01): use AuthSession import in DAL files to resolve tenantId type errors
+- `1fb01ec` — perf(17-04): fix N+1 and unbounded fetches in analytics.ts
+- `8e619c4` — perf(17-04): fix unbounded fetches in dashboard.ts fallbacks
+- `f6206bc` — perf(17-04): parallelize serial KPI queries in qa-assessment.ts
+- `db1c47c` — perf(17-04): fix N+1 update loop in compliance-items.ts
+- `07ba28f` — perf(17-04): batch escalation job notifications and updates
+- `897b23f` — perf(17-04): batch compliance item creation with createMany
+- `8130d70` — perf(17-04): batch work program generation with createMany
+- `c4c74be` — perf(17-04): add safety limits to report and export queries
+- `690a8bd` — perf(17-04): scope calendar page to current fiscal year
+- `b89e028` — perf(17-04): add LIMIT 100 to detectAuditGaps generate_series query
+- `f393413` — fix(17-04): fix TypeScript errors introduced in perf changes
 
 ## Last Session
 
-- **Last session:** 2026-02-19T17:13:09Z
-- **Stopped at:** Completed 17-01-PLAN.md (IDOR Tenant Isolation)
+- **Last session:** 2026-02-19T17:33:28Z
+- **Stopped at:** Completed 17-04-PLAN.md (N+1 Queries & Unbounded Fetches)
 - **Resume file:** None
 
 ## Accumulated Decisions
@@ -95,3 +107,7 @@
 | CommitteeMember IDOR: deleteMany with relation filter { committee: { tenantId } }    | Model has no direct tenantId column — ownership via parent        | 17-01                         |
 | User \*Many variants: updateMany/deleteMany when model lacks compound unique         | Prisma single-record ops require unique — \*Many allows composite | 17-01                         |
 | DAL files: import AuthSession as Session to guarantee tenantId: string (non-null)    | Plain Session has tenantId?: string                               | null — breaks prismaForTenant | 17-01 |
+| groupBy replaces findMany + JS aggregation for analytics/dashboard counts            | Avoids loading full observation/compliance tables into memory     | 17-04                         |
+| date_trunc in raw SQL for quarterly time-series grouping                             | Prisma groupBy doesn't support date_trunc; raw SQL is O(distinct) | 17-04                         |
+| Pre-fetch recipients by escalation level (max 4) before item loop                    | Bounds N+1 in escalation job to constant 4 queries                | 17-04                         |
+| take: N safety guards on all findMany on large/growing tables                        | Prevents unbounded memory use as tenants accumulate data          | 17-04                         |

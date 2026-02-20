@@ -1,175 +1,180 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-08
-**Updated:** 2026-02-11 (post v2.0 MVP)
+**Analysis Date:** 2026-02-20
 
 ## APIs & External Services
 
-**AWS S3 — Evidence File Storage:**
+**File Storage:**
 
-- Service: Amazon S3 (ap-south-1 Mumbai)
-- Usage: Upload, download, and manage audit evidence files (PDF, JPEG, PNG, DOCX, XLSX, CSV, JSON)
-- Client: `src/lib/s3.ts` (PutObject, GetObject, presigned URLs)
-- Bucket: `aegis-evidence-dev` (configurable via `S3_BUCKET_NAME` env var)
-- Encryption: SSE-S3 (server-side encryption)
-- Auth: AWS access key + secret key
-- Env vars: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`
+- AWS S3 - Evidence file storage
+  - SDK: `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`
+  - Client: `src/lib/s3.ts` (singleton `S3Client`, region hardcoded to `ap-south-1`)
+  - Auth: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+  - Bucket: `S3_BUCKET_NAME` env var
+  - Key pattern: `{tenantId}/evidence/{observationId}/{uuid}.{ext}`
+  - File types: PDF, JPEG, PNG, DOCX, XLSX (magic-byte validated)
+  - Max size: 10MB per file
+  - Access: presigned GET/PUT URLs with 5-minute expiry
+  - Encryption: Server-side SSE-S3 via bucket default policy
+  - Reports also uploaded directly via `uploadToS3()` buffer upload
 
-**AWS SES — Email Notifications:**
+**Email:**
 
-- Service: Amazon SES v2 (ap-south-1 Mumbai)
-- Usage: Transactional emails for observation assignments, responses, reminders, escalations, weekly digests
-- Client: `src/lib/ses-client.ts` (SESv2Client)
-- Templates: `src/emails/templates/` (6 React email templates)
-  - `assignment-email.tsx` — New observation assigned to auditee
-  - `response-email.tsx` — Auditee response notification
-  - `reminder-email.tsx` — Deadline reminders (7d, 3d, 1d)
-  - `escalation-email.tsx` — Overdue observation escalation
-  - `weekly-digest-email.tsx` — CAE/CCO weekly summary
-  - `bulk-digest-email.tsx` — Batched bulk operation notifications
-- Rendering: `src/emails/render.ts`
-- Layout: `src/emails/email-base-layout.tsx`
-- Status: Code complete. **DNS CNAME records for SES domain verification not yet added** — email sending untested in production.
-- Env vars: `AWS_SES_REGION`, `SES_FROM_EMAIL`
+- AWS SES v2 - Transactional email
+  - SDK: `@aws-sdk/client-sesv2`
+  - Client: `src/lib/ses-client.ts` (lazy singleton `SESv2Client`)
+  - Auth: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SES_REGION`
+  - From address: `SES_FROM_EMAIL` env var (defaults to `noreply@aegis.in`)
+  - Status: Sandbox mode — only sends to verified addresses; production access pending
+  - Templates: React Email components in `src/emails/templates/`
+  - Email renderer: `src/emails/render.ts`
+  - Use cases: assignment notifications, escalation alerts, weekly digest
+  - Batch sending: `sendBatchEmails()` uses `Promise.all()`
 
 ## Data Storage
 
-**PostgreSQL — Primary Database:**
+**Databases:**
 
-- ORM: Prisma 7.3.0
-- Schema: `prisma/schema.prisma` (865 lines, 23 models)
-- Multi-tenancy: Row-Level Security (tenant isolation at database level)
-- Key models: Tenant, User, Observation, Evidence, ComplianceRequirement, AuditPlan, AuditEngagement, AuditLog, NotificationQueue, EmailLog, BoardReport, DashboardSnapshot, OnboardingProgress
-- Connection: `DATABASE_URL` env var
-- Scripts: `pnpm db:generate`, `pnpm db:push`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm db:studio`
+- PostgreSQL 16 - Primary database (local on VPS in production)
+  - Connection: `DATABASE_URL` env var
+  - Client: Prisma 7 ORM with `@prisma/adapter-pg` (pg.Pool, max 25 connections)
+  - Singleton: `src/lib/prisma.ts`
+  - Extensions: `pgcrypto`, `pg_trgm` (declared in `prisma/schema.prisma`)
+  - Models: 63 models, 16 enums, 1999-line schema
+  - Views: 4 PostgreSQL views (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) — NOT in Prisma migrations, must be applied manually via `prisma/*.sql`
+  - Tenant isolation: Application-level WHERE clauses (no PostgreSQL RLS policies)
+  - Job queue: pg-boss uses same `DATABASE_URL` (stores jobs in `pgboss.*` schema)
 
-**AWS S3 — Evidence File Storage:**
+**File Storage:**
 
-- See APIs section above
-- Evidence model in Prisma: `s3Key`, `fileSize`, `contentType`, `uploadedBy`
-- Tenant-scoped paths prevent cross-tenant file access
+- AWS S3 (ap-south-1) — see APIs section above
+
+**Caching:**
+
+- None (no Redis or other cache layer)
 
 ## Authentication & Identity
 
-**Better Auth v1.4.18:**
+**Auth Provider:**
 
-- Provider: Email/password authentication
-- Session: Secure cookies (httpOnly, sameSite=lax, secure in production)
-- Storage: Prisma adapter → PostgreSQL (User, Session, Account, Verification models)
-- Security features:
-  - Rate limiting: 10 login attempts per 15min per IP
-  - Account lockout: 5 failures → 30-min lock with auto-unlock
-  - Concurrent sessions: Max 2 per user
-- RBAC: 7 roles (Auditor, Audit Manager, CAE, CCO, CEO, Auditee, Admin)
-- Files: `src/lib/auth.ts` (server), `src/lib/auth-client.ts` (client hooks)
-- Env vars: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
-
-## Background Jobs
-
-**pg-boss v12.9.0:**
-
-- Service: PostgreSQL-based job queue
-- Usage: Deadline reminders, weekly digests, daily dashboard snapshots
-- Scheduling: Cron-based (e.g., daily snapshots at 01:00 IST)
-- Processing: Batch processing 10 tenants at a time to prevent connection pool exhaustion
-- Depends on: PostgreSQL (same database)
+- better-auth 1.4.18 - Self-hosted, email/password only
+  - Config: `src/lib/auth.ts`
+  - Adapter: Prisma (`better-auth/adapters/prisma`)
+  - Session storage: Database-backed (PostgreSQL via Prisma)
+  - Session cookies: `__Secure-better-auth.session_token` (production HTTPS), `better-auth.session_token` (dev)
+  - Cookie attributes: `httpOnly`, `secure` (HTTPS only), `sameSite: lax`
+  - Idle timeout: 30 minutes
+  - Rate limiting: In-memory; 10 login attempts per IP per 15 minutes; 3 signup per IP per minute
+  - Account lockout: 5 failures → 30-minute lock (custom plugin: `src/lib/auth-lockout-plugin.ts`)
+  - Concurrent sessions: Max 2 per user (`multiSession` plugin)
+  - Password hashing: bcryptjs
+  - No social/OAuth providers configured
+  - Trusted origins: `NEXT_PUBLIC_APP_URL`, `http://127.0.0.1:3000`, `https://aegis.nexlyadvisory.com`
 
 ## Monitoring & Observability
 
-**Health Check:**
-
-- Endpoint: `/api/health` (used by Dockerfile health check)
-- Implementation: `src/app/api/health/route.ts`
-
 **Error Tracking:**
 
-- None configured (recommended: add before pilot)
+- None (no Sentry, Datadog, or similar)
 
 **Logs:**
 
-- Console logging in development
-- Append-only AuditLog in database for all data-modifying actions
-- No structured logging framework (recommended: add pino or winston)
+- pino 10.3.1 - Structured JSON logging (`src/lib/logger.ts`)
+  - Development: colorized pino-pretty output
+  - Production: JSON to stdout (intended for CloudWatch Logs Insights)
+  - Sensitive field redaction: `password`, `token`, `authorization`, `cookie`, `secret`, `apiKey`
+  - Base metadata: `{ service: "aegis" }`
+  - Child loggers via `createRequestLogger()` for request-scoped context
+
+**Infrastructure Monitoring:**
+
+- AWS CloudWatch - Log aggregation target (JSON logs structured for CloudWatch Logs Insights)
 
 ## CI/CD & Deployment
 
 **Hosting:**
 
-- AWS Lightsail Mumbai (ap-south-1) via Coolify self-hosted PaaS
-- PostgreSQL database managed via Coolify
-
-**Container:**
-
-- Dockerfile: Multi-stage build (63 lines)
-  - Stage 1 (deps): Install pnpm dependencies
-  - Stage 2 (builder): Prisma generate + Next.js build (standalone output)
-  - Stage 3 (runner): node:22-alpine, health check via wget
-- Start command: `node server.js`
+- Production VPS (Ubuntu, 4 vCPU 16GB RAM) via systemd + Nginx
+- Docker support: `Dockerfile`, `docker-compose.yml`, `docker-compose.prod.yml`, `docker-compose.dev.yml`
+- Infrastructure as Code: AWS CDK in `infra/` directory
 
 **CI Pipeline:**
 
-- None — no `.github/workflows/` directory
-- Manual deployment via Coolify dashboard
-- Recommended: Add GitHub Actions for lint, type-check, E2E tests, and auto-deploy
+- GitHub Actions:
+  - `ci.yml` - Build and test pipeline
+  - `claude.yml` - Claude Code integration
+  - `claude-code-review.yml` - Automated code review
 
-## Environment Configuration
+## Background Jobs
 
-**Required env vars (52 total in `.env.example`):**
+**pg-boss 12.9.0 - PostgreSQL-backed job queue:**
 
-- `DATABASE_URL` — PostgreSQL connection string
-- `BETTER_AUTH_SECRET` — Auth session encryption key
-- `BETTER_AUTH_URL` — Application base URL
-- `NEXT_PUBLIC_APP_URL` — Public-facing URL
-- `AWS_REGION` — S3 region (ap-south-1)
-- `AWS_ACCESS_KEY_ID` — AWS credentials
-- `AWS_SECRET_ACCESS_KEY` — AWS credentials
-- `S3_BUCKET_NAME` — Evidence storage bucket
-- `AWS_SES_REGION` — SES region (ap-south-1)
-- `SES_FROM_EMAIL` — Sender email address
-
-**Secrets location:**
-
-- Local: `.env` file (gitignored)
-- Production: Coolify environment variables
+- Config: `src/lib/job-queue.ts`
+- Registered on server boot via `src/instrumentation.ts` (Next.js instrumentation hook)
+- Job handlers: `src/jobs/`
+- Scheduled jobs (UTC cron):
+  - `process-notifications`: every minute (`* * * * *`)
+  - `deadline-check`: daily 00:30 UTC (06:00 IST)
+  - `send-weekly-digest`: Monday 04:30 UTC (10:00 IST)
+  - `snapshot-metrics`: daily 19:30 UTC (01:00 IST)
+- Job files:
+  - `src/jobs/notification-processor.ts` - Process notification queue
+  - `src/jobs/notification-batcher.ts` - Batch notification sending
+  - `src/jobs/deadline-reminder.ts` - Deadline reminders
+  - `src/jobs/overdue-escalation.ts` - Escalation triggers
+  - `src/jobs/snapshot-metrics.ts` - Metrics snapshots
+  - `src/jobs/weekly-digest.ts` - Weekly email digest
+- Retry config: 3 retries, 60s delay, exponential backoff, 30-day job retention
 
 ## Webhooks & Callbacks
 
 **Incoming:**
 
-- None
+- None (no webhook receivers)
 
 **Outgoing:**
 
-- None (email notifications are push-based via SES, not webhook)
+- None (no outgoing webhooks)
 
-## Third-Party SDKs
+## REST API Endpoints
 
-**Google Fonts:**
+**Internal API routes (`src/app/api/`):**
 
-- Service: Google Fonts CDN
-- Usage: Font loading via `next/font/google`
-- Fonts: Noto Sans, Noto Sans Devanagari, Noto Sans Gujarati, DM Serif Display
-- No API key required
+- `/api/auth/*` - better-auth handler
+- `/api/health` - Health check endpoint
+- `/api/dashboard` - Dashboard data
+- `/api/exports` - Data export endpoints
+- `/api/reports` - Report generation
+- `/api/cron` - Cron job triggers
+- `/api/download` - File download proxy
+- `/api/is-audit` - IS audit endpoints
 
-## Future Integrations (Planned)
+## Environment Configuration
 
-**TOTP/MFA (before Pilot B):**
+**Required env vars:**
 
-- Better Auth supports TOTP plugin
-- Required before banks load real data
+- `DATABASE_URL` - PostgreSQL connection string (no special chars: `/`, `@`, `#`, `%`, `?`, `=`)
+- `BETTER_AUTH_SECRET` - Min 32 chars
+- `BETTER_AUTH_URL` - Auth base URL (must match `NEXT_PUBLIC_APP_URL` port)
+- `AWS_REGION` - AWS region
+- `AWS_ACCESS_KEY_ID` - AWS credentials
+- `AWS_SECRET_ACCESS_KEY` - AWS credentials
+- `S3_BUCKET_NAME` - Evidence storage bucket
+- `NEXT_PUBLIC_APP_URL` - Client-side app URL
 
-**DAKSH Export:**
+**Optional env vars:**
 
-- Formatted Excel export for manual upload to RBI DAKSH portal
-- No API integration planned (RBI doesn't offer public API)
+- `AWS_SES_REGION` - SES region (defaults to `ap-south-1`)
+- `SES_FROM_EMAIL` - From address (defaults to `noreply@aegis.in`)
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` - Used by docker-compose DB container only
+- `SKIP_ENV_VALIDATION=1` - Bypass env validation for Docker builds
+- `BASE_URL` - Playwright E2E base URL (defaults to `http://localhost:3000`)
 
-**CI/CD Pipeline:**
+**Secrets location:**
 
-- GitHub Actions for automated testing and deployment
-- Trigger: Push to main branch
-- Steps: lint → type-check → E2E tests → build → deploy to Coolify
+- `.env` file (never committed; `.env.example` committed as template)
+- Docker: passed as environment variables to container
 
 ---
 
-_Integration audit: 2026-02-08_
-_Updated: 2026-02-11 — reflects v2.0 Working Core MVP (shipped 2026-02-10)_
+_Integration audit: 2026-02-20_

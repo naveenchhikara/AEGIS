@@ -1,421 +1,178 @@
-# AEGIS Technology Stack
+# Technology Stack
 
-## Framework & Core
+**Analysis Date:** 2026-02-20
 
-### Next.js 16.1.6 (App Router)
+## Languages
 
-- **Output mode:** Standalone (Docker optimized)
-- **Turbopack:** Enabled for dev (`--turbopack` flag)
-- **Server Actions:** Body size limit 5MB
-- **Route groups:** `(auth)`, `(dashboard)`, `(onboarding)`
-- **Layouts:** Nested layout system with role-based rendering
-- **API Routes:** `/api/auth/[...all]`, `/api/exports/*`, `/api/reports/*`, `/api/dashboard`, `/api/health`
-- **Middleware:** Edge runtime cookie-based auth gating (`src/middleware.ts`)
-- **Config:** `next.config.ts` imports env validation at build time
+**Primary:**
 
-### React 19.2.4 / React DOM 19.2.4
+- TypeScript 5.9 - All application code (`src/`, `prisma/`, `tests/`, `infra/`)
 
-- **Server Components:** Default pattern (no `"use client"` unless needed)
-- **Client Components:** Marked with `"use client"` directive (forms, interactivity)
-- **Hooks:** `useActionState`, `useTransition` for progressive enhancement
-- **Suspense:** Used for async boundaries with loading fallbacks
+**Secondary:**
 
-### TypeScript 5.9.3
+- SQL - Prisma migrations (`prisma/migrations/`) and manual views (`prisma/*.sql`)
+- JSON - i18n message files (`messages/en.json`, `messages/hi.json`, `messages/mr.json`, `messages/gu.json`)
 
-- **Config:** `tsconfig.json` with strict mode, paths alias `@/*`
-- **Target:** ES2017
-- **Module resolution:** bundler
-- **Lib:** dom, dom.iterable, esnext
-- **JSX:** react-jsx (React 19 new transform)
+## Runtime
 
----
+**Environment:**
 
-## Database & ORM
+- Node.js (no `.nvmrc` present; targets ES2017 per `tsconfig.json`)
 
-### Prisma 7.3.0 (dev) / @prisma/client 7.3.0
+**Package Manager:**
 
-- **Adapter:** `@prisma/adapter-pg` 7.3.0 (native PostgreSQL driver)
-- **Provider:** PostgreSQL
-- **Extensions:** `pgcrypto` (UUID generation), `pg_trgm` (fuzzy search)
-- **Preview features:** `postgresqlExtensions`
-- **Output:** `src/generated/prisma` (custom path)
-- **Scripts:**
-  - `db:generate` - Generate Prisma Client
-  - `db:push` - Push schema to database
-  - `db:migrate` - Run migrations
-  - `db:seed` - Seed database (via `prisma/seed.ts`)
-  - `db:studio` - Launch Prisma Studio
+- pnpm (lockfile: `pnpm-lock.yaml` present)
 
-### PostgreSQL (via pg 8.18.0)
+## Frameworks
 
-- **Version:** PostgreSQL 16 (docker-compose)
-- **Database:** `aegis_prod` (production), `aegis` (dev)
-- **Extensions:** pgcrypto, pg_trgm
-- **Connection pooling:** Native pg driver with Prisma adapter
-- **RLS:** Row-Level Security via transaction-scoped `app.current_tenant_id` parameter
+**Core:**
 
----
+- Next.js 16.1.6 - Full-stack App Router framework with Turbopack dev server
+  - Config: `next.config.ts`
+  - Output: `standalone` (production/Docker), undefined (CI)
+  - Server Actions body limit: 5MB
+  - `serverExternalPackages`: `@react-pdf/renderer`, `pg-boss`, `exceljs`
+- React 19.2.4 - UI rendering
+- next-intl 4.8.2 - Internationalization (4 locales: en, hi, mr, gu)
+  - Config: via `createNextIntlPlugin()` in `next.config.ts`
+  - Message files: `messages/{en,hi,mr,gu}.json`
 
-## Authentication & Authorization
+**UI Component Library:**
 
-### Better Auth 1.4.18
+- shadcn/ui "new-york" style variant (config: `components.json`)
+- Radix UI - Headless primitives for all interactive components
+  - 18 packages: accordion, alert-dialog, avatar, checkbox, dialog, dropdown-menu, label, popover, progress, radio-group, scroll-area, select, separator, slot, switch, tabs, toast, toggle, toggle-group, tooltip
+- Tailwind CSS 4.1.18 - Utility CSS with native CSS variables
+  - Config: `tailwind.config.ts`, PostCSS: `postcss.config.js`
+  - Plugin: `prettier-plugin-tailwindcss` for class sorting
+  - Note: Use `w-[var(--sidebar-width)]` NOT `w-[--sidebar-width]` in v4
 
-- **Adapter:** `better-auth/adapters/prisma`
-- **Strategy:** Cookie-based sessions (`httpOnly`, `secure`, `sameSite: lax`)
-- **Session timeout:** 30 minutes idle
-- **Plugins:**
-  - `multiSession` - Max 2 concurrent sessions per user (SC-3)
-  - Custom `accountLockout` - 5 failed attempts → 30-minute lock (SC-2)
-- **Rate limiting:** 10 login attempts per IP per 15 minutes (SC-1)
-- **Password hashing:** bcryptjs 3.0.3
-- **Tables:** User, Session, Account, Verification (Prisma schema)
-- **Client:** `@/lib/auth-client` (createAuthClient)
-- **Server:** `@/lib/auth` (betterAuth config)
+**ORM / Database:**
 
-### Authorization (RBAC)
+- Prisma 7.3.0 - Schema, migrations, generated client
+  - Config: `prisma.config.ts`, Schema: `prisma/schema.prisma`
+  - Generated client output: `src/generated/prisma/`
+  - PostgreSQL adapter: `@prisma/adapter-pg` 7.3.0
 
-- **Roles:** Prisma enum (AUDITOR, AUDIT_MANAGER, CAE, CCO, CEO, AUDITEE, BOARD_OBSERVER)
-- **Multi-role support:** Users have `roles Role[]` (array, not single role)
-- **Permission system:** `@/lib/permissions` with granular permission checks
-- **Guards:** `@/lib/guards` for declarative route/action protection
-- **Session helpers:** `@/data-access/session` (getRequiredSession, getOptionalSession)
+**Authentication:**
 
----
+- better-auth 1.4.18 - Email/password auth with Prisma adapter
+  - Config: `src/lib/auth.ts`
+  - Plugins: `multiSession` (max 2 concurrent), custom `accountLockout`
 
-## UI Framework
+**State Management:**
 
-### Radix UI (Headless Components)
+- Zustand 5.0.11 - Client-side global state (`src/stores/`)
+- TanStack React Query 5.90.20 - Server state / data fetching
 
-All components version ^1.x or ^2.x (latest stable):
+**Forms:**
 
-- `@radix-ui/react-accordion` 1.2.12
-- `@radix-ui/react-alert-dialog` 1.1.15
-- `@radix-ui/react-avatar` 1.1.11
-- `@radix-ui/react-checkbox` 1.3.3
-- `@radix-ui/react-dialog` 1.1.15
-- `@radix-ui/react-dropdown-menu` 2.1.16
-- `@radix-ui/react-label` 2.1.8
-- `@radix-ui/react-popover` 1.1.15
-- `@radix-ui/react-progress` 1.1.8
-- `@radix-ui/react-radio-group` 1.3.8
-- `@radix-ui/react-scroll-area` 1.2.10
-- `@radix-ui/react-select` 2.2.6
-- `@radix-ui/react-separator` 1.1.8
-- `@radix-ui/react-slot` 1.2.4
-- `@radix-ui/react-switch` 1.2.6
-- `@radix-ui/react-tabs` 1.1.13
-- `@radix-ui/react-toast` 1.2.15
-- `@radix-ui/react-toggle` 1.1.10
-- `@radix-ui/react-toggle-group` 1.1.11
-- `@radix-ui/react-tooltip` 1.2.8
+- react-hook-form 7.71.1 - Form management
+- @hookform/resolvers 5.2.2 - Zod resolver integration
+- Zod 4.3.6 - Schema validation; use `zodResolver(Schema as any)` for RHF compatibility
 
-### shadcn/ui Components
+**Data Visualization:**
 
-Located in `src/components/ui/`, built on Radix UI + CVA:
+- recharts 3.7.0 - Charts (donut, bar, line)
+  - Note: Add `pointer-events-none` to center overlay text to avoid blocking tooltips
 
-- **Styling:** Tailwind CSS utility classes
-- **Variants:** `class-variance-authority` 0.7.1 for component variants
-- **Utils:** `tailwind-merge` 3.4.0 + `clsx` 2.1.1 for class merging (`cn()` helper)
-- **Icons:** `lucide-react` 0.563.0
+**Tables:**
 
-### Tailwind CSS 4.1.18
+- @tanstack/react-table 8.21.3 - Headless table logic
 
-- **Config:** `tailwind.config.ts`
-- **Plugin:** `tailwindcss-animate` 1.0.7 for animations
-- **PostCSS:** `@tailwindcss/postcss` 4.1.18
-- **Prettier integration:** `prettier-plugin-tailwindcss` 0.7.2
+**Testing:**
 
-### Theming
+- Playwright 1.58.2 - E2E tests (`tests/e2e/`, config: `playwright.config.ts`)
+  - 4 user role projects: auditor, manager, cae, auditee
+  - Auth storageState files: `playwright/.auth/*.json`
+- Vitest 4.0.18 - Unit tests (`src/lib/__tests__/`, config: `vitest.config.ts`)
+  - Environment: `node` (not happy-dom for unit tests)
+  - happy-dom 20.5.1 installed but env set to node in config
 
-- **Theme provider:** `next-themes` 0.4.6 (dark/light mode)
-- **Toast notifications:** `sonner` 2.0.7 (Sonner toast library)
+**Build/Dev:**
 
----
+- Turbopack - Dev server (`pnpm dev` = `next dev --turbopack`)
+  - Cache disabled for filesystem: `turbopackFileSystemCacheForDev: false`
+- tsx 4.21.0 - TypeScript script runner for seed scripts
+- ESLint 9.39.2 with `eslint-config-next` (config: `eslint.config.mjs`)
+- Prettier 3.8.1 - Formatting (config: `.prettierrc`)
 
-## State Management
+## Key Dependencies
 
-### TanStack Query 5.90.20 (@tanstack/react-query)
+**Critical:**
 
-- **Provider:** `@/providers/query-provider` wraps dashboard layout
-- **Pattern:** Server-side initial fetch → client hydration → React Query cache
-- **Usage:** Async state management for dashboard widgets, real-time updates
+- `pg` 8.18.0 - PostgreSQL driver (used directly by Prisma adapter and pg-boss)
+- `pg-boss` 12.9.0 - PostgreSQL-backed job queue (uses same `DATABASE_URL`)
+  - Registered via `src/instrumentation.ts` on server boot
+  - Jobs in `src/jobs/`: deadline-reminder, notification-processor, weekly-digest, overdue-escalation, snapshot-metrics
+- `@t3-oss/env-nextjs` 0.13.10 - Build-time env var validation via Zod
+  - Config: `src/env.ts` — imported by `next.config.ts` for build-time check
+  - Skip with `SKIP_ENV_VALIDATION=1` for Docker builds
+- `bcryptjs` 3.0.3 - Password hashing (Better Auth compatible)
+- `server-only` - Marks modules as server-only to prevent client bundle leakage
 
-### Zustand 5.0.11
+**Reports & Exports:**
 
-- **Stores:** `src/stores/` (minimal usage, prefer React Query for server state)
-- **Pattern:** Client-side ephemeral state (UI toggles, modals, filters)
+- `exceljs` 4.4.0 - XLSX multi-tab report generation (`src/lib/excel-export.ts`)
+- `@react-pdf/renderer` 4.3.2 - PDF report generation
+- `@react-email/components` 1.0.7 - React Email component library
+- `react-email` 5.2.8 - Email preview dev tooling
 
----
+**Utilities:**
 
-## Forms & Validation
+- `date-fns` 4.1.0 - Date manipulation
+- `lucide-react` 0.563.0 - Icon library (ALWAYS import via `@/lib/icons` barrel, not directly)
+- `next-themes` 0.4.6 - Dark/light theme switching
+- `sonner` 2.0.7 - Toast notifications
+- `class-variance-authority` 0.7.1 + `clsx` 2.1.1 + `tailwind-merge` 3.4.0 - Class utilities
+- `react-day-picker` 9.13.1 - Date picker
+- `react-dropzone` 14.4.0 - File upload UI
+- `file-type` 21.3.0 - Magic-byte file type validation
+- `pino` 10.3.1 + `pino-pretty` 13.1.3 - Structured logging
 
-### React Hook Form 7.71.1
+**Infrastructure:**
 
-- **Resolver:** `@hookform/resolvers` 5.2.2 (Zod integration)
-- **Pattern:** Controlled forms with `useActionState` for server actions
-- **Registration:** Direct input registration or controlled via `value`/`onChange`
+- `@aws-sdk/client-s3` 3.985.0 - S3 evidence storage (ap-south-1 hardcoded in `src/lib/s3.ts`)
+- `@aws-sdk/client-sesv2` 3.985.0 - SES email sending
+- `@aws-sdk/s3-request-presigner` 3.985.0 - Presigned S3 URLs (5-minute expiry)
 
-### Zod 4.3.6
+## Configuration
 
-- **Usage:** Schema validation for server actions, env vars, form inputs
-- **Location:** Action schemas in `src/actions/*/schemas.ts`
-- **Env validation:** `@t3-oss/env-nextjs` 0.13.10 wraps Zod for env vars
+**Environment Validation:**
 
----
+- Centralized in `src/env.ts` using `@t3-oss/env-nextjs` + Zod
+- Required server vars: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`
+- Optional server vars: `AWS_SES_REGION`, `SES_FROM_EMAIL` (email sending)
+- Required client var: `NEXT_PUBLIC_APP_URL`
+- Docker builds: Set `SKIP_ENV_VALIDATION=1` to bypass at build time
+- Empty strings treated as undefined (catches misconfiguration)
 
-## Email
+**Build:**
 
-### React Email 5.2.8 (dev)
+- `next.config.ts` - Next.js config, imports `src/env.ts` for build-time validation
+- `tsconfig.json` - TypeScript strict mode, `@/*` alias to `./src/*`, target ES2017
+- `postcss.config.js` - PostCSS with `@tailwindcss/postcss`
+- `tailwind.config.ts` - Tailwind v4 config
 
-- **Components:** `@react-email/components` 1.0.7
-- **Templates:** `src/emails/` (React components)
-- **Development:** `react-email` CLI for preview
+## Platform Requirements
 
-### AWS SES (@aws-sdk/client-sesv2 3.985.0)
+**Development:**
 
-- **Client:** `src/lib/ses-client.ts` (SESv2 API)
-- **Region:** Mumbai (ap-south-1) for RBI data localization
-- **From email:** Configured via `SES_FROM_EMAIL` env var
-- **Email log:** `EmailLog` Prisma model for audit trail
+- Node.js runtime with pnpm
+- PostgreSQL 16 database
+- AWS credentials for S3 (or mock/dev bucket)
+- Turbopack dev server on port 3000
+
+**Production:**
+
+- Ubuntu VPS, 4 vCPU 16GB RAM
+- PostgreSQL 16 local on VPS
+- Node.js standalone output (Next.js)
+- systemd service (`aegis.service`) + Nginx reverse proxy
+- AWS ap-south-1 (Mumbai) — mandatory for RBI data localization compliance
+- SSL via Certbot (valid till 2026-05-18)
+- Docker support available: `Dockerfile`, `docker-compose.yml`, `docker-compose.prod.yml`
 
 ---
 
-## File Storage
-
-### AWS S3 (@aws-sdk/client-s3 3.985.0)
-
-- **Client:** `src/lib/s3.ts` (S3 upload/download helpers)
-- **Presigned URLs:** `@aws-sdk/s3-request-presigner` 3.985.0
-- **Region:** Mumbai (ap-south-1) for RBI data localization
-- **Bucket:** Configured via `S3_BUCKET_NAME` env var
-- **Evidence:** Observation evidence files stored in S3
-- **File uploads:** `react-dropzone` 14.4.0 for UI
-
-### File Type Detection
-
-- **Library:** `file-type` 21.3.0 (magic byte detection)
-- **Usage:** Server-side validation of uploaded files
-
----
-
-## Export & Reporting
-
-### ExcelJS 4.4.0
-
-- **Library:** `src/lib/excel-export.ts` for programmatic Excel generation
-- **Templates:** `src/lib/excel-templates/` for structured exports
-- **Parsers:** `src/lib/excel-parsers/` for import validation
-- **API routes:** `/api/exports/findings`, `/api/exports/compliance`, `/api/exports/audit-plans`
-
-### @react-pdf/renderer 4.3.2
-
-- **Components:** `src/components/pdf-report/` (Board report PDF generation)
-- **External package:** Added to `serverExternalPackages` in next.config.ts
-- **Usage:** Server-side PDF generation for board reports
-
----
-
-## Background Jobs
-
-### pg-boss 12.9.0
-
-- **Queue:** PostgreSQL-based job queue
-- **Setup:** `src/lib/job-queue.ts`
-- **Usage:** Notification batching, async email delivery
-- **Instrumentation:** `src/instrumentation.ts` for Next.js lifecycle hooks
-
----
-
-## Logging
-
-### Pino 10.3.1
-
-- **Logger:** `src/lib/logger.ts` (structured JSON logging)
-- **Pretty print:** `pino-pretty` 13.1.3 (dev dependency)
-- **Usage:** Server-side logging (actions, DAL functions, errors)
-
----
-
-## Internationalization
-
-### next-intl 4.8.2
-
-- **Config:** `src/i18n/` (locale setup)
-- **Plugin:** `createNextIntlPlugin()` in next.config.ts
-- **Pattern:** Server-side i18n with locale detection
-
----
-
-## Testing
-
-### Playwright 1.58.2 (@playwright/test)
-
-- **Config:** `playwright.config.ts`
-- **Test dir:** `tests/`
-- **Auth setup:** `tests/auth.setup.ts` (4 role storageStates)
-- **Projects:** auditor, manager, cae, auditee (parallel role-based tests)
-- **Scripts:**
-  - `test:e2e` - Run Playwright tests
-  - `test:e2e:ui` - Run with UI mode
-- **Reports:** HTML report at `playwright-report/`
-
-### Vitest 4.0.18 (Unit tests, minimal usage)
-
-- **Config:** `vitest.config.ts`
-- **UI:** `@vitest/ui` 4.0.18 (test UI)
-- **Environment:** `happy-dom` 20.5.1 (DOM simulation)
-
----
-
-## Data Visualization
-
-### Recharts 3.7.0
-
-- **Usage:** Dashboard charts (line, bar, area, pie)
-- **Components:** `src/components/dashboard/` widgets
-
-### TanStack Table 8.21.3 (@tanstack/react-table)
-
-- **Usage:** Findings table, audit trail, compliance management
-- **Pattern:** Server-side pagination, client-side sorting/filtering
-
----
-
-## Date Handling
-
-### date-fns 4.1.0
-
-- **Usage:** Date formatting, fiscal year calculations
-- **Helpers:** `src/lib/fiscal-year.ts` (Indian FY Q1-Q4 helpers)
-
-### react-day-picker 9.13.1
-
-- **Component:** Calendar UI (Radix Popover + DayPicker)
-- **Usage:** Date inputs, date range pickers
-
----
-
-## Developer Experience
-
-### ESLint 10.0.0
-
-- **Config:** `eslint.config.mjs` (flat config format)
-- **Extends:** `eslint-config-next` 16.1.6
-- **RC:** `@eslint/eslintrc` 3.3.3 for legacy support
-
-### Prettier 3.8.1
-
-- **Config:** `.prettierrc`
-- **Plugins:** `prettier-plugin-tailwindcss` 0.7.2 (Tailwind class sorting)
-
-### tsx 4.21.0
-
-- **Usage:** TypeScript execution for scripts (seed, migrations)
-- **Scripts:** `prisma/seed.ts`, `scripts/*.ts`
-
-### dotenv 17.2.4 (dev)
-
-- **Usage:** Local .env file loading for development
-- **Production:** Docker secrets via environment variables
-
----
-
-## Build & Runtime
-
-### Node.js v22.22.0
-
-- **Package manager:** pnpm 10.29.3
-- **Scripts:**
-  - `dev` - Next.js dev server with Turbopack
-  - `build` - Production build
-  - `start` - Start production server
-  - `lint` - ESLint
-
-### Docker
-
-- **Base image:** node:22-alpine (Dockerfile)
-- **Compose:** docker-compose.yml, docker-compose.prod.yml
-- **Standalone:** Next.js standalone output for optimized container
-
----
-
-## Security & Utilities
-
-### server-only 0.0.1
-
-- **Usage:** Mark server-only modules (prisma.ts, session.ts, etc.)
-- **Pattern:** Import at top of file to throw error if bundled for client
-
-### crypto (Node.js built-in)
-
-- **Usage:** UUID generation (`randomUUID()` for Better Auth IDs)
-- **Password hashing:** bcryptjs (not native crypto for portability)
-
-### react-is 19.2.4
-
-- **Usage:** React element type checking
-
----
-
-## Development Dependencies Summary
-
-- **@types/\*:** Type definitions for bcryptjs, node, pg, react, react-dom
-- **autoprefixer** 10.4.24 - PostCSS plugin for vendor prefixes
-- **postcss** 8.5.6 - CSS transformer
-- **happy-dom** 20.5.1 - DOM simulation for tests
-
----
-
-## Package Manager
-
-**pnpm 10.29.3** - Fast, disk-efficient package manager
-
-- Lock file: `pnpm-lock.yaml`
-- Workspace support: Single-root project (no workspaces)
-
----
-
-## Total Dependencies
-
-- **Production:** 57
-- **Development:** 23
-- **Total:** 80
-
----
-
-## Multi-Tenancy Architecture
-
-### Tenant Isolation
-
-- **Database:** Row-Level Security via `prismaForTenant()` extension
-- **Session-based tenantId:** NEVER from URL/body, always from `getRequiredSession()`
-- **Transaction-scoped:** `app.current_tenant_id` parameter per query
-
-### Optimistic Locking
-
-- **Version field:** `version Int` on Observation model
-- **Pattern:** Check-and-increment on updates to prevent race conditions
-
----
-
-## External Service Dependencies
-
-### AWS Services (Mumbai Region - ap-south-1)
-
-- **S3:** Evidence file storage
-- **SES:** Transactional email delivery
-
-### PostgreSQL 16
-
-- **Extensions:** pgcrypto (UUIDs), pg_trgm (full-text search)
-- **Connection:** Direct via `pg` driver + Prisma adapter
-
----
-
-## Notable Patterns
-
-1. **Server Actions** - `"use server"` at top of action files, never inline in components
-2. **Data Access Layer** - `src/data-access/` for all Prisma queries (separation of concerns)
-3. **Type Safety** - Zod for runtime validation, TypeScript for compile-time
-4. **Progressive Enhancement** - Forms work without JS via native form actions
-5. **Security First** - Server-only imports, RBAC guards, audit logging on all mutations
+_Stack analysis: 2026-02-20_

@@ -25,6 +25,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=1
 
+# NEXT_PUBLIC_* vars are inlined at build time by Next.js.
+# Default to production URL; override with --build-arg for other environments.
+ARG NEXT_PUBLIC_APP_URL=https://aegis.nexlyadvisory.com
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Generate Prisma client (only needs schema, not a live DB)
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm prisma generate
 

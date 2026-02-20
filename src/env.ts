@@ -32,10 +32,11 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.string().url(),
 
     // AWS S3 Evidence Storage (Mumbai region for RBI data localization)
-    AWS_REGION: z.string().min(1), // Flexible for dev/test
-    AWS_ACCESS_KEY_ID: z.string().min(1),
-    AWS_SECRET_ACCESS_KEY: z.string().min(1),
-    S3_BUCKET_NAME: z.string().min(1),
+    // Optional — features requiring S3 degrade gracefully when not configured
+    AWS_REGION: z.string().min(1).optional(),
+    AWS_ACCESS_KEY_ID: z.string().min(1).optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+    S3_BUCKET_NAME: z.string().min(1).optional(),
 
     // AWS SES Email (Mumbai region for RBI data localization)
     // Optional in development - required in production for email notifications

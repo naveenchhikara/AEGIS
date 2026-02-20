@@ -1,6 +1,7 @@
 -- Dashboard Aggregation Views and Functions
 -- Phase 09-01: Dashboard Infrastructure
--- All views use tenant_id for multi-tenant isolation
+-- All views use tenantId for multi-tenant isolation
+-- NOTE: Prisma uses PascalCase table names and camelCase column names
 
 -- ─── 1. fn_extract_fiscal_year(DATE) ─────────────────────────────────────────
 -- Indian FY: month >= April → current calendar year, else previous year.
@@ -22,7 +23,7 @@ $$;
 
 CREATE OR REPLACE VIEW v_compliance_summary AS
 SELECT
-  tenant_id,
+  "tenantId" AS tenant_id,
   COUNT(*)::BIGINT AS total,
   COUNT(*) FILTER (WHERE status = 'COMPLIANT')::BIGINT AS compliant,
   COUNT(*) FILTER (WHERE status = 'PARTIAL')::BIGINT AS partial,
@@ -36,47 +37,45 @@ SELECT
     )
     ELSE 0
   END AS compliance_percentage
-FROM compliance_requirements
-WHERE deleted_at IS NULL
-GROUP BY tenant_id;
+FROM "ComplianceRequirement"
+GROUP BY "tenantId";
 
 -- ─── 3. v_observation_aging ──────────────────────────────────────────────────
--- Per-tenant observation aging buckets (based on due_date vs current date)
+-- Per-tenant observation aging buckets (based on dueDate vs current date)
 
 CREATE OR REPLACE VIEW v_observation_aging AS
 SELECT
-  tenant_id,
+  "tenantId" AS tenant_id,
   COUNT(*)::BIGINT AS total_open,
   COUNT(*) FILTER (
-    WHERE due_date IS NULL OR due_date >= CURRENT_DATE
+    WHERE "dueDate" IS NULL OR "dueDate" >= CURRENT_DATE
   )::BIGINT AS current_count,
   COUNT(*) FILTER (
-    WHERE due_date < CURRENT_DATE
-      AND (CURRENT_DATE - due_date) BETWEEN 0 AND 30
+    WHERE "dueDate" < CURRENT_DATE
+      AND (CURRENT_DATE - "dueDate"::DATE) BETWEEN 0 AND 30
   )::BIGINT AS bucket_0_30,
   COUNT(*) FILTER (
-    WHERE due_date < CURRENT_DATE
-      AND (CURRENT_DATE - due_date) BETWEEN 31 AND 60
+    WHERE "dueDate" < CURRENT_DATE
+      AND (CURRENT_DATE - "dueDate"::DATE) BETWEEN 31 AND 60
   )::BIGINT AS bucket_31_60,
   COUNT(*) FILTER (
-    WHERE due_date < CURRENT_DATE
-      AND (CURRENT_DATE - due_date) BETWEEN 61 AND 90
+    WHERE "dueDate" < CURRENT_DATE
+      AND (CURRENT_DATE - "dueDate"::DATE) BETWEEN 61 AND 90
   )::BIGINT AS bucket_61_90,
   COUNT(*) FILTER (
-    WHERE due_date < CURRENT_DATE
-      AND (CURRENT_DATE - due_date) > 90
+    WHERE "dueDate" < CURRENT_DATE
+      AND (CURRENT_DATE - "dueDate"::DATE) > 90
   )::BIGINT AS bucket_90_plus
-FROM observations
+FROM "Observation"
 WHERE status != 'CLOSED'
-  AND deleted_at IS NULL
-GROUP BY tenant_id;
+GROUP BY "tenantId";
 
 -- ─── 4. v_observation_severity ───────────────────────────────────────────────
 -- Per-tenant severity distribution
 
 CREATE OR REPLACE VIEW v_observation_severity AS
 SELECT
-  tenant_id,
+  "tenantId" AS tenant_id,
   COUNT(*)::BIGINT AS total,
   COUNT(*) FILTER (WHERE status != 'CLOSED')::BIGINT AS total_open,
   COUNT(*) FILTER (WHERE severity = 'CRITICAL' AND status != 'CLOSED')::BIGINT AS critical_open,
@@ -84,39 +83,35 @@ SELECT
   COUNT(*) FILTER (WHERE severity = 'MEDIUM' AND status != 'CLOSED')::BIGINT AS medium_open,
   COUNT(*) FILTER (WHERE severity = 'LOW' AND status != 'CLOSED')::BIGINT AS low_open,
   COUNT(*) FILTER (WHERE status = 'CLOSED')::BIGINT AS closed
-FROM observations
-WHERE deleted_at IS NULL
-GROUP BY tenant_id;
+FROM "Observation"
+GROUP BY "tenantId";
 
 -- ─── 5. v_audit_coverage_branch ──────────────────────────────────────────────
 -- Per-branch audit coverage for current fiscal year only
 
 CREATE OR REPLACE VIEW v_audit_coverage_branch AS
 SELECT
-  b.tenant_id,
+  b."tenantId" AS tenant_id,
   b.id AS branch_id,
   b.name AS branch_name,
   COALESCE(COUNT(ae.id) FILTER (WHERE ae.status = 'COMPLETED'), 0)::BIGINT AS completed_engagements,
   COALESCE(COUNT(ae.id), 0)::BIGINT AS total_engagements,
   COALESCE(COUNT(ae.id) FILTER (WHERE ae.status = 'COMPLETED'), 0) > 0 AS is_covered
-FROM branches b
-LEFT JOIN audit_engagements ae ON ae.branch_id = b.id
-  AND ae.tenant_id = b.tenant_id
-  AND ae.deleted_at IS NULL
-LEFT JOIN audit_plans ap ON ae.audit_plan_id = ap.id
-  AND ap.tenant_id = b.tenant_id
-  AND ap.deleted_at IS NULL
+FROM "Branch" b
+LEFT JOIN "AuditEngagement" ae ON ae."branchId" = b.id
+  AND ae."tenantId" = b."tenantId"
+LEFT JOIN "AuditPlan" ap ON ae."auditPlanId" = ap.id
+  AND ap."tenantId" = b."tenantId"
   AND ap.year = fn_extract_fiscal_year(CURRENT_DATE)
-WHERE b.deleted_at IS NULL
-GROUP BY b.tenant_id, b.id, b.name;
+GROUP BY b."tenantId", b.id, b.name;
 
 -- ─── 6. v_auditor_workload ───────────────────────────────────────────────────
 -- Per-auditor observation counts
 
 CREATE OR REPLACE VIEW v_auditor_workload AS
 SELECT
-  o.tenant_id,
-  o.assigned_to_id,
+  o."tenantId" AS tenant_id,
+  o."assignedToId" AS assigned_to_id,
   u.name AS auditor_name,
   COUNT(*)::BIGINT AS total_assigned,
   COUNT(*) FILTER (WHERE o.status != 'CLOSED')::BIGINT AS open_count,
@@ -124,11 +119,10 @@ SELECT
     WHERE o.status != 'CLOSED'
       AND o.severity IN ('CRITICAL', 'HIGH')
   )::BIGINT AS high_critical_open
-FROM observations o
-JOIN "user" u ON u.id = o.assigned_to_id
-WHERE o.assigned_to_id IS NOT NULL
-  AND o.deleted_at IS NULL
-GROUP BY o.tenant_id, o.assigned_to_id, u.name;
+FROM "Observation" o
+JOIN "User" u ON u.id = o."assignedToId"
+WHERE o."assignedToId" IS NOT NULL
+GROUP BY o."tenantId", o."assignedToId", u.name;
 
 -- ─── 7. fn_dashboard_health_score(UUID) ──────────────────────────────────────
 -- Weighted health score: Compliance(40%) + FindingResolution(35%) + AuditCoverage(25%)

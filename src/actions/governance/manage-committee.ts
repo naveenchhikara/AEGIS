@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
-import { hasPermission, type Role } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 
 /**
@@ -113,8 +113,11 @@ export async function manageCommittee(input: ManageCommitteeInput) {
       data: { id: result.id, name: result.name },
     };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to manage committee.";
+    const SAFE_MESSAGES: string[] = [];
+    const raw = error instanceof Error ? error.message : "";
+    const message = SAFE_MESSAGES.includes(raw)
+      ? raw
+      : "Failed to manage committee.";
     logger.error({ error, action: "manage_committee", tenantId }, message);
     return { success: false as const, error: message };
   }
@@ -222,6 +225,11 @@ export async function removeCommitteeMember(memberId: string) {
   const userRoles = session.user.roles;
   const tenantId = session.user.tenantId;
 
+  const parsed = z.string().uuid().safeParse(memberId);
+  if (!parsed.success) {
+    return { success: false as const, error: "Invalid member ID." };
+  }
+
   if (!hasPermission(userRoles, "committee:manage")) {
     return {
       success: false as const,
@@ -240,10 +248,12 @@ export async function removeCommitteeMember(memberId: string) {
         sessionId: session.session.id,
       });
 
-      // Use deleteMany with relation filter since CommitteeMember has no direct tenantId
-      await tx.committeeMember.deleteMany({
-        where: { id: memberId, committee: { tenantId } },
+      const result = await tx.committeeMember.deleteMany({
+        where: { id: parsed.data, committee: { tenantId } },
       });
+      if (result.count === 0) {
+        throw new Error("Member not found");
+      }
     });
 
     revalidatePath("/governance/committees");
@@ -253,10 +263,11 @@ export async function removeCommitteeMember(memberId: string) {
       data: { deleted: true },
     };
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to remove committee member.";
+    const SAFE_MESSAGES = ["Member not found"];
+    const raw = error instanceof Error ? error.message : "";
+    const message = SAFE_MESSAGES.includes(raw)
+      ? raw
+      : "Failed to remove committee member.";
     logger.error(
       { error, action: "remove_committee_member", tenantId },
       message,

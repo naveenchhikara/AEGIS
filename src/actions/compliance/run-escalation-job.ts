@@ -22,6 +22,8 @@ import {
 } from "@/data-access/compliance-items";
 import { logger } from "@/lib/logger";
 
+const ESCALATION_CHUNK_SIZE = 100;
+
 /**
  * Run escalation job (session-based, for manual trigger).
  * Requires CAE/AUDIT_MANAGER permission.
@@ -289,7 +291,6 @@ export async function runEscalationJobInternal(tenantId: string) {
     // (recoverable on next cron run) rather than duplicate emails.
 
     // Step 1: Batch-update compliance items in chunked transactions (100 per batch)
-    const ESCALATION_CHUNK_SIZE = 100;
     if (itemUpdates.length > 0) {
       for (let i = 0; i < itemUpdates.length; i += ESCALATION_CHUNK_SIZE) {
         const chunk = itemUpdates.slice(i, i + ESCALATION_CHUNK_SIZE);

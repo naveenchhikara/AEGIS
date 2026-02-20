@@ -32,6 +32,12 @@ const users = [
     file: "playwright/.auth/cae.json",
   },
   {
+    role: "cco",
+    email: "amit.joshi@apexbank.example",
+    password: TEST_PASSWORD,
+    file: "playwright/.auth/cco.json",
+  },
+  {
     role: "auditee",
     email: "vikram.kulkarni@apexbank.example",
     password: TEST_PASSWORD,

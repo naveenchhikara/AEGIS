@@ -29,10 +29,8 @@ pnpm test:e2e            # Run all Playwright E2E tests (builds + starts server)
 pnpm test:e2e:ui         # Run E2E tests with Playwright UI
 ```
 
-Vitest (no dedicated script in package.json — run directly):
-
 ```bash
-npx vitest run           # Run all unit tests once
+pnpm test:unit           # Run all unit tests once
 npx vitest               # Watch mode
 npx vitest run --coverage  # Coverage report
 ```
@@ -189,14 +187,23 @@ test.describe("Permission Guards", () => {
 - E2E tests depend on seed data loaded via `pnpm db:seed` (`prisma/seed.ts`)
 - No programmatic factories or fixtures in current test suite
 - Seed users: `suresh.patil@apexbank.example` (AUDITOR), `priya.sharma@apexbank.example` (CAE + AUDIT_MANAGER), `amit.joshi@apexbank.example` (CCO), `vikram.kulkarni@apexbank.example` (AUDITEE + AUDITOR)
-- Test password: `TestPassword123!` (defined in `tests/auth.setup.ts`)
+- Test password: `TEST_PASSWORD` constant in `tests/auth.setup.ts` (must match `prisma/seed.ts`)
 
 **Auth state location:**
 
 - `playwright/.auth/auditor.json`
 - `playwright/.auth/manager.json`
 - `playwright/.auth/cae.json`
+- `playwright/.auth/cco.json`
 - `playwright/.auth/auditee.json`
+
+## Test Data Strategy
+
+- E2E tests run against a **shared seeded database** — no DB reset between specs or runs
+- Serial execution (`workers: 1`) prevents race conditions but tests that create data (e.g., observations) persist across subsequent specs
+- Seed data is loaded once via `pnpm db:seed` before test runs; tests assume seed state exists
+- **No programmatic cleanup:** tests that mutate data rely on idempotent assertions or seed-data guards (e.g., `if (await row.count() > 0)`)
+- To reset to clean state: re-run `pnpm db:push --force-reset && pnpm db:seed`
 
 ## Coverage
 
@@ -209,6 +216,13 @@ npx vitest run --coverage
 ```
 
 **Current coverage:** Only `src/lib/state-machine.ts` has unit test coverage. The vast majority of application code (DAL, server actions, components) is covered only through E2E tests.
+
+## Execution Times
+
+- **Unit tests:** <1 second (50 pure-function test cases)
+- **E2E (CI):** ~2-3 minutes total (includes `pnpm build` ~60-90s + serial Playwright specs)
+- **E2E (local):** ~30-60s (reuses running dev server via `reuseExistingServer: !process.env.CI`)
+- **Auth setup:** ~15-30s (4 sequential login flows saving storageState)
 
 ## Test Types
 
@@ -227,6 +241,7 @@ npx vitest run --coverage
   - `permission-guards.spec.ts` — RBAC tests for 4 roles (auditee, CAE, auditor, manager)
 - `webServer` config: `pnpm build && pnpm start` (full production build)
 - Reuses existing server on non-CI (`reuseExistingServer: !process.env.CI`)
+- **Future optimization:** `permission-guards.spec.ts` (read-only RBAC checks) could run in parallel since it doesn't mutate state; only `observation-lifecycle.spec.ts` requires serial execution
 
 **Integration Tests:** Not used — no dedicated integration test layer.
 
@@ -239,7 +254,10 @@ npx vitest run --coverage
 | `auditor` | `playwright/.auth/auditor.json` | `suresh.patil@apexbank.example`    |
 | `manager` | `playwright/.auth/manager.json` | `priya.sharma@apexbank.example`    |
 | `cae`     | `playwright/.auth/cae.json`     | `priya.sharma@apexbank.example`    |
+| `cco`     | `playwright/.auth/cco.json`     | `amit.joshi@apexbank.example`      |
 | `auditee` | `playwright/.auth/auditee.json` | `vikram.kulkarni@apexbank.example` |
+
+**Note:** `manager` and `cae` share the same user (`priya.sharma`) who holds both CAE and AUDIT_MANAGER roles. Separate projects allow organizing tests by role perspective, not by unique user.
 
 All projects depend on `setup` project (auth.setup.ts). CI uses `BASE_URL` env var; local defaults to `http://localhost:3000`.
 

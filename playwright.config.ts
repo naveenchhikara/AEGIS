@@ -56,6 +56,16 @@ export default defineConfig({
       dependencies: ["setup"],
     },
 
+    // CCO tests
+    {
+      name: "cco",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/cco.json",
+      },
+      dependencies: ["setup"],
+    },
+
     // Auditee tests
     {
       name: "auditee",

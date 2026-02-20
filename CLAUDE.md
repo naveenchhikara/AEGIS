@@ -227,7 +227,7 @@ Before running E2E tests or deploying, verify:
 
 - When seeding test users, always generate proper bcrypt password hashes compatible with Better Auth
 - Never seed users without password hashes — auth will silently fail
-- Default test password: `Test@12345` with pre-computed bcrypt hash
+- Default test password: `TestPassword123!` (hashed via `better-auth/crypto` `hashPassword`)
 - After seeding, verify with: `SELECT a."userId", LENGTH(a.password) FROM "Account" a WHERE a."providerId" = 'credential'`
 - Prisma uses PascalCase table names: `User`, `Account`, `Session`, `FailedLoginAttempt` (not snake_case)
 - E2E tests: Playwright specs in `tests/e2e/` with auth setup in `tests/auth.setup.ts`

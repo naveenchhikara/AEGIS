@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 86/104 requirements complete across 18 modules. 559 source files, 63 DB models, 426 commits.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 86/104 requirements complete across 18 modules. 559 source files, 63 DB models.
 
 ## Key Features
 
@@ -194,14 +194,48 @@ Copy `.env.example` to `.env` and configure. Key variables:
 
 ## Deployment
 
-- **VPS:** 4 vCPU, 16GB RAM, Ubuntu
-- **Runtime:** Node.js standalone output (Next.js)
-- **Database:** PostgreSQL 16 (local on VPS)
-- **Reverse Proxy:** Nginx with SSL (Certbot auto-renewal)
-- **Process Manager:** systemd (`aegis.service`)
-- **Region:** AWS ap-south-1 (Mumbai) for RBI data localization
-- **Docker:** Multi-stage Dockerfile and docker-compose configs available
-- **CI/CD:** GitHub Actions (build + test, Claude Code review)
+Production runs on a VPS managed via [Dockge](https://github.com/louislam/dockge) with Docker containers.
+
+| Component         | Details                                                                 |
+| ----------------- | ----------------------------------------------------------------------- |
+| **VPS**           | 4 vCPU, 16GB RAM, Ubuntu (145.223.19.8)                                 |
+| **App Container** | `aegis-app` — Multi-stage Docker build, Next.js standalone on port 3000 |
+| **Database**      | PostgreSQL 16 in Docker (`postgres-postgres-1` on port 5432)            |
+| **Reverse Proxy** | Nginx Proxy Manager with Let's Encrypt SSL (auto-renewal)               |
+| **Domain**        | `aegis.nexlyadvisory.com` — HTTPS with HSTS, HTTP/2                     |
+| **CI/CD**         | GitHub Actions (build + test, Claude Code review)                       |
+
+### Docker Deployment
+
+```bash
+# Build image (NEXT_PUBLIC_APP_URL is inlined at build time)
+docker build -t aegis:latest .
+
+# Stack managed by Dockge at /docker/aegis/
+# .env contains DB_PASSWORD and BETTER_AUTH_SECRET
+docker compose up -d
+```
+
+### Post-Deploy Steps
+
+After a fresh deployment with a new database:
+
+1. Push schema: `prisma db push`
+2. Disable audit triggers: `ALTER TABLE "Tenant" DISABLE TRIGGER USER;` (repeat for all tables)
+3. Seed data: `npx tsx prisma/seed.ts`
+4. Re-enable triggers: `ALTER TABLE "Tenant" ENABLE TRIGGER USER;`
+5. Apply dashboard views: `psql < prisma/migrations/20260209_dashboard_views.sql`
+
+### Demo Accounts
+
+| Role    | Email                              | Password           |
+| ------- | ---------------------------------- | ------------------ |
+| CEO     | `rajesh.deshmukh@apexbank.example` | `TestPassword123!` |
+| CAE     | `priya.sharma@apexbank.example`    | `TestPassword123!` |
+| Auditor | `amit.joshi@apexbank.example`      | `TestPassword123!` |
+| CCO     | `suresh.patil@apexbank.example`    | `TestPassword123!` |
+| Auditee | `vikram.kulkarni@apexbank.example` | `TestPassword123!` |
+| Admin   | `admin@testbank.example`           | `TestPassword123!` |
 
 ## Domain Context
 

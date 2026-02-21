@@ -5,7 +5,7 @@
 AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
 **Live:** https://aegis.nexlyadvisory.com
-**Scale:** 559 source files · 1,999-line Prisma schema · 63 DB models · 381 commits · 104 requirements across 18 modules
+**Scale:** 600 source files · 1,999-line Prisma schema · 63 DB models · 434 commits · 104 requirements across 18 modules
 **Status:** 99/104 requirements complete. Production deployed with 4 user accounts (CEO, Auditor, CAE, CCO).
 
 ## Tech Stack
@@ -61,14 +61,14 @@ tests/
 ├── e2e/                       # Playwright E2E specs
 └── auth.setup.ts              # Auth setup for E2E
 src/
-├── actions/                   # Server actions (79 files across 15 domains)
+├── actions/                   # Server actions (81 files across 15 domains)
 ├── app/                       # Next.js App Router (52 pages)
 │   ├── (auth)/                # Login, signup
 │   ├── (dashboard)/           # All authenticated pages
 │   ├── (onboarding)/          # Tenant onboarding wizard
 │   ├── api/                   # REST endpoints (auth, health, exports, cron, reports)
 │   └── page.tsx               # Root redirect → /login
-├── components/                # 212 files across 30 dirs (ui/, layout/, domain-specific/)
+├── components/                # 213 files across 30 dirs (ui/, layout/, domain-specific/)
 ├── data/                      # RBI regulations (production), seed JSON (deprecated)
 ├── data-access/               # Data Access Layer (39 files) — DB queries with tenant isolation
 ├── emails/                    # React Email templates (assignment, escalation, digest)
@@ -135,7 +135,7 @@ Page (server component)
 ```
 
 - **DAL functions** are in `src/data-access/*.ts` — 39 files covering all domains
-- **Server actions** are in `src/actions/` — 79 files with auth + permission checks
+- **Server actions** are in `src/actions/` — 81 files with auth + permission checks
 - **Session helper:** `getRequiredSession()` from `@/data-access/session` — ALWAYS use this, never accept tenantId from URL/body
 
 ## Deployment

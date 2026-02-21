@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 99/104 requirements complete across 18 modules. 559 source files, 63 DB models.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 99/104 requirements complete across 18 modules. 600 source files, 63 DB models, 434 commits.
 
 ## Key Features
 
@@ -100,13 +100,13 @@ pnpm test:e2e:ui             # E2E tests with Playwright UI
 
 ```
 src/
-  actions/              # Server actions (79 files, 15 domains)
+  actions/              # Server actions (81 files, 15 domains)
   app/                  # App Router (52 pages)
     (auth)/             # Login, accept-invite
     (dashboard)/        # All authenticated screens
     (onboarding)/       # 5-step tenant setup wizard
     api/                # REST endpoints (auth, health, exports, cron, reports)
-  components/           # 212 components across 30 directories
+  components/           # 213 components across 30 directories
     ui/                 # shadcn/ui primitives
     dashboard/          # KPI widgets, charts, panels
     compliance/         # Compliance tables, filters, charts

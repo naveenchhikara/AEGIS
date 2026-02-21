@@ -7,6 +7,15 @@ services:
     image: postgres:16-alpine
     container_name: aegis-postgres
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    shm_size: "256mb"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 256m
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -28,6 +37,19 @@ services:
         - SKIP_ENV_VALIDATION=1
     container_name: aegis-app
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
     ports:
       - "127.0.0.1:3000:3000" # Only localhost — nginx proxies externally
     environment:

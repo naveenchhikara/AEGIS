@@ -16,8 +16,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 ## 🚧 Active Milestone: v4.0 Platform Hardening
 
 **Goal:** Make AEGIS production-resilient before real UCBs load their data — automated backups, security headers, tested CI pipeline, monitoring, and performance baseline.
-**Status:** Phase 2 of 5
-**Progress:** [██░░░░░░░░] 20%
+**Status:** Phase 3 of 5
+**Progress:** [████░░░░░░] 40%
 
 ### Phase 1: Backup & Disaster Recovery
 
@@ -41,6 +41,7 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 **Goal:** Complete security header coverage and dependency vulnerability scanning
 **Depends on:** Nothing (independent of Phase 1)
 **Research:** Unlikely (standard CSP/HSTS patterns)
+**Status:** Complete (2026-02-21)
 
 **Scope:**
 
@@ -52,8 +53,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 
 **Plans:**
 
-- [ ] 02-01: Security headers (CSP, HSTS, Permissions-Policy) in Next.js
-- [ ] 02-02: Docker hardening + dependency audit in CI
+- [x] 02-01: Security headers (CSP, HSTS, Permissions-Policy) in Next.js (completed 2026-02-21)
+- [x] 02-02: Docker hardening + dependency audit in CI (completed 2026-02-21)
 
 ### Phase 3: Test Suite & CI
 

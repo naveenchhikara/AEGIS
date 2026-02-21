@@ -10,11 +10,11 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 
 ## Current State
 
-| Attribute    | Value                    |
-| ------------ | ------------------------ |
-| Version      | v3.0 RBIAS Full Platform |
-| Status       | Production               |
-| Last Updated | 2026-02-21               |
+| Attribute    | Value                   |
+| ------------ | ----------------------- |
+| Version      | v4.0 Platform Hardening |
+| Status       | Production (hardened)   |
+| Last Updated | 2026-02-21              |
 
 **Production URLs:**
 
@@ -27,6 +27,7 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - [x] v1.0 — Clickable prototype: 7 screens, multi-language (EN/HI/MR/GU), demo data (2026-02-08)
 - [x] v2.0 — Working MVP: PostgreSQL, Better Auth, multi-tenancy, 7-state observation lifecycle, S3 evidence, email notifications, PDF/XLSX reports, 5 role-based dashboards, onboarding wizard (2026-02-10)
 - [x] v3.0 — Full RBIAS platform: all 104 RBI requirements across 18 modules, production hardening (IDOR, XSS, typed sessions, N+1), CI/CD, Docker deployment (2026-02-21)
+- [x] v4.0 — Platform hardening: automated backups, security headers, Docker hardening, test suite (108 unit + E2E), Sentry error tracking, health monitoring, performance baseline (2026-02-21)
 
 ### Active (In Progress)
 
@@ -46,6 +47,7 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - Real-time continuous monitoring — Batch-based for now
 - Mobile app — Web-first responsive design
 - On-premise deployment — SaaS-only
+- Load testing — Deferred, not needed for pilot scale (< 50 users)
 
 ## Target Users
 
@@ -86,7 +88,7 @@ Next.js 16 + TypeScript + PostgreSQL 16 + Prisma 7 stack. 248K LOC across 563 fi
 
 - RBI data localization (all data in India)
 - RBI RBIA policy compliance (104 requirements implemented)
-- Security baseline: rate limiting, account lockout, session limits, IDOR protection
+- Security baseline: rate limiting, account lockout, session limits, IDOR protection, CSP, HSTS
 
 ## Key Decisions
 
@@ -97,32 +99,37 @@ Next.js 16 + TypeScript + PostgreSQL 16 + Prisma 7 stack. 248K LOC across 563 fi
 | Application-level tenant isolation | WHERE clauses via prismaForTenant — simpler than PostgreSQL RLS | 2026-02-20 | Active |
 | VPS + Docker deployment            | Simpler than AWS for single-tenant pilot phase                  | 2026-02-21 | Active |
 | Defense-in-depth URL validation    | Server Zod + client Zod + render guard for XSS prevention       | 2026-02-20 | Active |
+| Sentry for error tracking          | Industry standard, free tier sufficient for pilot               | 2026-02-21 | Active |
+| Optional external services pattern | S3/SES/Sentry degrade gracefully when unconfigured              | 2026-02-21 | Active |
 
 ## Success Metrics
 
-| Metric                  | Target            | Current      | Status      |
-| ----------------------- | ----------------- | ------------ | ----------- |
-| RBIAS requirements      | 104/104           | 104/104      | Achieved    |
-| Production deployment   | Live              | Live         | Achieved    |
-| Pilot UCB onboarded     | 1 bank            | 0            | Not started |
-| User acceptance testing | Pass              | Not started  | Not started |
-| SES email delivery      | Production access | Sandbox only | At risk     |
+| Metric                  | Target            | Current           | Status      |
+| ----------------------- | ----------------- | ----------------- | ----------- |
+| RBIAS requirements      | 104/104           | 104/104           | Achieved    |
+| Production deployment   | Live              | Live              | Achieved    |
+| Platform hardening      | 5 phases          | 5/5 complete      | Achieved    |
+| Unit test coverage      | Core modules      | 108 tests passing | Achieved    |
+| Pilot UCB onboarded     | 1 bank            | 0                 | Not started |
+| User acceptance testing | Pass              | Not started       | Not started |
+| SES email delivery      | Production access | Sandbox only      | At risk     |
 
 ## Tech Stack
 
-| Layer     | Technology                             | Notes                  |
-| --------- | -------------------------------------- | ---------------------- |
-| Framework | Next.js 16 (App Router)                | Turbopack dev server   |
-| Frontend  | shadcn/ui + Radix UI + Tailwind CSS v4 | new-york style variant |
-| Language  | TypeScript 5.9                         | Strict mode            |
-| Database  | PostgreSQL 16 + Prisma 7               | 63 models, 16 enums    |
-| Auth      | Better Auth                            | bcrypt, RBAC, 17 roles |
-| i18n      | next-intl                              | EN/HI/MR/GU            |
-| Storage   | AWS S3 (ap-south-1)                    | Evidence upload        |
-| Email     | AWS SES                                | Sandbox mode           |
-| Reports   | React-PDF + ExcelJS                    | PDF + XLSX             |
-| Jobs      | pg-boss                                | Background processing  |
-| Testing   | Playwright + Vitest                    | E2E + unit             |
+| Layer      | Technology                             | Notes                            |
+| ---------- | -------------------------------------- | -------------------------------- |
+| Framework  | Next.js 16 (App Router)                | Turbopack dev server             |
+| Frontend   | shadcn/ui + Radix UI + Tailwind CSS v4 | new-york style variant           |
+| Language   | TypeScript 5.9                         | Strict mode                      |
+| Database   | PostgreSQL 16 + Prisma 7               | 63 models, 16 enums              |
+| Auth       | Better Auth                            | bcrypt, RBAC, 17 roles           |
+| i18n       | next-intl                              | EN/HI/MR/GU                      |
+| Storage    | AWS S3 (ap-south-1)                    | Evidence upload                  |
+| Email      | AWS SES                                | Sandbox mode                     |
+| Reports    | React-PDF + ExcelJS                    | PDF + XLSX                       |
+| Jobs       | pg-boss                                | Background processing            |
+| Monitoring | Sentry + pino                          | Error tracking + structured logs |
+| Testing    | Playwright + Vitest                    | E2E + unit (108 tests)           |
 
 ## Links
 
@@ -152,4 +159,4 @@ Quick Reference:
 ---
 
 _PROJECT.md — Updated when requirements or context change_
-_Last updated: 2026-02-21_
+_Last updated: 2026-02-21 after v4.0 Platform Hardening_

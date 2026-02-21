@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) to manage internal audits and track compliance with RBI regulations. Auditors conduct branch/unit/process audits and record observations that flow through a structured 7-state lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed). These observations aggregate automatically into macro-level views — compliance status for the CCO, risk picture for the CEO, and board reports for the Audit Committee.
 
-v1.0 shipped as a clickable prototype with demo data. v2.0 replaced hardcoded data with a real PostgreSQL backend, Better Auth authentication, multi-tenancy with RLS, and the full observation-to-board-report workflow.
+v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Better Auth, multi-tenancy, and observation-to-board-report workflow. v3.0 completed all 104 RBIAS requirements across 18 modules, added production hardening (IDOR, XSS, typed sessions, N+1 fixes), CI/CD pipeline, and Docker deployment.
 
 ## Core Value
 
@@ -14,12 +14,13 @@ If nothing else works, the platform must let auditors record observations, track
 
 ## Current State
 
-**Shipped:** v2.0 Working Core MVP (2026-02-10)
-**Status:** All 59 v2.0 requirements satisfied. Ready for pilot deployment.
-**Tech Stack:** Next.js 16 (App Router), TypeScript, shadcn/ui, Tailwind CSS v4, PostgreSQL (RLS), Better Auth, Prisma, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss
-**Codebase:** 96,315 TypeScript LOC across 454 files
-**Deployment:** AWS Lightsail Mumbai (ap-south-1)
-**Outstanding:** AWS SES domain verification (DNS CNAME records pending)
+**Shipped:** v3.0 RBIAS Full Platform (2026-02-21)
+**Status:** All 104 RBIAS requirements complete across 18 modules. Production deployed.
+**Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
+**Codebase:** 248K TypeScript LOC across 563 files, 1,999-line Prisma schema (63 models, 16 enums)
+**Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
+**Live:** https://aegis.nexlyadvisory.com
+**Outstanding:** AWS SES domain verification pending. Branch protection rules to configure manually.
 
 ## Requirements
 
@@ -50,6 +51,16 @@ If nothing else works, the platform must let auditors record observations, track
 - ✓ DASH-01 through DASH-06 — v2.0 (5 role-based dashboards with real data)
 - ✓ ONBD-01 through ONBD-06 — v2.0 (onboarding wizard, Excel upload, server persistence)
 - ✓ CMPL-01 through CMPL-04 — v2.0 (RBI checklists, circular links, N/A marking)
+
+**v3.0 RBIAS Full Platform (104 requirements):**
+
+- ✓ R1-R28 — v3.0 (RAM risk assessment, audit planning, section-based execution, cash/loan/SMA-NPA forms, BH certificate)
+- ✓ R29-R48 — v3.0 (XLSX/PDF reports, risk rating, compliance lifecycle Branch→ZAC→ACE→ACB, escalation, analytics)
+- ✓ R49-R68 — v3.0 (risk register, control library, work programs, issue management, QA assessment, audit KPIs)
+- ✓ R69-R92 — v3.0 (audit universe, concurrent audit, regulatory hub, governance, ACB, policy library, 7 new roles)
+- ✓ R93-R104 — v3.0 (investment/treasury audit, IS/EDP audit, cyber security checklists, vendor risk)
+- ✓ Production hardening — v3.0 (IDOR, XSS, typed sessions, N+1 fixes, env validation, structured logging)
+- ✓ CI/CD pipeline — v3.0 (GitHub Actions with lint, typecheck, build, E2E)
 
 ### Active
 
@@ -84,7 +95,7 @@ If nothing else works, the platform must let auditors record observations, track
 
 **Reference Customer:** Apex Sahakari Bank — profile, org structure, and compliance requirements form the basis for demo data.
 
-**Bootstrap Plan:** 16-week execution plan. Phase 0 (prototype) complete. Phase 1 (Working Core MVP) complete. Next: pilot deployment with real UCBs.
+**Bootstrap Plan:** v1.0 prototype (2 days), v2.0 MVP (2 days), v3.0 full platform (11 days). Total: 15 days from start to full 104-requirement platform. Next: pilot deployment with real UCBs.
 
 **Pilot Strategy:** Pilot A (sandbox with demo data, free) → Pilot B (real data, LOI + Rs 50,000 deposit) → Paid subscription (Rs 3-4 Lakh/year Starter tier).
 
@@ -125,7 +136,14 @@ If nothing else works, the platform must let auditors record observations, track
 | **Batch processing 10 tenants (D28)**  | Prevents connection pool exhaustion; scalable to hundreds                               | ✓ Good                                       |
 | **Server-wins merge (D30)**            | Onboarding state — server wins if server updatedAt > local lastSavedAt                  | ✓ Good                                       |
 | **Fire-and-forget sync (D31)**         | Onboarding saves non-blocking; errors logged but don't interrupt UX                     | ✓ Good                                       |
+| **IDOR: tenantId in every WHERE**      | Belt-and-suspenders on every Prisma UPDATE/DELETE mutation                              | ✓ Good                                       |
+| **Defense-in-depth URL validation**    | Server Zod + client Zod + render guard for documentUrl XSS prevention                   | ✓ Good                                       |
+| **AuthSession boundary cast**          | Single cast in getRequiredSession(); all downstream gets typed tenantId + roles         | ✓ Good                                       |
+| **groupBy over findMany + JS**         | Analytics/dashboard use Prisma groupBy instead of loading full tables into memory       | ✓ Good                                       |
+| **take: N safety limits**              | All findMany on large/growing tables have safety limits to prevent unbounded memory     | ✓ Good                                       |
+| **VPS + Docker deployment**            | Simpler than AWS Lightsail for single-tenant pilot; Nginx Proxy Manager for SSL         | ✓ Good                                       |
+| **Application-level tenant isolation** | WHERE clauses via prismaForTenant instead of PostgreSQL RLS policies                    | ✓ Good (simpler debugging, explicit control) |
 
 ---
 
-_Last updated: 2026-02-10 after v2.0 milestone completion_
+_Last updated: 2026-02-21 after v3.0 milestone completion_

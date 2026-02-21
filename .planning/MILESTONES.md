@@ -62,3 +62,36 @@
 **What's next:** Production deployment preparation (AWS infrastructure, CI/CD, staging environment) or pilot deployment for real-world UCB testing.
 
 ---
+
+## v3.0 RBIAS Full Platform (Shipped: 2026-02-21)
+
+**Delivered:** Complete Risk-Based Internal Audit System implementing all 104 RBI-mandated requirements across 18 modules — from RAM risk assessment and audit planning through execution, reporting, compliance lifecycle (Branch → ZAC → ACE → ACB), GRC, concurrent audit, governance, investment audit, IS/EDP audit, and board reporting. Production-hardened with IDOR protection, XSS defense, typed sessions, N+1 query fixes, CI/CD pipeline, and structured logging.
+
+**Phases completed:** Phases 1-6 (core platform, 104 requirements), 15 (production hardening, 4 plans), 16 (CI/CD, 2 plans), 17 (security & quality, 4 plans) — 10 GSD-tracked plans total
+
+**Key accomplishments:**
+
+- Implemented all 104 RBIAS requirements across 18 modules for full RBI UCB internal audit compliance (R1-R104)
+- IDOR hardening: added tenantId to every UPDATE/DELETE WHERE clause across all 39 DAL files and 81 server actions
+- Eliminated ~417 `as any` type casts with strongly-typed AuthSession flowing from getRequiredSession() boundary
+- XSS protection: defense-in-depth URL validation with server Zod + client Zod + render guard pattern
+- N+1 query fixes: batched queries with createMany, groupBy aggregation replacing findMany + JS, safety limits on all findMany
+- Production hardening: T3 Env validation for 15 env vars, pino structured JSON logging, session management fixes, seed data isolation
+- CI/CD pipeline: GitHub Actions with lint, typecheck, build, and Playwright E2E automation
+- Production deployment: Docker containerized on VPS with Nginx reverse proxy, SSL, and PostgreSQL 16
+
+**Stats:**
+
+- 563 source files, 248K lines of TypeScript
+- 1,999-line Prisma schema with 63 models and 16 enums
+- 439 total commits across v1.0-v3.0
+- 52 pages, 81 server actions, 39 DAL files, 213 components
+- 17 roles, 60+ permissions, 4 locales (EN/HI/MR/GU)
+
+**Git range:** `59cce47` (v2.0 end) → `9bb492d` (v3.0 complete)
+
+**Outstanding:** AWS SES domain verification pending. Branch protection rules (16-02) skipped — manual GitHub config.
+
+**What's next:** Pilot deployment with real UCBs, user acceptance testing, and iterative improvements based on feedback.
+
+---

@@ -67,6 +67,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # Health check: 200 = healthy/degraded, 503 = critical failure (database down)
+    # Enhanced endpoint checks: database, pg-boss job queue, memory usage
     healthcheck:
       test:
         [

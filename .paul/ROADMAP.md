@@ -16,8 +16,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 ## 🚧 Active Milestone: v4.0 Platform Hardening
 
 **Goal:** Make AEGIS production-resilient before real UCBs load their data — automated backups, security headers, tested CI pipeline, monitoring, and performance baseline.
-**Status:** Phase 4 of 5
-**Progress:** [██████░░░░] 60%
+**Status:** Phase 4 complete, Phase 5 next
+**Progress:** [████████░░] 80%
 
 ### Phase 1: Backup & Disaster Recovery
 
@@ -79,6 +79,7 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 **Goal:** Production visibility with error tracking, uptime monitoring, and alerting
 **Depends on:** Nothing (independent)
 **Research:** Likely (evaluate Sentry vs alternatives for error tracking)
+**Status:** Complete (2026-02-21)
 
 **Scope:**
 
@@ -90,8 +91,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 
 **Plans:**
 
-- [ ] 04-01: Error tracking + uptime monitoring setup
-- [ ] 04-02: Enhanced health checks + request ID + alerting
+- [x] 04-01: Sentry error tracking + request ID propagation (completed 2026-02-21)
+- [x] 04-02: Enhanced health checks + Docker monitoring (completed 2026-02-21)
 
 ### Phase 5: Performance Baseline
 

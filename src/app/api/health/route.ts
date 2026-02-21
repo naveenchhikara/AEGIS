@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { Pool } from "pg";
 import { logger } from "@/lib/logger";
 
@@ -19,21 +20,103 @@ function getPool() {
   return pool;
 }
 
-export async function GET() {
-  const health: Record<string, unknown> = {
-    status: "ok",
-    timestamp: new Date().toISOString(),
-  };
+interface SubsystemCheck {
+  status: "ok" | "error" | "warning" | "unavailable";
+  responseTimeMs?: number;
+  [key: string]: unknown;
+}
 
+async function checkDatabase(): Promise<SubsystemCheck> {
+  const start = performance.now();
   try {
     await getPool().query("SELECT 1");
-    health.db = "connected";
-    logger.info({ status: health.status, db: health.db }, "health check");
-  } catch (error) {
-    health.db = "error";
-    logger.error({ error, status: health.status }, "health check failed");
+    return {
+      status: "ok",
+      responseTimeMs: Math.round(performance.now() - start),
+    };
+  } catch {
+    return {
+      status: "error",
+      responseTimeMs: Math.round(performance.now() - start),
+    };
+  }
+}
+
+async function checkJobQueue(dbHealthy: boolean): Promise<SubsystemCheck> {
+  if (!dbHealthy) {
+    return { status: "unavailable" };
+  }
+  const start = performance.now();
+  try {
+    const result = await getPool().query(
+      `SELECT count(*)::int as active FROM pgboss.job WHERE state IN ('active', 'created')`,
+    );
+    return {
+      status: "ok",
+      responseTimeMs: Math.round(performance.now() - start),
+      activeJobs: result.rows[0]?.active ?? 0,
+    };
+  } catch {
+    // pgboss schema may not exist yet (first run before migrations)
+    return {
+      status: "unavailable",
+      responseTimeMs: Math.round(performance.now() - start),
+    };
+  }
+}
+
+function checkMemory(): SubsystemCheck {
+  const mem = process.memoryUsage();
+  const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
+  const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
+  const usagePercent = Math.round((mem.heapUsed / mem.heapTotal) * 1000) / 10;
+
+  return {
+    status: usagePercent >= 90 ? "warning" : "ok",
+    heapUsedMB,
+    heapTotalMB,
+    usagePercent,
+  };
+}
+
+export async function GET(request: NextRequest) {
+  const requestId = request.headers.get("x-request-id") ?? undefined;
+
+  const [database, memory] = await Promise.all([
+    checkDatabase(),
+    Promise.resolve(checkMemory()),
+  ]);
+
+  const jobQueue = await checkJobQueue(database.status === "ok");
+
+  // Overall status: error if database down, degraded if non-critical issues, ok otherwise
+  let status: "ok" | "degraded" | "error" = "ok";
+  if (database.status === "error") {
+    status = "error";
+  } else if (memory.status === "warning" || jobQueue.status === "unavailable") {
+    status = "degraded";
   }
 
-  const statusCode = health.db === "error" ? 503 : 200;
+  const health = {
+    status,
+    timestamp: new Date().toISOString(),
+    requestId,
+    checks: {
+      database,
+      jobQueue,
+      memory,
+    },
+    version: "4.0.0",
+  };
+
+  if (status === "error") {
+    logger.error({ health }, "health check failed");
+  } else if (status === "degraded") {
+    logger.warn({ health }, "health check degraded");
+  } else {
+    logger.info({ status, db: database.responseTimeMs }, "health check");
+  }
+
+  const statusCode = status === "error" ? 503 : 200;
   return NextResponse.json(health, { status: statusCode });
 }

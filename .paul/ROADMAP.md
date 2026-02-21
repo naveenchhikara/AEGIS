@@ -71,8 +71,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 
 **Plans:**
 
-- [ ] 03-01: Fix E2E tests and enable in CI
-- [ ] 03-02: Expand unit test coverage for core modules
+- [x] 03-01: Unit test coverage + Vitest in CI + coverage reporting (completed 2026-02-21)
+- [ ] 03-02: Fix E2E tests and enable in CI
 
 ### Phase 4: Monitoring & Observability
 

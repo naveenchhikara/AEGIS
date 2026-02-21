@@ -5,6 +5,12 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/__tests__/**/*.test.ts"],
+    coverage: {
+      provider: "v8",
+      include: ["src/lib/**/*.ts", "src/services/**/*.ts"],
+      exclude: ["src/lib/__tests__/**", "src/services/**/__tests__/**"],
+      reporter: ["text", "text-summary"],
+    },
   },
   resolve: {
     alias: {

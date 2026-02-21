@@ -132,6 +132,23 @@ Next.js 16 + TypeScript + PostgreSQL 16 + Prisma 7 stack. 248K LOC across 563 fi
 | Production | https://aegis.nexlyadvisory.com |
 | VPS        | 145.223.19.8                    |
 
+## Specialized Flows
+
+See: .paul/SPECIAL-FLOWS.md
+
+Quick Reference:
+
+- /nextjs-developer → Page/API routes (required)
+- /postgres-pro → Database changes (required)
+- /playwright-expert → E2E test creation (required)
+- /test-master → Test strategy (required)
+- /security-reviewer → Security changes (required)
+- /devops-engineer → CI/CD & deployment (required)
+- /monitoring-expert → Observability (optional, required in Phase 4)
+- /ui-ux-pro-max → UI/UX design (optional)
+- /typescript-pro → Type system changes (optional)
+- /architecture-designer → Architecture decisions (optional)
+
 ---
 
 _PROJECT.md — Updated when requirements or context change_

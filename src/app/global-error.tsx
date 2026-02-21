@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Global Error Boundary
  *
  * Catches errors at the root layout level.
+ * Reports to Sentry when configured, falls back to console.error.
  * Provides minimal fallback UI with retry functionality.
  */
 export default function GlobalError({
@@ -16,7 +18,9 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error to console
+    // Report to Sentry (no-op when DSN not configured)
+    Sentry.captureException(error);
+    // Log error to console as fallback
     console.error("Global error:", {
       message: error.message,
       digest: error.digest,

@@ -1,6 +1,7 @@
 import "./src/env"; // Validate environment variables at build time
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // --- Security Headers ---
 const ContentSecurityPolicy = [
@@ -9,7 +10,7 @@ const ContentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.s3.ap-south-1.amazonaws.com",
   "font-src 'self'",
-  "connect-src 'self' https://*.s3.ap-south-1.amazonaws.com",
+  "connect-src 'self' https://*.s3.ap-south-1.amazonaws.com https://*.ingest.sentry.io",
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -49,4 +50,16 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin();
-export default withNextIntl(nextConfig);
+
+export default withSentryConfig(withNextIntl(nextConfig), {
+  // Suppress Sentry CLI logs during build
+  silent: true,
+
+  // Source map upload disabled by default — enable in CI with SENTRY_AUTH_TOKEN
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+
+  // Disable telemetry
+  telemetry: false,
+});

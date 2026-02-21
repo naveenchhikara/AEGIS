@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +17,7 @@ import { AlertCircle } from "lucide-react";
  * Error Boundary
  *
  * Catches errors in the application and displays a user-friendly error message.
+ * Reports to Sentry when configured, falls back to console.error.
  * Provides a "Try again" button to reset the error boundary.
  */
 export default function Error({
@@ -26,7 +28,9 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error to console (can't use server-only logger in client component)
+    // Report to Sentry (no-op when DSN not configured)
+    Sentry.captureException(error);
+    // Log error to console as fallback
     console.error("Application error:", {
       message: error.message,
       digest: error.digest,

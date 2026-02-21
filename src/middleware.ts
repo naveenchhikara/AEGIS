@@ -13,6 +13,10 @@ import type { NextRequest } from "next/server";
  * - Protected routes → check for session cookie
  * - Full session validation happens in server components / API routes
  *
+ * Features:
+ * - Request ID propagation (x-request-id header)
+ * - Session cookie validation
+ *
  * Public routes:
  * - /login, /accept-invite, /api/health, / (landing)
  * - /api/auth/(.*) (Better Auth endpoints)
@@ -37,9 +41,18 @@ function isPublicRoute(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Generate or preserve request ID for tracing
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+
   // Allow public routes
   if (isPublicRoute(pathname)) {
-    return NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-request-id", requestId);
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   // Check for session cookie (lightweight Edge-safe check)
@@ -50,10 +63,19 @@ export async function middleware(request: NextRequest) {
   if (!hasSession) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
-  return NextResponse.next();
+  // Forward request with request ID
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-request-id", requestId);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  response.headers.set("x-request-id", requestId);
+  return response;
 }
 
 /**

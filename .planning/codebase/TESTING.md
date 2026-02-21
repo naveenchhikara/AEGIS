@@ -1,326 +1,385 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-20
+**Analysis Date:** 2025-02-21
 
-## Test Frameworks
+## Test Framework
 
-**Unit Test Runner:**
+**Runner:**
 
-- Vitest — config at `vitest.config.ts`
-- Environment: `node` (not happy-dom/jsdom)
-- Test pattern: `src/**/__tests__/**/*.test.ts`
-
-**E2E Test Runner:**
-
-- Playwright — config at `playwright.config.ts`
-- Test directory: `tests/`
-- Runs serially (`workers: 1`, `fullyParallel: false`) — state-dependent tests
-- CI retries: 2 retries on CI, 0 locally
+- Playwright for E2E tests
+- Vitest for unit tests
+- Config files: `playwright.config.ts`, `vitest.config.ts`
 
 **Assertion Library:**
 
-- Vitest unit tests: `expect` from `vitest`
-- Playwright E2E tests: `expect` from `@playwright/test`
+- Playwright: `expect()` from `@playwright/test`
+- Vitest: `expect()` from `vitest`
 
 **Run Commands:**
 
 ```bash
-pnpm test:e2e            # Run all Playwright E2E tests (builds + starts server)
-pnpm test:e2e:ui         # Run E2E tests with Playwright UI
-```
-
-```bash
-pnpm test:unit           # Run all unit tests once
-npx vitest               # Watch mode
-npx vitest run --coverage  # Coverage report
+pnpm test:e2e              # Run all Playwright E2E tests
+pnpm test:e2e:ui           # Run E2E tests with Playwright UI (interactive)
+pnpm test:unit             # Run Vitest unit tests
+pnpm lint                  # Run ESLint (included in QA)
 ```
 
 ## Test File Organization
 
-**Unit tests:**
+**Location:**
 
-- Location: colocated in `src/lib/__tests__/` subdirectory under the tested module
-- Naming: `{module-name}.test.ts`
-- Current unit tests: `src/lib/__tests__/state-machine.test.ts`
+- E2E tests: `tests/e2e/*.spec.ts` (co-located by feature)
+- Unit tests: `src/lib/__tests__/*.test.ts` (co-located in source directories)
+- Auth setup: `tests/auth.setup.ts` (single file for all auth credentials)
 
-**E2E tests:**
+**Naming:**
 
-- Location: `tests/e2e/`
-- Naming: `{feature}.spec.ts`
-- Auth setup: `tests/auth.setup.ts` (runs before all E2E specs)
+- E2E: `{feature}.spec.ts` (e.g., `observation-lifecycle.spec.ts`, `permission-guards.spec.ts`)
+- Unit: `{module}.test.ts` (e.g., `state-machine.test.ts`)
+- Auth: `auth.setup.ts` (not a test, runs before suite)
 
-**Structure:**
+**Directory Structure:**
 
 ```
 tests/
-├── auth.setup.ts                         # Auth state setup for 4 roles
-└── e2e/
-    ├── observation-lifecycle.spec.ts      # Full observation flow (9 test groups)
-    └── permission-guards.spec.ts          # RBAC access control tests
-
+├── auth.setup.ts          # Authentication setup (runs first)
+├── e2e/
+│   ├── observation-lifecycle.spec.ts
+│   └── permission-guards.spec.ts
 src/
-└── lib/
-    └── __tests__/
-        └── state-machine.test.ts          # State machine unit tests (50 cases)
+├── lib/
+│   ├── __tests__/
+│   │   └── state-machine.test.ts
+│   └── state-machine.ts
 ```
 
-## Unit Test Structure
+## Test Structure
 
-**Suite Organization (Vitest):**
+**E2E Test Suite Organization:**
+
+Playwright tests use `test.describe()` for grouping with `test.describe.serial()` for state-dependent tests:
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test.describe("Test Group 1: Create Observation", () => {
+  test.use({ storageState: "playwright/.auth/auditor.json" });
+
+  test("auditor can create observation with 5C fields", async ({ page }) => {
+    // Navigate
+    await page.goto("/findings");
+
+    // Interact
+    await page.getByRole("link", { name: /create observation/i }).click();
+    await page.getByLabel(/condition/i).fill("Test condition");
+
+    // Assert
+    await expect(page).toHaveURL(/\/findings\/[a-f0-9-]+/);
+  });
+});
+
+// Serial tests maintain state across tests (observation URL shared)
+test.describe.serial("Test Group 2: State Transitions", () => {
+  let observationUrl: string;
+
+  test("auditor submits observation", async ({ page }) => {
+    // ...
+    observationUrl = page.url();
+  });
+
+  test("manager approves observation", async ({ browser }) => {
+    const managerCtx = await browser.newContext({
+      storageState: "playwright/.auth/manager.json",
+    });
+    const page = await managerCtx.newPage();
+    await page.goto(observationUrl);
+    // ...
+  });
+});
+```
+
+**Unit Test Structure:**
+
+Vitest uses `describe()` for grouping and `it()` for individual tests:
 
 ```typescript
 import { describe, it, expect } from "vitest";
-import { canTransition, getAvailableTransitions } from "@/lib/state-machine";
+import { canTransition } from "@/lib/state-machine";
 
 describe("canTransition", () => {
-  // Logical grouping by scenario
   describe("forward transitions", () => {
     it("DRAFT -> SUBMITTED: AUDITOR allowed", () => {
       const result = canTransition("DRAFT", "SUBMITTED", ["AUDITOR"]);
       expect(result).toEqual({ allowed: true });
     });
-  });
 
-  describe("wrong role", () => {
-    it("DRAFT -> SUBMITTED: AUDIT_MANAGER rejected", () => {
+    it("returns reason when transition denied", () => {
       const result = canTransition("DRAFT", "SUBMITTED", ["AUDIT_MANAGER"]);
       expect(result.allowed).toBe(false);
       if (!result.allowed) {
-        expect(result.reason).toContain("AUDITOR");
+        expect(result.reason).toContainText("AUDITOR");
       }
     });
   });
 });
 ```
 
-**Patterns:**
+## Patterns
 
-- No `beforeEach`/`afterEach` — pure function tests only (state machine)
-- No mocking in current unit tests — pure computation tested directly
-- Test name format: `"INPUT -> OUTPUT: condition description"`
-- Discriminated union narrowing: use `if (!result.allowed)` before accessing `result.reason`
-- Group related cases in nested `describe` blocks: forward transitions, invalid transitions, wrong role, multi-role, severity-based
+**E2E Test Patterns:**
 
-## E2E Test Structure
+1. **Setup and Auth:**
+   - `tests/auth.setup.ts` creates storage state files for 5 roles
+   - Each test project uses one storageState: `test.use({ storageState: "playwright/.auth/auditor.json" })`
+   - Tests run serially (`workers: 1`) to avoid test database conflicts
 
-**Auth Setup:**
+2. **Page Interaction:**
+   - Use accessibility selectors: `getByRole("button", { name: /submit/i })`
+   - Fallback to data-testid: `locator('[data-testid="observation-card"]')`
+   - Wait for visibility before interacting: `await expect(page.getByText(/findings/i)).toBeVisible()`
 
-```typescript
-// tests/auth.setup.ts
-import { test as setup } from "@playwright/test";
+3. **State Sharing (serial tests):**
+   - Declare variable outside test scope
+   - Test 1 sets value, Test 2+ reads it
+   - Cross-context: create new context with `browser.newContext()` instead of reusing page
 
-const users = [
-  {
-    role: "auditor",
-    email: "suresh.patil@apexbank.example",
-    password: TEST_PASSWORD,
-    file: "playwright/.auth/auditor.json",
-  },
-  {
-    role: "cae",
-    email: "priya.sharma@apexbank.example",
-    password: TEST_PASSWORD,
-    file: "playwright/.auth/cae.json",
-  },
-  // ...
-];
+4. **Conditional Assertions:**
+   - Check existence before asserting: `if ((await observationRow.count()) > 0)`
+   - Use `.not.toBeVisible()` to verify non-existent controls
 
-for (const user of users) {
-  setup(`authenticate as ${user.role}`, async ({ page }) => {
-    await page.goto("/login");
-    await page.waitForSelector("input#email", { timeout: 15000 });
-    await page.fill("input#email", user.email);
-    await page.fill("input#password", user.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL("**/dashboard**", { timeout: 15000 });
-    await page.context().storageState({ path: user.file });
-  });
-}
-```
+**Unit Test Patterns:**
 
-**E2E Suite Organization:**
+1. **State Machine Testing:**
+   - Test allowed and denied transitions separately
+   - Include reason messages in denial assertions: `expect(result.reason).toContain("AUDITOR")`
+   - Test edge cases: multi-role users, severity guards, invalid transitions
 
-```typescript
-// tests/e2e/permission-guards.spec.ts
-import { test, expect } from "@playwright/test";
+2. **Permission Testing:**
+   - Test single role access: `hasPermission(["AUDITOR"], "observation:create")`
+   - Test multi-role union: `hasPermission(["AUDITOR", "AUDIT_MANAGER"], "observation:approve")`
+   - Test denial: assert both `allowed: false` and reason message
 
-test.describe("Permission Guards", () => {
-  test.describe("Auditee role restrictions", () => {
-    test.use({ storageState: "playwright/.auth/auditee.json" });
-
-    test("auditee cannot access audit-trail page", async ({ page }) => {
-      await page.goto("/audit-trail");
-      await expect(page).toHaveURL(/\/dashboard\?unauthorized=true/);
-    });
-  });
-});
-```
-
-**Patterns:**
-
-- Role scoping: `test.use({ storageState: "playwright/.auth/{role}.json" })` at describe-block level
-- Multi-context tests: `browser.newContext({ storageState: "..." })` for testing cross-role interactions
-- State-dependent tests: `test.describe.serial(...)` for ordered test sequences
-- Skipped tests: `test.skip(...)` for tests requiring complex state setup not yet automated
-- Selectors: prefer accessibility-based (`getByRole`, `getByLabel`, `getByText`) over CSS selectors
-- URL patterns: verify navigation with `await expect(page).toHaveURL(/pattern/)`
+3. **Happy Path + Error Cases:**
+   - Always include at least one positive test (should pass/allow)
+   - Always include at least one negative test (should fail/deny)
+   - Test boundary conditions (empty arrays, null values, edge severities)
 
 ## Mocking
 
-**Framework:** Not applicable in current test suite — no mocking framework in use.
+**Framework:** None explicitly configured (Vitest uses happy-dom by default)
 
-**Current approach:**
+**Patterns:**
 
-- Unit tests (`src/lib/__tests__/`): pure functions tested without mocks
-- E2E tests: full stack against real running server and seeded database
+- Unit tests: Import pure functions directly, no mocking needed for `state-machine.ts`
+- E2E tests: Mock via UI (skip tests with `.skip`, conditionally render with visibility checks)
+- Server actions: Not unit tested — tested via E2E instead (due to "use server" boundary)
 
-**What is NOT mocked:**
+**What to Mock:**
 
-- Database queries (E2E tests use real seeded DB)
-- Auth sessions (E2E tests use real storageState files)
-- External services in E2E (AWS S3, SES are not exercised in tests)
+- Database calls → Don't mock; use test database (E2E handles this)
+- HTTP requests → Not needed; focus E2E on happy path
+- Current time/dates → Not done; use actual system time
+
+**What NOT to Mock:**
+
+- Pure state machine logic (test directly)
+- Permission checking (test directly)
+- Database schema/relationships (use real DB in E2E)
 
 ## Fixtures and Factories
 
 **Test Data:**
 
-- E2E tests depend on seed data loaded via `pnpm db:seed` (`prisma/seed.ts`)
-- No programmatic factories or fixtures in current test suite
-- Seed users: `suresh.patil@apexbank.example` (AUDITOR), `priya.sharma@apexbank.example` (CAE + AUDIT_MANAGER), `amit.joshi@apexbank.example` (CCO), `vikram.kulkarni@apexbank.example` (AUDITEE + AUDITOR)
-- Test password: `TEST_PASSWORD` constant in `tests/auth.setup.ts` (must match `prisma/seed.ts`)
+- Auth credentials in `tests/auth.setup.ts`:
+  ```typescript
+  const users = [
+    {
+      role: "auditor",
+      email: "suresh.patil@apexbank.example",
+      password: "TestPassword123!",
+      file: "playwright/.auth/auditor.json",
+    },
+    // ... 4 more roles
+  ];
+  ```
+- Password must match `prisma/seed.ts` exactly
+- Database seeded via `pnpm db:seed` (from `prisma/seed.ts` using tsx)
 
-**Auth state location:**
+**Location:**
 
-- `playwright/.auth/auditor.json`
-- `playwright/.auth/manager.json`
-- `playwright/.auth/cae.json`
-- `playwright/.auth/cco.json`
-- `playwright/.auth/auditee.json`
+- Auth setup: `tests/auth.setup.ts` (fixtures created at build time)
+- Storage states: `playwright/.auth/{role}.json` (generated by auth.setup.ts)
+- Seed data: `prisma/seed.ts` (observational test users, branches, audit areas)
 
-## Test Data Strategy
+**Test User Roles (from seed):**
 
-- E2E tests run against a **shared seeded database** — no DB reset between specs or runs
-- Serial execution (`workers: 1`) prevents race conditions but tests that create data (e.g., observations) persist across subsequent specs
-- Seed data is loaded once via `pnpm db:seed` before test runs; tests assume seed state exists
-- **No programmatic cleanup:** tests that mutate data rely on idempotent assertions or seed-data guards (e.g., `if (await row.count() > 0)`)
-- To reset to clean state: re-run `pnpm db:push --force-reset && pnpm db:seed`
+- `suresh.patil@apexbank.example` → AUDITOR
+- `priya.sharma@apexbank.example` → CAE + AUDIT_MANAGER
+- `amit.joshi@apexbank.example` → CCO
+- `vikram.kulkarni@apexbank.example` → AUDITEE + AUDITOR
 
 ## Coverage
 
-**Requirements:** No enforced coverage threshold.
+**Requirements:** No coverage enforced (no thresholds in vitest.config.ts)
+
+**Current coverage:**
+
+- E2E: 226 tests across 18 modules (from `.planning/PROJECT.md`)
+- Unit: 1 test file for state-machine (core business logic)
+- Missing: Server actions not directly unit tested (tested via E2E)
 
 **View Coverage:**
 
 ```bash
-npx vitest run --coverage
+# Vitest coverage would be enabled via:
+# vitest run --coverage
+# (Currently not configured in project)
 ```
-
-**Current coverage:** Only `src/lib/state-machine.ts` has unit test coverage. The vast majority of application code (DAL, server actions, components) is covered only through E2E tests.
-
-## Execution Times
-
-- **Unit tests:** <1 second (50 pure-function test cases)
-- **E2E (CI):** ~2-3 minutes total (includes `pnpm build` ~60-90s + serial Playwright specs)
-- **E2E (local):** ~30-60s (reuses running dev server via `reuseExistingServer: !process.env.CI`)
-- **Auth setup:** ~15-30s (4 sequential login flows saving storageState)
 
 ## Test Types
 
-**Unit Tests (`src/lib/__tests__/`):**
+**Unit Tests:**
 
-- Scope: Pure business logic functions with no I/O
-- Current: State machine (`canTransition`, `getAvailableTransitions`, `escalateSeverity`) — 50 test cases
-- Pattern: Input/output assertions for all combinations (role, severity, valid/invalid transitions)
+- **Scope:** Pure functions (state-machine.ts, permission checks)
+- **Approach:** Direct function calls, compare outputs against expected results
+- **Location:** `src/lib/__tests__/*.test.ts`
+- **Example:** `state-machine.test.ts` tests 100+ transition combinations
 
-**E2E Tests (`tests/e2e/`):**
+**Integration Tests:**
 
-- Scope: Full user workflows through browser against live Next.js server + PostgreSQL
-- Prerequisites: Docker DB running, seed data loaded, server built and started
-- Current specs:
-  - `observation-lifecycle.spec.ts` — 9 test groups covering full observation flow (OBS-01 through OBS-11)
-  - `permission-guards.spec.ts` — RBAC tests for 4 roles (auditee, CAE, auditor, manager)
-- `webServer` config: `pnpm build && pnpm start` (full production build)
-- Reuses existing server on non-CI (`reuseExistingServer: !process.env.CI`)
-- **Future optimization:** `permission-guards.spec.ts` (read-only RBAC checks) could run in parallel since it doesn't mutate state; only `observation-lifecycle.spec.ts` requires serial execution
+- **Scope:** Cross-domain interactions (observations + timeline + audit trail)
+- **Approach:** Database transactions in E2E tests
+- **Location:** `tests/e2e/*.spec.ts`
+- **Example:** Observation lifecycle test creates observation, transitions state, verifies timeline
 
-**Integration Tests:** Not used — no dedicated integration test layer.
+**E2E Tests:**
 
-## Playwright Project Configuration
+- **Framework:** Playwright
+- **Scope:** User workflows (create observation, approve, issue, respond)
+- **Approach:** Browser-based navigation, form interaction, assertion on UI
+- **Location:** `tests/e2e/*.spec.ts`
+- **Example:** `observation-lifecycle.spec.ts` covers 9 manual test groups
 
-**Projects and auth files:**
+**Manual Tests:**
+Not in automated suite but documented in test specs (marked with `.skip()`):
 
-| Project   | Storage State                   | Seed User                          |
-| --------- | ------------------------------- | ---------------------------------- |
-| `auditor` | `playwright/.auth/auditor.json` | `suresh.patil@apexbank.example`    |
-| `manager` | `playwright/.auth/manager.json` | `priya.sharma@apexbank.example`    |
-| `cae`     | `playwright/.auth/cae.json`     | `priya.sharma@apexbank.example`    |
-| `cco`     | `playwright/.auth/cco.json`     | `amit.joshi@apexbank.example`      |
-| `auditee` | `playwright/.auth/auditee.json` | `vikram.kulkarni@apexbank.example` |
-
-**Note:** `manager` and `cae` share the same user (`priya.sharma`) who holds both CAE and AUDIT_MANAGER roles. Separate projects allow organizing tests by role perspective, not by unique user.
-
-All projects depend on `setup` project (auth.setup.ts). CI uses `BASE_URL` env var; local defaults to `http://localhost:3000`.
+- Repeat finding detection (requires pre-closed observation)
+- Resolved during fieldwork (requires fieldwork state)
+- Auditee response (requires ISSUED observation in test data)
 
 ## Common Patterns
 
-**Async E2E:**
+**Async Testing (E2E):**
+
+All Playwright tests are async by default; use `await` for all operations:
 
 ```typescript
-// Wait for navigation after form submit
-await page.click('button[type="submit"]');
-await page.waitForURL(/\/findings\/[a-f0-9-]+/, { timeout: 10000 });
+test("auditor can create observation", async ({ page }) => {
+  // Wait for navigation
+  await page.goto("/findings");
 
-// Wait for element hydration before interacting
-await page.waitForSelector("input#email", { timeout: 15000 });
-```
+  // Wait for element visibility
+  await expect(page.getByRole("link", { name: /create/i })).toBeVisible();
 
-**Conditional E2E (seed-data dependent):**
+  // Interact
+  await page.click(...);
+  await page.fill(...);
 
-```typescript
-// Guard against missing seed data
-const row = page
-  .getByRole("row")
-  .filter({ hasText: /low|medium/i })
-  .first();
-if ((await row.count()) > 0) {
-  await row.click();
-  await expect(
-    page.getByRole("button", { name: /close observation/i }),
-  ).toBeVisible();
-}
-```
-
-**Cross-role interaction:**
-
-```typescript
-test("manager approves", async ({ browser }) => {
-  const managerCtx = await browser.newContext({
-    storageState: "playwright/.auth/manager.json",
-  });
-  const page = await managerCtx.newPage();
-  await page.goto(observationUrl);
-  // ... assertions
-  await managerCtx.close();
+  // Wait for result
+  await expect(page).toHaveURL(...);
 });
 ```
 
-**Unit test discriminated union:**
+**Error Testing (Unit):**
+
+Use discriminated unions to test both success and error paths:
 
 ```typescript
-it("AUDIT_MANAGER + HIGH severity rejected", () => {
-  const result = canTransition(
-    "COMPLIANCE",
-    "CLOSED",
-    ["AUDIT_MANAGER"],
-    "HIGH",
-  );
-  expect(result).toEqual({
-    allowed: false,
-    reason: "HIGH severity requires CAE to close",
+it("DRAFT -> SUBMITTED: AUDITOR allowed", () => {
+  const result = canTransition("DRAFT", "SUBMITTED", ["AUDITOR"]);
+  expect(result).toEqual({ allowed: true });
+});
+
+it("SUBMITTED -> DRAFT: wrong role rejected", () => {
+  const result = canTransition("SUBMITTED", "DRAFT", ["AUDITOR"]);
+  expect(result.allowed).toBe(false);
+  if (!result.allowed) {
+    expect(result.reason).toContain("AUDIT_MANAGER");
+  }
+});
+```
+
+**Role-Based Testing Pattern (E2E):**
+
+Each role test uses storageState to avoid re-authenticating:
+
+```typescript
+test.describe("CAE role access", () => {
+  test.use({ storageState: "playwright/.auth/cae.json" });
+
+  test("CAE can access audit-trail", async ({ page }) => {
+    await page.goto("/audit-trail");
+    await expect(page).toHaveURL(/\/audit-trail$/);
+  });
+
+  test("CAE can close HIGH severity observations", async ({ page }) => {
+    // ... navigate to observation
+    await expect(page.getByRole("button", { name: /close/i })).toBeVisible();
+  });
+});
+
+test.describe("Auditor role restrictions", () => {
+  test.use({ storageState: "playwright/.auth/auditor.json" });
+
+  test("auditor cannot access audit-trail", async ({ page }) => {
+    await page.goto("/audit-trail");
+    await expect(page).toHaveURL(/\/dashboard\?unauthorized=true/);
   });
 });
 ```
+
+## Configuration Details
+
+**Playwright Config (`playwright.config.ts`):**
+
+- Test directory: `./tests`
+- Base URL: `http://localhost:3000` (configurable via `BASE_URL` env var)
+- Workers: 1 (serial execution for state-dependent tests)
+- Timeout: 30 seconds per test
+- Retries: 2 in CI, 0 locally
+- Screenshots: on failure
+- Traces: on first retry
+- Web server: Builds and starts production server automatically
+
+**Vitest Config (`vitest.config.ts`):**
+
+- Test environment: `node` (not browser)
+- Include pattern: `src/**/__tests__/**/*.test.ts`
+- Path alias: `@` maps to `./src`
+
+## Project Setup for Testing
+
+**Prerequisites:**
+
+1. Database running: `docker-compose up -d` (if using Docker)
+2. Database seeded: `pnpm db:seed`
+3. Dependencies installed: `pnpm install`
+4. Dev/build server started: Playwright starts automatically OR `pnpm dev` in parallel terminal
+
+**Auth Test Accounts:**
+
+- Must exist in database (created by `prisma/seed.ts`)
+- Password must match exactly: `TestPassword123!`
+- Emails must match `tests/auth.setup.ts` exactly
+- Verify with: `SELECT * FROM "Account" WHERE "providerId" = 'credential'` (check password hashes exist)
+
+**GitHub Actions CI:**
+
+- Runs `pnpm lint` (ESLint)
+- Runs `pnpm build` (Next.js production build)
+- Runs `pnpm test:e2e` (Playwright E2E on production build)
+- Retries failed tests 2 times automatically
 
 ---
 
-_Testing analysis: 2026-02-20_
+_Testing analysis: 2025-02-21_

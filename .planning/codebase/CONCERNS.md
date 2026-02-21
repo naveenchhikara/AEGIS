@@ -1,287 +1,490 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-02-20
-
----
+**Analysis Date:** 2026-02-21
 
 ## Tech Debt
 
-**Deprecated Seed Data Still Used in Production Components:**
+**Application-level Tenant Isolation (No PostgreSQL RLS):**
 
-- Issue: Multiple dashboard components and `src/lib/report-utils.ts` import static JSON from `src/data/seed/` instead of querying the live database. This means dashboards show hardcoded demo data rather than real tenant data.
-- Files:
-  - `src/components/dashboard/risk-indicator-panel.tsx` — imports `findings`, `demoComplianceRequirements` from `@/data`
-  - `src/components/dashboard/findings-count-cards.tsx` — imports `findings` from `@/data`
-  - `src/components/dashboard/regulatory-calendar.tsx` — imports `demoComplianceRequirements` from `@/data`
-  - `src/components/dashboard/health-score-card.tsx` — imports `demoComplianceRequirements` from `@/data`
-  - `src/components/dashboard/audit-coverage-chart.tsx` — imports `auditPlans` from `@/data`
-  - `src/lib/report-utils.ts` — imports `findings`, `auditPlans`, `demoComplianceRequirements`, `bankProfile` from `@/data`
-  - `src/data/index.ts` — marked deprecated at line 16-17
-- Impact: Dashboards for real tenants show demo/seed data. Board reports generated via `src/lib/report-utils.ts` contain demo data, not live data.
-- Fix approach: Replace each import with DAL queries using `getRequiredSession()` + `prismaForTenant(tenantId)`. The DAL structure already exists in `src/data-access/`.
+- Issue: Tenant isolation enforced via WHERE clauses in every DAL function, not via PostgreSQL Row-Level Security policies
+- Files: `src/lib/prisma.ts`, `src/data-access/*.ts` (39 files)
+- Impact: Risk of bugs in DAL functions omitting WHERE tenantId = ? clauses; single missed WHERE clause exposes data across tenants
+- Current status: Validation exists in `prismaForTenant()` to ensure UUID format, but no database-level enforcement
+- Fix approach: Implement PostgreSQL RLS policies on all tenant-scoped tables with POLICY statements; enable via SET LOCAL in per-connection transactions (requires rearchitecting transaction handling to prevent P2028 timeouts)
 
-**Onboarding localStorage Not Scoped by Tenant/User:**
+**Removed Transaction Wrapping for Tenant Context:**
 
-- Issue: `src/stores/onboarding-store.ts` uses a single `STORAGE_KEY = "aegis-onboarding"` without user or tenant scoping. The TODO at line 31-33 acknowledges this.
-- Files: `src/stores/onboarding-store.ts`
-- Impact: In bank branch environments where multiple employees share a browser, one user's partial onboarding data is visible to the next user opening the onboarding wizard.
-- Fix approach: Scope the storage key with the authenticated user's ID (e.g., `aegis-onboarding-{userId}`). Requires passing user ID into the store initialization.
+- Issue: Previous implementation wrapped every Prisma query in $transaction with SET LOCAL for RLS; removed due to P2028 errors under concurrent load (10+ SSR queries competing for max 25 pool connections)
+- Files: `src/lib/prisma.ts` (lines 47-61)
+- Impact: Zero database-level tenant isolation enforcement; single-threaded mode OK for MVP, but scaling to 10+ concurrent tenants/VPS will expose this gap
+- Current mitigation: Application-level WHERE clauses + UUID validation in `prismaForTenant()`
+- Fix approach: Implement middleware to set tenant context per-connection (not per-query), or switch to connection pooler with per-connection local variables (PgBouncer with session pooling)
 
-**Widespread `zodResolver(Schema as any)` Pattern:**
+**Large Prisma Schema (1999 lines, 63 models):**
 
-- Issue: 12+ form components cast Zod schemas to `any` to work around react-hook-form + Zod v4 compatibility issues. This eliminates type-checking on form resolver inputs.
-- Files:
-  - `src/components/housekeeping/metrics-capture-form.tsx:111`
-  - `src/components/is-audit/vendor-risk-panel.tsx:109`
-  - `src/components/is-audit/app-inventory-table.tsx:115`
-  - `src/components/is-audit/checklist-form.tsx:156`
-  - `src/components/audit-execution/engagement-form.tsx:51`
-  - `src/components/audit-execution/team-assignment-panel.tsx:85`
-  - `src/components/audit-execution/loan-review-form.tsx:103`
-  - `src/components/governance/policy-table.tsx:124`
-  - `src/components/governance/committee-panel.tsx:148,157,164`
-  - `src/components/investments/investment-table.tsx:104`
-- Impact: Type-unsafe form validation — mismatch between schema and form values silently compiles.
-- Fix approach: Upgrade `@hookform/resolvers` to a version compatible with Zod v4, or pin Zod to v3. The CLAUDE.md notes `zodResolver(Schema as any)` as the current workaround.
+- Issue: Monolithic schema makes it difficult to navigate relationships and understand data model structure
+- Files: `prisma/schema.prisma`
+- Impact: Onboarding time for new developers; harder to spot circular relationships or constraint violations
+- Fix approach: Split schema into logical domain files (e.g., `prisma/auth.prisma`, `prisma/audit.prisma`, `prisma/compliance.prisma`) with Prisma's `include` directive, or add comprehensive ER diagram documentation
 
-**`investment-compliance.ts` Uses `any` for Prisma Transaction Client:**
+**Insufficient Pagination Implementation:**
 
-- Issue: `src/lib/investment-compliance.ts` declares `type PrismaTransactionClient = any` at line 13 to accept Prisma transaction clients, bypassing type safety for all DB calls inside.
-- Files: `src/lib/investment-compliance.ts`
-- Impact: Any Prisma method can be called without type checking inside compliance functions. Runtime errors surface at database level.
-- Fix approach: Import `Prisma.TransactionClient` from the generated Prisma client at `src/generated/prisma/`.
+- Issue: Only 34 instances of pagination patterns found across 39 DAL files; many list endpoints may return unbounded result sets
+- Files: `src/data-access/*.ts`
+- Impact: Memory exhaustion on tables with 10k+ records (observations, examination responses, audit logs); slow API responses
+- Fix approach: Add take/skip parameters to all DAL functions that return multiple rows; implement cursor-based pagination for large datasets; add database indexes on sort/filter columns
 
-**`housekeeping-engine.ts` Also Uses `any` for Transaction Client:**
+**Missing N+1 Query Prevention:**
 
-- Issue: Same pattern as `investment-compliance.ts` — transaction client typed as `any`.
-- Files: `src/lib/housekeeping-engine.ts:23`
-- Impact: Same as above.
-
-**Unimplemented Features Leaving UI in Stub State:**
-
-- Issue: Several UI elements have TODO stubs with no server action wired up.
-  - `src/components/regulatory/atr-form.tsx:33` — ATR submission not implemented (`TODO: Implement submit ATR action`)
-  - `src/components/dashboard/dashboard-composer.tsx:141` — Trend chart widgets not implemented (`TODO: Implement trend chart widgets`)
-  - `src/actions/investment/quarterly-certification.ts:83` — ACB notifications not sent on certification (`TODO: Create notification to ACB members`)
-  - `src/lib/investment-compliance.ts:111` — Non-SLR cap check falls back to warning when `TOTAL_DEPOSITS` housekeeping metric is missing (`TODO: Integrate with deposit data source`)
-- Impact: Features appear in UI but perform no action; regulatory compliance may be incomplete.
+- Issue: DAL functions use `include` and `select` heavily (observed in governance.ts), but no query profiling or depth limits enforced
+- Files: Multiple DAL files with nested includes
+- Impact: Nested includes with multiple levels can fire 50+ queries per page load (e.g., user → roles → permissions → assignments)
+- Fix approach: Profile each page with database query logs; add Prisma `select` depth limit; consider DataLoader-style batch loading for related entities
 
 ---
 
 ## Known Bugs
 
-**Dashboard NaN Values in Risk Indicators:**
+**Dashboard NaN Values:**
 
-- Symptoms: Risk indicator widgets show "NaN" when observation aggregation returns null values.
-- Files: `src/components/dashboard/risk-indicator-panel.tsx`, `src/data-access/dashboard.ts`
-- Trigger: When there are no observations for a tenant, aggregate operations produce `null` which is then used in arithmetic.
-- Workaround: None — bug appears in production for new tenants with no data.
-- Fix approach: Add null coalescing to all numeric aggregations in `src/data-access/dashboard.ts` (e.g., `Number(value ?? 0)`).
+- Symptoms: Risk indicators ("2/8 Audits" text, health score gauge) show "NaN" when no observations exist or aggregation queries return null
+- Files: `src/components/dashboard/widgets/risk-indicators.tsx`, `src/components/dashboard/widgets/health-score-gauge.tsx`, `src/data-access/dashboard.ts`
+- Trigger: Navigate to `/dashboard` as new user with no audit engagements; or after bulk delete of observations
+- Root cause: Aggregation queries (COUNT, SUM, AVG) return null for empty sets; component doesn't handle null → displays NaN
+- Current code: Dashboard composer sets empty defaults (e.g., EMPTY_SEVERITY, EMPTY_AGING) but aggregation layer not returning these
+- Workaround: Create dummy observation in seed or wait for first audit to start
+- Fix approach: Coalesce(COUNT(\*), 0) in aggregation queries; add null checks in dashboard widgets with explicit zero fallback
 
-**Missing Index Pages Return 404:**
+**SES Sandbox Mode (Email Delivery Restricted):**
 
-- Symptoms: Navigating to `/audit-execution` or `/admin` returns Next.js 404.
-- Files: `src/app/(dashboard)/audit-execution/` (contains only `[engagementId]/` and `create/`), `src/app/(dashboard)/admin/` (contains only subdirectories)
-- Trigger: Any link or browser navigation to the parent route.
-- Fix approach: Add `page.tsx` files at each route that either redirect to a sensible default or show a list/overview view.
+- Symptoms: Emails only deliver to verified addresses in AWS SES; all other recipients receive bounce notifications
+- Files: `src/lib/ses.ts`, `src/jobs/notification-processor.ts`
+- Trigger: Send audit assignment or escalation email to unverified address
+- Impact: Demo/testing blocked; production email delivery awaits AWS SES production access request
+- Current status: Code path works; SES API accepts requests; verified addresses receive emails correctly
+- Workaround: Add test addresses to SES verified identities in AWS console, or test with `--dry-run` flag
+- Fix approach: Request SES production access from AWS; implement fallback logger if SES unavailable (set `SKIP_SES=1` to disable)
+
+**Missing Index Pages (404 Errors):**
+
+- Symptoms: `/audit-execution` and `/admin` return 404 Not Found
+- Files: `src/app/(dashboard)/audit-execution/page.tsx` and `src/app/(dashboard)/admin/page.tsx` do not exist
+- Trigger: Navigate directly to root URL; only nested routes exist (e.g., `/audit-execution/[id]/sections`)
+- Impact: Users must know specific engagement/user IDs to access nested pages; no index to browse all engagements/users
+- Workaround: Redirect to first accessible resource or build search page
+- Fix approach: Create index pages at `src/app/(dashboard)/audit-execution/page.tsx` and `src/app/(dashboard)/admin/page.tsx` with table views and search
+
+**Dashboard Views Not Applied After Fresh Deployment:**
+
+- Symptoms: Dashboard aggregation queries return empty/null after `prisma db push` on fresh instance
+- Files: `prisma/migrations/*.sql`, `src/data-access/dashboard.ts`
+- Trigger: Fresh database setup; `prisma db push` executes Prisma migrations but custom SQL views are not applied
+- Root cause: 4 PostgreSQL views/functions (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) created via standalone SQL migration files, not in `schema.prisma`
+- Current status: Views are in migration SQL files but not tracked as Prisma native objects
+- Fix approach: Refactor to Prisma views using `view` keyword in schema (Prisma v7 supports views), or document manual SQL application step in deployment runbook
+
+**Seed Data Mismatch (Production vs. Local):**
+
+- Symptoms: Production database has minimal seed (2 tenants, 4 users); local dev database has comprehensive seed (10 users, full RBI directories)
+- Files: `prisma/seed.ts` (comprehensive), production deployment script (minimal)
+- Trigger: Switching between local dev and production environments
+- Impact: Features work in dev with full seed data but fail in production (e.g., RAM parameters, examination areas)
+- Workaround: Manually run `pnpm db:seed` on production or ensure seed script runs post-deploy
+- Fix approach: Audit production DB to confirm all required seed data exists; add verification script to post-deploy checklist
 
 ---
 
 ## Security Considerations
 
-**In-Memory Rate Limiting Resets on Process Restart:**
+**Tenant Isolation via Application Code Only (No Database-Level Enforcement):**
 
-- Risk: Auth rate limiting uses `storage: "memory"` (see `src/lib/auth.ts:61`). Every server restart or PM2 reload clears the rate limit counters, allowing brute force attempts across restarts.
-- Files: `src/lib/auth.ts`
-- Current mitigation: Account lockout plugin stores lockout state in PostgreSQL `FailedLoginAttempt` table — this persists across restarts. Rate limiting loss only affects the window-based IP throttle.
-- Recommendations: Move rate limiting storage to Redis or PostgreSQL for persistence across restarts.
+- Risk: If a single WHERE tenantId = ? clause is omitted from any DAL function, data from other tenants leaks (cross-tenant exposure)
+- Files: `src/data-access/*.ts` (39 files), `src/actions/*.ts` (81 files)
+- Current mitigation:
+  - UUID validation in `prismaForTenant()` ensures only session tenantId is passed
+  - Manual code review of every DAL/action function
+  - Only `getRequiredSession()` provides tenantId (not from URL/body)
+  - Audit log captures all data access
+- Recommendations:
+  - Add database-level RLS policies to enforce tenant boundaries at storage layer
+  - Implement automated linting rule to detect missing WHERE tenantId checks (e.g., custom ESLint rule)
+  - Quarterly security audit of all DAL functions
+  - Consider leveraging Prisma's new schema-based tenant context feature (when released)
 
-**CSRF Protection Only on Board Report Route:**
+**Environment Variable Validation Bypassed in Docker Builds:**
 
-- Risk: `src/lib/csrf.ts` implements origin/referer-based CSRF verification, but only `src/app/api/reports/board-report/route.ts` calls `verifyCsrf()`. Other POST/PUT API routes do not call it.
-- Files: `src/lib/csrf.ts`, `src/app/api/reports/board-report/route.ts`
-- Current mitigation: Next.js server actions have built-in CSRF protection via same-site cookie behavior. Only the REST API routes are affected.
-- Recommendations: Apply `verifyCsrf()` to all non-GET API routes, or confirm server action CSRF protection is sufficient and document the rationale.
+- Risk: `SKIP_ENV_VALIDATION=1` allows builds without secret validation; secrets passed at runtime could be missing, causing silent failures
+- Files: `src/env.ts`, `Dockerfile`
+- Current usage: Docker builds for CI/CD skip validation to avoid needing secrets at build time
+- Impact: Production builds could ship without DATABASE_URL, BETTER_AUTH_SECRET, or S3 credentials and fail silently at startup
+- Recommendations:
+  - Add startup health check that verifies critical env vars before binding to port
+  - Log clear error messages if required secrets are missing at boot time
+  - Consider separating build-time (optional) and runtime (critical) validation layers
 
-**Health Endpoint Exposes Infrastructure Details Without Auth:**
+**Account Lockout Plugin Allows Brute Force on Multiple IPs:**
 
-- Risk: `GET /api/health` is publicly accessible without authentication. It currently only returns `{status, timestamp, db}` — low exposure. However, `src/app/api/health/route.ts:13` creates a raw `pg.Pool` using `process.env.DATABASE_URL`, creating a second connection pool outside of Prisma.
-- Files: `src/app/api/health/route.ts`
-- Current mitigation: Response is minimal. DATABASE_URL is not leaked.
-- Recommendations: Add IP allowlist or basic auth token for health endpoint in production; consolidate to use the existing Prisma singleton for the DB connectivity check.
+- Risk: Rate limiting and account lockout are per-IP; attacker can brute force from multiple IPs simultaneously
+- Files: `src/lib/auth-lockout-plugin.ts`, `src/lib/auth.ts` (lines 56-81)
+- Current config: 10 login attempts per IP per 15 minutes; 5 failures lock account for 30 minutes
+- Impact: Account lockout only effective if attacker from single IP; multi-IP attack bypasses limits
+- Current mitigation: Email address + strong password requirement, but no active detection of distributed brute force
+- Recommendations:
+  - Implement challenge/captcha after 2-3 failed attempts (per-email, not per-IP)
+  - Add suspicious login detection (flagging new IP/device combinations)
+  - Implement exponential backoff per email (not just per IP)
+  - Log all failed attempts to centralised logging for SOC analysis
 
-**Download Endpoint Missing Tenant Authorization on S3 Keys:**
+**No Input Validation on API Search Parameters:**
 
-- Risk: `GET /api/download?key=<s3Key>` validates session existence but does NOT verify the requested S3 key belongs to the authenticated user's tenant. Any authenticated user from any tenant can request a presigned URL for any key if they know it.
-- Files: `src/app/api/download/route.ts`
-- Current mitigation: Key format validation prevents path traversal; keys are UUIDs not guessable.
-- Recommendations: Encode `tenantId` as a path prefix in S3 keys (e.g., `tenants/{tenantId}/...`) and validate the prefix matches the session's `tenantId` before generating the presigned URL.
-
-**CRON_SECRET Not in Validated Environment Schema:**
-
-- Risk: `src/app/api/cron/escalation/route.ts` reads `process.env.CRON_SECRET` directly, bypassing the `@t3-oss/env-nextjs` validation in `src/env.ts`. If `CRON_SECRET` is unset, the check `if (!cronSecret || ...)` rejects all requests — but this failure is silent at build/startup time.
-- Files: `src/app/api/cron/escalation/route.ts:26`, `src/env.ts`
-- Impact: Missing `CRON_SECRET` in production deploys is not caught at startup; cron jobs silently fail with 401.
-- Fix approach: Add `CRON_SECRET: z.string().min(16)` to the `server` block in `src/env.ts`.
-
-**Auth Secret Fallback to Weak Dev Default:**
-
-- Risk: `src/lib/auth.ts:21` sets `secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production"`. If `BETTER_AUTH_SECRET` is not set in production, the app uses a publicly known default secret, breaking session security.
-- Files: `src/lib/auth.ts`
-- Current mitigation: `src/env.ts` validates `BETTER_AUTH_SECRET: z.string().min(32)`, so this should be caught at startup.
-- Recommendations: Remove the fallback entirely to fail fast rather than silently using an insecure default.
+- Risk: API endpoints accept raw search parameters without validation; potential for injection or bypass
+- Files: `src/app/api/is-audit/checklist/route.ts`, `src/app/api/dashboard/route.ts`, `src/app/api/download/route.ts`
+- Example: `const category = searchParams.get("category")` used directly without schema validation
+- Impact: Malformed queries could cause database errors or expose error messages with sensitive info
+- Recommendations:
+  - Add Zod schema validation to all search parameter parsing
+  - Return 400 Bad Request with schema error details (not full stack traces)
+  - Add request/response logging to API handlers for audit trail
 
 ---
 
 ## Performance Bottlenecks
 
-**Unbounded `findMany` Queries Across Most DAL Functions:**
+**Concurrent SSR Queries Causing Connection Pool Exhaustion:**
 
-- Problem: The majority of `findMany` calls in `src/data-access/` have no `take` or pagination limit. With growing tenant data, these will fetch entire tables.
-- Files (sample — not exhaustive):
-  - `src/data-access/governance.ts` — `policyDocument.findMany`, `committee.findMany`, `committeeMeeting.findMany`, `housekeepingMetric.findMany` (multiple calls)
-  - `src/data-access/work-program.ts` — `workProgramItem.findMany` (4 calls)
-  - `src/data-access/analytics.ts` — `branch.findMany`, `auditPlan.findMany`, `auditCalendar.findMany`
-  - `src/data-access/qa-assessment.ts` — `qaSelfAssessment.findMany` (4 calls)
-  - `src/data-access/concurrent-audit.ts` — `observation.findMany` (2 unbounded)
-  - `src/data-access/risk-mis.ts` — `investmentRecord.findMany`, `housekeepingMetric.findMany`, `riskRegister.findMany`
-- Impact: Slow page loads and high memory usage as data grows. UCBs with years of audit history will accumulate thousands of records.
-- Improvement path: Add cursor-based or offset pagination to list views; add `take` caps on aggregate queries.
+- Problem: Dashboard SSR fires 10-15 parallel Prisma queries; with max pool size 25, heavy concurrent user load (20+ users) can exhaust connections
+- Files: `src/lib/prisma.ts` (line 13: max 25 connections), `src/app/(dashboard)/layout.tsx`
+- Cause: Each query holds a connection for the duration of the query + rendering
+- Current symptom: None observed in current 4-user production; would emerge at 10+ concurrent users
+- Improvement path:
+  - Monitor `pg.Pool.waitingCount` metric; alert if > 5
+  - Reduce parallel query depth (fetch data in two phases: essential + lazy-loaded)
+  - Increase pool size to 50 for mid-tier deployments (requires increased VPS RAM)
+  - Implement query caching (Redis) for frequently-accessed data (compliance summaries, risk indicators)
+  - Use Prisma batch queries (`$transaction` with all queries in one call) to reduce round trips
 
-**N+1 Query in `detectRepeatFindings`:**
+**Inefficient Aggregation Queries for Dashboard Widgets:**
 
-- Problem: `src/actions/repeat-findings/detect.ts:109` maps over `candidates` array and fires a separate `$queryRaw` COUNT query for each candidate.
-- Files: `src/actions/repeat-findings/detect.ts`
-- Cause: Occurrence count calculated per-candidate with individual queries rather than a single GROUP BY.
-- Improvement path: Replace the `.map(async ...)` with a single SQL query using `GROUP BY` to get all counts in one round-trip.
+- Problem: Each dashboard widget independently queries database for aggregation (compliance count, severity distribution, aging buckets); could fire 20+ queries per page
+- Files: `src/data-access/dashboard.ts`, individual widget components
+- Cause: Widgets designed to fetch only their own data; no shared aggregation query
+- Improvement path:
+  - Consolidate all dashboard aggregations into single query with multiple GROUP BY and COUNT DISTINCT operations
+  - Cache dashboard data with 5-minute TTL (using Redis or Upstash)
+  - Consider materialized view for frequently-accessed metrics (requires PostgreSQL 12+)
+  - Use database query profiling (EXPLAIN ANALYSE) to identify slow GROUP BY operations
 
-**`dashboard.ts` is 1,160 Lines — Monolithic DAL File:**
+**Large JSON Serialization in API Responses:**
 
-- Problem: All dashboard aggregate queries live in one 1,160-line file. Batching is partially implemented (line 1156 batches in groups of 4) but the file complexity makes it hard to optimize individual queries.
-- Files: `src/data-access/dashboard.ts`
-- Impact: Hard to cache individual widgets independently; any change risks breaking all dashboard metrics.
-- Improvement path: Split into per-widget DAL functions in separate files, enable React `cache()` or `unstable_cache` per widget.
-
-**Report Generation Is Synchronous and Blocks the Request:**
-
-- Problem: Excel and PDF report generation (`src/lib/excel-export/`, `src/app/api/reports/board-report/route.ts`) runs synchronously in the request/response cycle. Large reports with many branches can time out.
-- Files: `src/app/api/reports/board-report/route.ts`, `src/lib/excel-export/audit-report-generator.ts` (523 lines)
-- Impact: Long-running requests can hit Next.js server action body/timeout limits; user experiences UI freeze.
-- Improvement path: Move report generation to a `pg-boss` background job (infrastructure already exists in `src/jobs/`); return a job ID for polling.
+- Problem: API endpoints return full nested objects (e.g., `/api/dashboard` with all widget data); responses can exceed 1MB for large tenants
+- Files: `src/app/api/dashboard/route.ts`, export APIs
+- Cause: No response compression or field limiting
+- Improvement path:
+  - Add gzip compression middleware to Next.js (default in production, but may not apply to all endpoints)
+  - Implement field selection (e.g., `?fields=healthScore,compliance` to reduce payload)
+  - Paginate large arrays (observations, compliance items) instead of returning all at once
+  - Consider GraphQL to allow clients to specify exact fields needed
 
 ---
 
 ## Fragile Areas
 
-**PostgreSQL Views Not Tracked in Prisma Migrations:**
+**Observation Lifecycle State Machine (7 States, Multiple Transitions):**
 
-- Files: Referenced in `src/data-access/dashboard.ts` (lines 174, 226, 300, 476)
-- Views: `v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`
-- Why fragile: These views are applied via manual SQL after deploys. Fresh deploys without applying the SQL crash the dashboard with PostgreSQL relation-not-found errors. There is no automated check that these views exist.
-- Safe modification: Keep the manual SQL file up to date at `prisma/create_tables.sql`; document the post-deploy step in runbooks.
-- Test coverage: No test verifies these views exist or return correct data.
+- Files: `src/data-access/observations.ts`, `src/actions/observations/*.ts`, `prisma/schema.prisma` (enum ObservationStatus)
+- Why fragile: Observation can transition between DRAFT → SUBMITTED → REVIEWED → ISSUED → RESPONSE → COMPLIANCE → CLOSED; missing validation in any action allows invalid state transitions
+- Safe modification: Always check current status before allowing transition; document valid transitions in code; add state machine diagram to docs
+- Test coverage: 2 E2E tests cover full lifecycle (observation-lifecycle.spec.ts), but no unit tests for individual transitions
+- Risk: New features adding transitions (e.g., ESCALATED state) could break existing workflow
 
-**Tenant Isolation is Application-Level Only (No PostgreSQL RLS):**
+**Escalation Router (4-Level Priority Logic):**
 
-- Files: All `src/data-access/*.ts`, `src/lib/prisma.ts`
-- Why fragile: Tenant data isolation relies entirely on developers remembering to add `WHERE tenantId = ?` in every query. There is no database-level enforcement. A single missed `WHERE` clause leaks cross-tenant data.
-- Current state: `prismaForTenant()` returns the same singleton client — it is a naming convention, not an enforced filter.
-- Safe modification: Always use DAL functions from `src/data-access/` and never write ad-hoc queries in pages or server actions.
-- Improvement path: Implement PostgreSQL Row Level Security (RLS) policies as a defense-in-depth layer.
+- Files: `src/lib/escalation-router.ts`, `src/jobs/overdue-escalation.ts`
+- Why fragile: Complex routing logic assigns escalations to L1-L4 users based on role hierarchy; single buggy condition could route to wrong person
+- Safe modification: Add unit tests for each escalation rule; document role hierarchy explicitly; add data validation to ensure target users have required roles
+- Test coverage: Permission guards tested (permission-guards.spec.ts), but no unit tests for escalation logic itself
+- Risk: Adding new roles or permission levels could break escalation routing
 
-**Direct `prisma` Usage in `src/actions/user-invitations.ts`:**
+**Concurrent Session Management:**
 
-- Files: `src/actions/user-invitations.ts` (lines 46, 144, 172, 183, 218, 232, 267, 276, 279)
-- Why fragile: Uses raw `prisma` client (not `prismaForTenant`) for user creation and management. The `tenantId` is passed as a `where` clause argument rather than being enforced by the wrapper function pattern.
-- Safe modification: Follow the pattern of passing `tenantId` explicitly in `where` clauses; ensure all writes include `tenantId` in the data payload.
+- Files: `src/lib/auth.ts` (multiSession plugin, max 2 sessions), `src/lib/auth-lockout-plugin.ts`
+- Why fragile: Enforces max 2 sessions per user; if new session exceeds limit, oldest session is invalidated, but user doesn't know
+- Safe modification: Log session invalidation event to user's audit trail; add notification when session expires
+- Test coverage: No unit tests for session limit enforcement
+- Risk: Users losing work if 3rd browser tab causes session 1 to invalidate without warning
 
-**Dashboard DB Views Create Two Separate Connection Pools:**
+**Referential Integrity with Cascading Deletes:**
 
-- Files: `src/app/api/health/route.ts` (creates a `pg.Pool` with `max: 1`)
-- Why fragile: The health check creates its own `pg.Pool` using `process.env.DATABASE_URL` directly rather than reusing the Prisma-managed pool. This means 2 pools exist: Prisma's (max 25) plus health's (max 1), potentially hitting the PG `max_connections` limit under load.
-- Safe modification: Rewrite the health check to use a simple Prisma `$queryRaw` via the existing Prisma singleton.
+- Files: `prisma/schema.prisma` (20+ relations with onDelete: Cascade)
+- Why fragile: Deleting a Tenant cascades to all users, observations, engagements, etc.; single delete query can wipe 100k+ records
+- Safe modification: Use soft deletes (add `deletedAt` column) instead of hard delete; add archive tables for compliance; implement restore functionality
+- Test coverage: No tests for delete cascades
+- Risk: Accidental tenant delete wipes all data; no recovery path beyond database backup
 
-**Onboarding Wizard Uses `eslint-disable react-hooks/exhaustive-deps` in Multiple Places:**
+**Investigation Template and IS Audit Checklist Coupling:**
 
-- Files:
-  - `src/app/(onboarding)/onboarding/_components/step-3-rbi-directions.tsx:131`
-  - `src/app/(onboarding)/onboarding/_components/onboarding-wizard.tsx:85`
-  - `src/app/(onboarding)/onboarding/_components/step-4-org-structure.tsx:153`
-  - `src/app/(onboarding)/onboarding/_components/step-5-user-invites.tsx:131`
-- Why fragile: Suppressed exhaustive-deps warnings indicate effects that may not re-run when dependencies change, causing stale closures and hard-to-reproduce bugs in multi-step wizard state.
-
----
-
-## Test Coverage Gaps
-
-**No Unit Tests for Core Business Logic:**
-
-- What's not tested: RAM risk scoring engine, compliance escalation engine, investment compliance rules, observation state machine transitions (except one test file).
-- Files: `src/lib/`, `src/services/`, `src/actions/` (79 files) — only `src/lib/__tests__/state-machine.test.ts` exists as a unit test.
-- Risk: Regressions in risk calculation, audit scoring, or compliance state changes go undetected until production.
-- Priority: High — these are the core regulatory compliance features.
-
-**E2E Tests Cover Only Two Flows:**
-
-- What's not tested: RAM assessment workflow, report generation, concurrent audit, IS audit, investment module, governance module, compliance lifecycle (ZAC/ACE/ACB), onboarding.
-- Files: `tests/e2e/observation-lifecycle.spec.ts`, `tests/e2e/permission-guards.spec.ts`
-- Risk: Breaking changes in untested modules reach production undetected.
-- Priority: High for observation compliance lifecycle; Medium for admin and reporting flows.
-
-**No Tests for DAL Tenant Isolation:**
-
-- What's not tested: None of the 39 DAL files in `src/data-access/` have tests verifying that cross-tenant data is blocked.
-- Files: `src/data-access/` (39 files)
-- Risk: A regression in tenant isolation is invisible without explicit tests verifying that tenant A cannot read tenant B's data.
-- Priority: Critical — multi-tenant data leakage is a compliance and security incident.
+- Files: `src/actions/investment/manage-is-audit.ts`, `src/app/(dashboard)/is-audit/page.tsx`
+- Why fragile: IS Audit checklist generation depends on pre-configured templates; if templates are missing or malformed, checklist generation fails silently
+- Safe modification: Add validation to check template existence before allowing checklist creation; add fallback default template; log template not found errors
+- Test coverage: No tests for template-less scenario
+- Risk: Users unable to create IS audit checklists if templates deleted or corrupted
 
 ---
 
 ## Scaling Limits
 
-**pg-boss Job Queue Shares the Main Application DB:**
+**Connection Pool Exhaustion at 10-20 Concurrent Users:**
 
-- Current capacity: One PostgreSQL instance; `pg-boss` creates its own `pgboss` schema tables.
-- Limit: As job volume grows (notifications, escalation, digests), job queue tables can grow large and create lock contention with application queries.
-- Scaling path: Move `pg-boss` to a dedicated PostgreSQL instance or migrate to Redis-backed queue (BullMQ).
+- Current capacity: pg.Pool max 25 connections; supports ~8-10 concurrent SSR page loads (each firing 10-15 queries)
+- Limit: 10+ concurrent users → connection queue → 30+ second page load times → 504 Gateway Timeout
+- Scaling path:
+  1. Monitor pool utilization (log when waitingCount > 5)
+  2. Increase pool to 50 (requires 1GB+ additional VPS RAM for connection buffers)
+  3. Implement query caching (Redis) to reduce per-request queries
+  4. Move to PgBouncer connection pooler to share connections across Node.js workers
+  5. Split reads to read replica (requires managed PostgreSQL)
 
-**Connection Pool Capped at 25:**
+**Dashboard Aggregation Queries Slow at 10k+ Observations:**
 
-- Current capacity: `src/lib/prisma.ts` configures `max: 25` connections.
-- Limit: With 25 max connections and a 4-vCPU VPS, ~80 concurrent requests can saturate the pool under mixed-load conditions.
-- Scaling path: Add PgBouncer as a connection proxy; or increase VPS size and pool to 50.
+- Current performance: Completes in <500ms with 1k observations
+- Limit: At 10k+ observations, GROUP BY queries slow to 2-5 seconds (blocks page rendering)
+- Scaling path:
+  1. Add database indexes: `CREATE INDEX idx_observations_status_tenant ON "Observation"(tenantId, status)`
+  2. Implement materialized view with 5-minute refresh
+  3. Archive old observations (6+ months closed) to separate table
+  4. Consider time-series database (ClickHouse, TimescaleDB) if observation volume exceeds 1M
+
+**Audit Log Table Growth:**
+
+- Current: ~500 audit log entries per day (at 4 users); grows at 2.5MB/month with full serialization
+- Limit: At 100 users, grows to 125MB/month; after 12 months, 1.5GB table → slow query times
+- Scaling path:
+  1. Archive audit logs older than 12 months to cold storage (S3)
+  2. Implement partitioning by createdAt month
+  3. Add TTL policy for log retention (e.g., delete after 2 years)
+  4. Consider log aggregation service (Datadog, New Relic) for long-term storage
+
+**S3 Bucket Storage for Evidence Files:**
+
+- Current: ~10 files/tenant (300 files total); estimated 50MB across production
+- Limit: At 1000 tenants with 100 files each, 5TB storage cost ~$115/month (not a hard limit, but cost consideration)
+- Scaling path:
+  1. Implement S3 lifecycle policies (transition to Glacier after 1 year)
+  2. Add virus scanning on upload (using Lambda + ClamAV)
+  3. Implement storage quota per tenant (e.g., 1GB max)
+  4. Consider S3 Intelligent-Tiering for automatic cost optimization
 
 ---
 
 ## Dependencies at Risk
 
-**Zod v4 + `@hookform/resolvers` Incompatibility:**
+**Better Auth Framework (Early-Stage):**
 
-- Risk: The project uses Zod v4 but `@hookform/resolvers` does not fully support Zod v4 generics, causing the widespread `zodResolver(Schema as any)` workaround.
-- Impact: 12+ form components have type-unsafe form resolvers.
-- Migration plan: Either pin Zod to v3 (`zod@3.x`) and remove `as any` casts, or wait for an `@hookform/resolvers` release with Zod v4 support and update both packages together.
+- Risk: Better Auth v0.x; API may change; community smaller than Clerk/Auth0
+- Files: `src/lib/auth.ts`, `src/lib/auth-lockout-plugin.ts`, entire auth flow
+- Impact: Framework update could require significant refactoring; bugs may have slower fixes
+- Current mitigation: Custom lockout plugin provides buffer against core framework changes
+- Migration plan: If Better Auth development stalls, can migrate to Clerk (manages sessions) or NextAuth.js (open source, slower updates)
 
-**`@react-pdf/renderer` Externalized from Server Bundle:**
+**pg-boss for Background Jobs (Requires PostgreSQL):**
 
-- Risk: `@react-pdf/renderer` is in `serverExternalPackages` in `next.config.ts`. PDF rendering runs at the Node.js level, not in the Edge runtime. Upgrading Next.js could change bundling behavior.
-- Impact: PDF generation in `src/actions/reports/generate-pdf.ts` could break on Next.js updates.
-- Migration plan: Maintain integration tests for PDF generation; pin the package version and test on every Next.js upgrade.
+- Risk: No external job queue; job failures don't trigger alerts; single database failure stops all async work
+- Files: `src/jobs/*.ts`, `src/lib/job-queue.ts`
+- Impact: Email notifications, escalations, and digest jobs fail silently if database unavailable
+- Current mitigation: Retry logic with exponential backoff; job status persisted to database
+- Scaling path:
+  1. Add Slack webhook for failed job alerts
+  2. Implement job timeout (jobs running >30min auto-fail)
+  3. Consider BullMQ (Redis-based) if jobs exceed 1000/day
+
+**Prisma Client Generation (`src/generated/prisma` 39k lines):**
+
+- Risk: Large generated code footprint; regeneration on every schema change; hidden performance cost
+- Files: `src/generated/prisma/*.ts` (all @ts-nocheck files)
+- Impact: Build time increases; IDE indexing slower
+- Current mitigation: Prisma generates types automatically; no manual intervention needed
+- Fix approach: Monitor Prisma version for performance improvements; consider Drizzle ORM as alternative (smaller footprint, type-safe)
+
+**ExcelJS and @react-pdf/renderer (Externalized from Bundle):**
+
+- Risk: Both serverExternalPackages; not bundled with app; missing at runtime causes export failures
+- Files: `next.config.ts`, `src/lib/excel-export.ts`, `src/components/pdf-report/*.tsx`
+- Impact: Export/report features fail silently if packages not in node_modules at deploy time
+- Current mitigation: Declared in package.json; included in Docker image
+- Fix approach: Add health check at startup to verify packages are importable
 
 ---
 
 ## Missing Critical Features
 
-**RLS (Row Level Security) Not Implemented at Database Level:**
+**No Backup/Restore Capability:**
 
-- Problem: All tenant isolation is application-level. No PostgreSQL RLS policies exist.
-- Blocks: Defense-in-depth for multi-tenant data. Any bug in the application layer (missed `tenantId` filter) directly leaks cross-tenant data.
+- Problem: No self-serve backup functionality; database backups managed externally via VPS snapshots
+- Impact: Data loss risk if backup not run; no audit trail of backup success
+- Priority: High (regulatory requirement for UCBs to maintain data integrity)
+- Fix approach: Implement automatic daily backup to S3; add restore functionality to admin panel; log all backup/restore events
 
-**Audit Trail for Server Actions Is Incomplete:**
+**No Role-Based Export Restrictions:**
 
-- Problem: `src/lib/audit-logger.ts` exists but not all server actions create `AuditLog` entries. User invitation actions and some governance actions log to `AuditLog`, but most data mutations in `src/actions/` do not.
-- Files: `src/actions/` (79 files), `src/lib/audit-logger.ts`
-- Impact: Incomplete audit trail for regulatory compliance. RBI audits may require evidence of who changed what and when.
+- Problem: All users can export full audit plan and findings; no data masking for confidential items
+- Impact: Risk of exposing sensitive observations to branch heads or auditees
+- Priority: Medium (business logic not fully implemented)
+- Fix approach: Add export permission checks per role; mask sensitive data fields for non-auditor roles
+
+**No Concurrent Edit Conflict Detection:**
+
+- Problem: If two users edit same observation simultaneously, last write wins (data loss)
+- Impact: Loss of concurrent edits
+- Priority: Medium (low probability in 4-user system, high risk at scale)
+- Fix approach: Add version numbers to entities; implement optimistic locking; warn user if entity edited since their load
+
+**No Bulk Action Undo/Rollback:**
+
+- Problem: Bulk convert gaps to issues, bulk mark compliance items — no undo if user clicks wrong button
+- Impact: Data cleanup overhead
+- Priority: Medium (low frequency but high impact per incident)
+- Fix approach: Implement command queue for all bulk actions; add undo button for 5 minutes after bulk action
+
+**No Email Template Management UI:**
+
+- Problem: Email templates hardcoded in `src/emails/*.tsx`; admins cannot customize without code change
+- Impact: Email content locked to deployment; no a/b testing capability
+- Priority: Low (current templates adequate for MVP)
+- Fix approach: Store email templates in database; implement editor in admin panel
 
 ---
 
-_Concerns audit: 2026-02-20_
+## Test Coverage Gaps
+
+**No Unit Tests for Business Logic:**
+
+- What's not tested: Risk rating computation, escalation routing, compliance status transitions, investigation effectiveness calculation
+- Files: `src/lib/risk-rating-engine.ts`, `src/lib/escalation-router.ts`, `src/services/investigation.ts`, `src/lib/control-effectiveness.ts`
+- Risk: Bugs in core business logic undetected until production; no regression tests for future refactoring
+- Priority: High (audit logic is core to platform)
+- Recommendation: Add 100+ unit tests for business logic; aim for 80%+ coverage of lib/ and services/
+
+**Missing E2E Tests for Multi-Step Workflows:**
+
+- What's not tested: Full observation lifecycle (create → submit → review → issue → respond → close), compliance cascade (branch response → ZAC → ACE → ACB), RAM scoring workflow
+- Files: `tests/e2e/observation-lifecycle.spec.ts` (partial), no compliance E2E tests
+- Risk: Breaking changes to multi-step workflows only caught in manual QA
+- Priority: High (business-critical workflows)
+- Recommendation: Add 20+ E2E tests covering primary user journeys (auditor, CAE, CCO, CEO perspectives)
+
+**No Database Constraint Testing:**
+
+- What's not tested: Uniqueness constraints, referential integrity, cascading deletes, foreign key violations
+- Files: `prisma/schema.prisma` relations
+- Risk: Constraint violations surface in production when user attempts invalid operation
+- Priority: Medium
+- Recommendation: Add integration tests verifying Prisma schema constraints (e.g., `expect(() => duplicateEmail()).rejects.toThrow("Unique constraint")`)
+
+**No Performance / Load Testing:**
+
+- What's not tested: Dashboard with 10k observations, bulk export with 5k findings, 100+ concurrent users
+- Files: No load test suite
+- Risk: Performance bottlenecks discovered post-deployment
+- Priority: Medium (not critical for 4-user MVP, critical before 100-user scale)
+- Recommendation: Add k6 or Artillery load tests simulating 50 concurrent users; set thresholds for 95th percentile response time
+
+**No Security Tests:**
+
+- What's not tested: SQL injection prevention, XSS in user input fields, CSRF on state-changing actions, permission bypass attempts
+- Files: No security-focused tests
+- Risk: Security vulnerabilities in hidden code paths (e.g., search parameters)
+- Priority: High (live production system)
+- Recommendation: Add OWASP Top 10 test suite; run security scanner (npm audit, Snyk) in CI pipeline
+
+---
+
+## Architectural Concerns
+
+**No Caching Strategy (All Queries Hit Database):**
+
+- Issue: Every page load re-queries all dashboard metrics, compliance summaries, risk indicators
+- Files: `src/data-access/dashboard.ts`, all widget components
+- Impact: Database load spikes at peak hours; no staleness acceptable for metrics refreshing every 5-10 minutes
+- Fix approach: Implement Redis caching layer with 5-minute TTL for aggregation queries; invalidate cache on mutation
+
+**No Search Index (Brute-Force Database Queries):**
+
+- Issue: Finding observations or compliance items by name requires full table scan
+- Files: `src/data-access/observations.ts` (includes @db.Gin for text search), no search UI
+- Impact: Search slow on large datasets; no typeahead autocomplete
+- Fix approach: Add PostgreSQL full-text search index (already enabled with pg_trgm extension); implement typeahead API with ILIKE queries limited to top 20 results
+
+**Monolithic Next.js App (52 pages, 213 components):**
+
+- Issue: Single codebase handles auth, dashboard, audit execution, compliance, reporting, admin panels; hard to split for independent scaling
+- Files: `src/app/`, `src/components/`
+- Impact: Cannot scale frontend independently; large bundle size (report features add @react-pdf/renderer overhead)
+- Fix approach: Long-term: split into micro frontends (separate repos for auditor app, CAE app, CEO app); near-term: implement route-based code splitting and lazy load report components
+
+**No API Rate Limiting Per User:**
+
+- Issue: Rate limiting is per IP; single user can DOS system by polling `/api/dashboard` 1000x/sec
+- Files: `src/lib/auth.ts` (login rate limit only), no per-endpoint user limits
+- Impact: DOS attack vector
+- Fix approach: Add Upstash rate limiting (Redis-backed) with per-user token bucket (100 requests/minute default)
+
+---
+
+## Database Concerns
+
+**No Soft Delete Implementation:**
+
+- Issue: Hard deletes cascade (tenant delete wipes 100k+ records); no audit trail of deleted data
+- Files: `prisma/schema.prisma` (onDelete: Cascade on multiple relations)
+- Impact: Data recovery impossible; regulatory concern for UCBs required to retain audit data
+- Fix approach: Add `deletedAt` DateTime optional field to all entities; add scope middleware to hide soft-deleted records; implement restore functionality
+
+**Missing Database Indexes on Foreign Keys:**
+
+- Issue: Many foreign key columns lack explicit indexes; join queries slow on large tables
+- Files: `prisma/schema.prisma`
+- Impact: Slow queries on observation.engagementId, complianceItem.auditeeId when millions of records exist
+- Fix approach: Audit schema to identify all FK columns; add `@db.Index` annotations; run EXPLAIN ANALYSE on slow queries to verify indexes are used
+
+**No Partitioning for Time-Series Data:**
+
+- Issue: AuditLog and other time-series tables grow unbounded; single-partition queries scan entire table
+- Files: `src/data-access/audit-trail.ts`
+- Impact: Queries for "logs from last week" slow as table grows to 1GB+
+- Fix approach: Partition tables by month or quarter; implement archive table for old records; update queries to use partition pruning
+
+---
+
+## Operational Concerns
+
+**No Monitoring/Alerting on Live System:**
+
+- Issue: No health checks, APM, or error tracking in production; failures discovered by user report
+- Files: `src/app/api/health/route.ts` exists but not monitored
+- Impact: Extended downtime; no visibility into system health; slow incident response
+- Fix approach: Deploy Datadog or New Relic APM; set up alerts for 500 errors, slow queries (>2sec), and pod restarts
+
+**Manual Database Migration Process:**
+
+- Issue: Deploying schema changes requires `prisma db push` + manual SQL migrations + view re-application
+- Files: `prisma/migrations/`, `prisma/*.sql`
+- Impact: Deployment errors if steps missed; no rollback path
+- Fix approach: Automate deployment with Helm chart that runs migrations in init container before pod starts; implement zero-downtime schema changes
+
+**No Automated Testing in CI/CD:**
+
+- Issue: No test suite blocks merged commits; only manual QA before production deploy
+- Files: `tests/e2e/*.spec.ts` exist but not required to pass for merge
+- Impact: Regressions slip into production; no safety net for future development
+- Fix approach: Add GitHub Actions workflow requiring E2E tests to pass; add ESLint and type checking gates
+
+**Environment Variable Sprawl:**
+
+- Issue: 15+ environment variables required; no documentation of which are optional vs. critical
+- Files: `src/env.ts`, `.env.example`
+- Impact: Missing critical var (BETTER_AUTH_SECRET) causes silent auth failure at boot
+- Fix approach: Split env vars into tiers (tier-0: critical, tier-1: optional for dev, tier-2: optional); add startup validation logging
+
+---
+
+_Concerns audit: 2026-02-21_

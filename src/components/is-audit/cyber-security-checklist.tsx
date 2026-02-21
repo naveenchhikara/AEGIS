@@ -26,9 +26,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Save, Loader2, CheckCircle2, XCircle, AlertCircle } from "@/lib/icons";
+import {
+  Save,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Upload,
+  FileText,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import { manageIsAuditChecklist } from "@/actions/investment/manage-is-audit";
+import {
+  requestIsAuditEvidenceUpload,
+  confirmIsAuditEvidenceUpload,
+} from "@/actions/investment/upload-is-audit-evidence";
 import { Progress } from "@/components/ui/progress";
 
 // 25 baseline controls with questions (122 total)
@@ -334,6 +346,14 @@ const RESPONSE_STATUS = [
   },
 ];
 
+type EvidenceFile = {
+  s3Key: string;
+  filename: string;
+  fileSize: number;
+  contentType: string;
+  uploadedAt: string;
+};
+
 type QuestionResponse = {
   controlId: string;
   questionIdx: number;
@@ -341,6 +361,7 @@ type QuestionResponse = {
   response?: string;
   evidence?: string;
   remarks?: string;
+  files?: EvidenceFile[];
 };
 
 export function CyberSecurityChecklist({
@@ -356,6 +377,7 @@ export function CyberSecurityChecklist({
     Record<string, QuestionResponse>
   >({});
   const [checklistId, setChecklistId] = React.useState<string | null>(null);
+  const [uploadingKey, setUploadingKey] = React.useState<string | null>(null);
 
   // Initialize responses from defaults, then load existing data if available
   React.useEffect(() => {
@@ -411,6 +433,100 @@ export function CyberSecurityChecklist({
         [field]: value,
       },
     }));
+  }
+
+  async function handleFileUpload(key: string, file: File) {
+    if (!checklistId) {
+      toast.error("Please save the checklist first before uploading files");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File must be under 10 MB");
+      return;
+    }
+
+    setUploadingKey(key);
+
+    try {
+      // Read file header for validation
+      const chunk = file.slice(0, 4096);
+      const buffer = await chunk.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const fileHeader = btoa(binary);
+
+      // Request presigned URL
+      const reqResult = await requestIsAuditEvidenceUpload({
+        checklistId,
+        controlId: key,
+        fileHeader,
+        fileName: file.name,
+        fileSize: file.size,
+        contentType: file.type || "application/octet-stream",
+      });
+
+      if (!reqResult.success) {
+        toast.error(reqResult.error);
+        return;
+      }
+
+      const { uploadUrl, s3Key, contentType } = reqResult.data;
+
+      // Upload to S3
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": contentType },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        toast.error("File upload failed");
+        return;
+      }
+
+      // Confirm upload
+      const confirmResult = await confirmIsAuditEvidenceUpload({
+        checklistId,
+        controlId: key,
+        s3Key,
+        filename: file.name,
+        fileSize: file.size,
+        contentType,
+      });
+
+      if (!confirmResult.success) {
+        toast.error(confirmResult.error);
+        return;
+      }
+
+      // Update local state with file reference
+      setResponses((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          files: [
+            ...(prev[key]?.files || []),
+            {
+              s3Key,
+              filename: file.name,
+              fileSize: file.size,
+              contentType,
+              uploadedAt: new Date().toISOString(),
+            },
+          ],
+        },
+      }));
+
+      toast.success(`${file.name} uploaded`);
+    } catch {
+      toast.error("Failed to upload file");
+    } finally {
+      setUploadingKey(null);
+    }
   }
 
   function calculateControlStats(controlId: string) {
@@ -703,6 +819,40 @@ export function CyberSecurityChecklist({
                             }
                             rows={2}
                           />
+                          <div className="flex items-center gap-2">
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileUpload(key, file);
+                                  e.target.value = "";
+                                }}
+                                disabled={uploadingKey === key}
+                              />
+                              <span className="text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs">
+                                {uploadingKey === key ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Upload className="h-3 w-3" />
+                                )}
+                                {uploadingKey === key
+                                  ? "Uploading..."
+                                  : "Attach file"}
+                              </span>
+                            </label>
+                            {currentResponse?.files?.map((f, fi) => (
+                              <span
+                                key={fi}
+                                className="bg-muted inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs"
+                              >
+                                <FileText className="h-3 w-3" />
+                                {f.filename}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-muted-foreground text-xs">

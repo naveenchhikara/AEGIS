@@ -393,10 +393,18 @@ export function TechControlEvidence({ checklists }: TechControlEvidenceProps) {
                     Track remediation plans and target dates
                   </CardDescription>
                 </div>
-                <Button onClick={handleExportGapReport}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Gap Report
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleExportGapReport}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export CSV
+                  </Button>
+                  <Button asChild>
+                    <a href="/api/reports/gap-analysis" download>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Export XLSX
+                    </a>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

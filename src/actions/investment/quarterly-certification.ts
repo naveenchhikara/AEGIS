@@ -7,6 +7,7 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+import { queueBulkNotifications } from "@/lib/notification-service";
 
 /**
  * Schema for quarterly investment certification (R97).
@@ -80,11 +81,36 @@ export async function submitQuarterlyCertification(input: CertificationInput) {
         },
       });
 
-      // TODO: Create notification to ACB members
-      // await tx.notification.create({ ... });
-
       return { id: checklist.id };
     });
+
+    // Notify ACB members about the certification (R97)
+    try {
+      const acbMembers = await db.user.findMany({
+        where: { tenantId, roles: { has: "ACB_MEMBER" } },
+        select: { id: true },
+      });
+
+      if (acbMembers.length > 0) {
+        await queueBulkNotifications(
+          session,
+          acbMembers.map((m) => m.id),
+          "INVESTMENT_CERTIFICATION",
+          {
+            quarter: parsed.data.quarter,
+            year: parsed.data.year,
+            submittedBy: session.user.name ?? session.user.email,
+            overallOpinion: parsed.data.overallOpinion,
+          },
+        );
+      }
+    } catch (notifError) {
+      // Non-critical — log but don't fail the certification
+      logger.warn(
+        { error: notifError, action: "acb_certification_notification" },
+        "Failed to queue ACB notification",
+      );
+    }
 
     revalidatePath("/investments");
 

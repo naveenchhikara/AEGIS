@@ -4,6 +4,7 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { EngagementHeader } from "@/components/audit-execution/engagement-header";
 import { SectionTabs } from "@/components/audit-execution/section-tabs";
 import { TeamPanel } from "@/components/audit-execution/team-panel";
+import { RefreshWorkProgramButton } from "@/components/audit-execution/refresh-work-program-button";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect, notFound } from "next/navigation";
 
@@ -50,10 +51,19 @@ export default async function AuditExecutionPage({ params }: PageProps) {
     userRoles,
     "audit_execution:manage_sections",
   );
+  const canRefreshWorkProgram = hasPermission(
+    userRoles,
+    "work_program:execute",
+  );
 
   return (
     <div className="space-y-6">
-      <EngagementHeader engagement={engagement as any} />
+      <div className="flex items-center justify-between">
+        <EngagementHeader engagement={engagement as any} />
+        {canRefreshWorkProgram && (
+          <RefreshWorkProgramButton engagementId={engagementId} />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main content: Section tabs (3/4 width on desktop) */}

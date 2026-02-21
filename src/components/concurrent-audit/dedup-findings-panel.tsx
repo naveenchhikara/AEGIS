@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -26,7 +27,13 @@ import {
   Link2,
   CheckCircle2,
 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import {
+  linkConcurrentToRbia,
+  markFindingUnique,
+} from "@/actions/concurrent-audit/link-to-rbia";
 
 type RbiaDuplicate = {
   id: string;
@@ -55,6 +62,42 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
   const [escalateDialogOpen, setEscalateDialogOpen] = useState<string | null>(
     null,
   );
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handleLinkToRbia(concurrentObsId: string, rbiaObsId: string) {
+    setLoadingAction(`link-${concurrentObsId}-${rbiaObsId}`);
+    try {
+      const result = await linkConcurrentToRbia({ concurrentObsId, rbiaObsId });
+      if (result.success) {
+        toast.success("Finding linked to RBIA observation");
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Failed to link finding");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function handleMarkUnique(concurrentObsId: string) {
+    setLoadingAction(`unique-${concurrentObsId}`);
+    try {
+      const result = await markFindingUnique({ concurrentObsId });
+      if (result.success) {
+        toast.success("Finding marked as unique");
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Failed to mark finding as unique");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
@@ -224,7 +267,12 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
                             Escalate
                           </Button>
                           {hasDuplicates && (
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleRow(finding.id)}
+                              title="View potential RBIA duplicates"
+                            >
                               <Link2 className="h-3 w-3" />
                             </Button>
                           )}
@@ -257,12 +305,45 @@ export function DedupFindingsPanel({ findings }: DedupFindingsPanelProps) {
                                       </div>
                                     </div>
                                     <div className="ml-4 flex gap-2">
-                                      <Button variant="outline" size="sm">
-                                        <Link2 className="mr-2 h-3 w-3" />
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={
+                                          loadingAction ===
+                                          `link-${finding.id}-${duplicate.id}`
+                                        }
+                                        onClick={() =>
+                                          handleLinkToRbia(
+                                            finding.id,
+                                            duplicate.id,
+                                          )
+                                        }
+                                      >
+                                        {loadingAction ===
+                                        `link-${finding.id}-${duplicate.id}` ? (
+                                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Link2 className="mr-2 h-3 w-3" />
+                                        )}
                                         Link to RBIA
                                       </Button>
-                                      <Button variant="ghost" size="sm">
-                                        <CheckCircle2 className="mr-2 h-3 w-3" />
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        disabled={
+                                          loadingAction ===
+                                          `unique-${finding.id}`
+                                        }
+                                        onClick={() =>
+                                          handleMarkUnique(finding.id)
+                                        }
+                                      >
+                                        {loadingAction ===
+                                        `unique-${finding.id}` ? (
+                                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <CheckCircle2 className="mr-2 h-3 w-3" />
+                                        )}
                                         Mark Unique
                                       </Button>
                                     </div>

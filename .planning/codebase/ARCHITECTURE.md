@@ -4,362 +4,262 @@
 
 ## Pattern Overview
 
-**Overall:** Next.js 16 multi-tenant SaaS with edge-optimized routing, application-level tenant isolation, and server-driven state management.
+**Overall:** Next.js 16 App Router + Server Components with Three-Layer Data Flow
+
+AEGIS follows a strict **Server Components → Data Access Layer → Prisma ORM** pattern with application-level tenant isolation. No RPC frameworks; server actions and API routes provide mutation/query endpoints.
 
 **Key Characteristics:**
-
-- Server-first architecture leveraging Next.js App Router with server components as the default
-- Edge middleware for lightweight request gating (cookie presence)
-- Application-level tenant isolation via WHERE clauses in DAL queries (no PostgreSQL RLS policies)
-- Segregated request flow: authentication layer (middleware) → authorization layer (guards on pages/actions) → data access layer (session-scoped queries)
-- Background job processing via pg-boss integrated with Next.js instrumentation hook
-- Client state (form wizards) managed in Zustand with server-sync capability
+- Edge-safe authentication middleware (cookie check) + server-side session validation in layouts
+- Server Component rendering with pre-fetched data for SSR (zero loading flash)
+- Data Access Layer enforces tenant isolation via WHERE clauses (application-level, not PostgreSQL RLS)
+- Session always source-of-truth for tenantId; never from URL, params, or request body
+- Multi-role users with permission union (role array, not single role)
+- pg-boss background job queue for async tasks (notifications, escalations, digests)
+- Better Auth for session management with account lockout + concurrent session limits
 
 ## Layers
 
-**Edge Runtime (Middleware):**
+**Authentication & Session Layer:**
+- Purpose: User identity verification and session management
+- Location: `src/lib/auth.ts`, `src/lib/auth-client.ts`, `src/lib/auth-lockout-plugin.ts`, `src/middleware.ts`
+- Contains: Better Auth config, lockout plugin, session helpers
+- Depends on: Prisma ORM for session storage, pg.Pool for rate limiting
+- Used by: All pages, API routes, data-access layer via `getRequiredSession()`
 
-- Purpose: Fast request gate-keeping without Prisma/Node.js imports; checks for session cookie presence
-- Location: `src/middleware.ts`
-- Contains: Cookie validation, public route lists, redirect logic
-- Depends on: Next.js headers/navigation APIs (Edge runtime compatible)
-- Used by: All incoming requests (matched by `matcher` config)
-- Security Model: Optimistic check; full session validation happens server-side
+**Presentation Layer (Server & Client Components):**
+- Purpose: Render pages and interactive UI
+- Location: `src/app/` (page routes), `src/components/` (UI components)
+- Contains: 52 page routes (auth, dashboard, audit, compliance, GRC, regulatory, admin, reports), 213+ component files
+- Depends on: Data Access Layer, Server Actions, Client hooks (Zustand, React Query)
+- Used by: Users via HTTP requests
 
-**Authentication Layer:**
-
-- Purpose: Session validation, user identity establishment, Better Auth integration
-- Location: `src/lib/auth.ts` (Better Auth config), `src/data-access/session.ts` (getRequiredSession/getOptionalSession)
-- Contains: Session cookie handling, bcrypt password hashing, multi-role user context
-- Depends on: Better Auth library, Prisma for user/session persistence
-- Used by: All server components, server actions, API routes via getRequiredSession()
-- Security Model: Session sourced from cookies only; never from URL/query/body; cast to AuthSession type at boundary
-
-**Authorization Layer:**
-
-- Purpose: Role-based access control (RBAC) and permission enforcement
-- Location: `src/lib/permissions.ts` (permission definitions + hasPermission), `src/lib/guards.ts` (requirePermission/requireAnyPermission)
-- Contains: 17 roles, 100+ permissions, multi-role union logic
-- Depends on: Session (roles array), Prisma enums (Role type)
-- Used by: Page guards (at start of server components), server action guards
-- Security Model: Roles from session; permissions are union of all role permissions; guards redirect to /dashboard?unauthorized=true on failure
+**Server Action Layer:**
+- Purpose: Mutation logic with auth + permission checks
+- Location: `src/actions/` (81 files across 15 domains: observations, audit-plans, compliance, issues, reports, etc.)
+- Contains: Validated input, permission guards, audit context tracking, revalidatePath calls
+- Depends on: Data Access Layer (`prismaForTenant()`), permission system, session helpers
+- Used by: Client components via form submissions, client-side mutations
 
 **Data Access Layer (DAL):**
+- Purpose: All database queries with tenant isolation enforcement
+- Location: `src/data-access/` (39 files: observations, audit-execution, dashboard, governance, reports, etc.)
+- Contains: Functions that accept session object, extract tenantId, build WHERE clauses
+- Depends on: Prisma ORM (`prismaForTenant(tenantId)`), session helpers
+- Used by: Pages, Server Actions, API routes
 
-- Purpose: Tenant-scoped database queries with application-level isolation
-- Location: `src/data-access/*.ts` (39 files covering all domains)
-- Contains: Query functions accepting session, prismaForTenant() calls, explicit WHERE tenantId filters
-- Depends on: `prismaForTenant(tenantId)`, session.user.tenantId, Prisma client
-- Used by: Server components (SSR), server actions, API routes
-- Security Model: tenantId extracted from session only; UUID validation on tenantId format; WHERE tenantId clause on every query (belt-and-suspenders)
+**Business Logic Layer:**
+- Purpose: Domain-specific computations and algorithms
+- Location: `src/lib/` (35 files), `src/services/` (risk rating computation)
+- Contains: Pure functions (RamEngine, RiskRatingService, EscalationRouter, etc.)
+- Depends on: Prisma types, constants, enums
+- Used by: Server Actions, DAL, Jobs
 
-**Server Actions Layer:**
+**Job Queue Layer:**
+- Purpose: Asynchronous background work (reminders, escalations, digests, snapshots)
+- Location: `src/jobs/` (7 files), `src/lib/job-queue.ts`, `src/instrumentation.ts`
+- Contains: pg-boss job registration, cron schedules, job handlers
+- Depends on: Prisma ORM, notification service, email templates
+- Used by: Triggered by `instrumentation.ts` on server startup, or enqueued via job-queue helpers
 
-- Purpose: Server-side mutations with auth + permission checks + validation
-- Location: `src/actions/` (81 files across 15 domains)
-- Contains: createX/updateX/deleteX handlers, Zod validation, permission checks, audit context tracking
-- Depends on: getRequiredSession(), hasPermission(), DAL functions, validation schemas
-- Used by: Client components (form handlers), page routes
-- Pattern: "use server" directive; always check auth → permission → validate input → mutate via DAL → revalidate path/tags
-
-**Presentation Layer:**
-
-- Purpose: UI components, pages, layouts
-- Location: `src/components/` (213 files), `src/app/` (52 pages)
-- Contains: shadcn/ui wrappers, domain-specific components, page structures, layouts
-- Depends on: Server/client components, server actions, React Query for data sync
-- Used by: End users via Next.js routing
-- Patterns: Server components as default; client only for interactivity; Suspense boundaries for fallback UI
-
-**Job Queue & Background Workers:**
-
-- Purpose: Asynchronous task processing (notifications, digests, escalation, reports)
-- Location: `src/lib/job-queue.ts` (pg-boss singleton), `src/jobs/` (job handlers)
-- Contains: Scheduled jobs, recurring tasks, pub/sub job queues
-- Depends on: PostgreSQL (pg-boss uses same DATABASE_URL), logger
-- Triggered by: `src/instrumentation.ts` on server boot; also callable from server actions
-- Pattern: Job registered in instrumentation → scheduled cron expressions (IST offsets) → handler processes → revalidates cache or sends notifications
-
-**Client State Management:**
-
-- Purpose: Ephemeral UI state + form progress persistence
-- Location: `src/stores/onboarding-store.ts` (Zustand), `src/providers/query-provider.tsx` (React Query context)
-- Contains: Wizard progress (localStorage + server sync), SWR cache (React Query)
-- Depends on: Zustand persist middleware, localStorage API, server actions for sync
-- Used by: Onboarding wizard pages, dashboard widgets (SWR for refetch)
-- Pattern: Client-side default; server-sync on explicit save; React Query auto-refetch on window focus
+**Persistence Layer:**
+- Purpose: Database schema and ORM mapping
+- Location: `prisma/schema.prisma`, `src/lib/prisma.ts`, `src/generated/prisma/` (Prisma client)
+- Contains: 63 Prisma models, 16 enums, PostgreSQL adapter with connection pooling (max 25)
+- Depends on: PostgreSQL 16
+- Used by: All DAL functions, Jobs, Server Actions
 
 ## Data Flow
 
-**Page Request Flow (Authenticated User):**
+**Server-Side Rendering (SSR) with Pre-fetched Data:**
 
-1. **Middleware** (`src/middleware.ts`) — Check if session cookie exists
-   - If missing → redirect to /login
-   - If present → allow through
-2. **Page Server Component** (e.g., `src/app/(dashboard)/findings/page.tsx`) — Call `requirePermission()`
-   - Fetches full session via `getRequiredSession()`
-   - Checks permission via `hasPermission(roles, "observation:read")`
-   - If unauthorized → redirect to /dashboard?unauthorized=true
-   - If authorized → proceed to data fetch
-3. **DAL Function** (e.g., `getObservations(session)`) — Query with tenant scope
-   - Extract `tenantId = session.user.tenantId`
-   - Call `prismaForTenant(tenantId)` (returns singleton Prisma)
-   - Add `WHERE tenantId = ?` to query
-   - Return typed result
-4. **Component Render** — Serialize data as props to client component
-   - If client component marked with "use client", hydrate with data
-   - If server component, inline data into HTML
-5. **Client Hydration** — React takes over, sets up event listeners
-   - React Query provider starts polling (if configured)
-   - Zustand stores hydrate from localStorage
+1. **Page Request** → User hits `/dashboard`
+2. **Middleware** (`src/middleware.ts`) → Cookie check (lightweight, edge-safe) → pass through or redirect to /login
+3. **Layout** (`src/app/(dashboard)/layout.tsx`) → `auth.api.getSession()` (full session validation)
+4. **Page Component** (`src/app/(dashboard)/dashboard/page.tsx`) → Server Component:
+   - `getRequiredSession()` — extract tenantId, roles
+   - `getDashboardConfig(roles)` — get role-based widget config
+   - `getDashboardData(session, widgetIds)` — DAL function pre-fetches all widget metrics
+5. **DAL Function** (`src/data-access/dashboard.ts`) → `prismaForTenant(tenantId)` → builds WHERE clauses with tenantId
+6. **Prisma Client** → PostgreSQL query with tenant scope
+7. **Response** → Component renders with `initialData` → client hydrates → client can query further via React Query
 
-**Form Submission Flow (Server Action):**
+**Server Action Mutation:**
 
-1. **Client** (e.g., `<form action={createObservation}>`) — User submits form
-2. **Server Action** (`src/actions/observations/create.ts`) — "use server" directive runs on server
-   - Get session: `getRequiredSession()`
-   - Check permission: `hasPermission(roles, "observation:create")`
-   - Validate input: `CreateObservationSchema.safeParse(input)`
-   - Get tenant-scoped DB: `prismaForTenant(tenantId)`
-   - Mutate: `db.$transaction()` with audit context
-   - Revalidate: `revalidatePath("/findings")` to bust Next.js cache
-   - Return: `{ success: true, data? } | { success: false, error }`
-3. **Client** — Form updates, error/success toast, redirect or stay on page
-4. **Next.js Cache** — Revalidation fetches fresh data on next request
+1. **Form Submission** → Client calls `createObservation(input)` (server action)
+2. **Server Action** (`src/actions/observations/create.ts`):
+   - `getRequiredSession()` — get tenantId, roles
+   - `hasPermission(roles, "observation:create")` — check authorization
+   - `CreateObservationSchema.safeParse(input)` — validate
+   - `prismaForTenant(tenantId).$transaction()` — atomic create observation + timeline
+   - `setAuditContext()` — track who made this change
+3. **Prisma** → INSERT observation, INSERT timeline entry
+4. **Revalidate** → `revalidatePath("/findings")` — update cache
+5. **Response** → `{ success, data?, error? }`
 
-**Background Job Flow (Escalation Example):**
+**Background Job Execution:**
 
-1. **Server Start** — `instrumentation.ts` calls `startWorkers()`
-2. **pg-boss Init** — `getJobQueue()` creates PgBoss with DATABASE_URL
-3. **Job Registration** — `registerJobs(queue)` subscribes handlers to job names
-4. **Job Trigger** — Either scheduled cron (daily 00:30 UTC = 06:00 IST) or manual enqueue
-5. **Handler Execution** — Worker dequeues job, runs escalation logic (e.g., escalate DRAFT→IN_REVIEW)
-6. **Side Effects** — Send notifications, update Observation.status, log action
-7. **Retry** — On error, retry up to 3 times with exponential backoff; log failures
-8. **Cleanup** — Job deleted from queue after 30 days
+1. **Server Startup** → `src/instrumentation.ts` → `startWorkers()` registers job handlers
+2. **Cron Trigger** (e.g., daily 06:00 IST) → pg-boss dequeues job
+3. **Job Handler** (`src/jobs/deadline-reminder.ts`) → runs `processDeadlineReminders()`:
+   - Query overdue observations via DAL
+   - Generate notification records
+   - Send emails via AWS SES
+   - Update notification status
+4. **Response** → Job completes, next cron cycle
 
-**State Management Flow (Onboarding Wizard):**
+**State Management:**
 
-1. **Local State** — User fills form on step 3, Zustand store updates
-   - `useOnboardingStore.setSelectedDirections(data)` → localStorage persisted
-2. **User navigates away** — Browser closes tab or page reloads
-3. **Next session** — Store hydrates from localStorage; checks 30-day expiry
-4. **User clicks "Save to Server"** — Client calls `saveWizardStep()` server action
-   - Server validates, persists to DB
-   - Store sets `lastSyncedAt`, `isSyncing = false`
-5. **User on different device** — Load page, call `loadFromServer()`
-   - Fetches latest from DB
-   - Merges if server is newer than local cache
-   - Syncs Zustand state
+- **Server State** (source of truth): PostgreSQL database, queried via DAL
+- **Session State** (authentication): Better Auth sessions table + HTTP cookies
+- **Client State** (transient UI): React Query for server-synced state, Zustand for local UI state (e.g., onboarding wizard)
+- **Cache Invalidation** (ISR): `revalidatePath()` in server actions clears Next.js cache for affected routes
 
 ## Key Abstractions
 
-**prismaForTenant(tenantId):**
+**Session Object:**
+- Purpose: Carries authenticated user identity and tenant scope
+- Examples: `src/data-access/session.ts` `getRequiredSession()`, `src/lib/auth.ts` Better Auth config
+- Pattern: `AuthSession` type with `user: { id, email, name, tenantId, roles: Role[] }`, `session: { id, expiresAt }`
+- Usage: Passed to all DAL functions as first parameter; tenantId extracted at DAL boundary
 
-- Purpose: Tenant-scoped Prisma client wrapper
-- Examples: `src/lib/prisma.ts` definition, used in all DAL files
-- Pattern: Validates UUID format, returns singleton Prisma (isolation via WHERE clauses, not RLS)
-- Why: Prevents P2028 transaction timeout errors under SSR load (had issues with per-query transactions)
+**Permission System:**
+- Purpose: Role-based access control with granular permissions
+- Examples: `src/lib/permissions.ts` (60+ permissions), `src/actions/observations/create.ts` (permission check)
+- Pattern: User holds multiple roles → getPermissions(roles) returns union → check single permission via `hasPermission(roles, permission)`
+- Roles: 17 roles (AUDITOR, CAE, CCO, CEO, AUDIT_MANAGER, LEAD_AUDITOR, etc.)
 
-**getRequiredSession():**
+**Tenant Isolation:**
+- Purpose: Application-level isolation (no RLS in DB)
+- Examples: `src/lib/prisma.ts` `prismaForTenant(tenantId)`, every DAL function adds `WHERE tenantId = ?`
+- Pattern: Extract tenantId from session → pass to `prismaForTenant()` (validates UUID format, returns singleton client) → all queries scoped by WHERE
+- Safety: `belt-and-suspenders` assertion in DAL functions: even if tenantId somehow changed mid-query, runtime check catches it
 
-- Purpose: Fetch authenticated session or redirect to login
-- Examples: Used in all pages, server actions, API routes
-- Pattern: `const session = await getRequiredSession()` → access `session.user.tenantId`, `session.user.roles`
-- Why: Central auth boundary; ensures tenantId is sourced from trusted session, never URL/query
+**Observation Lifecycle Engine:**
+- Purpose: State machine for observation tracking (DRAFT → SUBMITTED → REVIEWED → ISSUED → RESPONSE → COMPLIANCE → CLOSED)
+- Examples: `src/actions/observations/transition.ts`, `src/data-access/observations.ts`
+- Pattern: Server actions enforce valid transitions + permissions; DAL queries observations with timeline (immutable audit trail)
+- Related: ObservationTimeline records WHO, WHEN, WHY for every status change
 
-**hasPermission(roles: Role[], permission: Permission):**
+**Risk Assessment Model (RAM) Engine:**
+- Purpose: Compute branch risk scores per RBIA Policy (19 parameters, weighted 1-5)
+- Examples: `src/lib/ram-engine.ts` (pure functions), `src/actions/audit-plans/` (invokes engine)
+- Pattern: Input array of RamScoreInput → computeCompositeScore() → getRiskCategory() → getAuditFrequency()
+- Result: composite score (1-5), risk category (LOW/MEDIUM/HIGH), audit frequency (12/18/24 months)
+- Uplift: 1.5× multiplier if repeat findings detected
 
-- Purpose: Multi-role permission check
-- Examples: Called in guards and server action guards
-- Pattern: Returns `roles.some(role => rolePermissions[role].includes(permission))`
-- Why: Users can hold multiple roles; permission is union of all role permissions
+**Escalation Router:**
+- Purpose: Route overdue observations to escalation L1-L4 based on role hierarchy
+- Examples: `src/lib/escalation-router.ts`, `src/jobs/overdue-escalation.ts`
+- Pattern: Given observation ID, find owner, determine days overdue, route to next escalation level, send notification
+- Levels: L1 (assignee), L2 (branch head), L3 (zonal auditor), L4 (CAE)
 
-**requirePermission(permission) / requireAnyPermission(permissions):**
-
-- Purpose: Guard function for pages
-- Examples: `const session = await requirePermission("observation:read")`
-- Pattern: Call at top of page server component; redirects if unauthorized
-- Why: DRY; avoids repeating auth checks across pages
-
-**DAL Function Pattern (5-step canonical form):**
-
-- Purpose: Standardized data access with built-in security checks
-- Examples: All functions in `src/data-access/*.ts`
-- Pattern:
-  1. Accept session parameter
-  2. Extract tenantId from session
-  3. Call prismaForTenant(tenantId)
-  4. Add WHERE tenantId = ? (explicit belt-and-suspenders)
-  5. Return typed result
-- Why: Reduces attack surface for tenant isolation bugs; makes audit easier
-
-**Server Action Pattern (6-step canonical form):**
-
-- Purpose: Standardized mutation with auth, validation, audit, cache revalidation
-- Examples: All files in `src/actions/*`
-- Pattern:
-  1. "use server" directive
-  2. getRequiredSession() + extract roles, tenantId
-  3. hasPermission() check → return error if unauthorized
-  4. Zod validation → return error if invalid
-  5. prismaForTenant() + $transaction + audit context
-  6. revalidatePath() + return { success, data?, error? }
-- Why: Consistent error handling; audit trail; cache invalidation; permission enforcement
-
-**Role-Based Navigation (AppSidebar):**
-
-- Purpose: Show/hide menu items based on user roles
-- Examples: `src/components/layout/app-sidebar.tsx` filters nav items
-- Pattern: Pass user roles to component; filter nav items via permission check
-- Why: UX; prevents confusion of missing pages
+**Report Generation Pipeline:**
+- Purpose: Multi-format export (XLSX, PDF) with dynamic data aggregation
+- Examples: `src/lib/excel-export.ts`, `src/components/pdf-report/`, `src/data-access/reports.ts`
+- Pattern: Collect observations/compliance data via DAL → format via ExcelJS or React PDF → stream to client
+- Formats: Board Report (PDF), Audit Plan (XLSX), Compliance Tracker (XLSX), Gap Analysis (XLSX)
 
 ## Entry Points
 
-**Web (HTTP/HTTPS):**
+**Web Page (Server Component):**
+- Location: `src/app/(dashboard)/[route]/page.tsx` (52 routes)
+- Triggers: HTTP GET requests from authenticated users
+- Responsibilities: Call `getRequiredSession()`, pre-fetch data via DAL, render components with SSR data
 
-- Location: `src/app/page.tsx` → redirects to `/login`
-- Triggers: User visits https://aegis.nexlyadvisory.com
-- Responsibilities: Redirect to login page
+**Server Action:**
+- Location: `src/actions/[domain]/[action].ts` (81 files)
+- Triggers: Form submission (POST via `<form action={serverAction}>`) or client-side mutation call
+- Responsibilities: Validate input, check permissions, execute mutation, revalidate cache, return result
 
-**Login Page:**
+**API Route:**
+- Location: `src/app/api/[endpoint]/route.ts` (health, auth, exports, reports, downloads, cron jobs)
+- Triggers: HTTP GET/POST from external systems or UI
+- Responsibilities: Parse request, validate, call DAL/services, return JSON response
 
-- Location: `src/app/(auth)/login/page.tsx`
-- Triggers: User navigates to /login (or redirected by middleware)
-- Responsibilities: Render login form; call Better Auth `/api/auth/sign-in` on submit
+**Background Job:**
+- Location: `src/jobs/[job].ts`
+- Triggers: Cron schedule (registered in `src/jobs/index.ts`) or manual enqueue via `enqueueJob()`
+- Responsibilities: Fetch data, compute results, send emails, update records
 
-**Dashboard (Authenticated):**
-
-- Location: `src/app/(dashboard)/layout.tsx` (parent) → `src/app/(dashboard)/dashboard/page.tsx` (actual page)
-- Triggers: User logs in successfully
-- Responsibilities: Validate session, render sidebar + top bar + children
-
-**API Routes:**
-
-- Location: `src/app/api/**/*.ts` (health, auth, exports, reports, cron, dashboard)
-- Triggers: HTTP requests to /api/...
-- Responsibilities: Health checks, auth endpoints (proxied to Better Auth), data exports, report generation, cron tasks
-
-**Background Jobs:**
-
-- Location: `src/instrumentation.ts` → `src/jobs/index.ts` (job registration)
-- Triggers: Server startup or explicit job enqueue
-- Responsibilities: Process notifications, send digests, escalate findings, snapshot metrics
+**Middleware:**
+- Location: `src/middleware.ts` (edge runtime)
+- Triggers: Every HTTP request (except static files)
+- Responsibilities: Check session cookie, redirect to /login if missing
 
 ## Error Handling
 
-**Strategy:** Try-catch at boundary; log error; return structured result; never throw to client.
+**Strategy:** Three-tier error catching (middleware → layout → server action/API)
 
 **Patterns:**
 
-**Server Actions (Successful)::**
+1. **Middleware (Edge)** — Cookie-based session check (lightweight, no errors thrown)
+   - Missing cookie → redirect to /login
+   - No exception handling needed (edge runtime constraints)
 
-```typescript
-return {
-  success: true as const,
-  data: {
-    /* result */
-  },
-};
-```
+2. **Layout (Server Component)** — Full session validation + setup check
+   - `getRequiredSession()` throws via `redirect("/login")` if no session
+   - Missing tenantId or roles → render "Account Setup Required" message (not 500 error)
+   - Suspense fallback → skeleton loading state while children pre-fetch data
 
-**Server Actions (Error - Validation)::**
+3. **Server Action / API Route** — Validation + permission checks
+   - Input validation via Zod `safeParse()` → return `{ success: false, error: string }`
+   - Permission check → return 403-like error object (no exception thrown)
+   - Database error → catch block logs + returns `{ success: false, error: "Something went wrong" }`
+   - Pattern: `try/catch` wraps `$transaction()`, logs error, returns safe error message to client
 
-```typescript
-const parsed = Schema.safeParse(input);
-if (!parsed.success) {
-  return {
-    success: false as const,
-    error: parsed.error.issues[0].message,
-  };
-}
-```
+4. **Client Component Error Boundary** — React Error Boundary for runtime errors
+   - Location: `src/components/` (not widely used, most components are server-rendered)
+   - Renders fallback UI if child component throws
 
-**Server Actions (Error - Permission/Auth)::**
-
-```typescript
-if (!hasPermission(userRoles, "permission:name")) {
-  return {
-    success: false as const,
-    error: "You do not have permission...",
-  };
-}
-```
-
-**Server Actions (Error - DB/Runtime)::**
-
-```typescript
-try {
-  const result = await db.thing.create({ data });
-  return { success: true as const, data: result };
-} catch (error) {
-  logger.error({ error }, "action_name failed");
-  return {
-    success: false as const,
-    error: "Failed to create thing. Try again.",
-  };
-}
-```
-
-**DAL Functions:** Return null/empty array on not found; throw on permission/auth errors; throw on constraint violations (let caller handle recovery).
-
-**Pages:** Use `requirePermission()` which redirects on failure; never try-catch at page level (let errors bubble to error boundary).
-
-**API Routes:** Return 401/403 for auth/permission errors; 400 for validation; 500 for runtime; always `NextResponse.json()`.
+**Examples:**
+- `src/actions/observations/create.ts` — schema validation, permission check, try/catch around transaction
+- `src/lib/auth.ts` — Better Auth handles auth errors (wrong password, rate limit, lockout)
+- `src/app/api/health/route.ts` — DB connection error returns 503, logs error
 
 ## Cross-Cutting Concerns
 
 **Logging:**
-
-- Framework: pino + pino-pretty (dev), plain JSON (prod)
-- Patterns: `logger.info()`, `logger.error()`, `logger.warn()` in actions, DAL, jobs
-- Files: `src/lib/logger.ts`
-- Context: Includes action, userId, tenantId, timestamps
+- Framework: pino + pino-pretty
+- Location: `src/lib/logger.ts`
+- Usage: `logger.info()`, `logger.error()`, `logger.warn()` called throughout DAL, server actions, jobs
+- Output: stdout (structured JSON in production, colorized in dev)
 
 **Validation:**
-
-- Framework: Zod v4 with @hookform/resolvers for react-hook-form
-- Patterns: Define Schema in `src/actions/domain/schemas.ts`; safeParse in action; return error if invalid
-- Files: `src/actions/*/schemas.ts` files
+- Framework: Zod v4
+- Location: `src/lib/validations/`, `src/actions/[domain]/schemas.ts` (action input schemas)
+- Pattern: `SafeParse()` in server actions + API routes; catch validation errors, return safe error messages
+- Example: `src/actions/observations/schemas.ts` defines `CreateObservationSchema`
 
 **Authentication:**
+- Framework: Better Auth with email/password + Prisma adapter
+- Location: `src/lib/auth.ts`, `src/lib/auth-lockout-plugin.ts`
+- Checks: Cookie validation in middleware, full session validation in layout, permission checks in server actions
+- Security: rate limiting (10 login attempts per 15min), account lockout (5 failures → 30min lock), concurrent session limit (max 2)
 
-- Framework: Better Auth (email/password, session cookies, bcrypt)
-- Patterns: Session sourced from cookies; validated via auth.api.getSession()
-- Security: No session in URL/query/body; middleware checks cookie presence (optimization); full validation in pages/actions
-- Files: `src/lib/auth.ts`, `src/data-access/session.ts`
+**Audit Tracking:**
+- Framework: Custom `AuditLog` model + `setAuditContext()` helper
+- Location: `src/data-access/audit-context.ts`
+- Pattern: Every server action wraps its transaction with `setAuditContext()` to record WHO, WHEN, WHAT
+- Usage: Enables audit trail page showing all observation status changes, report generation, etc.
 
-**Authorization:**
+**Internationalization:**
+- Framework: next-intl
+- Location: `src/i18n/`, `messages/` (en.json, hi.json, mr.json, gu.json)
+- Pattern: Server-side `getLocale()`, `getMessages()` in root layout; client components use `useTranslations()`
+- Support: English, Hindi, Marathi, Gujarati (for UCB audience)
 
-- Framework: Custom RBAC with 17 roles, 100+ permissions
-- Patterns: Multi-role union; permission check on pages via guards; permission check in actions via hasPermission()
-- Files: `src/lib/permissions.ts`, `src/lib/guards.ts`
+**Notifications:**
+- Framework: Custom `Notification` model + `NotificationService` + pg-boss job queue
+- Location: `src/lib/notification-service.ts`, `src/jobs/notification-processor.ts`
+- Pattern: Server action creates Notification record → job dequeues and sends email via AWS SES
+- Async: Decouples notification creation from email sending (prevents slow sends blocking user interactions)
 
-**Audit Trail:**
-
-- Framework: Prisma transaction with audit context injection
-- Patterns: Set context in action transaction; audit log rows created automatically
-- Files: `src/data-access/audit-context.ts` (setAuditContext helper)
-
-**Tenant Isolation:**
-
-- Framework: Application-level WHERE clauses (no PostgreSQL RLS)
-- Patterns: DAL functions always add WHERE tenantId = ?; tenantId from session only
-- Files: All `src/data-access/*.ts` files
-- Security: Validated UUID format; session-sourced tenantId
-
-**Cache Invalidation:**
-
-- Framework: Next.js revalidatePath(), revalidateTag()
-- Patterns: After mutation, call `revalidatePath("/findings")` to bust SSG cache
-- Files: Server actions, API routes
-
-**Internationalization (i18n):**
-
-- Framework: next-intl with 4 locales (en, hi, mr, gu)
-- Patterns: `getTranslations("Domain")` in server components; `useTranslations()` in client components
-- Files: `messages/{en,hi,mr,gu}.json` (domain-organized JSON)
+**File Storage:**
+- Service: AWS S3 (ap-south-1, Mumbai region)
+- Location: `src/lib/s3-client.ts` (wrapper around AWS SDK)
+- Usage: Observations can attach evidence files; signed URLs for download
+- Env vars: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`
 
 ---
 
-_Architecture analysis: 2026-02-21_
+*Architecture analysis: 2026-02-21*

@@ -16,8 +16,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 ## 🚧 Active Milestone: v4.0 Platform Hardening
 
 **Goal:** Make AEGIS production-resilient before real UCBs load their data — automated backups, security headers, tested CI pipeline, monitoring, and performance baseline.
-**Status:** Phase 4 complete, Phase 5 next
-**Progress:** [████████░░] 80%
+**Status:** Complete
+**Progress:** [██████████] 100%
 
 ### Phase 1: Backup & Disaster Recovery
 
@@ -99,18 +99,19 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 **Goal:** Establish performance baseline and optimize for production load
 **Depends on:** Phase 3 (needs working test suite for regression)
 **Research:** Unlikely (standard Next.js optimization)
+**Status:** Complete (2026-02-21)
 
 **Scope:**
 
 - Bundle analysis with @next/bundle-analyzer
-- PM2 cluster mode for multi-core utilization
-- API response caching strategy
-- Load testing with baseline metrics
+- Performance baseline documentation
+- Optimization recommendations
+
+**Scope adjusted:** PM2 clustering dropped (Docker deployment), API caching deferred (premature for pilot), load testing deferred (< 50 users).
 
 **Plans:**
 
-- [ ] 05-01: Bundle analysis + PM2 clustering + caching
-- [ ] 05-02: Load testing + performance baseline documentation
+- [x] 05-01: Bundle analysis + performance baseline documentation (completed 2026-02-21)
 
 ## ✅ Completed Milestones
 

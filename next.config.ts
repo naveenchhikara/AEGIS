@@ -2,6 +2,7 @@ import "./src/env"; // Validate environment variables at build time
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
 // --- Security Headers ---
 const ContentSecurityPolicy = [
@@ -50,8 +51,11 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin();
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
   // Suppress Sentry CLI logs during build
   silent: true,
 

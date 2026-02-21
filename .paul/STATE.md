@@ -5,20 +5,20 @@
 See: .paul/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** v4.0 Platform Hardening — Phase 4 Complete, Phase 5 next
+**Current focus:** v4.0 Platform Hardening — COMPLETE
 
 ## Current Position
 
-Milestone: v4.0 Platform Hardening
-Phase: 4 of 5 (Monitoring & Observability) — Complete
-Plan: 04-02 complete, Phase 4 done
-Status: Loop closed for 04-02, ready for Phase 5
-Last activity: 2026-02-21 — Unified .paul/phases/04-monitoring-observability/04-02-PLAN.md
+Milestone: v4.0 Platform Hardening — COMPLETE
+Phase: 5 of 5 (Performance Baseline) — Complete
+Plan: 05-01 complete, Phase 5 done
+Status: All 5 phases complete. Milestone ready for closure.
+Last activity: 2026-02-21 — Unified .paul/phases/05-performance-baseline/05-01-PLAN.md
 
 Progress:
 
-- Milestone: [████████░░] 80%
-- Phase 4: [██████████] 100%
+- Milestone: [██████████] 100%
+- Phase 5: [██████████] 100%
 
 ## Loop Position
 
@@ -26,7 +26,7 @@ Current loop state:
 
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ✓     [Loop complete — ready for next PLAN]
+  ✓        ✓        ✓     [Loop complete — milestone complete]
 ```
 
 ## Accumulated Context
@@ -47,28 +47,26 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Low Sentry sample rate (0.1)                  | Phase 4 | Stay within free tier limits                |
 | Three-tier health status (ok/degraded/error)  | Phase 4 | Docker only restarts on critical failure    |
 | External uptime monitoring deferred           | Phase 4 | User will configure separately              |
-
-### Skill Audit (Plan 04-02)
-
-| Expected           | Invoked | Notes                                                    |
-| ------------------ | ------- | -------------------------------------------------------- |
-| /monitoring-expert | ○       | Knowledge applied inline, not loaded as separate command |
-| /devops-engineer   | ○       | Docker config reviewed inline, no CI/CD changes needed   |
+| Bundle analyzer dev-only (ANALYZE=true)       | Phase 5 | No production build impact                  |
+| PM2 clustering dropped                        | Phase 5 | Docker standalone, not PM2                  |
+| API caching deferred                          | Phase 5 | Premature for pilot (< 50 users)            |
 
 ### Deferred Issues
 
 - External uptime monitoring — user chose to skip, will configure later
+- recharts lazy loading (~1 MB savings) — optimization opportunity from baseline
+- Webpack async params type error — pre-existing, Turbopack handles correctly
 
 ### Blockers/Concerns
 
-- Pre-existing ESLint config issue (react plugin not found) — not introduced by Phase 4
+- Pre-existing ESLint config issue (react plugin not found) — not introduced by v4.0
 
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Plan 04-02 unified, Phase 4 complete
-Next action: /paul:plan for Phase 5 Plan 05-01 (Bundle analysis + PM2 clustering + caching)
-Resume file: .paul/phases/04-monitoring-observability/04-02-SUMMARY.md
+Stopped at: v4.0 Platform Hardening milestone complete
+Next action: /paul:complete-milestone or plan next milestone
+Resume file: .paul/phases/05-performance-baseline/05-01-SUMMARY.md
 
 ---
 

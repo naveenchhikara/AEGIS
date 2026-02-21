@@ -1,0 +1,227 @@
+test_id,description,status,evidence,reason
+T001,"Navigate to `/login`, verify page renders (form fields, branding, RBI badge)",PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T002,Login with CEO credentials → redirects to `/dashboard`,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T003,"Login with invalid password → shows error message, no redirect",PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T004,Login with non-existent email → shows generic error (no user enumeration),PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T005,Attempt 6 rapid logins with wrong password → account lockout message after 5th attempt,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T006,"Verify session cookie is set (`better-auth.session_token` in dev, `__Secure-*` in prod)",PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T007,Access `/dashboard` without login → redirects to `/login`,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T008,"Click logout → session cleared, redirected to `/login`",PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T009,"After logout, back-button doesn't access protected pages",PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T010,API call `GET /api/auth/session` returns valid session data when logged in,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T011,Admin invites new user → invitation record created in DB,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T012,Accept invitation via `/accept-invite?token=...` → password setup form shown,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T013,Set password on invitation → user can login with new credentials,PARTIAL,"Playwright setup run (4 pass, 1 fail CCO); unit/e2e logs in reports/test-validation/","Auth setup automation executed, but test cases not 1:1 mapped to TID scenarios."
+T014,"CEO sees all KPI widgets (compliance score, audit coverage, risk heat, pending items)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T015,"Auditor sees auditor-scoped widgets (assigned audits, pending observations)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T016,"Auditee sees auditee-scoped widgets (pending responses, overdue items)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T017,"All chart components render without errors (no NaN, no blank charts)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T018,Widget data matches database state (spot-check 2-3 numbers),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T019,"All 7 tabs load: Branch Risk, Audit Plans, Compliance, Findings, NPA, Controls, Risk MIS",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T020,Branch Risk tab shows risk heatmap with RAM data (R42),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T021,Compliance tab shows aging analysis chart (R44),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T022,Findings tab shows trend analysis across periods (R45),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T023,NPA tab shows waterfall chart (R46),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T024,Controls tab shows effectiveness analytics (R58),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T025,CAE can access audit trail page,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T026,"Shows recent DB operations (table, user, action, timestamp)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T027,Filter by table/user/action/date range works,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T028,Non-CAE users cannot access (permission denied),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T029,RAM list page shows all assessments with status badges (DRAFT/COMPUTED/APPROVED),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T030,Create new RAM assessment for a branch → status DRAFT,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T031,Score all 19 parameters → save scores (incremental),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T032,"Compute assessment → composite score calculated, status → COMPUTED",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T033,"Frequency derived correctly: >3.5→12mo, 2.5-3.5→18mo, <2.5→24mo (R8)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T034,Approve assessment (different user than computer) → status → APPROVED (maker-checker),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T035,Same user cannot both compute and approve (maker-checker enforced),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T036,Generate annual plan in preview mode → shows schedule without DB write,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T037,Commit annual plan → AuditPlan + engagements created from RAM scores (R9),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T038,What-if simulator: override RAM scores → see changed frequencies/priorities (R53),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T039,Surprise audit scheduler: schedule unannounced audit → audit number SA/YY/branch/### (R71),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T040,Existing plans table shows all committed plans with engagement count,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T041,"Create engagement → form with branch, audit type, period, audit areas",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T042,"Engagement overview page shows header, section tabs, team panel",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T043,Assign team member → user appears in team panel (R13),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T044,Remove team member → removed from panel,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T045,Refresh work program button visible with `work_program:execute` permission (R57),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T046,Click refresh work program → generates/updates work items,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T047,Section page shows examination items for selected area,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T048,Submit examination response (compliant/non-compliant/partial/NA) with observation,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T049,Non-compliant response auto-creates observation in DRAFT (R17),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T050,Update section status (NOT_STARTED → IN_PROGRESS → COMPLETED),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T051,Evidence upload: request presigned URL → upload file → confirm → file listed,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T052,"Cash verification form: cash-in-hand, book balance, retention limit",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T053,Difference auto-calculated (cash - book),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T054,Retention exceeded flag triggers when cash > limit,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T055,Denomination capture works (JSONB data),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T056,Create loan review record manually → saved,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T057,Bulk import via CSV → records created (R25),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T058,Edit/delete loan review records,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T059,"Save SMA/NPA entries by category (SMA-0, SMA-1, SMA-2, NPA)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T060,Upsert works (re-save same category updates existing),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T061,Branch head signs certificate → status SIGNED (R26),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T062,Senior manager countersigns → status COUNTERSIGNED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T063,Certificate status readable by authorized users,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T064,Report page shows current status (DRAFT/REVIEWED/APPROVED/ISSUED),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T065,Transition report: DRAFT → REVIEWED → APPROVED → ISSUED (R33),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T066,Risk rating computed from observation scores (R31),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T067,Rating bands applied: Poor/Moderate/Satisfactory/Good/Very Good (R32),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T068,Severity summary cards show correct counts (Critical/High/Medium/Low),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T069,Table lists all observations with filtering by status/severity/branch,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T070,Export to XLSX downloads file with color-coded severity,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T071,Create observation with 5C fields → saved in DRAFT state,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T072,Branch and audit area selectors populated from tenant data,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T073,Repeat finding detection: similar title triggers pg_trgm match (R40),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T074,Confirm repeat → links to historical finding,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T075,Dismiss repeat suggestion → proceeds as new finding,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T076,Detail view shows full observation with timeline,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T077,State transitions work per role: DRAFT → SUBMITTED → ISSUED → RESPONSE_DUE → CLOSED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T078,Maker-checker: creator cannot approve own observation,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T079,Notification queued when observation ISSUED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T080,Auditee sees pending observations assigned to their branch,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T081,Submit response with text + evidence → status updates,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T082,Evidence upload via S3 presigned URL works for auditee,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T083,"Status summary cards (Pending, In Progress, Overdue, Closed)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T084,Create compliance items from observations,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T085,Branch response submission within 30-day SLA (R35),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T086,Zonal auditor reviews branch response → APPROVED/REJECTED/REQUEST_INFO (R36),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T087,Rejected items return to branch for re-response,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T088,ACE officer sees L3+ escalated items (R37),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T089,Process quarterly ACE cycle → items marked ACE_REVIEWED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T090,Review individual compliance items at ACE level,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T091,Generate ACB report → consolidates L4+ and ACE-reviewed items (R38),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T092,Board view shows aggregated compliance metrics,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T093,Escalation levels compute correctly: L1(+15d) → L2(+30d) → L3(+90d) → L4(+180d) (R39),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T094,`POST /api/cron/escalation` with valid CRON_SECRET triggers escalation,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T095,Invalid CRON_SECRET returns 401,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T096,Risk register tab shows all risks with inherent/residual scores,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T097,Create risk entry → residualScore auto-computed,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T098,KRI dashboard shows current values vs thresholds (NORMAL/WARNING/BREACH) (R51),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T099,Risk-audit linkage tab shows thematic mappings (R52),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T100,Create risk-audit linkage with thematic area (CREDIT/OPS/COMPLIANCE/IT/GOVERNANCE),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T101,Controls list shows all controls with framework mapping,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T102,Create control with test procedures,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T103,Control detail page shows effectiveness rating and test history,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T104,Test procedures linked to controls with pass criteria,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T105,"Manage audit universe entities (branch, department, process, channel, vendor) (R69)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T106,Delete entity blocked if linked to risk register,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T107,Create issue from multiple sources (internal/regulatory/external/self-assessment) (R59),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T108,"Issue fields: severity, root cause, risk theme, linked controls (R60)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T109,Close issue → blocked if open action plans exist,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T110,Accept risk with management sign-off (R62),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T111,Create action plan with milestones for an issue (R61),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T112,Track progress 0-100% → auto-status IN_PROGRESS/COMPLETED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T113,Add evidence to action plan,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T114,Overdue detection: past due_date → OVERDUE status,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T115,Consolidated view: aggregation by source/severity/theme (R63),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T116,"Shows overdue actions, QA gaps, KRI breaches",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T117,QA self-assessment questionnaires mapped to IIA Standards (R64),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T118,Gap-to-issue conversion from QA findings (R65),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T119,Bulk gap-to-issue conversion,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T120,Effectiveness KPIs tab shows 10+ audit metrics (R66),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T121,Audit Health Dashboard renders all health indicators (R67),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T122,Work program shows items per engagement with assignment,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T123,Auto-generate work program from engagement + control library (R57),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T124,Execute work item → record test result + findings,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T125,Assign work item to specific auditor,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T126,Completion updates ControlLibrary.effectivenessScore (R58),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T127,Policies tab: create/update/delete policy with versioning (R84),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T128,"Committees tab: create committee, add/remove members, schedule meetings (R85)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T129,ACB Workspace tab: consolidated dashboards for board members (R81),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T130,Agenda Builder tab: auto-generate quarterly ACB agenda pack (R82),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T131,Board Calendar tab: RBI-mandated items on calendar (R83),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T132,RBI Pack tab: one-click inspection support pack generation (R86),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T133,Create regulatory observation with RBI reference/para number (R77),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T134,ATR workflow: DRAFT → SUBMITTED → ACCEPTED/FURTHER_INFO (R78),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T135,Para-to-issue mapping for internal tracking (R79),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T136,Unified calendar view: RBIA + concurrent + IS/EDP + statutory (R70),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T137,Create/update/delete calendar events with periodicity,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T138,Fiscal year boundary (April 1 - March 31) works correctly,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T139,"Metrics capture: inter-branch, suspense, clearing account balances (R80)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T140,"Risk MIS dashboard shows CRAR, asset quality, liquidity, investment metrics (R87)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T141,"Inter-bank exposure monitoring: 20% total cap, 5% per-bank cap (R88)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T142,"Scope templates tab: create/update/delete templates (cash, investments, etc.) (R73)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T143,Rapid entry tab: batch create observations quickly (R74),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T144,De-dup tab: shows potential duplicates with RBIA findings (R76),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T145,"""Link to RBIA"" button sets repeatOfId on concurrent finding",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T146,"""Mark Unique"" button confirms finding is new",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T147,Escalation tab: serious irregularity auto-routing (R75),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T148,Application Inventory tab: manage IT app records (R98),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T149,"Audit Checklists tab: CBS, channels, access, BCP/DR, vendor, change mgmt (R99)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T150,Vendor Risk tab: SLA compliance tracking (R100),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T151,"CBS Parameters tab: interest rates, product masters, privileges (R101)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T152,Cyber Security tab: 122 questionnaires / 25 baseline controls (R103),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T153,Cyber Security: file upload for evidence (S3 presigned URL),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T154,Evidence & Gaps tab: CSV export and XLSX export buttons (R104),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T155,"XLSX gap analysis download → 3 sheets (Gap Summary, Detail, Remediation)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T156,Portfolio tab: view/manage investment records,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T157,SGL/CSGL Reconciliation tab: reconciliation tracking (R93),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T158,Broker Analytics tab: 5% cap per broker enforcement (R94),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T159,Non-SLR Cap tab: 10% of deposits monitoring (R95),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T160,Classification tab: HTM/HFT/AFS audit checklist (R96),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T161,Quarterly Certification tab: submit certification → ACB notified (R97),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T162,Verify ACB members receive notification after certification,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T163,Report generation page loads with template options,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T164,Generate XLSX multi-tab report → download works (R29),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T165,Generate PDF summary report → download works (R30),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T166,Report history shows previously generated reports with re-download,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T167,`GET /api/exports/findings` → XLSX with severity coloring,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T168,`GET /api/exports/compliance` → XLSX with compliance data,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T169,`GET /api/exports/audit-plans` → XLSX with plan/engagement data,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T170,`GET /api/reports/gap-analysis` → 3-sheet XLSX,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T171,"`POST /api/reports/board-report` → PDF generated, stored in S3",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T172,`GET /api/reports/board-report?id=...` → presigned download URL,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T173,CEO can access all exports,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T174,Auditor sees only own findings in export,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T175,Auditee sees only assigned observations in export,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T176,Unauthorized role gets 403 on restricted exports,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T177,List all users with roles and status,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T178,Invite new user → email invitation sent (or console-logged),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T179,Update user roles (no self-role-change enforced),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T180,Resend/revoke pending invitation,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T181,Multi-role assignment works (user gets union of permissions),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T182,"List branches with zone, category, business size",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T183,"Update branch profile (zone, staff strength, audit frequency)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T184,Create/update zone,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T185,Delete zone blocked if branches are linked,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T186,Create report template with versioning,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T187,Deactivate template → previous version deactivated,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T188,View 19 RAM parameters with weights and max scores,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T189,Parameters show active/inactive status,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T190,"Update tenant settings (name, registration, RBI circle)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T191,Notification preferences page loads and saves,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T192,Compliance config page loads and saves,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T193,"`GET /api/health` → `{""status"":""ok"",""db"":""connected""}`",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T194,`POST /api/auth/sign-in/email` → 200 with session token,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T195,`POST /api/auth/sign-in/email` with wrong password → error response,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T196,`GET /api/auth/session` with valid cookie → session data,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T197,`GET /api/dashboard?widgets=compliance-score` → widget data JSON,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T198,`GET /api/dashboard` without widgets → empty object,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T199,`GET /api/download?key=valid-key` → 302 redirect to S3,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T200,`GET /api/download?key=../etc/passwd` → 400 (path traversal blocked),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T201,`GET /api/download` without key → 400,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T202,`POST /api/cron/escalation` with valid secret → 200 with summary,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T203,`POST /api/cron/escalation` without secret → 401,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T204,User from Tenant A cannot see Tenant B data (spot-check 3 pages),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T205,All DAL queries include `WHERE tenantId = ?` (code review),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T206,Session tenantId used (never from URL/body),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T207,Each of 6 test roles can access their permitted pages,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T208,Each of 6 test roles is blocked from unauthorized pages (403 or redirect),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T209,Multi-role user gets union of permissions from all roles,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T210,Switch language to Hindi → UI labels change,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T211,Switch language to Marathi → UI labels change,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T212,Switch language to Gujarati → UI labels change,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T213,Date formatting uses Indian locale (en-IN),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T214,Notification queued on observation ISSUED,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T215,ACB notification queued on investment certification (R97),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T216,Notification preferences respected (opt-out works),NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T217,Create/update/delete operations logged in audit trail,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T218,"Audit trail includes userId, action, table, timestamp",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T219,"Sensitive operations (role change, approval) captured",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T220,Invalid form submission shows field-level validation errors,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T221,Server action failure shows toast error message,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T222,404 page renders for non-existent routes,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T223,"API endpoints return proper HTTP status codes (400, 401, 403, 500)",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T224,Create observation with similar title to closed finding → repeat candidates shown,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T225,"Confirm as repeat → linked to original, 1.5x multiplier flagged",NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.
+T226,Next RAM computation applies 1.5x uplift for branches with repeat findings,NOT_EXECUTED,,Pending exact TID-mapped execution and evidence capture.

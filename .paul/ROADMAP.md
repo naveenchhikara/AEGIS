@@ -16,8 +16,8 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 ## 🚧 Active Milestone: v4.0 Platform Hardening
 
 **Goal:** Make AEGIS production-resilient before real UCBs load their data — automated backups, security headers, tested CI pipeline, monitoring, and performance baseline.
-**Status:** Phase 3 of 5
-**Progress:** [████░░░░░░] 40%
+**Status:** Phase 4 of 5
+**Progress:** [██████░░░░] 60%
 
 ### Phase 1: Backup & Disaster Recovery
 
@@ -72,7 +72,7 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 **Plans:**
 
 - [x] 03-01: Unit test coverage + Vitest in CI + coverage reporting (completed 2026-02-21)
-- [ ] 03-02: Fix E2E tests and enable in CI
+- [x] 03-02: E2E test infrastructure in CI — advisory mode (completed 2026-02-21)
 
 ### Phase 4: Monitoring & Observability
 

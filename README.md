@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 99/104 requirements complete across 18 modules. 600 source files, 63 DB models, 434 commits.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 104/104 requirements complete across 18 modules. 600 source files, 63 DB models, 434 commits.
 
 ## Key Features
 

@@ -2,26 +2,77 @@
 
 ## Overview
 
-AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a complete 104-requirement RBIAS platform (v3.0) in 15 days. v4.0 hardened the production deployment with automated backups, security headers, test suite, monitoring, and performance baseline. The platform is now ready for pilot UCB onboarding.
+AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a complete 104-requirement RBIAS platform (v3.0) in 15 days. v4.0 hardened the production deployment with automated backups, security headers, test suite, monitoring, and performance baseline. v5.0 focuses on making the full audit process flow work end-to-end for pilot launch with real UCBs.
 
 ## Milestones
 
-| Version | Name                | Phases     | Status     | Completed  |
-| ------- | ------------------- | ---------- | ---------- | ---------- |
-| v1.0    | Clickable Prototype | 1-4        | ✅ Shipped | 2026-02-08 |
-| v2.0    | Working Core MVP    | 5-14       | ✅ Shipped | 2026-02-10 |
-| v3.0    | RBIAS Full Platform | 1-6, 15-17 | ✅ Shipped | 2026-02-21 |
-| v4.0    | Platform Hardening  | 1-5        | ✅ Shipped | 2026-02-21 |
+| Version | Name                | Phases | Status         | Completed  |
+| ------- | ------------------- | ------ | -------------- | ---------- |
+| v1.0    | Clickable Prototype | 1-4    | ✅ Shipped     | 2026-02-08 |
+| v2.0    | Working Core MVP    | 5-14   | ✅ Shipped     | 2026-02-10 |
+| v3.0    | RBIAS Full Platform | 15-17  | ✅ Shipped     | 2026-02-21 |
+| v4.0    | Platform Hardening  | 1-5    | ✅ Shipped     | 2026-02-21 |
+| v5.0    | Pilot Readiness     | 1-3    | 🚧 In Progress | -          |
 
-## Next Milestone
+## 🚧 Active Milestone: v5.0 Pilot Readiness
 
-To be defined. Run `/paul:milestone` to plan the next version.
+**Goal:** Launch the product with a functioning audit process flow — test end-to-end, fix issues, and polish for demo.
+**Status:** Not started
+**Progress:** [░░░░░░░░░░] 0%
 
-Candidates:
+### Phase 1: End-to-End Audit Flow Testing
 
-- Pilot deployment with real UCBs
-- User acceptance testing with actual bank staff
-- Iterative improvements based on pilot feedback
+**Goal:** Walk through the complete audit lifecycle (RAM → Planning → Execution → Findings → Compliance → Board Report) and identify all blockers, broken flows, and missing connections
+**Depends on:** Nothing (first phase)
+**Research:** Likely (need to map current state of each flow step)
+**Status:** Complete (2026-02-21) — 23 issues documented
+
+**Scope:**
+
+- Test RAM risk assessment scoring and audit plan generation
+- Test audit execution workflow with section examination
+- Test observation creation through 7-state lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed)
+- Test compliance tracking (ACE/ACB) and branch response flow
+- Test report generation (PDF/XLSX) from audit data
+- Document all bugs, broken flows, and UX issues found
+
+**Output:** `.paul/phases/01-e2e-audit-flow/ISSUES.md` — 23 issues (3 P0, 7 P1, 8 P2, 5 P3)
+
+**Plans:**
+
+- [x] 01-01: Navigation + data flow audit + ISSUES.md (completed 2026-02-21)
+
+### Phase 2: Bug Fixes
+
+**Goal:** Fix all blockers and critical issues discovered during Phase 1 testing
+**Depends on:** Phase 1 (needs bug list from testing)
+**Research:** Unlikely (fixes based on specific findings)
+
+**Scope:**
+
+- Fix broken navigation and data flow issues
+- Fix state machine transition errors
+- Fix data display and calculation bugs
+- Fix permission/access issues in audit workflow
+- Ensure all 7 observation states transition correctly
+
+**Plans:** TBD (defined during /paul:plan, scoped by Phase 1 findings)
+
+### Phase 3: Demo-Ready Polish
+
+**Goal:** Polish the UI/UX and ensure the product is presentable for pilot bank demos
+**Depends on:** Phase 2 (needs working flows first)
+**Research:** Unlikely (visual/UX improvements)
+
+**Scope:**
+
+- Dashboard KPI accuracy and visual polish
+- Empty states, loading states, error messages
+- Navigation flow and breadcrumb consistency
+- Demo script preparation (golden path walkthrough)
+- Final smoke test of complete audit lifecycle
+
+**Plans:** TBD (defined during /paul:plan)
 
 ## ✅ Completed Milestones
 

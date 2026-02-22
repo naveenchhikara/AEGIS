@@ -188,7 +188,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: "Admin",
-    href: "/admin/users",
+    href: "/admin",
     icon: Users,
     tKey: "admin",
     requiredPermission: "admin:manage_users",

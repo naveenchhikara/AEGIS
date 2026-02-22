@@ -149,8 +149,9 @@ export async function transitionObservation(input: TransitionObservationInput) {
     revalidatePath("/findings");
     revalidatePath(`/findings/${validated.observationId}`);
 
-    // Queue notification when observation is issued (NOTF-01)
+    // Side effects when observation is issued
     if (targetStatus === "ISSUED") {
+      // Queue notification (NOTF-01)
       try {
         const obs = await db.observation.findFirst({
           where: { id: validated.observationId, tenantId },
@@ -160,6 +161,8 @@ export async function transitionObservation(input: TransitionObservationInput) {
             assignedToId: true,
             dueDate: true,
             condition: true,
+            branchId: true,
+            engagementId: true,
             branch: { select: { name: true } },
           },
         });
@@ -177,15 +180,49 @@ export async function transitionObservation(input: TransitionObservationInput) {
             },
           });
         }
+
+        // Auto-create ComplianceItem (ISS-004 / R35)
+        if (obs) {
+          const existingItem = await db.complianceItem.findFirst({
+            where: { observationId: validated.observationId, tenantId },
+            select: { id: true },
+          });
+
+          if (!existingItem) {
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30);
+
+            await db.complianceItem.create({
+              data: {
+                tenantId,
+                observationId: validated.observationId,
+                branchId: obs.branchId,
+                auditId: obs.engagementId,
+                status: "OPEN",
+                dueDate,
+                escalationLevel: 0,
+                daysOpen: 0,
+              },
+            });
+
+            logger.info(
+              {
+                observationId: validated.observationId,
+                action: "auto_create_compliance_item",
+              },
+              "ComplianceItem auto-created on ISSUED transition",
+            );
+          }
+        }
       } catch (e) {
         // Non-blocking: log but don't fail the transition
         logger.error(
           {
             error: e,
-            action: "queue_assignment_notification",
+            action: "issued_side_effects",
             observationId: validated.observationId,
           },
-          "Failed to queue assignment notification",
+          "Failed to complete ISSUED side effects (notification or compliance item)",
         );
       }
     }

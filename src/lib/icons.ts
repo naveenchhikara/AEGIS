@@ -85,4 +85,5 @@ export {
   CheckCircle,
   Pencil as Edit,
   Repeat2,
+  Play,
 } from "lucide-react";

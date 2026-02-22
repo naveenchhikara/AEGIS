@@ -215,3 +215,15 @@ export const SaveSmaNpaEntriesSchema = z.object({
 });
 
 export type SaveSmaNpaEntriesInput = z.infer<typeof SaveSmaNpaEntriesSchema>;
+
+// ─── Engagement Status Transition (ISS-005) ─────────────────
+export const UpdateEngagementStatusSchema = z.object({
+  engagementId: z.string().uuid("Invalid engagement ID"),
+  targetStatus: z.enum(["IN_PROGRESS", "COMPLETED", "CANCELLED"], {
+    message: "Target status must be IN_PROGRESS, COMPLETED, or CANCELLED",
+  }),
+});
+
+export type UpdateEngagementStatusInput = z.infer<
+  typeof UpdateEngagementStatusSchema
+>;

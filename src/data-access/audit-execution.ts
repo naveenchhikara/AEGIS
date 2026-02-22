@@ -3,6 +3,65 @@ import { prismaForTenant } from "./prisma";
 import type { AuthSession as Session } from "@/lib/auth";
 
 /**
+ * Get all engagements for the current tenant.
+ */
+export async function getEngagements(session: Session) {
+  const tenantId = session.user.tenantId;
+  const db = prismaForTenant(tenantId);
+
+  return db.auditEngagement.findMany({
+    where: { tenantId },
+    include: {
+      branch: { select: { id: true, name: true, code: true, city: true } },
+      auditPlan: { select: { id: true, year: true, quarter: true } },
+      auditArea: { select: { id: true, name: true } },
+      teamMembers: {
+        include: {
+          user: { select: { id: true, name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Get engagement summary counts by status for the current tenant.
+ */
+export async function getEngagementSummary(session: Session) {
+  const tenantId = session.user.tenantId;
+  const db = prismaForTenant(tenantId);
+
+  const engagements = await db.auditEngagement.groupBy({
+    by: ["status"],
+    where: { tenantId },
+    _count: { id: true },
+  });
+
+  const summary = {
+    PLANNED: 0,
+    IN_PROGRESS: 0,
+    COMPLETED: 0,
+    CANCELLED: 0,
+  };
+
+  for (const row of engagements) {
+    if (row.status in summary) {
+      summary[row.status as keyof typeof summary] = row._count.id;
+    }
+  }
+
+  return {
+    ...summary,
+    total:
+      summary.PLANNED +
+      summary.IN_PROGRESS +
+      summary.COMPLETED +
+      summary.CANCELLED,
+  };
+}
+
+/**
  * Get engagement with team members, branch, and section instances.
  */
 export async function getEngagementWithTeam(

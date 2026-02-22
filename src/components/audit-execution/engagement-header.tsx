@@ -1,6 +1,19 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Calendar, Clock } from "@/lib/icons";
+import { Button } from "@/components/ui/button";
+import {
+  Building2,
+  Calendar,
+  Clock,
+  Play,
+  CheckCircle2,
+  XCircle,
+} from "@/lib/icons";
+import { updateEngagementStatus } from "@/actions/audit-execution/update-engagement-status";
 
 interface EngagementHeaderProps {
   engagement: {
@@ -28,6 +41,7 @@ interface EngagementHeaderProps {
       quarter: string | null;
     } | null;
   };
+  canManageStatus?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -35,6 +49,7 @@ const STATUS_COLORS: Record<string, string> = {
   PLANNED: "bg-blue-100 text-blue-800 border-blue-300",
   IN_PROGRESS: "bg-amber-100 text-amber-800 border-amber-300",
   COMPLETED: "bg-green-100 text-green-800 border-green-300",
+  CANCELLED: "bg-red-100 text-red-800 border-red-300",
   REVIEWED: "bg-purple-100 text-purple-800 border-purple-300",
 };
 
@@ -48,7 +63,31 @@ function formatDate(date: Date | string | null | undefined): string {
   });
 }
 
-export function EngagementHeader({ engagement }: EngagementHeaderProps) {
+export function EngagementHeader({
+  engagement,
+  canManageStatus,
+}: EngagementHeaderProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState<string | null>(null);
+
+  function handleTransition(
+    targetStatus: "IN_PROGRESS" | "COMPLETED" | "CANCELLED",
+  ) {
+    setError(null);
+    startTransition(async () => {
+      const result = await updateEngagementStatus({
+        engagementId: engagement.id,
+        targetStatus,
+      });
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -65,13 +104,63 @@ export function EngagementHeader({ engagement }: EngagementHeaderProps) {
                 {engagement.visitNumber ?? 1}
               </p>
             </div>
-            <Badge
-              variant="outline"
-              className={STATUS_COLORS[engagement.status] ?? ""}
-            >
-              {engagement.status.replace(/_/g, " ")}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={STATUS_COLORS[engagement.status] ?? ""}
+              >
+                {engagement.status.replace(/_/g, " ")}
+              </Badge>
+
+              {/* Status transition buttons */}
+              {canManageStatus && engagement.status === "PLANNED" && (
+                <Button
+                  size="sm"
+                  onClick={() => handleTransition("IN_PROGRESS")}
+                  disabled={isPending}
+                >
+                  <Play className="mr-1 h-3.5 w-3.5" />
+                  {isPending ? "Starting..." : "Start Audit"}
+                </Button>
+              )}
+              {canManageStatus && engagement.status === "IN_PROGRESS" && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={() => handleTransition("COMPLETED")}
+                    disabled={isPending}
+                  >
+                    <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                    {isPending ? "Completing..." : "Complete"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTransition("CANCELLED")}
+                    disabled={isPending}
+                  >
+                    <XCircle className="mr-1 h-3.5 w-3.5" />
+                    Cancel
+                  </Button>
+                </>
+              )}
+              {canManageStatus && engagement.status === "PLANNED" && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleTransition("CANCELLED")}
+                  disabled={isPending}
+                  className="text-muted-foreground"
+                >
+                  <XCircle className="mr-1 h-3.5 w-3.5" />
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Error message */}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           {/* Metadata grid */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

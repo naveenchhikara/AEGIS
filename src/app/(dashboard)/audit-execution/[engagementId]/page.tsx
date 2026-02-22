@@ -59,7 +59,10 @@ export default async function AuditExecutionPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <EngagementHeader engagement={engagement as any} />
+        <EngagementHeader
+          engagement={engagement as any}
+          canManageStatus={canManageTeam}
+        />
         {canRefreshWorkProgram && (
           <RefreshWorkProgramButton engagementId={engagementId} />
         )}

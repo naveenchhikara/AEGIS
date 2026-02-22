@@ -4,7 +4,56 @@ Completed milestone log for this project.
 
 | Milestone               | Completed  | Duration | Stats             |
 | ----------------------- | ---------- | -------- | ----------------- |
+| v5.0 Pilot Readiness    | 2026-02-22 | 2 days   | 3 phases, 8 plans |
 | v4.0 Platform Hardening | 2026-02-21 | 1 day    | 5 phases, 8 plans |
+
+---
+
+## v5.0 Pilot Readiness
+
+**Completed:** 2026-02-22
+**Duration:** 2 days (8 plans across 3 phases)
+
+### Stats
+
+| Metric        | Value |
+| ------------- | ----- |
+| Phases        | 3     |
+| Plans         | 8     |
+| Files changed | ~30   |
+| Issues found  | 23    |
+| Issues fixed  | 23    |
+
+### Key Accomplishments
+
+- **E2E Audit Flow Tested:** Complete audit lifecycle (RAM → Planning → Execution → Findings → Compliance → Board Report) tested with 23 issues documented
+- **All 23 Issues Resolved:** 3 P0 blockers, 7 P1 critical, 8 P2 moderate, 5 P3 minor — all fixed across 5 bug fix plans
+- **Missing Pages Created:** /audit-execution index page with status summary, /admin hub page with section cards
+- **Observation Lifecycle Wired:** ComplianceItem auto-creation on ISSUED transition, engagement status transitions (PLANNED → IN_PROGRESS → COMPLETED)
+- **Navigation CTAs Added:** RAM → Audit Planning, Plans → Engagements, Finding → Compliance, Compliance → Findings/Governance cross-links
+- **Dashboard NaN Fixed:** 24 fields across 5 functions hardened with null coalescing for PostgreSQL null aggregates
+- **Dashboard Widgets Cleaned:** Removed 3 broken trend widgets, wired CCO compliance widget to real data
+- **Infrastructure Added:** Loading skeleton, dashboard error boundary with Sentry, branded 404 page
+- **Layout Standardized:** ACE/ACB pages aligned to standard dashboard layout, sidebar icons differentiated
+- **Documentation Accurate:** CLAUDE.md Known Issues pruned from 5 to 3 genuine remaining items
+
+### Key Decisions
+
+| Decision                                     | Rationale                                                     |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| Discovery-only Phase 1 (no code changes)     | Clean separation of finding issues vs fixing them             |
+| ISS-002 compliance lifecycle is correct      | Reclassified as false positive — lifecycle actually works     |
+| Engagement transitions are manual            | PLANNED → IN_PROGRESS is user action, not automatic           |
+| Escalation level/status are independent      | Level = urgency, status = workflow position                   |
+| Remove broken widgets over placeholder cards | No historical data for trends; "coming soon" looks incomplete |
+| ShieldCheck for Risk Management sidebar      | Visual distinction from Compliance's Shield icon              |
+
+### Deferred Items
+
+- External uptime monitoring — user chose to skip
+- recharts lazy loading (~1 MB bundle savings)
+- SES sandbox mode — production email access pending
+- Trend chart widgets — need historical data snapshot system
 
 ---
 

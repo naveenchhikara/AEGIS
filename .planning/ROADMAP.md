@@ -55,15 +55,15 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 6. All client-server traffic uses TLS 1.2+ (HSTS header set, HTTP redirects to HTTPS), PostgreSQL connections use sslmode=require, S3 bucket has server-side encryption policy, and VPS data directory is encrypted at rest
 7. Tenant data isolation audit confirms no cross-tenant leakage — verified by running isolation check queries
 
-**Plans**: TBD
+**Plans**: 5 plans (all Wave 1 — fully parallel)
 
 Plans:
 
-- [ ] 18-01: `rbia-scoring-engine.ts` with unit tests (weighted roll-up, critical-item cap, rating band thresholds)
-- [ ] 18-02: `engagement-state-machine.ts` as typed Record + refactor `update-engagement-status.ts`
-- [ ] 18-03: DB guards — BranchRbiaScore immutability trigger + ExaminationNode path CHECK constraints applied via SQL migration
-- [ ] 18-04: TERM-01 — Rename "CAE" to "HIA" across all UI labels, i18n messages, and display strings
-- [ ] 18-05: Data encryption — TLS enforcement (HSTS), PostgreSQL SSL, S3 SSE policy, VPS disk encryption, tenant isolation audit
+- [ ] 18-01-PLAN.md — RBIA scoring engine TDD (weighted roll-up, critical-item cap, rating bands, composite score)
+- [ ] 18-02-PLAN.md — Engagement state machine TDD (8-state lifecycle, prerequisite guards, server action replacement)
+- [ ] 18-03-PLAN.md — DB guards SQL migration (BranchRbiaScore immutability trigger + ExaminationNode path CHECK)
+- [ ] 18-04-PLAN.md — TERM-01 CAE-to-HIA display string rename (5 source files + 1 test)
+- [ ] 18-05-PLAN.md — Data encryption audit (SECURITY-AUDIT.md, PostgreSQL SSL guidance, tenant isolation test)
 
 ### Phase 19: Data Access Layer
 
@@ -198,7 +198,7 @@ Plans:
 
 | Phase                         | Milestone | Plans Complete | Status      | Completed |
 | ----------------------------- | --------- | -------------- | ----------- | --------- |
-| 18. Foundation                | v6.0      | 0/5            | Not started | -         |
+| 18. Foundation                | v6.0      | 0/5            | Planned     | -         |
 | 19. Data Access Layer         | v6.0      | 0/5            | Not started | -         |
 | 20. Server Actions            | v6.0      | 0/5            | Not started | -         |
 | 21. Examination UI            | v6.0      | 0/4            | Not started | -         |

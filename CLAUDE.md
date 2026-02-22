@@ -5,7 +5,7 @@
 AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
 **Live:** https://aegis.nexlyadvisory.com
-**Scale:** 580 source files · 2,320-line Prisma schema · 71 DB models · 472 commits · 104 v1-v5 requirements + 41 v6.0 requirements
+**Scale:** 536 source files · 2,320-line Prisma schema · 71 DB models · 20 enums · 473 commits · 104 v5.0 requirements (complete) + 41 v6.0 requirements (in progress)
 **Status:** v5.0 complete (104/104 requirements). v6.0 RBIA Implementation in progress — Phase 18 (Foundation) planned, ready for execution.
 
 ## Tech Stack

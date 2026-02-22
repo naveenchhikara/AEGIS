@@ -1,1087 +1,702 @@
-# Technology Stack — v2.0 Backend Additions
+# Stack Research — RBIA v6.0 Implementation
 
 **Project:** AEGIS Internal Audit Platform
-**Milestone:** v2.0 Working Core MVP
-**Researched:** 2026-02-08
-**Overall Confidence:** HIGH
+**Milestone:** v6.0 RBIA Workflow Implementation
+**Domain:** Hierarchical audit examination, weighted scoring, 8-state workflow, branch response batch, JSONB snapshots, RBIA board analytics
+**Researched:** 2026-02-22
+**Confidence:** HIGH (tree UI, scoring: MEDIUM — see notes per section)
 
 ---
 
-## Executive Summary
+## Context: Subsequent Milestone — Stack is Locked
 
-v2.0 adds backend capabilities to the existing Next.js 16 clickable prototype. Research confirms the February 2026 architecture choices remain valid:
+The core AEGIS stack is production-deployed and non-negotiable:
 
-- **Better Auth 1.4.18** for authentication (organization plugin for multi-tenancy, built-in RBAC + MFA)
-- **Prisma 7.3.0+** for ORM (Rust-free, 3x faster, client extensions for RLS)
-- **AWS Lightsail Managed Database** for PostgreSQL hosting (40% cheaper than RDS for small SaaS)
-- **AWS SES** for transactional emails with React Email templates
-- **@react-pdf/renderer** for board report PDFs (Noto Sans Devanagari confirmed for Hindi)
-- **ExcelJS** for compliance data Excel exports
-- **AWS S3 + presigned URLs** for evidence file uploads
-- **Docker Compose** on Lightsail for deployment
+| Technology           | Version | Status     |
+| -------------------- | ------- | ---------- |
+| Next.js              | ^16.1.6 | Production |
+| React                | ^19.2.4 | Production |
+| TypeScript           | 5.9.3   | Production |
+| Tailwind CSS v4      | ^4.1.18 | Production |
+| shadcn/ui + Radix UI | various | Production |
+| Prisma               | ^7.3.0  | Production |
+| PostgreSQL           | 16      | Production |
+| TanStack Table       | ^8.21.3 | Production |
+| Recharts             | ^3.7.0  | Production |
+| @react-pdf/renderer  | ^4.3.2  | Production |
+| ExcelJS              | ^4.4.0  | Production |
+| Better Auth          | ^1.4.18 | Production |
+| pg-boss              | ^12.9.0 | Production |
 
-All libraries have active 2026 releases, Next.js 16 compatibility confirmed, and fit within Rs 4,000-6,000/month budget.
-
----
-
-## Existing Stack (v1.0 — DO NOT CHANGE)
-
-These are already validated and shipped in v1.0:
-
-| Technology     | Version | Purpose                | Status  |
-| -------------- | ------- | ---------------------- | ------- |
-| Next.js        | 16.1.6  | App Router + Turbopack | Shipped |
-| React          | 19.2.4  | UI framework           | Shipped |
-| TypeScript     | 5.9.3   | Type safety            | Shipped |
-| Tailwind CSS   | 4.1.18  | Styling                | Shipped |
-| shadcn/ui      | various | UI components          | Shipped |
-| Radix UI       | various | Headless primitives    | Shipped |
-| next-intl      | 4.8.2   | i18n (EN/HI/MR/GU)     | Shipped |
-| Recharts       | 3.7.0   | Dashboard charts       | Shipped |
-| TanStack Table | 8.21.3  | Data tables            | Shipped |
-| pnpm           | latest  | Package manager        | Shipped |
-
-**Do not re-research or change these.**
+**Do not re-research or propose changing these.** This document covers ONLY the net-new additions required for the 6 RBIA features.
 
 ---
 
-## Recommended Stack Additions for v2.0
+## Net-New Stack Additions
 
-### Authentication & Authorization
+### 1. Hierarchical Tree UI for ExaminationNode
 
-#### Better Auth 1.4.18
+**Requirement:** Variable-depth tree (0-5 levels), collapsible/expandable, score display at each node, auditor scoring controls at leaf nodes, progress indicators at branch nodes.
 
-**Latest Version:** 1.4.18 (published 10 days ago, Feb 2026)
-**Purpose:** Authentication framework with built-in multi-tenancy and RBAC
-**Next.js 16 Compatibility:** ✅ Confirmed — fully compatible with proxy-based middleware
+#### Decision: TanStack Table Expanding Feature (ALREADY INSTALLED)
 
-**Why Better Auth over Auth.js:**
+**Version:** 8.21.3 (already in production)
+**Status:** No new package needed.
+**Confidence:** HIGH — verified via Context7 docs
 
-1. **Auth.js is now maintained by Better Auth team** — official recommendation is Better Auth for new projects
-2. **Built-in authorization** — RBAC, organization plugin, dynamic roles (Auth.js requires custom implementation)
-3. **MFA out-of-box** — TOTP + email OTP + backup codes (Auth.js lacks 2FA)
-4. **Better DX** — CLI auto-generates schema, simpler setup vs Auth.js confusion
-5. **Organization plugin** — production-ready multi-tenancy with role-based invitations
+TanStack Table's built-in expanding feature handles variable-depth hierarchical data natively via `getSubRows` + `getExpandedRowModel`. This is the correct choice because:
 
-**Features Needed:**
+1. **Already installed** — zero new dependency, zero bundle increase
+2. **Native tree support** — `getSubRows: (row) => row.children` handles depth 0-5 without recursion at the component level
+3. **Row depth API** — `row.depth` property gives per-row indent level (use `paddingLeft: row.depth * 1.5rem`)
+4. **Programmatic expansion** — `table.setExpanded(true)` expands all; `table.toggleAllRowsExpanded()` for toggle-all
+5. **Integrates with shadcn/ui Table primitives** — existing `<Table>`, `<TableRow>`, `<TableCell>` components slot in directly
+6. **Score columns** — leaf rows show score inputs; branch rows show rolled-up scores — same column definitions for both
 
-- ✅ **Organization Plugin** — multi-tenant support with members, roles, invitations
-  - Default roles: owner, admin, member
-  - Dynamic access control (runtime role creation)
-  - Per-organization RBAC
-  - Invitation workflow with email verification
-- ✅ **2FA Plugin** — TOTP (authenticator apps) + email OTP + backup codes
-- ✅ **Email/Password** — credential auth with email verification
-- ✅ **Session Management** — cookie-based sessions (not JWT-only like Auth.js v5)
-
-**Prisma Integration:** ✅ Official adapter since v1.4.0, supports database joins (2-3x faster queries)
-
-**Sources:**
-
-- [Better Auth npm](https://www.npmjs.com/package/better-auth)
-- [Better Auth Organization Plugin](https://www.better-auth.com/docs/plugins/organization)
-- [Better Auth 2FA Plugin](https://www.better-auth.com/docs/plugins/2fa)
-- [Better Auth vs Auth.js Comparison 2026](https://betterstack.com/community/guides/scaling-nodejs/better-auth-vs-nextauth-authjs-vs-autho/)
-- [Auth.js is now part of Better Auth](https://www.better-auth.com/blog/authjs-joins-better-auth)
-
----
-
-### Database & ORM
-
-#### Prisma 7.3.0+
-
-**Latest Version:** 7.3.0 (released Jan 2026, latest in 7.x series)
-**Purpose:** Type-safe ORM with PostgreSQL Row-Level Security via client extensions
-**PostgreSQL:** 14+ recommended
-
-**Why Prisma over Drizzle:**
-
-1. **Rust-free architecture** — Prisma 7 is 3x faster queries, 90% smaller bundles, pure TypeScript runtime
-2. **Type-checking performance** — Prisma checks types faster than Drizzle at scale (hundreds vs thousands of instantiations)
-3. **Better Auth integration** — official Prisma adapter with database join optimizations
-4. **RLS via client extensions** — request-scoped clients with session-based RLS policies
-5. **Migration tooling** — `prisma migrate` more mature than Drizzle Kit for production
-6. **Developer experience** — Prisma Studio, better error messages, comprehensive docs
-
-**Why NOT Drizzle:**
-
-- Drizzle is faster for simple queries but loses advantage on complex joins
-- Better Auth adapter for Drizzle exists but Prisma integration is more mature
-- Drizzle's type inference can slow down compile times on large schemas
-- Prisma's abstraction is negligible overhead for AEGIS query patterns
-
-**RLS Implementation Pattern:**
+**Implementation pattern:**
 
 ```typescript
-// Per-request client extension with organization isolation
-const prismaWithRLS = prisma.$extends({
-  query: {
-    $allModels: {
-      async $allOperations({ args, query }) {
-        // Inject organizationId filter from session
-        return query(args);
+const table = useReactTable({
+  data: treeData, // ExaminationNode[] with nested children
+  columns,
+  getSubRows: (row) => row.children, // populated server-side from path queries
+  getCoreRowModel: getCoreRowModel(),
+  getExpandedRowModel: getExpandedRowModel(),
+  state: { expanded },
+  onExpandedChange: setExpanded,
+});
+
+// In row render:
+<TableRow style={{ paddingLeft: `${row.depth * 24}px` }}>
+  <TableCell>
+    {row.getCanExpand() && (
+      <Button variant="ghost" size="icon" onClick={row.getToggleExpandedHandler()}>
+        {row.getIsExpanded() ? <ChevronDown /> : <ChevronRight />}
+      </Button>
+    )}
+    {row.original.name}
+  </TableCell>
+  <TableCell>
+    {row.original.isLeaf
+      ? <ScoreSelector nodeId={row.original.id} currentScore={row.original.score} />
+      : <ScoreBadge score={row.original.computedScore} />}
+  </TableCell>
+</TableRow>
+```
+
+**What NOT to use:**
+
+| Library                         | Why Not                                                                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react-arborist` (3.4.3)        | Overkill — adds drag-and-drop, virtualization, 43KB min. AEGIS tree has max ~200 nodes per audit engagement; no drag-and-drop needed                                                                     |
+| `shadcn-tree-view` (community)  | Unvetted third-party registry package; last update unclear; not necessary when TanStack Table already handles this                                                                                       |
+| `prisma-extension-bark` (0.2.2) | Last published April 2024; peer dep `@prisma/client >=5.0.0` has not been updated for Prisma 7's architectural changes (ESM-first, new `prisma-client` provider). Compatibility unconfirmed. Do not use. |
+
+**Source:** [TanStack Table Expanding Guide](https://tanstack.com/table/v8/docs/guide/expanding) — HIGH confidence (official docs, Context7 verified)
+
+---
+
+### 2. Hierarchical Tree Data Loading (Materialized Path Queries)
+
+**Requirement:** Load ExaminationNode tree for a given engagement, respecting `tenantId` isolation, supporting LIKE-prefix queries for subtrees.
+
+#### Decision: Prisma `$queryRaw` for tree assembly, standard Prisma for leaf writes
+
+**No new package needed.** Use Prisma's existing `$queryRaw` with tagged templates for `LIKE 'path%'` queries. Standard Prisma ORM for individual node reads/writes.
+
+**Why materialized path + LIKE over recursive CTE:**
+
+- The schema already stores `path` (e.g., `"OPS/OPS-KYC/OPS-KYC-001"`) on every node
+- Querying all children of a node: `WHERE path LIKE 'OPS/%'` — uses B-tree index, no recursion
+- PostgreSQL B-tree index supports LIKE prefix queries (`col LIKE 'prefix%'`) with high performance
+- The existing `@@index([tenantId, path])` composite index on `ExaminationNode` directly supports this pattern
+- Prisma does not support recursive CTEs natively; `$queryRaw` is the escape hatch
+
+**Confidence:** HIGH — materialized path + prefix LIKE confirmed as standard pattern by [sqlfordevs.com](https://sqlfordevs.com/tree-as-materialized-path) and [PostgreSQL docs](https://www.postgresql.org/docs/current/queries-with.html)
+
+**Tree assembly pattern (server-side, DAL function):**
+
+```typescript
+// src/data-access/examination-nodes.ts
+export async function getEngagementTree(
+  tenantId: string,
+  engagementId: string,
+): Promise<ExaminationNodeWithChildren[]> {
+  // Fetch all nodes for tenant (filtered by engagement's module selections)
+  const nodes = await prisma.examinationNode.findMany({
+    where: { tenantId, isActive: true },
+    include: {
+      responses: {
+        where: { engagementId },
+        select: { score: true, scoreLabel: true, flagForActionPoint: true },
+      },
+      moduleSelections: {
+        where: { engagementId },
+        select: { id: true },
       },
     },
-  },
-});
+    orderBy: [{ depth: "asc" }, { displayOrder: "asc" }],
+  });
+
+  // Build tree in memory (O(n) pass)
+  return buildTree(nodes);
+}
+
+function buildTree(flatNodes: Node[]): NodeWithChildren[] {
+  const map = new Map<string, NodeWithChildren>();
+  const roots: NodeWithChildren[] = [];
+
+  for (const node of flatNodes) {
+    map.set(node.id, { ...node, children: [] });
+  }
+
+  for (const node of flatNodes) {
+    if (node.parentId && map.has(node.parentId)) {
+      map.get(node.parentId)!.children.push(map.get(node.id)!);
+    } else {
+      roots.push(map.get(node.id)!);
+    }
+  }
+
+  return roots;
+}
 ```
 
-**Sources:**
+**Why in-memory tree assembly instead of recursive SQL:**
 
-- [Prisma 7 Release](https://www.prisma.io/blog/announcing-prisma-orm-7-0-0)
-- [Prisma Client Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions)
-- [Prisma RLS Example](https://github.com/prisma/prisma-client-extensions/tree/main/row-level-security)
-- [Prisma vs Drizzle 2026](https://medium.com/@thebelcoder/prisma-vs-drizzle-orm-in-2026-what-you-really-need-to-know-9598cf4eaa7c)
-- [Better Auth Prisma Adapter](https://www.better-auth.com/docs/adapters/prisma)
+- ExaminationNode count per tenant: ~100-500 nodes (not millions) — in-memory O(n) is acceptable
+- Prisma 7 does not support WITH RECURSIVE natively; raw CTE queries return row count not records on some PostgreSQL versions
+- The `parentId` adjacency list on every node makes in-memory assembly trivial
+- Single query + in-memory assembly is faster than N+1 recursive queries
 
----
-
-### Database Hosting
-
-#### AWS Lightsail Managed Database (PostgreSQL)
-
-**Recommended Plan:** Standard 2GB RAM ($30/month) or 4GB RAM ($60/month)
-**Region:** ap-south-1 (Mumbai) — RBI data localization requirement
-**High Availability:** Optional (2x cost) — defer to post-v2.0 for cost reasons
-
-**Why Lightsail over RDS:**
-
-1. **40% cheaper** — Lightsail bundled pricing vs RDS hourly + storage + IOPS
-2. **Predictable costs** — flat monthly rate includes 100GB transfer (Mumbai has 50GB)
-3. **Sufficient for MVP** — 2-4GB RAM handles 10-50 concurrent auditors easily
-4. **Easy scaling path** — can VPC peer to RDS later if needed
-5. **Managed backups** — daily snapshots included (7-day retention)
-
-**Cost Comparison (Mumbai Region, ap-south-1):**
-
-| Service           | Instance         | Monthly Cost  | Storage  | Transfer   |
-| ----------------- | ---------------- | ------------- | -------- | ---------- |
-| Lightsail Managed | 2GB RAM Standard | $30 (~₹2,400) | 80GB     | 50GB       |
-| Lightsail Managed | 4GB RAM Standard | $60 (~₹4,800) | 120GB    | 100GB      |
-| RDS PostgreSQL    | db.t4g.small     | ~$35-45\*     | 20GB\*\* | Pay-per-GB |
-
-\*RDS costs: instance ($0.048/hr = $35/mo) + storage ($0.115/GB = $2.30 for 20GB) + backup + transfer
-\*\*RDS storage priced separately, Lightsail includes it in bundle
-
-**Recommendation:** Start with Lightsail 2GB ($30/mo), upgrade to 4GB if > 20 active users.
-
-**Why NOT RDS:**
-
-- RDS db.t4g.micro (1GB RAM) insufficient for multi-tenant audit workload
-- RDS db.t4g.small comparable price but requires separate storage + transfer budgeting
-- Lightsail simplifies ops for small team (no CloudWatch, VPC, IAM complexity)
-- Can migrate to RDS if audit volume exceeds Lightsail limits (unlikely in v2.0 scope)
-
-**Sources:**
-
-- [AWS Lightsail Managed Database Pricing](https://aws.amazon.com/lightsail/pricing/)
-- [AWS RDS PostgreSQL Pricing](https://aws.amazon.com/rds/postgresql/pricing/)
-- [Lightsail vs RDS Cost Comparison 2026](https://cloudchipr.com/blog/aws-lightsail)
-- [Larger Lightsail Database Bundles Announcement](https://aws.amazon.com/about-aws/whats-new/2026/01/larger-managed-database-bundles-lightsail/)
-
----
-
-### Email & Notifications
-
-#### AWS SES (Simple Email Service)
-
-**Purpose:** Transactional emails (invitations, audit assignments, finding notifications)
-**Region:** ap-south-1 (Mumbai) — same region as Lightsail for latency
-**Cost:** $0.10 per 1,000 emails (~₹8/1,000 emails) — well within budget
-
-**Why SES:**
-
-- Native AWS integration with Lightsail deployment
-- Production-ready at 10,000 emails/day without leaving sandbox
-- DKIM/SPF/DMARC support for deliverability
-- Pay-per-use (no minimum cost if no emails sent)
-
-**Why NOT alternatives:**
-
-- Resend: $20/month for 3,000 emails (4x more expensive at scale)
-- SendGrid: $15/month for 10,000 emails (unnecessary for v2.0 volume)
-- Postmark: $10/month for 10,000 emails (good but SES is cheaper + same AWS region)
-
-**Latest SDK Version:** @aws-sdk/client-ses 3.985.0 (published Feb 2026)
-
----
-
-#### React Email 5.2.8
-
-**Latest Version:** 5.2.8 (published 1 day ago, Feb 2026)
-**Purpose:** Type-safe email templates with Tailwind CSS support
-**Components:** @react-email/components 1.0.7
-
-**Why React Email:**
-
-1. **Component-based** — reusable email templates in React (same paradigm as app UI)
-2. **Type-safe** — catch email template errors at compile time
-3. **Tailwind CSS** — style emails with Tailwind classes (automatic inline CSS conversion)
-4. **Preview UI** — `npm run email` for visual template development
-5. **Dark mode** — supports dark mode email clients
-
-**Integration with SES:**
+**Subtree LIKE query (for partial loads if needed):**
 
 ```typescript
-import { render } from '@react-email/render';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import AuditInvitationEmail from '@/emails/AuditInvitationEmail';
-
-const html = render(<AuditInvitationEmail {...props} />);
-await sesClient.send(new SendEmailCommand({ /* html */ }));
+// Load only a subtree rooted at a given path
+const subtree = await prisma.$queryRaw<ExaminationNode[]>`
+  SELECT * FROM "ExaminationNode"
+  WHERE "tenantId" = ${tenantId}::uuid
+    AND path LIKE ${parentPath + "/%"}
+    AND "isActive" = true
+  ORDER BY depth, "displayOrder"
+`;
 ```
 
-**Templates Needed:**
-
-- Audit assignment notification
-- Finding status change alert
-- Organization invitation
-- Email verification (Better Auth override)
-- Password reset (Better Auth override)
-
-**Sources:**
-
-- [React Email npm](https://www.npmjs.com/package/react-email)
-- [React Email with AWS SES](https://react.email/docs/integrations/aws-ses)
-- [React Email Components](https://www.npmjs.com/package/@react-email/components)
-
 ---
 
-### File Storage & Uploads
+### 3. 4-Point Scoring with Weighted Roll-Up
 
-#### AWS S3 + Presigned URLs
+**Requirement:** Leaf nodes get scored FULLY/LARGELY/PARTIALLY/NON_COMPLIANT (1.0/0.75/0.5/0.0). Branch nodes display weighted average of children. Critical nodes cap parent if NON_COMPLIANT. Final composite score maps to rating band.
 
-**SDK Versions:**
+#### Decision: Pure TypeScript service — no library needed
 
-- @aws-sdk/client-s3: 3.985.0
-- @aws-sdk/s3-request-presigner: 3.974.0 (latest published Feb 2026)
+**No new package needed.** Implement as a `ScoringEngine` class in `src/services/scoring/`. Extend the existing `RiskRatingService` pattern (`src/services/risk-rating/compute.ts`).
 
-**Purpose:** Evidence file uploads (PDFs, images, Excel sheets) attached to findings
-**Pattern:** Presigned URL upload (client → S3 direct, no server proxy)
+**Confidence:** HIGH — the algorithm is well-defined in the schema comments and RBIA policy; no library adds value for this domain-specific calculation.
 
-**Why Presigned URLs:**
+**Why no library:**
 
-1. **No server load** — client uploads directly to S3 (Next.js server just generates URL)
-2. **Security** — temporary credentials (expires in 5-15 min), no AWS keys in client
-3. **Cost efficient** — S3 transfer free (outbound), Lightsail includes 50GB transfer
-4. **Next.js 16 compatible** — route handler generates presigned PUT URL
+- Weighted average is 10 lines of TypeScript
+- External libraries (ml-matrix, mathjs) add 50-200KB for no domain benefit
+- The critical-item override logic is domain-specific — no library encodes RBI RBIA rules
+- Existing `RiskRatingService` precedent establishes the service class pattern
 
-**Upload Flow:**
-
-1. Client requests presigned URL from `/api/upload-evidence` route handler
-2. Server generates S3 presigned URL with 5-min expiry, signed with IAM role
-3. Client uploads file directly to S3 via PUT request to presigned URL
-4. Client sends S3 object key back to server to store in `evidence` table
-
-**Why NOT alternatives:**
-
-- Server-proxied uploads waste Lightsail bandwidth (50GB limit in Mumbai)
-- Vercel Blob Storage: $0.15/GB vs S3 $0.023/GB in Mumbai (6x cheaper)
-- Lightsail object storage: Only 5GB for $1/mo (insufficient for audit evidence)
-
-**S3 Cost Estimate:**
-
-- Storage: $0.023/GB/month (Mumbai)
-- Requests: $0.005 per 1,000 PUT requests
-- 10GB evidence files = $0.23/month (~₹18/month)
-
-**Sources:**
-
-- [AWS S3 Presigned URLs with Next.js](https://conermurphy.com/blog/presigned-urls-nextjs-s3-upload/)
-- [S3 Request Presigner npm](https://www.npmjs.com/package/@aws-sdk/s3-request-presigner)
-- [AWS S3 Presigned URL Upload](https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html)
-
----
-
-### PDF Export
-
-#### @react-pdf/renderer 4.3.2
-
-**Latest Version:** 4.3.2 (published 1 month ago, Jan 2026)
-**Purpose:** Server-side PDF generation for Board Audit Reports
-**Font Support:** Custom TTF fonts via Font.register()
-
-**Why @react-pdf/renderer:**
-
-1. **React-based** — same component paradigm as UI (easier for team)
-2. **Server-side** — generates PDFs in Next.js API routes (no browser dependency)
-3. **Styling** — Flexbox layout + inline styles (not CSS)
-4. **Type-safe** — TypeScript definitions included
-
-**Devanagari Font Support (Hindi/Marathi):**
-
-**CRITICAL:** Noto Sans Devanagari (.ttf format) WORKS but has limitations:
-
-- ✅ Basic Hindi/Marathi text renders correctly
-- ⚠️ Complex ligatures may have issues (test with production data)
-- ❌ OpenType variable fonts NOT supported (use static TTF weights)
-
-**Font Registration:**
+**Score label to decimal mapping:**
 
 ```typescript
-import { Font } from '@react-pdf/renderer';
+// src/services/scoring/constants.ts
+export const SCORE_VALUES: Record<ScoreLabel, number> = {
+  FULLY_COMPLIANT: 1.0,
+  LARGELY_COMPLIANT: 0.75,
+  PARTIALLY_COMPLIANT: 0.5,
+  NON_COMPLIANT: 0.0,
+};
 
-Font.register({
-  family: 'Noto Sans Devanagari',
-  src: '/fonts/NotoSansDevanagari-Regular.ttf'
-});
-
-// Use in PDF component
-<Text style={{ fontFamily: 'Noto Sans Devanagari' }}>
-  निष्कर्ष रिपोर्ट
-</Text>
+export const RATING_BANDS = [
+  { min: 0.85, label: "VERY_GOOD" },
+  { min: 0.7, label: "GOOD" },
+  { min: 0.55, label: "SATISFACTORY" },
+  { min: 0.4, label: "MODERATE" },
+  { min: 0.0, label: "POOR" },
+] as const;
 ```
 
-**Font Sources:**
+**Weighted roll-up algorithm (pure TypeScript):**
 
-- Google Fonts: [Noto Sans Devanagari](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari) (free, OFL license)
-- Download static TTF weights (not variable font)
-- Include Regular, Medium, Bold in `/public/fonts/`
+```typescript
+// src/services/scoring/engine.ts
+export class ScoringEngine {
+  computeNodeScore(node: ExaminationNodeWithChildren): number | null {
+    if (node.isLeaf) {
+      // Leaf: return raw score or null if not yet scored
+      return node.responses[0]?.score ?? null;
+    }
 
-**Why NOT alternatives:**
+    const children = node.children.filter((c) => c.computedScore !== null);
+    if (children.length === 0) return null;
 
-- Puppeteer: requires Chrome binary (250MB), Lightsail container bloat
-- PDFKit: manual text positioning (no React components)
-- jsPDF: no SSR support, limited styling
+    let weightedSum = 0;
+    let totalWeight = 0;
 
-**Known Issues:**
+    for (const child of children) {
+      const score = child.computedScore!;
+      weightedSum += score * Number(child.weight);
+      totalWeight += Number(child.weight);
 
-- Non-Latin characters rendering [GitHub #856](https://github.com/diegomura/react-pdf/issues/856) — Noto Sans Devanagari workaround confirmed
-- Font loading delays — pre-register fonts at app init (not per-request)
+      // Critical override: if critical child is NON_COMPLIANT, cap parent at 0.5
+      if (child.isCritical && score === 0.0) {
+        return Math.min(weightedSum / totalWeight, 0.5);
+      }
+    }
 
-**Sources:**
+    return totalWeight > 0 ? weightedSum / totalWeight : null;
+  }
 
-- [@react-pdf/renderer npm](https://www.npmjs.com/package/@react-pdf/renderer)
-- [React PDF Custom Fonts](https://react-pdf.org/fonts)
-- [Noto Sans Devanagari Font Issue](https://github.com/diegomura/react-pdf/issues/856)
+  computeTreeScores(root: ExaminationNodeWithChildren): void {
+    // Post-order traversal: score leaves first, then parents
+    for (const child of root.children) {
+      this.computeTreeScores(child);
+    }
+    root.computedScore = this.computeNodeScore(root);
+  }
 
----
+  computeModuleScores(
+    roots: ExaminationNodeWithChildren[],
+  ): Record<string, number> {
+    const moduleScores: Record<string, number> = {};
+    for (const root of roots) {
+      if (root.computedScore !== null) {
+        moduleScores[root.code] = root.computedScore;
+      }
+    }
+    return moduleScores;
+  }
 
-### Excel Export
+  compositeScore(moduleScores: Record<string, number>): number {
+    const values = Object.values(moduleScores);
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  }
 
-#### ExcelJS 4.4.0
-
-**Latest Version:** 4.4.0 (published 2 years ago, stable)
-**Purpose:** Compliance requirement Excel exports for auditors
-**Alternative:** xlsx/SheetJS (not recommended — stopped publishing to npm at v18.5)
-
-**Why ExcelJS:**
-
-1. **Server-side** — works in Next.js route handlers (no client dependency)
-2. **Full Excel features** — multiple sheets, formulas, styling, cell formatting
-3. **Streaming** — can generate large exports without memory issues
-4. **Active maintenance** — still maintained (despite old last publish date)
-
-**Use Cases:**
-
-- Export compliance requirements with status (55 rows × 10 columns)
-- Export findings with RBI circular references (35 rows × 15 columns)
-- Export audit plan schedule (8 rows × 20 columns)
-
-**Why NOT alternatives:**
-
-- xlsx/SheetJS: no longer on npm, requires manual install from git
-- csv-writer: too basic (no multi-sheet, formatting, or formulas)
-- XLSX.js alternatives lack TypeScript types
-
-**Known Issues:**
-
-- ⚠️ Old dependencies (rimraf, glob, fstream) trigger deprecation warnings — cosmetic only, not breaking
-
-**Sources:**
-
-- [ExcelJS npm](https://www.npmjs.com/package/exceljs)
-- [ExcelJS GitHub](https://github.com/exceljs/exceljs)
-- [SheetJS npm deprecation 2026](https://thelinuxcode.com/npm-sheetjs-xlsx-in-2026-safe-installation-secure-parsing-and-real-world-nodejs-patterns/)
-
----
-
-### Deployment
-
-#### Docker Compose
-
-**Purpose:** Container orchestration for Next.js + PostgreSQL on AWS Lightsail
-**Services:** web (Next.js), db (PostgreSQL), optional nginx (SSL termination)
-
-**Why Docker Compose:**
-
-1. **Single deployment unit** — Lightsail container service supports docker-compose.yml
-2. **Environment parity** — dev/staging/prod use same container setup
-3. **Easy rollback** — tag Docker images, revert to previous tag if v2.0 issues
-4. **PostgreSQL bundled** — Lightsail managed DB OR self-hosted in container (choose based on cost)
-
-**Lightsail Container Service:**
-
-- $10/month for 512MB RAM (nano) — insufficient for Next.js + DB
-- $20/month for 1GB RAM (micro) — sufficient for Next.js only (use managed DB)
-- $40/month for 2GB RAM (small) — can self-host PostgreSQL in container
-
-**Recommended Setup:**
-
-- **Lightsail Container (micro) $20/mo** — Next.js app only
-- **Lightsail Managed DB (2GB) $30/mo** — PostgreSQL separate
-- **Total: $50/mo (~₹4,000)** — within budget
-
-**Alternative (if over-budget):**
-
-- Lightsail Container (small) $40/mo — Next.js + PostgreSQL in same container
-- **Total: $40/mo (~₹3,200)** — saves $10 but loses managed DB benefits
-
-**docker-compose.yml Structure:**
-
-```yaml
-services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      AWS_REGION: ap-south-1
-    depends_on:
-      - db # only if self-hosting PostgreSQL
-
-  db: # omit if using Lightsail Managed Database
-    image: postgres:16
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-```
-
-**Sources:**
-
-- [Docker Compose Next.js PostgreSQL](https://medium.com/@abhijariwala/dockerizing-a-next-js-and-node-js-app-with-postgresql-and-prisma-a-complete-guide-000527023e99)
-- [Deploy NestJS API PostgreSQL Lightsail](https://dev.to/georges_heloussato_d6ff14/complete-guide-deploy-nestjs-api-with-postgresql-on-aws-lightsail-3p6n)
-- [AWS Lightsail Container Pricing](https://aws.amazon.com/lightsail/pricing/)
-
----
-
-## Installation Commands
-
-### v2.0 Backend Dependencies
-
-```bash
-# Authentication
-pnpm add better-auth@^1.4.18
-
-# Database
-pnpm add prisma@^7.3.0 @prisma/client@^7.3.0
-pnpm add -D prisma@^7.3.0
-
-# AWS SDK
-pnpm add @aws-sdk/client-s3@^3.985.0
-pnpm add @aws-sdk/client-ses@^3.985.0
-pnpm add @aws-sdk/s3-request-presigner@^3.974.0
-
-# Email Templates
-pnpm add react-email@^5.2.8
-pnpm add @react-email/components@^1.0.7
-pnpm add @react-email/render@^2.0.4
-
-# PDF Export
-pnpm add @react-pdf/renderer@^4.3.2
-
-# Excel Export
-pnpm add exceljs@^4.4.0
-
-# Development
-pnpm add -D @types/node@latest
-```
-
-### Better Auth CLI (optional)
-
-```bash
-# Auto-generate Prisma schema from Better Auth config
-npx @better-auth/cli generate
-```
-
-### Prisma CLI
-
-```bash
-# Initialize Prisma (creates prisma/schema.prisma)
-npx prisma init
-
-# Create migration
-npx prisma migrate dev --name init
-
-# Generate Prisma Client
-npx prisma generate
-
-# Open Prisma Studio
-npx prisma studio
-```
-
-### React Email CLI (development)
-
-```bash
-# Preview email templates
-pnpm run email
-```
-
-Add to `package.json`:
-
-```json
-{
-  "scripts": {
-    "email": "email dev"
+  ratingBand(score: number): string {
+    for (const band of RATING_BANDS) {
+      if (score >= band.min) return band.label;
+    }
+    return "POOR";
   }
 }
 ```
 
----
-
-## Version Compatibility Matrix
-
-| Dependency                    | Version | Next.js 16 | React 19 | Node.js | Notes                               |
-| ----------------------------- | ------- | ---------- | -------- | ------- | ----------------------------------- |
-| better-auth                   | 1.4.18  | ✅         | ✅       | 18+     | Proxy-based middleware              |
-| prisma                        | 7.3.0+  | ✅         | ✅       | 18+     | Rust-free runtime                   |
-| @prisma/client                | 7.3.0+  | ✅         | ✅       | 18+     | Matches Prisma version              |
-| @aws-sdk/client-s3            | 3.985.0 | ✅         | ✅       | 18+     | AWS SDK v3                          |
-| @aws-sdk/client-ses           | 3.985.0 | ✅         | ✅       | 18+     | AWS SDK v3                          |
-| @aws-sdk/s3-request-presigner | 3.974.0 | ✅         | ✅       | 18+     | AWS SDK v3                          |
-| react-email                   | 5.2.8   | ✅         | ✅       | 18+     | Peer: react, react-dom              |
-| @react-email/components       | 1.0.7   | ✅         | ✅       | 18+     | Peer: react, react-dom              |
-| @react-email/render           | 2.0.4   | ✅         | ✅       | 18+     | SSR-safe                            |
-| @react-pdf/renderer           | 4.3.2   | ✅         | ⚠️       | 18+     | React 18 compatible (not 19 tested) |
-| exceljs                       | 4.4.0   | ✅         | ✅       | 18+     | Framework-agnostic                  |
-
-**Node.js Requirement:** 18.x+ (Next.js 16 minimum)
-**PostgreSQL Requirement:** 14+ (Prisma 7 recommendation)
-
----
-
-## Alternatives Considered
-
-### Authentication
-
-| Option        | Why NOT Chosen                                                                    |
-| ------------- | --------------------------------------------------------------------------------- |
-| Auth.js       | Now maintained by Better Auth team; lacks built-in RBAC, MFA, organization plugin |
-| Clerk         | $25/month for 1,000 MAU (over budget); vendor lock-in; no RBI data residency      |
-| Supabase Auth | Requires Supabase DB (not compatible with Lightsail); Auth-only costs $25/mo      |
-| Lucia         | Deprecated in favor of Oslo (not production-ready); no organization support       |
-| Custom        | 2-3 weeks dev time for RBAC + MFA + invitations (not MVP-viable)                  |
-
-**Winner:** Better Auth — only option with built-in multi-tenancy + RBAC + MFA at zero cost.
-
----
-
-### ORM
-
-| Option  | Why NOT Chosen                                                                           |
-| ------- | ---------------------------------------------------------------------------------------- |
-| Drizzle | Slower type-checking at scale; Better Auth adapter less mature; migration tooling weaker |
-| TypeORM | Deprecated patterns (ActiveRecord); lacks Prisma's type safety                           |
-| Kysely  | SQL-first (not model-first); no Better Auth adapter; manual RLS                          |
-| Raw SQL | No type safety; manual migrations; RLS injection risk                                    |
-
-**Winner:** Prisma 7 — best DX, Better Auth integration, client extensions for RLS.
-
----
-
-### Database Hosting
-
-| Option          | Why NOT Chosen                                                                   |
-| --------------- | -------------------------------------------------------------------------------- |
-| AWS RDS         | 40% more expensive; billing complexity (instance + storage + IOPS + transfer)    |
-| Supabase        | $25/month for 8GB (over budget); unnecessary features (realtime, storage)        |
-| Neon            | Serverless cold starts (not acceptable for auditor UX); Mumbai region GA unclear |
-| Railway         | $5/month but no Mumbai region; data residency issue                              |
-| Self-hosted VPS | Ops burden (backups, monitoring, security patches); not worth $10/mo savings     |
-
-**Winner:** Lightsail Managed Database — best price/performance/ops for small team + RBI compliance.
-
----
-
-### Email Service
-
-| Option   | Why NOT Chosen                                                          |
-| -------- | ----------------------------------------------------------------------- |
-| Resend   | $20/month for 3,000 emails (4x SES cost); overkill for transactional    |
-| SendGrid | $15/month for 10,000 emails; complex UI; unnecessary marketing features |
-| Postmark | $10/month for 10,000 emails; good DX but SES cheaper + same AWS region  |
-| Mailgun  | $35/month starter plan (way over budget)                                |
-
-**Winner:** AWS SES — $0.10 per 1,000 emails, same region as Lightsail, production-ready.
-
----
-
-### PDF Generation
-
-| Option     | Why NOT Chosen                                                        |
-| ---------- | --------------------------------------------------------------------- |
-| Puppeteer  | 250MB Chrome binary (bloats Lightsail container); slow cold starts    |
-| Playwright | Same Chrome bloat as Puppeteer; overkill for static PDFs              |
-| PDFKit     | Manual text positioning; no React components; poor Devanagari support |
-| jsPDF      | Client-side only (no SSR); limited styling                            |
-| LaTeX      | Learning curve too steep; no React integration                        |
-
-**Winner:** @react-pdf/renderer — React-based, SSR-friendly, Noto Sans Devanagari confirmed working.
-
----
-
-### Excel Export
-
-| Option         | Why NOT Chosen                                                             |
-| -------------- | -------------------------------------------------------------------------- |
-| xlsx (SheetJS) | Stopped publishing to npm (v18.5); manual git install required             |
-| csv-writer     | No multi-sheet, styling, or formulas (insufficient for compliance exports) |
-| XLSX.js        | Unmaintained fork; lacks TypeScript types                                  |
-
-**Winner:** ExcelJS — stable, feature-complete, TypeScript support, still maintained.
-
----
-
-## What NOT to Use
-
-### ❌ Supabase (Auth, DB, Storage)
-
-**Why avoid:** Vendor lock-in, over-budget ($25/month minimum), includes unnecessary features (realtime, edge functions), Auth migration effort if switching later.
-
-**When to reconsider:** If audit volume exceeds 100 concurrent users AND budget increases to Rs 10,000/month.
-
----
-
-### ❌ Vercel Blob Storage
-
-**Why avoid:** 6x more expensive than S3 ($0.15/GB vs $0.023/GB in Mumbai), designed for Vercel Edge (not needed), no presigned URL equivalent (must proxy uploads).
-
-**When to reconsider:** Never — S3 is superior for AEGIS use case.
-
----
-
-### ❌ Serverless Databases (Neon, PlanetScale)
-
-**Why avoid:** Cold starts unacceptable for auditor UX (200-500ms first query), Mumbai region unclear/unavailable, free tiers insufficient for multi-tenant (5GB limit).
-
-**When to reconsider:** If audit volume becomes unpredictable (10x spikes) AND budget allows $50/month for serverless.
-
----
-
-### ❌ Auth0 / Okta
-
-**Why avoid:** Enterprise pricing ($800+/month), overkill for UCB target market, vendor lock-in, complex integration vs Better Auth simplicity.
-
-**When to reconsider:** If enterprise UCBs (> 5,000 employees) demand SSO/SAML (post-v2.0).
-
----
-
-### ❌ GraphQL (with Apollo, Relay, etc.)
-
-**Why avoid:** Over-engineering for AEGIS query patterns, Next.js App Router + Server Actions simpler, adds 50-100KB bundle size, team learning curve.
-
-**When to reconsider:** If mobile app planned (v3.0+) AND query complexity justifies GraphQL.
-
----
-
-### ❌ Redis / Upstash
-
-**Why avoid:** v2.0 doesn't need caching (< 100 concurrent users), Lightsail budget tight ($10/month for Redis eats into DB budget), premature optimization.
-
-**When to reconsider:** If compliance requirement queries exceed 500ms AND load testing shows caching ROI.
-
----
-
-## Integration Points with Existing Stack
-
-### Better Auth + next-intl
-
-**Cookie-based locale detection conflicts:**
-
-- Better Auth uses `better-auth-session` cookie
-- next-intl uses `NEXT_LOCALE` cookie
-- Both read cookies in middleware → order matters
-
-**Solution:** Better Auth proxy runs BEFORE next-intl middleware.
+**Prisma JSONB snapshot (BranchRbiaScore.scoringTreeSnapshot):**
 
 ```typescript
-// middleware.ts
-import { betterAuth } from "better-auth";
-import createMiddleware from "next-intl/middleware";
+// Freeze: serialize tree with computed scores to JSONB
+const snapshot = serializeTreeToSnapshot(scoredTree);
+await prisma.branchRbiaScore.update({
+  where: { engagementId },
+  data: {
+    compositeScore: composite,
+    ratingBand: engine.ratingBand(composite),
+    moduleScores: moduleScores,
+    scoringTreeSnapshot: snapshot,
+    frozenAt: new Date(),
+    frozenById: session.userId,
+  },
+});
+```
 
-const intlMiddleware = createMiddleware({
-  /* ... */
+Prisma's `Json` field type maps directly to PostgreSQL JSONB. No additional library needed. The snapshot is a plain JS object serialized by Prisma's JSON handler.
+
+---
+
+### 4. Audit Engagement 8-State Workflow
+
+**Requirement:** PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED). Each transition has role-based guards. State machine drives engagement header UI and progress stepper.
+
+#### Decision: Server Actions + React `useOptimistic` — no XState needed
+
+**No new package needed.** Implement state transitions as typed Server Actions with permission guards. Use React 19's `useOptimistic` hook for immediate UI feedback.
+**Confidence:** HIGH — confirmed via [Next.js Server Actions docs](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) and [React useOptimistic docs](https://react.dev/reference/react/useOptimistic)
+
+**Why not XState:**
+
+- XState adds 47KB gzipped; AEGIS already has 8 clearly defined states with minimal branching
+- The existing `ObservationStatus` state machine (7 states) is implemented with plain Server Actions — precedent set
+- `useOptimistic` handles all needed optimistic UI for state transitions
+- XState's value: complex parallel states, guards with side effects — none of these apply to the engagement lifecycle
+
+**Engagement status stepper (shadcn/ui Progress + existing Radix primitives):**
+
+```typescript
+// src/components/audit-execution/engagement-status-stepper.tsx
+const ENGAGEMENT_STEPS = [
+  { status: "PLANNED", label: "Planned" },
+  { status: "TEAM_ASSIGNED", label: "Team Assigned" },
+  { status: "OPENING_MEETING", label: "Opening Meeting" },
+  { status: "IN_PROGRESS", label: "In Progress" },
+  { status: "EXIT_MEETING", label: "Exit Meeting" },
+  { status: "REPORT_DRAFT", label: "Report Draft" },
+  { status: "COMPLETED", label: "Completed" },
+] as const;
+```
+
+**Status transition server action pattern (consistent with existing codebase):**
+
+```typescript
+// src/actions/audit-execution/transition-engagement.ts
+export async function transitionEngagementStatus(
+  engagementId: string,
+  targetStatus: EngagementStatus,
+): Promise<ActionResult> {
+  const session = await getRequiredSession();
+  requirePermission(session, "audit_execution:transition");
+
+  const engagement = await prisma.auditEngagement.findUnique({
+    where: { id: engagementId },
+  });
+  if (!isValidTransition(engagement.status, targetStatus, session.roles)) {
+    return { success: false, error: "Invalid status transition" };
+  }
+
+  await prisma.auditEngagement.update({
+    where: { id: engagementId, tenantId: session.tenantId },
+    data: { status: targetStatus },
+  });
+
+  return { success: true };
+}
+```
+
+---
+
+### 5. Branch Manager Batch Response Workflow
+
+**Requirement:** Branch Manager sees all ActionPoints for their branch, submits responses in bulk, BmResponseBatch tracks deadline (15 days) and completion progress.
+
+#### Decision: Existing patterns — no new packages
+
+**No new package needed.**
+
+- Batch form state: `react-hook-form` (already installed, ^7.71.1) with `useFieldArray` for variable-length ActionPoint responses
+- Deadline tracking: `date-fns` (already installed, ^4.1.0) for deadline computation and display
+- Batch submit: single Server Action with `Promise.all` for parallel ActionPoint updates
+- Progress display: shadcn/ui `Progress` component (from Radix) — already in use
+- Overdue detection: existing `pg-boss` cron job pattern for `BmBatchStatus.OVERDUE` transitions
+
+**Confidence:** HIGH — all libraries confirmed in `package.json`
+
+**Form pattern for batch response:**
+
+```typescript
+// useFieldArray handles variable ActionPoint list
+const { fields, register } = useFieldArray({
+  control,
+  name: "responses",
 });
 
-export default async function middleware(req: NextRequest) {
-  // 1. Better Auth checks session first
-  const authResponse = await betterAuth.handler(req);
-  if (authResponse) return authResponse;
+// Server action: batch update
+export async function submitBmResponseBatch(
+  batchId: string,
+  responses: { actionPointId: string; bmResponseText: string }[],
+): Promise<ActionResult> {
+  const session = await getRequiredSession();
+  requirePermission(session, "bm_response:submit");
 
-  // 2. next-intl handles locale
-  return intlMiddleware(req);
+  await prisma.$transaction([
+    ...responses.map((r) =>
+      prisma.actionPoint.update({
+        where: { id: r.actionPointId, tenantId: session.tenantId },
+        data: {
+          bmResponseText: r.bmResponseText,
+          bmResponseDate: new Date(),
+          status: "BM_RESPONDED",
+        },
+      }),
+    ),
+    prisma.bmResponseBatch.update({
+      where: { id: batchId },
+      data: {
+        respondedActionPoints: responses.length,
+        status: "SUBMITTED",
+        submittedAt: new Date(),
+      },
+    }),
+  ]);
+
+  return { success: true };
 }
 ```
 
 ---
 
-### Prisma + Better Auth Schema
+### 6. Frozen JSONB Scoring Snapshots
 
-**Better Auth generates 4 tables:**
+**Requirement:** `BranchRbiaScore.scoringTreeSnapshot` is a JSONB column storing the complete scored tree at engagement completion. Must be immutable once frozen.
 
-- `user` (id, email, emailVerified, name, image, createdAt, updatedAt)
-- `session` (id, userId, expiresAt, token, ipAddress, userAgent)
-- `account` (id, userId, accountId, providerId, accessToken, refreshToken)
-- `verification` (id, identifier, value, expiresAt)
+#### Decision: Application-level immutability + Prisma Json field — no library needed
 
-**Organization plugin adds 4 more:**
+**No new package needed.** Prisma maps `Json` fields to PostgreSQL JSONB natively. Immutability is enforced at the application layer via a `frozenAt` timestamp guard.
+**Confidence:** HIGH — Prisma JSONB behavior confirmed via [Prisma PostgreSQL docs](https://www.prisma.io/docs/orm/overview/databases/postgresql)
 
-- `organization` (id, name, slug, logo, metadata, createdAt, updatedAt)
-- `member` (id, organizationId, userId, role, createdAt, updatedAt)
-- `invitation` (id, organizationId, email, role, expiresAt, invitedBy)
-- `team` (id, organizationId, name, createdAt, updatedAt) — optional
+**Prisma does not have native immutability primitives** (confirmed via GitHub discussions). The correct approach:
 
-**AEGIS tables extend with foreign keys:**
+1. Check `frozenAt !== null` before any write — reject in Server Action
+2. PostgreSQL trigger alternative (optional defense-in-depth):
 
-- `bank_profile` → `organizationId` (one-to-one)
-- `branch` → `organizationId` (many-to-one)
-- `staff` → `userId` (many-to-one, nullable if not registered)
-- `audit_plan` → `organizationId` (many-to-one)
-- `finding` → `organizationId` (many-to-one)
-- `evidence` → `findingId` (many-to-one)
+```sql
+-- Optional: database-level guard
+CREATE OR REPLACE FUNCTION prevent_frozen_score_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD."frozenAt" IS NOT NULL THEN
+    RAISE EXCEPTION 'BranchRbiaScore % is frozen and cannot be modified', OLD.id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER branchRbiaScore_immutable
+  BEFORE UPDATE ON "BranchRbiaScore"
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_frozen_score_update();
+```
+
+**JSONB type considerations:**
+
+- Prisma 7 serializes JS objects to JSONB transparently via `JSON.stringify`
+- No extra JSONB library needed — avoid `jsonb-set` or similar packages
+- The snapshot object is written once and never partially updated — no JSONB mutation functions needed
 
 ---
 
-### S3 + Evidence Files
+### 7. Enhanced RBIA-Aware Board Reports and Analytics
 
-**Evidence table schema:**
+**Requirement:** New board report sections: RBIA composite score, module-level radar chart, per-branch rating band table, ActionPoint summary, PositiveObservation highlights. New analytics widgets: branch score distribution, module score heatmap, trend over quarters.
 
-```prisma
-model Evidence {
-  id            String   @id @default(cuid())
-  findingId     String
-  finding       Finding  @relation(fields: [findingId], references: [id])
-  fileName      String
-  fileSize      Int      // bytes
-  fileType      String   // MIME type
-  s3Key         String   // e.g., "evidence/org123/finding456/file.pdf"
-  s3Bucket      String   // e.g., "aegis-evidence-ap-south-1"
-  uploadedBy    String
-  uploader      User     @relation(fields: [uploadedBy], references: [id])
-  uploadedAt    DateTime @default(now())
-  organizationId String  // for RLS
-  organization  Organization @relation(fields: [organizationId], references: [id])
-}
-```
+#### Decision: Recharts (already installed) + @react-pdf/renderer (already installed) — no new packages
 
-**S3 Bucket Structure:**
+**No new packages needed.** Both visualization layers are production-deployed.
+**Confidence:** HIGH
 
-```
-aegis-evidence-ap-south-1/
-  org_abc123/
-    finding_xyz/
-      evidence_001.pdf
-      evidence_002.jpg
-  org_def456/
-    finding_uvw/
-      evidence_003.xlsx
-```
+**Analytics dashboard additions (Recharts — client components):**
 
----
+| Widget                     | Chart Type                | Already Used?                 | New?             |
+| -------------------------- | ------------------------- | ----------------------------- | ---------------- |
+| Module score radar         | RadarChart                | No                            | Yes — new widget |
+| Branch rating band donut   | PieChart                  | Yes (PieChart pattern exists) | New data source  |
+| Quarter-over-quarter trend | LineChart/AreaChart       | No                            | Yes — new widget |
+| Module score heatmap       | Custom cells via BarChart | No                            | Yes — new widget |
 
-### @react-pdf/renderer + next-intl
-
-**Challenge:** PDF generation needs i18n strings but runs server-side.
-
-**Solution:** Pass `locale` to PDF component, use `getTranslations()` in route handler.
+**Recharts `RadarChart` for module scoring (shadcn/ui chart wrapper):**
 
 ```typescript
-// app/api/reports/[id]/pdf/route.ts
-import { getTranslations } from 'next-intl/server';
-import { renderToBuffer } from '@react-pdf/renderer';
-import BoardReportPDF from '@/components/reports/BoardReportPDF';
+// src/components/analytics/rbia-module-radar.tsx
+"use client";
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  Radar,
+  ResponsiveContainer,
+} from "recharts";
+import { ChartContainer } from "@/components/ui/chart"; // existing shadcn chart wrapper
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const locale = req.headers.get('accept-language')?.split(',')[0] || 'en';
-  const t = await getTranslations({ locale, namespace: 'reports' });
-
-  const pdfBuffer = await renderToBuffer(
-    <BoardReportPDF report={data} translations={t} locale={locale} />
-  );
-
-  return new Response(pdfBuffer, {
-    headers: { 'Content-Type': 'application/pdf' }
-  });
-}
-```
-
----
-
-### ExcelJS + TanStack Table
-
-**Opportunity:** Reuse TanStack Table column definitions for Excel export.
-
-```typescript
-// Shared column definitions
-export const complianceColumns: ColumnDef<Compliance>[] = [
-  { accessorKey: "requirementId", header: "ID" },
-  { accessorKey: "description", header: "Requirement" },
-  // ...
-];
-
-// Excel export uses same structure
-const workbook = new ExcelJS.Workbook();
-const sheet = workbook.addWorksheet("Compliance");
-
-sheet.columns = complianceColumns.map((col) => ({
-  header: col.header,
-  key: col.accessorKey,
-  width: 20,
+const data = moduleScores.map((m) => ({
+  module: m.code,
+  score: Math.round(m.score * 100),
+  fullMark: 100,
 }));
+```
 
-sheet.addRows(data);
+**PDF board report additions (@react-pdf/renderer — server-side):**
+
+New sections to add alongside existing `BoardReport`:
+
+1. `RbiaScoreSection` — composite score + rating band + module breakdown table
+2. `ActionPointSummary` — AP counts by status and module
+3. `PositiveObservationsSection` — commendable practices list
+
+Pattern is identical to existing `ExecutiveSummary`, `AuditCoverage` components. No new library or pattern needed.
+
+**Analytics DAL additions (no new library — existing Prisma patterns):**
+
+```typescript
+// src/data-access/analytics.ts (extend existing file)
+export async function getRbiaAnalytics(
+  tenantId: string,
+  financialYear: string,
+) {
+  // BranchRbiaScore aggregations using Prisma groupBy
+  const scores = await prisma.branchRbiaScore.findMany({
+    where: { tenantId, frozenAt: { not: null } },
+    select: {
+      ratingBand: true,
+      compositeScore: true,
+      moduleScores: true,
+      frozenAt: true,
+    },
+  });
+
+  // moduleScores is JSONB — parse via JSON.parse or Prisma's Json type
+  return aggregateScores(scores);
+}
 ```
 
 ---
 
-## Cost Summary (Monthly, Mumbai Region)
+## Summary: Net-New Packages Required
 
-| Service                    | Tier               | Monthly Cost (USD) | Monthly Cost (INR) |
-| -------------------------- | ------------------ | ------------------ | ------------------ |
-| Lightsail Container        | Micro (1GB RAM)    | $20                | ₹1,600             |
-| Lightsail Managed Database | Standard 2GB RAM   | $30                | ₹2,400             |
-| AWS S3                     | 10GB storage       | $0.23              | ₹18                |
-| AWS SES                    | 1,000 emails/month | $0.10              | ₹8                 |
-| **Total Infrastructure**   |                    | **$50.33**         | **₹4,026**         |
+**Zero new runtime packages needed.** All 6 feature areas are implementable with the existing production stack.
 
-**Budget Compliance:** ✅ Within Rs 4,000-6,000/month target.
-
-**Variable Costs:**
-
-- S3 scales linearly ($0.023/GB) — 50GB = $1.15/month (~₹92)
-- SES scales linearly ($0.10/1,000 emails) — 10,000 emails = $1/month (~₹80)
-- Lightsail container overage bandwidth: $0.09/GB (after 50GB included)
-
-**Cost Optimization Tips:**
-
-1. Enable S3 Intelligent-Tiering for old evidence files (auto-archive after 90 days)
-2. Set lifecycle policy: delete evidence files after 7 years (RBI retention)
-3. Compress uploaded images (client-side, before S3 upload)
-4. Use SES sandbox until production (free 200 emails/day for testing)
+| Feature                | New Package? | Why Not                                                                   |
+| ---------------------- | ------------ | ------------------------------------------------------------------------- |
+| Tree UI                | None         | TanStack Table 8.21.3 already has `getExpandedRowModel` + `getSubRows`    |
+| Tree data loading      | None         | Prisma `findMany` + in-memory tree assembly; `$queryRaw` for LIKE subtree |
+| 4-point scoring engine | None         | Pure TypeScript service — no library encodes RBI RBIA weights             |
+| 8-state workflow       | None         | Server Actions + `useOptimistic` — XState is overkill                     |
+| BM batch response      | None         | `react-hook-form` `useFieldArray` + `date-fns` + Prisma `$transaction`    |
+| Frozen JSONB snapshot  | None         | Prisma Json field + application `frozenAt` guard                          |
+| Board analytics        | None         | Recharts + `@react-pdf/renderer` — already production-deployed            |
 
 ---
 
-## Security Considerations
+## Alternatives Considered and Rejected
 
-### Better Auth
-
-- ✅ Store `BETTER_AUTH_SECRET` in environment variable (never commit)
-- ✅ Use HTTPS in production (Lightsail Load Balancer with ACM certificate)
-- ✅ Enable `secure` cookie flag in production
-- ✅ Set `sameSite: "lax"` (not "none") for CSRF protection
-- ✅ Rate limit `/api/auth/sign-in` (10 requests/minute per IP)
-
-### Prisma
-
-- ✅ Use connection pooling (`pool_timeout = 10`, `pool_size = 5`)
-- ✅ Never expose `DATABASE_URL` to client (server-only)
-- ✅ Implement RLS via client extensions (not raw SQL injection)
-- ✅ Validate `organizationId` from session before queries
-- ❌ Do NOT use Prisma Studio in production (dev only)
-
-### AWS Credentials
-
-- ✅ Use IAM role for Lightsail container (no hardcoded keys)
-- ✅ Least privilege: S3 PutObject + GetObject only (not DeleteObject)
-- ✅ S3 bucket policy: deny public access (presigned URLs only)
-- ✅ SES sandbox: whitelist test email addresses until production verified
-- ✅ Rotate AWS access keys every 90 days (if using IAM user)
-
-### File Uploads
-
-- ✅ Validate file size: max 10MB per evidence file
-- ✅ Validate MIME type: allow PDF, JPG, PNG, XLSX only
-- ✅ Scan uploads with ClamAV (Lightsail container sidecar) — optional, post-v2.0
-- ✅ Set S3 object ACL to `private` (not `public-read`)
-- ✅ Presigned URL expiry: 5 minutes (not 7 days max)
+| Category      | Considered                           | Rejected Because                                                                                                              |
+| ------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Tree UI       | `react-arborist` 3.4.3               | 43KB min bundle; drag-and-drop not needed; virtualization overkill for <200 nodes                                             |
+| Tree UI       | `shadcn-tree-view` community package | Unvetted third-party registry; TanStack Table already handles this                                                            |
+| Tree data     | `prisma-extension-bark` 0.2.2        | Last updated April 2024; peer dep has not confirmed Prisma 7 compatibility; not needed given simple materialized path queries |
+| Tree data     | PostgreSQL `ltree` extension         | Would require schema migration, not in `extensions` list, adds ops burden; string LIKE is sufficient for <500 nodes           |
+| Scoring       | `mathjs`, `numeric`                  | 50-300KB for what is 10 lines of TypeScript                                                                                   |
+| State machine | XState                               | 47KB; engagement has only 8 linear states; existing Server Action pattern already handles this                                |
+| State machine | `@xstate/react`                      | Same as above                                                                                                                 |
+| Immutability  | PostgreSQL row-level triggers        | Good defense-in-depth but application guard is primary; trigger is optional                                                   |
 
 ---
 
-## Performance Benchmarks
+## What NOT to Add
 
-### Prisma 7 vs Prisma 4
-
-- Query execution: 3x faster (Rust-free runtime)
-- Bundle size: 90% smaller (5MB → 500KB)
-- Type generation: 2x faster (hundreds vs thousands of type instantiations)
-- Cold start: 50% faster (no WASM loading)
-
-### Better Auth vs Auth.js
-
-- Session lookup: 2-3x faster (database joins optimization)
-- Bundle size: 30% smaller (tree-shakeable plugins)
-- Type safety: Better Auth client fully typed (Auth.js v5 loses types)
-
-### @react-pdf/renderer vs Puppeteer
-
-- PDF generation: 5x faster (no Chrome startup)
-- Memory usage: 90% less (30MB vs 300MB)
-- Container size: 250MB smaller (no Chrome binary)
-
-### Lightsail vs RDS
-
-- Provisioned IOPS: Lightsail SSD (no extra cost) vs RDS gp3 ($0.20/GB/month)
-- Backup cost: Lightsail free vs RDS $0.095/GB/month
-- Transfer cost: Lightsail 50GB included vs RDS $0.09/GB outbound
+| Avoid                         | Why                                                        | Impact if Added                                                           |
+| ----------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `react-arborist`              | Overkill — drag-and-drop, virtualization unneeded          | +43KB bundle; conflicts with TanStack Table approach                      |
+| `mathjs`                      | 250KB for weighted average                                 | Massive bundle bloat for 3 lines of arithmetic                            |
+| XState                        | State machine library for 8-state linear workflow          | 47KB bundle; adds mental overhead; breaks Server Action pattern precedent |
+| `prisma-extension-bark`       | Prisma 7 compatibility unconfirmed; last updated Apr 2024  | Risk of runtime errors after Prisma 7 architecture changes                |
+| PostgreSQL `ltree` extension  | Would need schema migration and `pg_catalog` configuration | Migration complexity; not justified for string LIKE at <500 nodes         |
+| `zod-prisma-types` or similar | Auto-generation from schema                                | Prisma 7 generates typed client already; redundant                        |
+| Redis/Upstash                 | Caching for score computations                             | Premature optimization; score computation is pure TypeScript, <10ms       |
 
 ---
 
-## Migration Path (if needed later)
+## Prisma-Specific Considerations
 
-### Lightsail → RDS
+### Tree Queries
 
-**When:** Audit volume exceeds 100 concurrent users, query latency > 500ms, or Lightsail DB max (32GB RAM) hit.
+- The `path` field with `@@index([tenantId, path])` supports `LIKE 'prefix%'` on the B-tree index — **confirmed working pattern** for materialized paths
+- Do NOT use `$queryRaw` with `WITH RECURSIVE` — Prisma 7 on PostgreSQL may return row count instead of records for CTEs (known issue)
+- Use `findMany` with `where: { tenantId }` + in-memory tree assembly for full tree loads
+- Use `$queryRaw` with `LIKE` only for subtree queries where you know the path prefix
 
-**Steps:**
+### JSONB Fields
 
-1. Create RDS PostgreSQL instance in same VPC
-2. Dump Lightsail DB: `pg_dump -h lightsail-db -U postgres aegis > dump.sql`
-3. Restore to RDS: `psql -h rds-endpoint -U postgres aegis < dump.sql`
-4. Update `DATABASE_URL` in Lightsail container env vars
-5. Test thoroughly (RLS policies, session lookup, evidence queries)
-6. Switch DNS/load balancer to new deployment
-7. Monitor for 24 hours, then delete Lightsail DB
+- `BranchRbiaScore.moduleScores` and `BranchRbiaScore.scoringTreeSnapshot` are `Json` type → PostgreSQL JSONB
+- Prisma 7 returns JSONB as parsed JavaScript objects — no `JSON.parse` needed on reads
+- Write by passing plain JS object to Prisma — no `JSON.stringify` needed
+- Do NOT use PostgreSQL `jsonb_set()` or `jsonb_path_query()` via raw queries — Prisma 7 has no TypedSQL support for these functions yet (open issue #27296)
 
-**Cost impact:** +$20-30/month for RDS db.t4g.small vs Lightsail 2GB.
+### Transaction Pattern for Engagement Completion
 
----
+- Freeze BranchRbiaScore + update EngagementStatus to COMPLETED in a single `$transaction`
+- Prevents partial state (score frozen but engagement not closed, or vice versa)
 
-### Better Auth → Auth.js (NOT RECOMMENDED)
+```typescript
+await prisma.$transaction([
+  prisma.branchRbiaScore.update({
+    where: { engagementId },
+    data: { frozenAt: new Date() },
+  }),
+  prisma.auditEngagement.update({
+    where: { id: engagementId },
+    data: { status: "COMPLETED" },
+  }),
+  prisma.bmResponseBatch.update({
+    where: { engagementId },
+    data: { status: "SUBMITTED" },
+  }),
+]);
+```
 
-**When:** Never — Auth.js is now maintained by Better Auth team.
+### Scoring Engine Placement
 
-**If forced by enterprise requirement:**
-
-1. Export users: `SELECT * FROM user`
-2. Hash passwords with bcrypt (Better Auth uses Argon2)
-3. Rebuild organization → account mapping (Auth.js lacks org plugin)
-4. Rewrite all RBAC logic (Auth.js has no built-in roles)
-5. Estimate: 1-2 weeks dev time + high regression risk
-
-**Alternative:** Stay on Better Auth, request enterprise to support modern auth libraries.
-
----
-
-### @react-pdf/renderer → Puppeteer
-
-**When:** Devanagari ligatures break in production PDFs OR need pixel-perfect HTML → PDF rendering.
-
-**Cost:** Lightsail container upgrade from micro ($20) to small ($40) for Chrome binary.
-
-**Steps:**
-
-1. Add Puppeteer to dependencies: `pnpm add puppeteer`
-2. Install Chrome in Dockerfile: `apt-get install chromium`
-3. Rewrite PDF components to HTML templates
-4. Replace `renderToBuffer()` with `page.pdf()`
-5. Test memory usage (Puppeteer leaks if not closed properly)
+- Scoring roll-up runs in a Server Action (not client-side) — it's the authoritative computation
+- Store interim scores in `ExaminationResponse.score` per node after each auditor input
+- Only freeze into `BranchRbiaScore` when engagement transitions to REPORT_DRAFT or COMPLETED
 
 ---
 
-## Confidence Assessment
+## Version Compatibility
 
-| Area                  | Confidence | Reasoning                                                                                    |
-| --------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| Better Auth selection | HIGH       | Official docs confirm Next.js 16 compatibility, org plugin GA, Auth.js recommendation        |
-| Prisma 7 selection    | HIGH       | Prisma 7.3.0 released Jan 2026, client extensions GA, Better Auth adapter mature             |
-| Lightsail vs RDS      | MEDIUM     | Lightsail cost advantage confirmed, but Mumbai-specific pricing not explicitly listed        |
-| @react-pdf Devanagari | MEDIUM     | Community confirms Noto Sans TTF works, but ligature issues possible (needs testing)         |
-| AWS SES               | HIGH       | Standard transactional email choice, Mumbai region supported, SES+React Email pattern proven |
-| S3 presigned URLs     | HIGH       | Well-documented pattern, Next.js 16 route handlers support presigner v3                      |
-| ExcelJS               | MEDIUM     | Stable but old (2 years), deprecation warnings cosmetic, no better alternatives              |
-| Docker Compose deploy | HIGH       | Lightsail container service supports docker-compose.yml, community examples exist            |
-| Cost estimate         | MEDIUM     | $50/month estimate based on Lightsail pricing page, but Mumbai region pricing not itemized   |
+| Existing Package               | Feature Used                                     | Compatible? | Notes                                                                               |
+| ------------------------------ | ------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------- |
+| `@tanstack/react-table` 8.21.3 | `getExpandedRowModel`, `getSubRows`, `row.depth` | YES         | Expanding feature has been stable since v8.0; confirmed in official docs            |
+| `recharts` 3.7.0               | `RadarChart`, `PolarGrid`, `PolarAngleAxis`      | YES         | RadarChart has been stable in Recharts since v2; shadcn/ui chart wrapper compatible |
+| `@react-pdf/renderer` 4.3.2    | New sections in existing PDF structure           | YES         | Same pattern as existing sections                                                   |
+| `react-hook-form` 7.71.1       | `useFieldArray` for batch AP responses           | YES         | `useFieldArray` stable since v7                                                     |
+| `date-fns` 4.1.0               | Deadline computation (addDays, isAfter)          | YES         | date-fns v4 API unchanged for these functions                                       |
+| `prisma` 7.3.0                 | `Json` type JSONB, `$queryRaw`, `$transaction`   | YES         | All confirmed in Prisma 7 docs                                                      |
+| `pg-boss` 12.9.0               | Cron job for `BmBatchStatus.OVERDUE` transitions | YES         | Existing cron job pattern applies                                                   |
 
-**Overall Confidence:** HIGH — all critical choices (auth, ORM, DB hosting) validated with 2026 sources.
+---
+
+## Installation
+
+No new packages to install. All required capabilities exist in the current `package.json`.
+
+If the scoring engine is extracted as a pure utility for testing purposes:
+
+```bash
+# No new dependencies needed
+# Vitest already installed for unit testing the ScoringEngine class
+pnpm test -- src/services/scoring/engine.test.ts
+```
 
 ---
 
 ## Sources
 
-### Authentication & Authorization
-
-- [Better Auth npm](https://www.npmjs.com/package/better-auth)
-- [Better Auth Next.js Integration](https://www.better-auth.com/docs/integrations/next)
-- [Better Auth Organization Plugin](https://www.better-auth.com/docs/plugins/organization)
-- [Better Auth 2FA Plugin](https://www.better-auth.com/docs/plugins/2fa)
-- [Better Auth vs Auth.js Comparison](https://betterstack.com/community/guides/scaling-nodejs/better-auth-vs-nextauth-authjs-vs-autho/)
-- [Auth.js Joins Better Auth](https://www.better-auth.com/blog/authjs-joins-better-auth)
-- [BetterAuth vs NextAuth 2026](https://www.devtoolsacademy.com/blog/betterauth-vs-nextauth/)
-
-### Database & ORM
-
-- [Prisma 7 Release Announcement](https://www.prisma.io/blog/announcing-prisma-orm-7-0-0)
-- [Prisma 7.2.0 Release](https://www.prisma.io/blog/announcing-prisma-orm-7-2-0)
-- [Prisma Client Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions)
-- [Prisma RLS Example](https://github.com/prisma/prisma-client-extensions/tree/main/row-level-security)
-- [Better Auth Prisma Adapter](https://www.better-auth.com/docs/adapters/prisma)
-- [Prisma vs Drizzle 2026](https://medium.com/@thebelcoder/prisma-vs-drizzle-orm-in-2026-what-you-really-need-to-know-9598cf4eaa7c)
-- [Drizzle vs Prisma Performance](https://betterstack.com/community/guides/scaling-nodejs/drizzle-vs-prisma/)
-
-### Database Hosting
-
-- [AWS Lightsail Pricing](https://aws.amazon.com/lightsail/pricing/)
-- [AWS RDS PostgreSQL Pricing](https://aws.amazon.com/rds/postgresql/pricing/)
-- [Lightsail Managed Database Bundles](https://aws.amazon.com/about-aws/whats-new/2026/01/larger-managed-database-bundles-lightsail/)
-- [Lightsail vs RDS Cost Comparison](https://cloudchipr.com/blog/aws-lightsail)
-- [Lightsail Pricing Guide](https://kuberns.com/blogs/post/aws-lightsail-pricing-your-comprehensive-guide/)
-
-### Email & Notifications
-
-- [React Email npm](https://www.npmjs.com/package/react-email)
-- [React Email with AWS SES](https://react.email/docs/integrations/aws-ses)
-- [@react-email/components](https://www.npmjs.com/package/@react-email/components)
-- [AWS SES SDK](https://www.npmjs.com/package/@aws-sdk/client-ses)
-- [Sending Emails with React, Tailwind, and SES](https://kieron-mckenna.medium.com/sending-emails-with-react-tailwind-css-and-aws-ses-bba1c5959aab)
-
-### File Storage
-
-- [@aws-sdk/client-s3](https://www.npmjs.com/package/@aws-sdk/client-s3)
-- [@aws-sdk/s3-request-presigner](https://www.npmjs.com/package/@aws-sdk/s3-request-presigner)
-- [S3 Presigned URLs with Next.js](https://conermurphy.com/blog/presigned-urls-nextjs-s3-upload/)
-- [AWS S3 Presigned URL Upload](https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html)
-
-### PDF Export
-
-- [@react-pdf/renderer npm](https://www.npmjs.com/package/@react-pdf/renderer)
-- [React PDF Custom Fonts](https://react-pdf.org/fonts)
-- [Noto Sans Devanagari Issue](https://github.com/diegomura/react-pdf/issues/856)
-- [Noto Sans Devanagari Font](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari)
-
-### Excel Export
-
-- [ExcelJS npm](https://www.npmjs.com/package/exceljs)
-- [ExcelJS GitHub](https://github.com/exceljs/exceljs)
-- [SheetJS npm Deprecation](https://thelinuxcode.com/npm-sheetjs-xlsx-in-2026-safe-installation-secure-parsing-and-real-world-nodejs-patterns/)
-
-### Deployment
-
-- [Docker Compose Next.js PostgreSQL](https://medium.com/@abhijariwala/dockerizing-a-next-js-and-node-js-app-with-postgresql-and-prisma-a-complete-guide-000527023e99)
-- [Deploy NestJS PostgreSQL on Lightsail](https://dev.to/georges_heloussato_d6ff14/complete-guide-deploy-nestjs-api-with-postgresql-on-aws-lightsail-3p6n)
-- [AWS Lightsail Container Pricing](https://aws.amazon.com/lightsail/pricing/)
+- [TanStack Table Expanding Guide](https://tanstack.com/table/v8/docs/guide/expanding) — HIGH confidence (official docs, Context7 verified)
+- [Context7: TanStack Table getSubRows + getExpandedRowModel](https://context7.com/tanstack/table/llms.txt) — HIGH confidence
+- [sqlfordevs.com: Materialized Path Pattern](https://sqlfordevs.com/tree-as-materialized-path) — MEDIUM confidence (established pattern, multiple confirming sources)
+- [PostgreSQL CTE Documentation](https://www.postgresql.org/docs/current/queries-with.html) — HIGH confidence (official)
+- [Prisma Raw Queries Documentation](https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries) — HIGH confidence (official)
+- [Prisma PostgreSQL JSONB Documentation](https://www.prisma.io/docs/orm/overview/databases/postgresql) — HIGH confidence (official)
+- [React useOptimistic Hook](https://react.dev/reference/react/useOptimistic) — HIGH confidence (official)
+- [Next.js Server Actions Documentation](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) — HIGH confidence (official)
+- [shadcn/ui Radar Chart](https://ui.shadcn.com/charts/radar) — HIGH confidence (official)
+- [prisma-extension-bark npm](https://www.npmjs.com/package/prisma-extension-bark) — MEDIUM confidence (reviewed for Prisma 7 compatibility risk)
+- [GitHub issue: Prisma tree structures support #4562](https://github.com/prisma/prisma/issues/4562) — MEDIUM confidence (confirms no native recursive CTE support)
+- [GitHub issue: TypedSQL JSONB functions #27296](https://github.com/prisma/prisma/issues/27296) — MEDIUM confidence (confirms no jsonb_set native support)
+- [react-arborist npm](https://www.npmjs.com/package/react-arborist) — LOW confidence (used only to assess and reject)
 
 ---
 
-## Next Steps for Implementation
+## Confidence Assessment
 
-1. **Phase 5-01: Prisma Setup** — Initialize schema with Better Auth tables + AEGIS extensions
-2. **Phase 5-02: Better Auth Integration** — Add organization plugin, configure RBAC, test invitations
-3. **Phase 5-03: Database Seeding** — Migrate JSON demo data to PostgreSQL, add RLS policies
-4. **Phase 5-04: S3 Evidence Upload** — Implement presigned URL route, evidence table, file validation
-5. **Phase 5-05: Email Notifications** — React Email templates + SES integration for audit assignments
-6. **Phase 5-06: PDF Board Reports** — @react-pdf/renderer with Noto Sans Devanagari
-7. **Phase 5-07: Excel Exports** — ExcelJS for compliance requirement exports
-8. **Phase 5-08: Docker Compose** — Lightsail container deployment with managed DB connection
+| Area                                  | Confidence  | Reasoning                                                                                                                                           |
+| ------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tree UI (TanStack Table expanding)    | HIGH        | Official docs + Context7 confirm `getSubRows` + `getExpandedRowModel` work exactly as needed                                                        |
+| Tree data loading (materialized path) | HIGH        | Established PostgreSQL pattern; existing schema indexes support it; confirmed via multiple official sources                                         |
+| 4-point scoring engine                | HIGH        | Pure TypeScript calculation; no library ambiguity; algorithm is straightforward weighted average                                                    |
+| 8-state workflow (Server Actions)     | HIGH        | React 19 `useOptimistic` confirmed; Next.js 16 Server Actions confirmed; existing pattern precedent in codebase                                     |
+| BM batch response                     | HIGH        | `useFieldArray` + `$transaction` pattern confirmed; existing libraries cover all needs                                                              |
+| JSONB snapshots                       | HIGH        | Prisma 7 Json type → JSONB confirmed; immutability via application guard is standard                                                                |
+| Board analytics (Recharts RadarChart) | MEDIUM-HIGH | RadarChart stable in Recharts; shadcn/ui chart wrapper confirmed; specific scoring domain visualization not verified against production data shapes |
+| PDF board report extensions           | HIGH        | Same pattern as existing 6 sections; @react-pdf/renderer already production-proven                                                                  |
 
-Each phase includes:
-
-- Installation of specific dependencies
-- Integration tests with existing v1.0 UI
-- Mumbai region deployment verification
-- Cost monitoring (should stay under $60/month during dev)
+**Overall: HIGH confidence — zero new packages needed, all capabilities confirmed in existing stack.**
 
 ---
 
-**Research Complete: 2026-02-08**
-**Confidence: HIGH** — All versions verified, Next.js 16 compatibility confirmed, budget met.
+_Stack research for: AEGIS v6.0 RBIA Workflow Implementation_
+_Researched: 2026-02-22_
+_Researcher: GSD Project Researcher (Claude Sonnet 4.6)_

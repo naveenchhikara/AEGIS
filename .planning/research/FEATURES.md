@@ -1,830 +1,708 @@
-# Feature Landscape
+# Feature Research — RBIA Audit Workflow Implementation
 
-**Domain:** Internal Audit Management SaaS for Urban Cooperative Banks (India)
-**Researched:** 2026-02-08
-**Overall Confidence:** MEDIUM-HIGH
+**Domain:** Risk-Based Internal Audit (RBIA) for Indian Urban Cooperative Banks (UCBs)
+**Milestone:** v6.0 — Adding RBIA examination, scoring, and dual-findings workflow to existing audit platform
+**Researched:** 2026-02-22
+**Confidence:** MEDIUM-HIGH
+
+---
+
+## Context: What Already Exists vs What This Milestone Adds
+
+The platform already has (DO NOT re-implement):
+
+- 7-state observation lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed)
+- RAM risk assessment with 19-parameter scoring
+- Audit planning with annual plan simulation
+- Section-based audit execution with cash/loan/SMA-NPA forms
+- Compliance lifecycle: Branch Response → ZAC → ACE → ACB
+- Escalation engine (L1-L4), PDF board reports, XLSX exports
+- 5 role-based dashboards, 568 examination items in flat 2-level structure
+
+v6.0 adds:
+
+- Hierarchical examination checklist (ExaminationNode tree with variable depth)
+- 4-point compliance scoring (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT)
+- Dual findings: ActionPoints (operational) vs Observations (formal 5C findings)
+- 8-state engagement lifecycle (PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED)
+- Opening and exit meeting records (EngagementMeeting model)
+- Branch Manager batch response workflow (BmResponseBatch)
+- Frozen RBIA score snapshots (BranchRbiaScore)
+- Positive observations (PositiveObservation model)
 
 ---
 
 ## Table Stakes
 
-Features that UCB audit teams expect from any digital audit management tool. Missing any of these means the product feels incomplete or untrustworthy compared to even spreadsheet workflows they currently use.
+Features that RBI and UCB audit teams expect in any RBIA-compliant system. Missing any of these means the system fails regulatory requirements or auditors cannot complete their workflow.
 
-### TS-01: Observation/Finding Lifecycle Workflow
+---
 
-| Attribute        | Detail                                                                                                                                                                                                                                                                     |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | This is the core value proposition. Every audit management tool (Audit360, LaserGRC, TeamMate) implements a finding lifecycle. UCB auditors currently track this manually in Excel. If AEGIS cannot track an observation from draft to closure, it has no reason to exist. |
-| **Complexity**   | HIGH                                                                                                                                                                                                                                                                       |
-| **Confidence**   | HIGH (verified via PROJECT.md, Audit360 docs, RBI RBIA framework)                                                                                                                                                                                                          |
+### TS-V6-01: Hierarchical Examination Checklist Display and Navigation
+
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (section 7.3-7.4, 2020) mandates that scoring models be structured as a hierarchical tree of Parts → Sub-parts → Activities, each with assigned percentage weights. Auditors work through this tree during fieldwork. The existing flat 2-level structure (ExaminationArea → ExaminationItem) cannot represent a 4-5 level deep compliance tree. |
+| **Complexity**   | HIGH                                                                                                                                                                                                                                                                                                                                                             |
+| **Confidence**   | HIGH — verified from RBIA-POLICY-2020.md sections 7.3-7.5, ExaminationNode model in schema                                                                                                                                                                                                                                                                       |
 
 **Expected Behavior:**
 
-The observation lifecycle for UCB internal audit follows this state machine:
+The ExaminationNode tree has variable depth (0=root area, 1=module, 2=sub-module, 3-5=leaf items). Each depth level has a conceptual meaning:
 
 ```
-Draft (Auditor creates)
-  |
-  v
-Submitted (Auditor submits to Audit Manager for review)
-  |
-  +--> Returned (Manager sends back for revision) --> Draft
-  |
-  v
-Reviewed / Accepted (Manager approves observation)
-  |
-  v
-Issued to Auditee (Sent to Branch Manager / Department Head)
-  |
-  v
-Auditee Response Received (BM/Dept Head submits clarification + evidence)
-  |
-  +--> Dropped / Resolved During Fieldwork (if auditee explanation accepted)
-  |        [stays on record with "Resolved during fieldwork" status]
-  |
-  v
-Final Report (Observation included in final audit report)
-  |
-  v
-Compliance Submitted (Auditee submits compliance action + evidence)
-  |
-  v
-Under Review (Reviewer checks compliance)
-  |    - Low/Medium severity: Audit Manager reviews
-  |    - High/Critical severity: CAE reviews
-  |
-  +--> Sent Back (compliance insufficient) --> Compliance Submitted
-  |
-  v
-Closed (Reviewer accepts compliance; observation resolved)
+Level 0: Audit Area          (e.g., "Operations")
+  Level 1: Module            (e.g., "KYC/AML Compliance")
+    Level 2: Sub-module      (e.g., "Customer Due Diligence")
+      Level 3: Leaf item     (e.g., "Obtain valid KYC docs for all accounts")
 ```
 
-**Key behaviors:**
+**What auditors need from the UI:**
 
-- Each status transition records WHO, WHEN, and WHAT (comment/evidence) in an immutable timeline
-- "Dropped" observations are NOT deleted -- they remain visible with status "Resolved during fieldwork" and a rationale
-- Deadline tracking at each stage: auditee has N days to respond, N days to submit compliance
-- Overdue triggers escalation notifications (email to auditee + their supervisor)
-- The observation form captures: condition (what was found), criteria (what should be), cause (root cause), effect (risk/impact), recommendation (what to do)
-
-**Dependencies:** Auth system (roles), email notifications, audit trail
-
-**What v1.0 has:** Finding statuses `draft | submitted | reviewed | responded | closed` -- simplified. v2.0 needs the full state machine above with proper transitions, guards, and timeline events.
-
----
-
-### TS-02: Role-Based Access Control (5 Roles)
-
-| Attribute        | Detail                                                                                                                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Banking audit has strict separation of duties. RBI RBIA framework mandates that audit functions have proper authorization levels. Audit360 and LaserGRC both implement role-based workflows. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                       |
-| **Confidence**   | HIGH (RBI framework, competitor analysis, PROJECT.md role definitions)                                                                                                                       |
-
-**Expected Roles and Permissions:**
-
-| Role                               | Can Create Observations | Can Review             | Can Close              | Dashboard View                                         | Other                                                    |
-| ---------------------------------- | ----------------------- | ---------------------- | ---------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
-| **Auditor**                        | Yes                     | No                     | No                     | Assigned findings, audit progress                      | Record observations during fieldwork                     |
-| **Audit Manager**                  | Yes                     | Low/Medium severity    | Low/Medium severity    | Team workload, finding aging, audit plan progress      | Assign audit teams, manage audit plans                   |
-| **CAE (Chief Audit Executive)**    | No (oversight only)     | High/Critical severity | High/Critical severity | All audits, compliance posture, risk picture           | Final sign-off on audit reports, board report generation |
-| **CCO (Chief Compliance Officer)** | No                      | Compliance items only  | Compliance items only  | Compliance registry status, regulatory calendar        | Manage compliance requirements, certifications           |
-| **CEO**                            | No                      | No (read-only)         | No                     | Executive summary: health score, risk indicators, KPIs | Read-only aggregated view across all modules             |
+- Tree navigation with expand/collapse for each level
+- Progress indicator per module: "12/24 items scored" with percentage
+- Filter by: not yet scored, flagged for action point, flagged for observation
+- Module-level summary score computed live as leaves are scored (weighted roll-up)
+- Critical items (isCritical=true) visually marked — these cap parent score if NON_COMPLIANT
+- Module selection per engagement (EngagementModuleSelection) — auditor picks applicable modules at engagement start
+- Modules auto-selected by branch type (LARGE/MEDIUM/SMALL) based on applicableBranchTypes
 
 **Key behaviors:**
 
-- Role determines what sidebar items are visible
-- Role determines which observations a user can see (auditors see assigned; managers see team; CAE/CEO see all)
-- Severity-based review authority is the critical distinction: Manager closes low/medium, CAE closes high/critical
-- Auditee is a special role (see TS-05) that only sees findings assigned to their branch/department
+- Non-leaf nodes display roll-up score, not a user-entered score
+- Leaf nodes display a 4-button score picker (FULLY / LARGELY / PARTIALLY / NON_COMPLIANT)
+- Working notes field (500-2000 chars) per leaf for auditor's evidence and rationale
+- Flag toggles per leaf: "Flag for Action Point" and "Flag for Observation" (both can be set)
+- Tree state is saved incrementally — no loss if auditor closes mid-session
 
-**Dependencies:** Auth system, PostgreSQL RLS, middleware
-
----
-
-### TS-03: Role-Based Dashboards
-
-| Attribute        | Detail                                                                                                                                                                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Every audit management platform provides dashboards. PwC explicitly recommends audit committee dashboard reporting. The CEO should not see the same view as the auditor. UCB leaders need a "single glance" view. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                            |
-| **Confidence**   | HIGH (PwC guidelines, Audit360 features, MetricStream docs)                                                                                                                                                       |
-
-**Expected Dashboard Views:**
-
-**Auditor Dashboard:**
-
-- My assigned observations (open, overdue, due this week)
-- Current audit engagement progress
-- Pending auditee responses
-- Quick action: create new observation
-
-**Audit Manager Dashboard:**
-
-- Team workload distribution (observations per auditor)
-- Finding aging analysis (how long observations stay open by severity)
-- Audit plan progress (planned vs. completed vs. in-progress)
-- Overdue observations requiring escalation
-- Pending review items (observations awaiting manager review)
-
-**CAE Dashboard:**
-
-- All-up audit coverage (audited entities vs. audit universe)
-- High/critical observation trends (quarter-over-quarter)
-- Compliance posture summary
-- Observations awaiting CAE review
-- Board report readiness indicators
-- Repeat finding count and trend
-
-**CCO Dashboard:**
-
-- Compliance registry status (compliant / partial / non-compliant / pending breakdown)
-- Regulatory calendar with upcoming deadlines
-- Compliance task assignments and progress
-- RBI circular tracker (new circulars mapped to requirements)
-
-**CEO Dashboard (already built in v1.0):**
-
-- Compliance health score (0-100)
-- Audit coverage donut
-- Finding count cards (total, critical, open, overdue)
-- Risk indicator panel
-- Regulatory calendar
-- DAKSH score if available
-
-**Key behavior:** All dashboards derive from the SAME underlying observation data, aggregated differently per role. This is the "bottom-up observation architecture" described in PROJECT.md.
-
-**Dependencies:** Observation lifecycle (TS-01), RBAC (TS-02)
-
-**What v1.0 has:** CEO dashboard only, with hardcoded data. v2.0 needs all 5 role views with real aggregation queries.
+**Dependencies:** ExaminationNode schema (already seeded), ExaminationResponse DAL, 4-point scoring (TS-V6-02)
 
 ---
 
-### TS-04: Maker-Checker for Audit Findings
+### TS-V6-02: 4-Point Compliance Scoring with Weighted Roll-Up
 
-| Attribute        | Detail                                                                                                                                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | RBI mandates maker-checker (4-eyes principle) for banking operations. Audit360 explicitly advertises "multi-level verification." Any banking software without maker-checker will fail regulatory scrutiny. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                     |
-| **Confidence**   | HIGH (RBI guidelines, Wikipedia maker-checker, Audit360 feature list)                                                                                                                                      |
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA Policy (2020) section 7.5 defines scoring thresholds: > 80% = Very Good, > 65-80% = Good, > 50-65% = Satisfactory, > 40-50% = Moderate, ≤ 40% = Poor. The 4-point scale (FULLY=1.0, LARGELY=0.75, PARTIALLY=0.5, NON_COMPLIANT=0.0) maps to this framework. Weighted roll-up is explicitly mandated in sections 7.4.1-7.4.3. |
+| **Complexity**   | MEDIUM                                                                                                                                                                                                                                                                                                                                |
+| **Confidence**   | HIGH — verified from RBIA-POLICY-2020.md sections 7.4-8.9, schema ScoreLabel enum                                                                                                                                                                                                                                                     |
 
-**Expected Behavior:**
+**Score scale:**
 
-Maker-checker applies to these operations:
+| Label               | Decimal | Meaning                                         |
+| ------------------- | ------- | ----------------------------------------------- |
+| FULLY_COMPLIANT     | 1.00    | Controls fully in place, no gaps                |
+| LARGELY_COMPLIANT   | 0.75    | Controls mostly in place, minor gaps            |
+| PARTIALLY_COMPLIANT | 0.50    | Significant gaps, controls exist but inadequate |
+| NON_COMPLIANT       | 0.00    | Controls absent or completely ineffective       |
 
-| Operation                     | Maker                    | Checker                                | Notes                                     |
-| ----------------------------- | ------------------------ | -------------------------------------- | ----------------------------------------- |
-| Create/edit observation       | Auditor                  | Audit Manager                          | Manager reviews before issuing to auditee |
-| Close observation (Low/Med)   | Audit Manager            | -- (single-level for low risk)         | Manager has authority for low/medium      |
-| Close observation (High/Crit) | Audit Manager recommends | CAE approves                           | Two-level for high risk                   |
-| Release audit report          | CAE drafts/approves      | -- (CAE is final authority)            | CAE signs off on final report             |
-| Compliance certification      | CCO certifies            | CEO acknowledges (read receipt)        | For regulatory submissions                |
-| Board report generation       | CAE generates            | -- (informational, no approval needed) | Board does not log in                     |
+**Roll-up algorithm:**
 
-**Implementation approach:**
+1. Leaf node score = decimal value of ScoreLabel (1.0/0.75/0.5/0.0)
+2. Parent node score = Σ(child.score × child.weight) / Σ(child.weight) for scored children only
+3. Critical item override: if any leaf with isCritical=true scores NON_COMPLIANT, the parent module score is capped at 0.50 (PARTIALLY_COMPLIANT ceiling)
+4. Module scores roll up to composite engagement score by module weights
+5. N/A items (not scored): excluded from denominator — calibrated scoring as per RBIA policy 7.6.2
 
-- NOT a generic approval engine. Build specific state transitions for each operation.
-- Each approval action records the approver, timestamp, and any comments in the audit trail
-- Rejection sends the item back to the maker with reviewer comments
-- Pending approvals appear on the checker's dashboard
-- Email notification on submission and on approval/rejection
+**Rating bands from composite score:**
 
-**Anti-pattern to avoid:** Do NOT build a generic "workflow engine" with configurable states. The audit observation lifecycle is domain-specific and should be hardcoded as a state machine. A generic engine adds complexity without value for the UCB market.
-
-**Dependencies:** Observation lifecycle (TS-01), RBAC (TS-02), email notifications (TS-06)
-
----
-
-### TS-05: Auditee Self-Service Portal
-
-| Attribute        | Detail                                                                                                                                                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Modern audit management (Audit360, LaserGRC) provides auditee-facing interfaces. Without this, auditors email findings to branch managers who respond via email, and the auditor re-enters data -- defeating the purpose of the tool. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                                                |
-| **Confidence**   | HIGH (Audit360 "auditee screens", LaserGRC collaboration, Wayne State University audit response guidelines)                                                                                                                           |
-
-**Expected Behavior:**
-
-The auditee (Branch Manager, Department Head) gets a simplified portal:
-
-**What they see:**
-
-- List of observations assigned to their branch/department
-- Status of each observation (pending response, compliance due, closed)
-- Deadline countdown for each pending item
-- History of their previous responses
-
-**What they can do:**
-
-- View full observation details (condition, criteria, cause, effect, recommendation)
-- Submit clarification/response with text explanation
-- Upload evidence documents (scanned letters, system screenshots, corrective action proof)
-- Submit compliance action (after implementing recommendation)
-- View reviewer feedback if compliance was sent back
-
-**What they CANNOT do:**
-
-- See observations from other branches/departments
-- Edit or delete their submitted responses
-- See internal audit team discussions
-- Access any admin or configuration features
+| Score    | Rating Band  | Risk Level Implied                     |
+| -------- | ------------ | -------------------------------------- |
+| > 80%    | VERY_GOOD    | Low risk, sound control environment    |
+| > 65-80% | GOOD         | Generally good, room for improvement   |
+| > 50-65% | SATISFACTORY | Basic controls but needs strengthening |
+| > 40-50% | MODERATE     | Controls not commensurate with risk    |
+| ≤ 40%    | POOR         | Weak controls, highly vulnerable       |
 
 **Key behaviors:**
 
-- Responses are timestamped and immutable once submitted
-- Each response requires at least a text explanation; evidence attachment is optional but encouraged
-- Deadline reminders: 7 days before, 3 days before, 1 day before, overdue (all via email)
-- Overdue items are highlighted in red on the auditee's list
-- The auditee can see their response history but cannot modify past submissions
+- Roll-up computed server-side on save (not just client-side display)
+- Score displayed at every tree level as auditor works
+- BranchRbiaScore frozen snapshot taken at REPORT_DRAFT state — never changed after freeze
+- Both module-level scores (moduleScores JSONB) and full tree (scoringTreeSnapshot JSONB) stored
 
-**UCB-specific consideration:** Branch managers at Tier III/IV UCBs may have limited computer literacy. The portal must be extremely simple -- no complex navigation, large clear buttons, minimal form fields, support for Indian languages.
-
-**Dependencies:** Auth (TS-02), observation lifecycle (TS-01), email notifications (TS-06), evidence upload (TS-09)
+**Dependencies:** ExaminationNode tree (TS-V6-01), BranchRbiaScore model
 
 ---
 
-### TS-06: Email Notification System
+### TS-V6-03: Dual Findings — Action Points vs Formal Observations
 
-| Attribute        | Detail                                                                                                                                                                                                                           |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Audit workflows are time-sensitive. Without notifications, users must log in daily to check for new items -- which UCB staff will not do. Audit360 includes "automated email notifications." Every SaaS audit tool sends emails. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                                           |
-| **Confidence**   | HIGH (PROJECT.md specifies AWS SES, industry standard)                                                                                                                                                                           |
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | Indian bank RBIA practice distinguishes between operational findings (resolved at branch level) and formal 5C observations (escalated through ZAC/ACE/ACB). The RBIA policy (section 15.7) requires both types with different timelines and authority levels. Without this distinction, the system either over-documents trivial issues or under-formalizes serious ones. |
+| **Complexity**   | HIGH                                                                                                                                                                                                                                                                                                                                                                      |
+| **Confidence**   | HIGH — verified from schema (ActionPoint + Observation models coexist), RBIA policy section 4.8.4.3(h), IIA 5C standard                                                                                                                                                                                                                                                   |
 
-**Expected Notification Triggers:**
+**When to use each:**
 
-| Trigger                           | Recipient              | Urgency       | Template                                                                            |
-| --------------------------------- | ---------------------- | ------------- | ----------------------------------------------------------------------------------- |
-| New observation assigned          | Auditee                | Normal        | "Audit observation [ID] has been issued to [branch]. Please respond by [deadline]." |
-| Auditee response submitted        | Auditor + Manager      | Normal        | "[Auditee] has responded to observation [ID]."                                      |
-| Observation pending review        | Manager or CAE         | Normal        | "[N] observations are awaiting your review."                                        |
-| Compliance submitted              | Reviewer (Manager/CAE) | Normal        | "Compliance submitted for observation [ID]. Please verify."                         |
-| Deadline approaching (7d, 3d, 1d) | Auditee                | Warning       | "Observation [ID] response is due in [N] days."                                     |
-| Deadline overdue                  | Auditee + Supervisor   | Urgent        | "Observation [ID] is [N] days overdue. Escalating to [supervisor]."                 |
-| Observation closed                | Auditee + Auditor      | Informational | "Observation [ID] has been closed."                                                 |
-| Observation sent back             | Auditee or Auditor     | Action needed | "Observation [ID] compliance was insufficient. Reviewer comment: [...]"             |
-| Weekly digest                     | CAE, CCO               | Informational | "Weekly audit summary: [N] new, [N] closed, [N] overdue."                           |
+| Type             | Trigger                                                                                 | Volume per Audit | Lifecycle                                                                                           | Authority                                 |
+| ---------------- | --------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Action Point** | Flagged from ExaminationResponse (operational gap, process deviation, minor deficiency) | 15-40 per audit  | DRAFT → ISSUED → BM_RESPONSE_DUE → BM_RESPONDED → VERIFIED → CLOSED / CARRIED_FORWARD               | Branch Manager responds; Auditor verifies |
+| **Observation**  | Escalated from ExaminationResponse OR created directly (systemic, high-risk, repeat)    | 3-10 per audit   | Existing 7-state lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed) | Full ZAC/ACE/ACB review chain             |
+
+**Action Point details:**
+
+- Promoted from flagged ExaminationResponse items (sourceResponseId linkage)
+- Serial number within engagement: AP-001, AP-002, etc.
+- Branch Manager has 15 days from report issuance to respond (bmResponseDeadline)
+- BM responds in batch via BmResponseBatch (total/responded counters)
+- Auditor verifies response adequacy
+- Unresolved APs at next audit: CARRIED_FORWARD status with reference to new engagement
+
+**Formal Observation (5C) details:**
+
+- Promoted from critical/systemic ExaminationResponse items (flagForObservation=true)
+- Must contain: Condition, Criterion, Cause, Consequence, Corrective Recommendation
+- Enters the existing observation lifecycle (already built)
+- High/Critical severity: routed through ACE → ACB
 
 **Key behaviors:**
 
-- Use AWS SES (Mumbai region) for delivery reliability and data localization
-- Emails are bilingual: English + user's preferred language
-- All emails include a deep link to the relevant item in the platform
-- Notification preferences: users can mute non-critical notifications but CANNOT mute deadline/overdue notifications
-- Rate limiting: batch digest for bulk operations (e.g., issuing 20 observations does not send 20 separate emails to the same manager)
+- Auditor can flag the same ExaminationResponse for BOTH ActionPoint AND Observation
+- ActionPoints are audit-team facing; Observations are board-facing
+- ActionPoint list included in audit report appendix
+- Observation list is the core of the formal audit report
 
-**Dependencies:** Auth system (user email, preferences), AWS SES infrastructure
-
----
-
-### TS-07: PDF Board Report Generation
-
-| Attribute        | Detail                                                                                                                                                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | UCB boards do NOT log into software. The CAE generates a PDF report for the Audit Committee of the Board (ACB) meeting. This is the single most important output of the entire system for the people who approve audit budgets. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                                          |
-| **Confidence**   | HIGH (PROJECT.md specifies React-PDF, domain context confirms board workflow)                                                                                                                                                   |
-
-**Expected Behavior:**
-
-**Report Sections (per RBI RBIA framework):**
-
-1. Executive Summary -- key metrics, overall risk assessment, compliance health score
-2. Audit Coverage -- planned vs. actual audits by type, coverage percentage
-3. Key Findings -- high/critical observations with status, aging, and management response summary
-4. Compliance Scorecard -- per-category compliance status, trend charts
-5. Recommendations -- prioritized action items for board attention
-6. Repeat Findings Summary -- observations that recurred from prior audit cycles
-7. Appendices -- detailed observation list, regulatory calendar, team utilization
-
-**Key behaviors:**
-
-- CAE selects reporting period (quarter or custom date range)
-- Report auto-populates from live observation and compliance data
-- CAE can add/edit executive commentary before generation
-- Output is a professional PDF suitable for printing and distribution
-- Report includes bank logo, confidentiality notice, page numbers
-- Charts embedded as static images in PDF (compliance trend, severity distribution)
-- Bilingual option: English report with Hindi/Marathi/Gujarati labels
-
-**UCB-specific consideration:** Board members are typically senior citizens with banking backgrounds. The report format should mirror traditional audit committee report formats they are accustomed to, not SaaS dashboards.
-
-**Dependencies:** Observation lifecycle (TS-01), compliance registry, dashboards (TS-03)
-
-**What v1.0 has:** Board report preview with 5 sections and print stylesheet (HTML). v2.0 needs React-PDF generation from live data with CAE commentary.
+**Dependencies:** ExaminationResponse flagging (TS-V6-01), existing Observation model, BmResponseBatch, ActionPoint model
 
 ---
 
-### TS-08: Excel/MIS Exports
+### TS-V6-04: 8-State Engagement Lifecycle with State Guards
 
-| Attribute        | Detail                                                                                                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Why Expected** | UCB audit teams live in Excel. They will need to extract data for ad-hoc analysis, RBI submissions, and internal presentations. Every competitor (Audit360, LaserGRC) offers Excel export. |
-| **Complexity**   | LOW                                                                                                                                                                                        |
-| **Confidence**   | HIGH (universal expectation, PROJECT.md specifies this)                                                                                                                                    |
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (Appendix A, section 9) defines pre-audit → during audit → wrap-up stages. The existing 3-state engagement (PLANNED/IN_PROGRESS/COMPLETED) cannot track the opening meeting, examination, exit meeting, and report drafting as separate phases requiring different actions and permissions. |
+| **Complexity**   | MEDIUM                                                                                                                                                                                                                                                                                                      |
+| **Confidence**   | HIGH — verified from schema EngagementStatus enum, RBIA policy sections                                                                                                                                                                                                                                     |
 
-**Expected Export Capabilities:**
-
-| Export              | Contents                                                            | Format                  |
-| ------------------- | ------------------------------------------------------------------- | ----------------------- |
-| Findings list       | All observations with status, severity, dates, auditee, branch      | XLSX                    |
-| Compliance status   | All RBI requirements with current status, evidence count, owner     | XLSX                    |
-| Audit plan progress | All engagements with planned/actual dates, progress, findings count | XLSX                    |
-| Observation detail  | Single observation with full timeline, responses, evidence list     | XLSX or PDF             |
-| DAKSH data          | Formatted data matching DAKSH upload format                         | XLSX (specific columns) |
-| Custom MIS          | Date-range filtered data with user-selected columns                 | XLSX                    |
-
-**Key behaviors:**
-
-- Export button on every list/table view
-- Date range filter for exports
-- Export respects user's role permissions (auditor cannot export all-bank data)
-- XLSX format (not CSV) -- Indian banking prefers Excel with formatted headers
-- Include bank name, export date, and "Confidential" watermark in header
-
-**Dependencies:** Data layer (all modules), RBAC
-
----
-
-### TS-09: Evidence File Upload and Management
-
-| Attribute        | Detail                                                                                                                                                                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Audit evidence (scanned documents, system screenshots, corrective action proof) must be attached to observations. Without this, the platform cannot replace the physical audit file. Audit360's mobile app captures "video, photo, and audio evidences." |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                                                                   |
-| **Confidence**   | HIGH (Audit360, AWS documentation, RBI RBIA framework requires evidence)                                                                                                                                                                                 |
-
-**Expected Behavior:**
-
-**Upload contexts:**
-
-- Auditor attaches evidence when creating observation (supporting documents)
-- Auditee attaches evidence when submitting response or compliance action
-- CCO attaches evidence for compliance certification
-
-**File handling:**
-
-- Supported formats: PDF, JPEG, PNG, XLSX, DOCX (no executables)
-- Max file size: 10 MB per file (UCB staff have limited bandwidth)
-- Max files per observation: 20
-- Storage: AWS S3 (Mumbai region, SSE-S3 encryption)
-- Files are organized by tenant_id/observation_id/filename
-- Files are immutable once uploaded -- no editing or replacing, only adding new versions
-- Download available to authorized users (auditor, manager, CAE, assigned auditee)
-- Thumbnail preview for images; icon display for documents
-
-**Key behaviors:**
-
-- Drag-and-drop upload with progress indicator
-- File type validation client-side and server-side
-- Virus/malware scan consideration (defer to post-MVP, note as future requirement)
-- Evidence appears in observation timeline with upload timestamp and uploader name
-- Evidence list on observation detail page with download links
-
-**Dependencies:** AWS S3, auth system, observation lifecycle
-
----
-
-### TS-10: Immutable Audit Trail
-
-| Attribute        | Detail                                                                                                                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why Expected** | Regulatory requirement. RBI expects that audit records cannot be tampered with. "Immutable audit trail" is called out explicitly in PROJECT.md. Banking compliance (SOC 2, RBI guidelines) requires tamper-proof records. |
-| **Complexity**   | MEDIUM                                                                                                                                                                                                                    |
-| **Confidence**   | HIGH (RBI guidelines, PROJECT.md, industry standard for banking SaaS)                                                                                                                                                     |
-
-**Expected Behavior:**
-
-**What gets logged:**
-
-- Every observation status transition (who, when, from-state, to-state, comment)
-- Every login/logout
-- Every file upload/download
-- Every data export
-- Every role change or permission modification
-- Every maker-checker approval/rejection
-- Every compliance certification
-
-**Implementation approach:**
-
-- Append-only PostgreSQL table (`audit_log`)
-- Database user for application has INSERT-only permission on this table (no UPDATE, no DELETE)
-- Each log entry includes: timestamp, user_id, tenant_id, action_type, entity_type, entity_id, old_value, new_value, ip_address
-- Optional: cryptographic hash chain (each entry includes hash of previous entry) for tamper detection
-- Audit log is viewable by CAE and CEO (read-only)
-- Audit log is searchable by entity, user, date range, action type
-
-**Key behaviors:**
-
-- Log entries cannot be modified or deleted by ANY user, including admins
-- Retention: minimum 8 years (RBI record retention requirement)
-- Audit log viewer in the UI for CAE with filters
-- Export audit log to Excel for external auditor review
-
-**Anti-pattern to avoid:** Do NOT use soft deletes on audit log entries. Do NOT grant UPDATE or DELETE on the audit_log table to any application database user.
-
-**Dependencies:** PostgreSQL schema, all other features (they write to audit log)
-
----
-
-### TS-11: Multi-Tenant SaaS Onboarding
-
-| Attribute        | Detail                                                                                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Why Expected** | AEGIS is SaaS serving multiple UCBs. Each UCB needs its own isolated data space. AWS Well-Architected SaaS Lens explicitly recommends automated tenant onboarding. |
-| **Complexity**   | HIGH                                                                                                                                                               |
-| **Confidence**   | HIGH (PROJECT.md, AWS SaaS Lens, bootstrap execution plan)                                                                                                         |
-
-**Expected Behavior:**
-
-**Onboarding wizard flow:**
+**State machine:**
 
 ```
-Step 1: Bank Registration
-  - Bank name, RBI license number, tier (I/II/III/IV)
-  - Primary contact (CAE or CEO) email, phone
-  - Auto-validate RBI license format
+PLANNED
+  → TEAM_ASSIGNED (Lead Auditor assigns team members)
+    → OPENING_MEETING (Opening meeting record created + signed off)
+      → IN_PROGRESS (Active examination, scoring responses)
+        → EXIT_MEETING (Exit meeting record created + signed off)
+          → REPORT_DRAFT (BranchRbiaScore frozen, action points issued to BM)
+            → COMPLETED (BM responses received and verified, FACC submitted)
+              (or)
+            → CANCELLED (at any state, CAE authority only)
+```
 
-Step 2: Tier-Based Configuration
-  - System detects UCB tier from registration
-  - Auto-selects applicable RBI Master Directions based on tier
-  - Shows list of pre-built compliance checklists
-  - Admin can select-applicable and add-custom requirements
+**State guards (server-side enforced):**
 
-Step 3: Organization Structure
-  - Option A: Upload Excel template (branches, departments, staff)
-  - Option B: Manual entry via forms
-  - Branch details: name, code, manager, location
-  - Department details: name, head, code
+- Cannot advance to OPENING_MEETING without at least 1 team member assigned
+- Cannot advance to IN_PROGRESS without opening meeting signed off
+- Cannot advance to EXIT_MEETING without minimum % of examination items scored (configurable, default 90%)
+- Cannot advance to REPORT_DRAFT without exit meeting signed off
+- REPORT_DRAFT transition triggers: BranchRbiaScore freeze, ActionPoint issuance to BM, 15-day deadline set
+- Cannot advance to COMPLETED until all APs have BM_RESPONDED status (or CARRIED_FORWARD decision made)
 
-Step 4: User Setup
-  - Create initial admin user (CAE)
-  - Admin can invite other users with role assignment
-  - Email invitations sent via SES
+**Key behaviors:**
 
-Step 5: Confirmation
-  - Summary of configured tenant
-  - "Your bank is ready" screen with quick-start guide links
+- Current state displayed prominently on engagement header
+- Next-state action button shown only to role with authority (Lead Auditor advances, CAE cancels)
+- State transition recorded in audit trail with timestamp and user
+- State regress NOT permitted (once past opening meeting, cannot go back to team-assigned)
+
+**Dependencies:** EngagementMeeting (TS-V6-05), BranchRbiaScore freeze (TS-V6-02), ActionPoint issuance (TS-V6-03)
+
+---
+
+### TS-V6-05: Opening and Exit Meeting Records
+
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (Appendix A, section 9B-C) mandates pre-audit discussions and wrap-up discussions. Opening meeting: auditor explains scope, requests documents. Exit meeting: auditor presents preliminary findings, branch manager can clarify. Both meetings must be formally recorded with attendees and signed off. These records are RBI inspector evidence. |
+| **Complexity**   | LOW                                                                                                                                                                                                                                                                                                                                                               |
+| **Confidence**   | HIGH — verified from EngagementMeeting model in schema, RBIA policy Appendix A                                                                                                                                                                                                                                                                                    |
+
+**Opening Meeting captures:**
+
+- Date/time of meeting
+- Attendees: name, designation, department (JSON array — not system users, may include branch staff)
+- Audit scope communicated (modules selected for this engagement)
+- Documents requested from branch (pre-audit data collection)
+- Minutes text (free text, 2000+ chars)
+- Key discussion points (structured)
+- Sign-off by Lead Auditor (required to advance to IN_PROGRESS)
+
+**Exit Meeting captures:**
+
+- Date/time
+- Attendees (same structure)
+- Preliminary findings discussed (reference to flagged ExaminationResponses)
+- Branch Manager comments on preliminary findings (may reduce scope of APs/Observations)
+- Key discussion points
+- Sign-off by Lead Auditor (required to advance to REPORT_DRAFT)
+
+**Key behaviors:**
+
+- One opening meeting, one exit meeting per engagement (@@unique constraint)
+- Meeting date must be within engagement date range (server validation)
+- Attendees list allows free-form names (branch staff not in the system)
+- PDF export of meeting minutes (append to audit report)
+- Findings raised and subsequently resolved at exit meeting: status "Resolved at Exit Meeting" (not dropped silently)
+
+**Dependencies:** EngagementMeeting model, 8-state lifecycle (TS-V6-04)
+
+---
+
+### TS-V6-06: Branch Manager Response Workflow (Batch)
+
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (section 15.7.7) mandates compliance within one month of report receipt. Standard Indian bank practice for branch audits: BM receives all action points as a list, responds to each with explanation and evidence, submits a Final Audit Compliance-cum-Closure Certificate (FACC). Implementing individual AP responses without a batch view defeats the BM's workflow. |
+| **Complexity**   | MEDIUM                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Confidence**   | HIGH — verified from RBIA policy section 15.7.7, BmResponseBatch model in schema                                                                                                                                                                                                                                                                                                         |
+
+**BM workflow:**
+
+```
+REPORT_DRAFT state triggers:
+  1. All ActionPoints status → BM_RESPONSE_DUE
+  2. BmResponseBatch created with deadline (15 days from issuance, configurable)
+  3. BM notified by email with list of all APs
+
+BM responds:
+  1. BM sees all APs for their branch in one batch view
+  2. For each AP: enter response text + attach evidence documents
+  3. Can respond to APs incrementally (no forced all-at-once submission)
+  4. Batch shows progress: "12 of 27 APs responded"
+  5. BM submits batch (changes BmResponseBatch.status → SUBMITTED)
+
+Auditor reviews batch:
+  1. Auditor sees each AP with BM response + evidence
+  2. Per AP: mark as VERIFIED (accepted) or CARRIED_FORWARD (persistent issue)
+  3. Carried-forward APs link to new engagement if one is being planned
 ```
 
 **Key behaviors:**
 
-- Each tenant gets Row-Level Security (RLS) isolation -- PostgreSQL policies on every table
-- Tenant data is logically isolated (shared database, shared schema, tenant_id column)
-- Pre-built RBI compliance checklists are copied into the tenant's data (not referenced) so they can customize
-- Onboarding creates seed data: compliance requirements, default audit types, standard risk categories
-- Admin can complete onboarding incrementally (save progress, return later)
+- BM can see all APs in a single page, scrollable list with inline response forms
+- Response deadline countdown shown prominently (days remaining)
+- BmResponseBatch.status becomes OVERDUE if deadline passes without SUBMITTED
+- Overdue triggers email escalation to Zonal Auditor
+- BM cannot modify response after submission (immutable)
+- FACC generation: PDF certificate confirming all APs responded + auditor verification status
 
-**UCB-specific consideration:** Tier III/IV UCBs may not have a CAE. The "admin" role should be flexible -- could be the CEO or a senior manager designated for audit oversight. The wizard should not assume organizational hierarchy that smaller UCBs lack.
+**Dependencies:** ActionPoint lifecycle (TS-V6-03), BmResponseBatch model, email notifications
 
-**Dependencies:** PostgreSQL multi-tenancy, auth system, RBI compliance data, AWS SES
+---
+
+### TS-V6-07: RBIA Score Display and Module Breakdown
+
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (section 8) mandates that the rating be communicated to branches in writing. The CAE informs ACE/ACB of rating migrations annually. UCB CAEs need to see score trends to identify deteriorating branches. This is the primary output RBI inspectors look for during DAKSH assessment. |
+| **Complexity**   | MEDIUM                                                                                                                                                                                                                                                                                                |
+| **Confidence**   | HIGH — verified from RBIA policy sections 8.1-8.7, BranchRbiaScore model                                                                                                                                                                                                                              |
+
+**Score display surfaces:**
+
+1. **Engagement completion screen:** Composite score, rating band, module-by-module breakdown
+2. **Branch profile page:** History of RBIA scores across audits with trend chart
+3. **CAE/Manager dashboard:** All branches with their latest rating and risk migration table
+4. **ACE/ACB report section:** Rating migration summary (how many branches moved between bands)
+
+**Rating migration tracking (per RBIA policy 8.6-8.7):**
+
+- Quarterly: ZAC sees migration of branch ratings within zone
+- Annual: CAE presents rating migration to ACE/ACB
+
+**Key behaviors:**
+
+- BranchRbiaScore.frozenAt timestamp shows when score was locked (immutable after freeze)
+- Score drill-down: click on composite → see module scores → click on module → see item-level scores
+- scoringTreeSnapshot JSONB provides full historical tree (not just totals) for any past audit
+- Score comparison: show current audit score vs previous audit score (delta)
+- Rating band shown with color coding (POOR=red, MODERATE=amber, SATISFACTORY=yellow, GOOD=green, VERY_GOOD=dark-green)
+- Download certificate of audit rating (PDF) — communicated to branch manager per policy 8.4
+
+**Dependencies:** BranchRbiaScore model, 4-point scoring roll-up (TS-V6-02), existing branch model
+
+---
+
+### TS-V6-08: Positive Observations Capture and Report Inclusion
+
+| Attribute        | Detail                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why Expected** | RBI RBIA policy (section 4.5.2c) describes internal audit's role as "business enabler providing on-going feedback." Indian bank audit practice includes commendable practices in the audit report — branches with strong controls are recognized, which incentivizes compliance. Every UCB audit report template has a "Positive Observations" section alongside findings. Without this, the report is purely critical and misses RBI's intent. |
+| **Complexity**   | LOW                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **Confidence**   | MEDIUM — verified from PositiveObservation model in schema, RBIA policy 4.5.2c; specific format from domain practice (MEDIUM confidence — standard in Indian banking but not explicitly stated in RBI circular text)                                                                                                                                                                                                                            |
+
+**Expected behavior:**
+
+- During IN_PROGRESS state, auditor can create positive observations at any point
+- Form: title (required), description (required, 200-2000 chars), moduleCode (linked to ExaminationNode)
+- No lifecycle states — purely informational capture
+- Multiple positive observations per engagement (no limit)
+- Appear in audit report: "Commendable Practices" section before findings
+- Appear in BranchRbiaScore report to acknowledge what is working well
+- Branch Manager can see them — motivating feedback
+
+**Key behaviors:**
+
+- Positive observations do NOT affect the composite score (purely qualitative)
+- No evidence upload required (optional)
+- Created by auditor, not editable after EXIT_MEETING state
+- Included in report PDF in dedicated section
+
+**Dependencies:** AuditEngagement, PositiveObservation model, ExaminationNode (for module reference)
 
 ---
 
 ## Differentiators
 
-Features that set AEGIS apart from spreadsheets and generic audit tools. Not expected, but valued -- especially in the UCB market where domain expertise is the moat.
-
-### DIFF-01: Pre-Built RBI Compliance Checklists
-
-| Attribute             | Detail                                                                                                                                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Value Proposition** | No competitor provides UCB-specific RBI compliance checklists out of the box. TeamMate and AuditBoard serve global markets. Audit360 serves larger banks. AEGIS knows exactly which Master Directions apply to which UCB tier. |
-| **Complexity**        | MEDIUM (data curation, not code complexity)                                                                                                                                                                                    |
-| **Confidence**        | HIGH (this is the project's stated moat)                                                                                                                                                                                       |
-
-**Expected Behavior:**
-
-- During onboarding, system auto-populates compliance requirements based on UCB tier
-- Requirements sourced from RBI Master Directions: KYC, CRAR, SLR/CRR, cyber security, IS audit, RBIA
-- Each requirement links to the source circular reference
-- UCB admin can: mark requirements as not-applicable (with reason), add custom requirements
-- When RBI issues new circulars, AEGIS team updates the master checklist; new requirements propagate to all tenants as "pending review"
-
-**This is a differentiator because:** A Tier III UCB CAE does not need to manually identify which of 200+ RBI directions apply to their bank. The system tells them, and they only need to review and customize.
+Features that set AEGIS apart from manual spreadsheet-based RBIA workflows and generic audit tools. These are the competitive advantages in the UCB market.
 
 ---
 
-### DIFF-02: Repeat Finding Detection and Auto-Escalation
+### DIFF-V6-01: Live Score Roll-Up with Critical Item Override Visual Feedback
 
-| Attribute             | Detail                                                                                                                                                                                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Value Proposition** | Repeat findings are a red flag for RBI supervisors. If the same observation appears in consecutive audit cycles, it indicates management inaction. Auto-detecting repeats and escalating severity saves the CAE from manual tracking and demonstrates governance rigor to RBI. |
-| **Complexity**        | MEDIUM                                                                                                                                                                                                                                                                         |
-| **Confidence**        | MEDIUM (domain logic is clear from PROJECT.md; implementation specifics need validation)                                                                                                                                                                                       |
+| Attribute             | Detail                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Proposition** | Spreadsheet-based RBIA scoring requires auditors to manually calculate weighted averages and track which critical items would cap scores. AEGIS computes this live as each item is scored, showing the impact immediately. Auditors understand the composite score implications of each finding in real time — this changes how they prioritize fieldwork. |
+| **Complexity**        | MEDIUM                                                                                                                                                                                                                                                                                                                                                     |
+| **Confidence**        | HIGH (technical feasibility clear; market differentiation is clear given spreadsheet baseline)                                                                                                                                                                                                                                                             |
 
-**Expected Behavior:**
+**What this looks like:**
 
-**Detection:**
+- As auditor scores a leaf item, parent and module scores update instantly (optimistic UI + server sync)
+- Critical items display a warning banner: "This item is marked CRITICAL. A NON_COMPLIANT score will cap this module's score at PARTIALLY_COMPLIANT (50%)"
+- Score delta shown: "Scoring this PARTIALLY vs NON_COMPLIANT would improve module score from 42% to 58%"
+- Module completion percentage shown: "OPS module: 18/24 items scored (75% complete)"
 
-- When creating a new observation, system checks for similar past observations:
-  - Same branch + same audit area + same risk category = potential repeat
-  - Same RBI requirement reference = potential repeat
-  - System suggests "This may be a repeat of [FND-XXX] from [audit cycle]"
-- Auditor confirms or dismisses the repeat suggestion
-- If confirmed, new observation is tagged as "Repeat" with reference to original
-
-**Auto-escalation rules:**
-
-- First occurrence: original severity stands
-- Second occurrence (repeat): severity auto-escalated by one level (Low->Medium, Medium->High, High->Critical)
-- Third occurrence: severity = Critical regardless of original assessment
-- Escalation is automatic but auditor can override with documented justification
-
-**Reporting:**
-
-- Board report includes a dedicated "Repeat Findings" section
-- Dashboard widget shows repeat finding count and trend
-- Repeat findings are visually flagged in all observation lists (badge or icon)
-
-**Why this matters for UCBs:** RBI RBIA framework specifically calls out that "repeat criticisms have escalated in importance because of insufficient attention or inaction." Demonstrating automated repeat tracking to RBI inspectors during DAKSH assessment is a significant advantage.
-
-**Dependencies:** Observation lifecycle (TS-01), observation tagging/categorization
+**Dependencies:** TS-V6-01, TS-V6-02, ExaminationNode isCritical flag
 
 ---
 
-### DIFF-03: Multi-Dimensional Observation Tagging
+### DIFF-V6-02: Carry-Forward AP Linkage Across Audit Cycles
 
-| Attribute             | Detail                                                                                                                                                                                                    |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value Proposition** | Most spreadsheet-based audit tracking has flat categorization. AEGIS allows tagging each observation across multiple dimensions, enabling rich cross-cutting analysis that manual methods cannot achieve. |
-| **Complexity**        | LOW-MEDIUM                                                                                                                                                                                                |
-| **Confidence**        | MEDIUM (domain logic clear, implementation standard)                                                                                                                                                      |
+| Attribute             | Detail                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Proposition** | Persistent unresolved Action Points are a key RBI concern. AEGIS tracks which APs were carried forward from the previous engagement and surfaces them prominently in the new audit. The auditor can immediately see: "Branch X has 5 carry-forward APs from last audit — these must be re-examined first." This is the digital equivalent of the "previous audit findings" review in RBIA pre-audit stage (policy section A.h). |
+| **Complexity**        | MEDIUM                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **Confidence**        | HIGH — explicitly in ActionPoint.carriedForwardToEngagementId schema field; RBIA policy Appendix A explicitly requires review of previous findings                                                                                                                                                                                                                                                                              |
 
-**Expected Tagging Dimensions:**
+**Expected behavior:**
 
-| Dimension       | Values                                                                | Purpose                          |
-| --------------- | --------------------------------------------------------------------- | -------------------------------- |
-| Risk Category   | Credit, Market, Operational, Liquidity, IT, Compliance, Governance    | Risk-based aggregation for board |
-| RBI Requirement | Link to specific compliance requirement                               | Compliance gap analysis          |
-| Audit Area      | KYC/AML, Advances, Deposits, Treasury, IT Systems, HR, Accounts       | Functional analysis              |
-| Severity        | Critical, High, Medium, Low                                           | Priority management              |
-| Branch/Unit     | Any branch or department                                              | Location-based analysis          |
-| Audit Type      | Branch Audit, IS Audit, Credit Audit, Compliance Audit, Revenue Audit | Audit program analysis           |
+- When a new engagement is created for a branch, system finds all CARRIED_FORWARD APs from the most recent completed engagement for that branch
+- These appear at the top of the examination view: "3 carried-forward action points from previous audit (Audit #2024-APR)"
+- Each carry-forward AP must be explicitly re-assessed: "Resolved", "Still Pending" (creates new AP), or "Upgraded to Observation" (systemic pattern)
+- Three or more consecutive carry-forwards for the same AP should trigger an automatic observation flag
 
-**Key behavior:** Every dashboard widget and export can filter/group by any combination of these dimensions. The CEO asks "show me all high-severity credit risk findings across all branches this quarter" and gets the answer in one click.
-
-**Dependencies:** Observation data model, dashboard aggregation queries
+**Dependencies:** ActionPoint model (carriedForwardToEngagementId), TS-V6-03
 
 ---
 
-### DIFF-04: DAKSH Score Visualization and Export
+### DIFF-V6-03: Module-Adaptive Examination (Branch-Type Filtering)
 
-| Attribute             | Detail                                                                                                                                                                                                   |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value Proposition** | DAKSH is RBI's supervisory assessment tool for UCBs. No competitor provides DAKSH-aligned reporting. Showing the CAE how their audit data maps to DAKSH categories saves significant manual preparation. |
-| **Complexity**        | MEDIUM                                                                                                                                                                                                   |
-| **Confidence**        | LOW-MEDIUM (DAKSH format specifics need validation with actual RBI documents)                                                                                                                            |
+| Attribute             | Detail                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Proposition** | A large urban branch has different applicable examination modules than a small rural branch. Manual RBIA checklists apply everything to everyone and auditors manually skip non-applicable items. AEGIS auto-filters modules by applicableBranchTypes on the ExaminationNode, showing only what's relevant. This reduces examination scope by 20-40% for smaller branches and focuses auditor attention. |
+| **Complexity**        | LOW                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Confidence**        | HIGH — applicableBranchTypes field in ExaminationNode schema, RBIA policy 7.6.2 explicitly addresses N/A calibration                                                                                                                                                                                                                                                                                     |
 
-**Expected Behavior:**
+**Expected behavior:**
 
-- Map audit findings and compliance data to DAKSH assessment categories
-- Show estimated DAKSH scores based on current data
-- Export data in the format required for DAKSH upload (structured Excel)
-- Highlight gaps: "You have no observations covering [DAKSH category] -- consider adding to next audit plan"
+- Engagement creation: select branch type (LARGE/MEDIUM/SMALL from branch profile)
+- System auto-selects applicable modules (EngagementModuleSelection with isAutoSelected=true)
+- Lead Auditor can manually add or remove modules with a reason (selectionReason)
+- Non-applicable nodes excluded from scoring denominator (calibrated scoring)
+- Report shows: "Modules examined: 8 of 12 available (4 not applicable for branch type)"
 
-**Note:** DAKSH API integration is explicitly out of scope. Start with formatted export for manual upload.
-
-**Dependencies:** Observation tagging (DIFF-03), compliance registry, Excel export (TS-08)
-
----
-
-### DIFF-05: Guided Compliance Workflow for Small Teams
-
-| Attribute             | Detail                                                                                                                                                                                                                                 |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value Proposition** | Tier III/IV UCBs have 5-8 person audit teams. Enterprise audit tools (TeamMate, AuditBoard) assume 20+ person departments with specialized roles. AEGIS streamlines workflows for small teams where one person may wear multiple hats. |
-| **Complexity**        | LOW                                                                                                                                                                                                                                    |
-| **Confidence**        | HIGH (UCB market understanding from PROJECT.md)                                                                                                                                                                                        |
-
-**Expected Behavior:**
-
-- Allow one user to hold multiple roles (e.g., same person is Auditor + Audit Manager in a 3-person team)
-- Simplify maker-checker when team is too small: configurable to allow single-person sign-off for low-severity items
-- In-app guided tours for first-time users (tooltip walkthroughs)
-- Contextual help: "What is CRAR?" links next to banking-specific fields
-- Templates for common observation types (KYC deficiency, credit documentation gap, etc.)
-
-**Dependencies:** RBAC (TS-02), onboarding (TS-11)
+**Dependencies:** TS-V6-01, ExaminationNode.applicableBranchTypes, EngagementModuleSelection
 
 ---
 
-### DIFF-06: Indian Language Support for Audit Content
+### DIFF-V6-04: RBIA Audit Report — Dual-Section Report with Scores + Findings
 
-| Attribute             | Detail                                                                                                                                                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value Proposition** | v1.0 has UI label translation. v2.0 differentiator is allowing audit observations themselves to be written in Hindi/Marathi/Gujarati, with bilingual board reports. No competitor offers this for the UCB market. |
-| **Complexity**        | LOW (UI already supports i18n; this extends to user-generated content)                                                                                                                                            |
-| **Confidence**        | MEDIUM (feasibility is clear; user demand needs validation)                                                                                                                                                       |
+| Attribute             | Detail                                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Proposition** | The RBIA audit report is fundamentally different from a plain observation list: it has a score summary + rating, module-level scorecards, positive observations, action point table, and formal 5C observations. Generating this from the digital record — instead of Word/Excel assembly — saves 2-4 days of report writing per audit cycle and eliminates transcription errors. |
+| **Complexity**        | HIGH                                                                                                                                                                                                                                                                                                                                                                              |
+| **Confidence**        | HIGH — this is the primary output of the RBIA workflow; RBIA policy section 15.7.6 mandates submission within 3 weeks                                                                                                                                                                                                                                                             |
 
-**Expected Behavior:**
+**Report sections (sequential):**
 
-- Observation text fields accept Devanagari/Gujarati script input
-- Search works across scripts (searching in English finds Hindi-titled observations if they have English tags)
-- Board report can be generated in bilingual format (English + regional language)
-- Excel exports include proper Unicode handling for Indian scripts
+1. Cover page: branch name, audit period, team, rating badge
+2. Executive summary: composite score, rating band, vs previous audit
+3. Positive observations: commendable practices table
+4. Module scorecards: per-module score, items count, key gaps
+5. Action point register: AP-001 to AP-N, module, description, BM deadline
+6. Formal observations: 5C format observations (high/critical only in main report, others in appendix)
+7. Opening/exit meeting minutes (appendix)
+8. Full examination scoring tree (appendix, for branch manager reference)
 
-**Dependencies:** Existing i18n system (next-intl), font support (Noto Sans already configured)
+**Key behaviors:**
+
+- CAE/Lead Auditor can add/edit commentary on each section before PDF generation
+- Report generated in REPORT_DRAFT state after score freeze
+- Report regeneration permitted until COMPLETED (for corrections)
+- Final report is immutable once engagement reaches COMPLETED
+- Bilingual report option: English primary + Indian language labels
+
+**Dependencies:** BranchRbiaScore (TS-V6-07), PositiveObservation (TS-V6-08), ActionPoint (TS-V6-03), Observation (existing), EngagementMeeting (TS-V6-05)
+
+---
+
+### DIFF-V6-05: Offline Scoring Sheet Export (for Low-Connectivity Field Audits)
+
+| Attribute             | Detail                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Value Proposition** | UCB branches in rural areas may have poor internet connectivity. Auditors conducting fieldwork at a branch may be unable to use the web app continuously. An Excel-based scoring sheet export (pre-populated with examination items) lets auditors work offline, then import back. This is a practical accommodation that generic tools don't provide. |
+| **Complexity**        | MEDIUM                                                                                                                                                                                                                                                                                                                                                 |
+| **Confidence**        | MEDIUM — domain need is clear; implementation feasibility is high (ExcelJS); no direct policy requirement                                                                                                                                                                                                                                              |
+
+**Expected behavior:**
+
+- Export: XLSX file with one sheet per module, pre-populated with item codes/descriptions
+- Auditor fills in score (dropdown: FC/LC/PC/NC) and working notes per item in Excel
+- Import: system reads back Excel, maps by item code, updates ExaminationResponse records
+- Conflict handling: if item already scored in app, prompt for which version to keep
+- Import validation: flag unknown item codes, invalid score values
+
+**Dependencies:** ExaminationNode seed data, ExaminationResponse DAL, ExcelJS
 
 ---
 
 ## Anti-Features
 
-Features to deliberately NOT build in v2.0. These are common requests or competitor features that would add complexity without proportional value for the UCB market at this stage.
+Features to deliberately NOT build in v6.0. These are commonly requested but would hurt quality, timeline, or product focus.
 
-### AF-01: Generic Configurable Workflow Engine
+---
 
-| Why Avoid                                                                                                                                                                                                                                                                                                                                                      | What to Do Instead                                                                                                                                                                                                               |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| UCB audit observation lifecycle is well-defined and standardized by RBI. A configurable workflow engine (like BPMN or drag-and-drop workflow builder) adds massive complexity and confuses small UCB teams who just need "the standard process." Enterprise tools like TeamMate offer this because they serve diverse industries -- AEGIS serves ONE vertical. | Hardcode the observation state machine. Make the states, transitions, and guards explicit in code. If a UCB asks "can we add a state?" the answer is "tell us about your process and we will evaluate if it should be standard." |
+### AF-V6-01: Configurable Scoring Scales (Other Than 4-Point)
 
-### AF-02: Real-Time Chat or Discussion Threads
+| Why Avoid                                                                                                                                                                                                                                                                                                                                                                                                                  | What to Do Instead                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| UCBs under RBI RBIA mandate are converging on the 4-point scale (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) as the standard interpretation of the weighted scoring approach. Allowing custom scales (3-point, 5-point, percentage input) would fragment reporting, break roll-up algorithms, and make cross-bank comparisons impossible. One bank asking for a 5-point scale is a red flag that they want to game the ratings. | Hardcode FULLY/LARGELY/PARTIALLY/NON_COMPLIANT. If a tenant wants different labels, support label aliases in display only (e.g., "Satisfactory" instead of "Largely Compliant") — not different weights. |
 
-| Why Avoid                                                                                                                                                                                                                                                                      | What to Do Instead                                                                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adding Slack-like chat between auditor and auditee creates an informal communication channel that undermines the structured observation lifecycle. Audit records must be formal and traceable. Chat messages are ambiguous about whether they constitute "official responses." | Use the structured response mechanism in the observation lifecycle. Auditee submits formal response; auditor submits formal review. Comments are attached to status transitions, not free-floating. |
+---
 
-### AF-03: Mobile Native App
+### AF-V6-02: Real-Time Multi-User Collaborative Scoring
 
-| Why Avoid                                                                                                                                                                                                                                                     | What to Do Instead                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tier III/IV UCB staff use desktop computers at branch offices. Mobile audit (field audits with photo evidence) is an enterprise feature. Building a native app doubles development effort for a small team. PROJECT.md explicitly lists this as out of scope. | Responsive web design (already in v1.0). If mobile field audit becomes a demand, consider PWA with camera access as a future differentiator, not a v2.0 feature. |
+| Why Avoid                                                                                                                                                                                                                                                                                                                                                                                                        | What to Do Instead                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| During a branch audit, 2-3 auditors simultaneously score different sections. Building real-time collaborative editing (like Google Docs) would require CRDTs or operational transforms — significant complexity. UCB audit teams have clear section ownership (one auditor owns KYC, another owns loans). Lock-based concurrency (each leaf item locked to one auditor at a time) is sufficient and far simpler. | Section ownership model: Lead Auditor assigns team members to specific modules at engagement start. Each module is owned by one auditor for scoring. Conflict is impossible if module ownership is respected. Display "Currently being scored by [name]" if another user has the module open. |
 
-### AF-04: CBS Integration (Finacle/Flexcube)
+---
 
-| Why Avoid                                                                                                                                                                                                                                                                                  | What to Do Instead                                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Core Banking System integration requires cooperation from CBS vendors (Infosys, Oracle) who have no incentive to support a startup SaaS platform. It also requires each UCB to provide API access to their CBS, which most Tier III/IV banks cannot do. PROJECT.md explicitly defers this. | Manual data entry for audit observations. Excel template upload for bulk data. AEGIS is an audit management overlay, not a CBS integration platform. CBS integration is a Phase 2+ feature after pilot validation. |
+### AF-V6-03: Auto-Classification of Findings Using AI/ML
 
-### AF-05: AI-Powered Risk Scoring or Predictive Analytics
+| Why Avoid                                                                                                                                                                                                                                                                                                                                                   | What to Do Instead                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Automatically classifying whether a flagged item should be an Action Point vs a Formal Observation using AI is premature. UCB audit teams have domain expertise; the distinction depends on context (severity, systemic nature, branch history) that an AI model cannot reliably assess at this data volume. False positives would undermine auditor trust. | Provide clear UI guidance: a pop-up when auditor flags for Action Point vs Observation, explaining when each applies. Show "Previous similar findings at this branch" to help auditor decide. Keep the human in the loop for all classification decisions. |
 
-| Why Avoid                                                                                                                                                                                                                                                           | What to Do Instead                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Marketing noise. AI/ML features require large training datasets and domain-specific models. UCB audit data is small (dozens of observations per year, not millions). AI features would be theater at this stage and distract from building reliable core workflows. | Rule-based severity scoring. Manual risk assessment by experienced auditors. The domain expertise is in the auditors' heads, not in an AI model. Revisit when AEGIS has data from 50+ tenants. |
+---
 
-### AF-06: TOTP/MFA Authentication
+### AF-V6-04: Examination Node Editing via UI (Admin CRUD for Checklist)
 
-| Why Avoid                                                                                                                                                                                           | What to Do Instead                                                                                                                                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PROJECT.md explicitly says "Email/password first; MFA added before Pilot B." TOTP adds complexity (backup codes, device management, recovery flows) that blocks the critical path to a working MVP. | Email/password authentication for v2.0. Add TOTP/MFA as a hardening feature before onboarding real client data (Pilot B stage). This is explicitly called out in the constraints. |
+| Why Avoid                                                                                                                                                                                                                                                                                                               | What to Do Instead                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Allowing tenants to freely edit the examination node tree (add/remove/rename items) would quickly diverge from RBI-mandated structure, making cross-audit comparisons impossible and creating compliance risk. If a bank removes a KYC node, they could technically claim they "examined" it by not having it in scope. | Seed the examination tree at tenant creation from the master template. Allow tenants to mark nodes as not-applicable for their branch type (via applicableBranchTypes). Allow CAE to add custom supplementary items at depth 3+ only, clearly marked as "custom" (separate flag). No deletion of RBI-mandated nodes. |
 
-### AF-07: On-Premise Deployment Option
+---
 
-| Why Avoid                                                                                                                                                                                      | What to Do Instead                                                                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| UCBs that demand on-premise deployment need dedicated infrastructure management that a 2-3 person team cannot support. SaaS-only is the business model. PROJECT.md lists this as out of scope. | SaaS deployment on AWS Mumbai (data localization satisfied). Address on-premise concerns with security documentation, DPA, and Vendor Risk Pack. Consider managed private cloud as a premium tier later. |
+### AF-V6-05: BM Portal Full Re-Design for v6.0
 
-### AF-08: Document Versioning / Collaborative Editing
+| Why Avoid                                                                                                                                                                                                                                                                                                           | What to Do Instead                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The existing auditee portal already handles the formal Observation response workflow. Redesigning it from scratch to also handle ActionPoint batch responses in v6.0 is scope creep. The BM Action Point batch response UI is a new interface but should reuse existing component patterns and auth infrastructure. | Add a new `/auditee/[id]/action-points` route that lists all APs for the branch engagement, inline response forms, and batch submission. Reuse existing auth, evidence upload, and notification infrastructure. Do not build a separate portal or redesign existing auditee flows. |
 
-| Why Avoid                                                                                                                                                                                                                | What to Do Instead                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Google Docs-style collaborative editing of audit reports adds massive complexity (operational transforms or CRDTs). Not needed for the UCB workflow where the CAE owns the report and generates it as a one-time action. | CAE adds executive commentary to auto-populated report. PDF is generated as a point-in-time snapshot. If edits are needed, regenerate. No real-time collaboration on documents. |
+---
 
-### AF-09: Custom Report Builder
+### AF-V6-06: Granular Auditor-Level Permission for Each Examination Node
 
-| Why Avoid                                                                                                                                                                                                                | What to Do Instead                                                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A drag-and-drop report builder is an enterprise feature. UCB board reports follow a standard format mandated by RBI RBIA guidelines. Custom reports add development cost without value for standardized reporting needs. | Pre-built report templates: Board Report (quarterly), Compliance Status Report, Audit Plan Progress, Finding Summary. Excel export for ad-hoc analysis. If a specific MIS format is needed, build it as a dedicated template. |
-
-### AF-10: Offline Mode / PWA
-
-| Why Avoid                                                                                                                                                                                                                                             | What to Do Instead                                                                                                                                        |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Offline capability requires service workers, local data sync, conflict resolution -- all significant complexity. UCB branch offices have internet connectivity (even if slow). Field audits that need offline are an edge case for Tier III/IV banks. | Responsive web app works on any device with a browser. Optimize for slow connections (small payloads, lazy loading) rather than building offline support. |
+| Why Avoid                                                                                                                                                                                                                                                               | What to Do Instead                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fine-grained permissions per examination node (e.g., "Auditor A can only score KYC nodes") require a complex permission matrix that increases code complexity with minimal real-world benefit. UCB audit teams are small (2-5 auditors per engagement) and trust-based. | Use module ownership (Auditor assigned to module at engagement level via EngagementModuleSelection). Any team member can score any module if needed — module ownership is guidance, not enforcement. Only state transitions (advancing engagement lifecycle) require role authority. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Authentication + Multi-Tenancy (foundation)
-  |
-  +-- Onboarding Wizard (TS-11)
-  |     |
-  |     +-- Pre-built RBI Checklists (DIFF-01)
-  |     +-- Org Structure Setup
-  |
-  +-- RBAC (TS-02)
-  |     |
-  |     +-- Observation Lifecycle (TS-01)  <-- CORE, everything depends on this
-  |     |     |
-  |     |     +-- Maker-Checker (TS-04)
-  |     |     +-- Auditee Portal (TS-05)
-  |     |     +-- Repeat Finding Detection (DIFF-02)
-  |     |     +-- Multi-Dimensional Tagging (DIFF-03)
-  |     |     +-- Evidence Upload (TS-09)
-  |     |
-  |     +-- Role-Based Dashboards (TS-03)
-  |     |     |
-  |     |     +-- DAKSH Visualization (DIFF-04)
-  |     |
-  |     +-- Compliance Registry (real CRUD)
-  |           |
-  |           +-- CCO Dashboard
-  |
-  +-- Audit Trail (TS-10)  <-- cross-cutting, all features write to it
-  |
-  +-- Email Notifications (TS-06)  <-- cross-cutting, triggered by all workflows
-  |
-  +-- PDF Board Report (TS-07)  <-- depends on observation data + compliance data
-  |
-  +-- Excel Exports (TS-08)  <-- depends on all data models
+Module Selection
+  └──requires──> ExaminationNode tree (seeded)
+  └──requires──> Branch type on AuditEngagement
+
+4-Point Scoring (TS-V6-02)
+  └──requires──> Hierarchical Checklist Display (TS-V6-01)
+  └──requires──> Module Selection
+  └──enables──> BranchRbiaScore freeze
+
+8-State Lifecycle (TS-V6-04)
+  └──requires──> Opening Meeting (TS-V6-05) [gate: OPENING_MEETING → IN_PROGRESS]
+  └──requires──> Exit Meeting (TS-V6-05) [gate: EXIT_MEETING → REPORT_DRAFT]
+  └──requires──> Scoring completion threshold [gate: IN_PROGRESS → EXIT_MEETING]
+  └──triggers──> BranchRbiaScore freeze [at REPORT_DRAFT]
+  └──triggers──> ActionPoint issuance to BM [at REPORT_DRAFT]
+
+Dual Findings (TS-V6-03)
+  └──requires──> ExaminationResponse flagging (TS-V6-01)
+  └──enhances──> Existing Observation lifecycle (already built)
+
+BM Response Workflow (TS-V6-06)
+  └──requires──> ActionPoint issuance (TS-V6-03)
+  └──requires──> 8-State lifecycle REPORT_DRAFT trigger (TS-V6-04)
+  └──requires──> Existing evidence upload infrastructure
+
+RBIA Audit Report (DIFF-V6-04)
+  └──requires──> BranchRbiaScore (TS-V6-02)
+  └──requires──> Positive Observations (TS-V6-08)
+  └──requires──> ActionPoint list (TS-V6-03)
+  └──requires──> Meeting minutes (TS-V6-05)
+  └──requires──> Formal Observations (existing)
+
+Live Score Feedback (DIFF-V6-01)
+  └──requires──> 4-Point Scoring (TS-V6-02)
+  └──enhances──> Hierarchical Checklist Display (TS-V6-01)
+
+Carry-Forward APs (DIFF-V6-02)
+  └──requires──> ActionPoint lifecycle (TS-V6-03)
+  └──requires──> Multi-engagement data per branch (existing)
+
+Positive Observations (TS-V6-08)
+  └──requires──> AuditEngagement (8-state lifecycle)
+  └──enhances──> RBIA Audit Report (DIFF-V6-04)
 ```
 
 ---
 
-## MVP Recommendation
+## MVP Definition for v6.0
 
-For v2.0 Working Core MVP, prioritize in this order:
+### Must Ship (blocks RBIA workflow completion — auditors cannot complete an audit without these)
 
-### Must Ship (blocks pilot usage)
+- [ ] **TS-V6-04**: 8-state engagement lifecycle with state guards — the backbone of the RBIA process
+- [ ] **TS-V6-05**: Opening and exit meeting records — required gates in the lifecycle
+- [ ] **TS-V6-01**: Hierarchical examination checklist display — auditors cannot score without this
+- [ ] **TS-V6-02**: 4-point scoring with weighted roll-up — the core RBIA compliance assessment
+- [ ] **TS-V6-03**: Dual findings — Action Points creation from flagged responses — operational output
+- [ ] **TS-V6-06**: BM response batch workflow — branch manager cannot respond without this
+- [ ] **TS-V6-07**: RBIA score display with module breakdown — required for report and ACE/ACB reporting
+- [ ] **TS-V6-08**: Positive observations capture — required for complete audit report
 
-1. **Auth + Multi-Tenancy** -- foundation for everything
-2. **Observation Lifecycle (TS-01)** -- the core product value
-3. **RBAC with 5 roles (TS-02)** -- required for any multi-user usage
-4. **Auditee Portal (TS-05)** -- without this, the workflow is incomplete
-5. **Maker-Checker (TS-04)** -- RBI expectation for banking software
-6. **Evidence Upload (TS-09)** -- observations without evidence are incomplete
-7. **Immutable Audit Trail (TS-10)** -- regulatory requirement, must be present from day one of real data
-8. **Onboarding Wizard (TS-11)** -- needed to create new tenant instances
-9. **Email Notifications (TS-06)** -- required for auditee to know they have pending items
-10. **Role-Based Dashboards (TS-03)** -- at minimum CEO + CAE + Auditor views
-11. **PDF Board Report (TS-07)** -- the output that justifies the entire system for board members
-12. **Excel Exports (TS-08)** -- escape valve for any data need not covered by the UI
+### Should Ship (differentiators that multiply value significantly)
 
-### Should Ship (strong differentiators)
+- [ ] **DIFF-V6-01**: Live score roll-up with critical item visual feedback — changes how auditors work
+- [ ] **DIFF-V6-02**: Carry-forward AP linkage across cycles — enables continuity tracking
+- [ ] **DIFF-V6-03**: Module-adaptive examination (branch-type filtering) — reduces noise for small branches
+- [ ] **DIFF-V6-04**: RBIA audit report with dual sections — the primary deliverable; without it the data has no output
 
-13. **Pre-built RBI Checklists (DIFF-01)** -- the domain expertise moat
-14. **Repeat Finding Detection (DIFF-02)** -- high-value, medium complexity
-15. **Multi-Dimensional Tagging (DIFF-03)** -- enables all the rich dashboard aggregations
+### Defer to Post-v6.0
 
-### Defer to Post-MVP
-
-- **DAKSH Export (DIFF-04)** -- valuable but not blocking pilot usage
-- **Indian Language Audit Content (DIFF-06)** -- UI i18n already exists; content-level i18n can wait
-- **Guided Compliance Workflow (DIFF-05)** -- nice-to-have polish, not blocking
+- [ ] **DIFF-V6-05**: Offline scoring sheet export/import — useful but not blocking initial deployment
+- Additional: FACC certificate PDF automation (can be manual in v6.0 first pass)
+- Additional: ACE/ACB rating migration report (can use existing board report with new data)
 
 ---
 
-## Complexity Summary
+## Feature Prioritization Matrix
 
-| Feature                       | Complexity | Effort Estimate | Risk                                                     |
-| ----------------------------- | ---------- | --------------- | -------------------------------------------------------- |
-| Observation Lifecycle (TS-01) | HIGH       | 2-3 weeks       | State machine correctness, edge cases                    |
-| RBAC (TS-02)                  | MEDIUM     | 1 week          | PostgreSQL RLS policy design                             |
-| Role-Based Dashboards (TS-03) | MEDIUM     | 1.5 weeks       | Aggregation query performance                            |
-| Maker-Checker (TS-04)         | MEDIUM     | 1 week          | Integration with observation lifecycle                   |
-| Auditee Portal (TS-05)        | MEDIUM     | 1 week          | Simplified UX for low-tech users                         |
-| Email Notifications (TS-06)   | MEDIUM     | 1 week          | SES setup, template management, rate limiting            |
-| PDF Board Report (TS-07)      | MEDIUM     | 1 week          | React-PDF layout precision, chart embedding              |
-| Excel Exports (TS-08)         | LOW        | 3-4 days        | Standard XLSX generation                                 |
-| Evidence Upload (TS-09)       | MEDIUM     | 1 week          | S3 integration, file validation, security                |
-| Audit Trail (TS-10)           | MEDIUM     | 3-4 days        | DB schema, INSERT-only permissions                       |
-| Onboarding Wizard (TS-11)     | HIGH       | 1.5-2 weeks     | Multi-step form, RBI checklist data, tenant provisioning |
-| RBI Checklists (DIFF-01)      | MEDIUM     | 1 week          | Data curation more than code                             |
-| Repeat Detection (DIFF-02)    | MEDIUM     | 3-4 days        | Matching algorithm, auto-escalation rules                |
-| Multi-Dim Tagging (DIFF-03)   | LOW-MEDIUM | 3-4 days        | Schema design, filter UI                                 |
+| Feature                            | User Value | Implementation Cost | Priority |
+| ---------------------------------- | ---------- | ------------------- | -------- |
+| 8-State Lifecycle (TS-V6-04)       | HIGH       | MEDIUM              | P1       |
+| Opening/Exit Meetings (TS-V6-05)   | HIGH       | LOW                 | P1       |
+| Hierarchical Checklist (TS-V6-01)  | HIGH       | HIGH                | P1       |
+| 4-Point Scoring Roll-Up (TS-V6-02) | HIGH       | MEDIUM              | P1       |
+| Action Points (TS-V6-03)           | HIGH       | MEDIUM              | P1       |
+| BM Response Batch (TS-V6-06)       | HIGH       | MEDIUM              | P1       |
+| RBIA Score Display (TS-V6-07)      | HIGH       | LOW                 | P1       |
+| Positive Observations (TS-V6-08)   | MEDIUM     | LOW                 | P1       |
+| Live Score Feedback (DIFF-V6-01)   | HIGH       | MEDIUM              | P2       |
+| Carry-Forward APs (DIFF-V6-02)     | HIGH       | LOW                 | P2       |
+| Module-Adaptive Exam (DIFF-V6-03)  | MEDIUM     | LOW                 | P2       |
+| RBIA Audit Report (DIFF-V6-04)     | HIGH       | HIGH                | P2       |
+| Offline Scoring Sheet (DIFF-V6-05) | LOW        | MEDIUM              | P3       |
 
-**Total estimated effort:** 14-18 weeks for a 1-person technical lead with AI-assisted development. Aligns with the 16-week execution plan timeline (Weeks 4-14).
+**Priority key:**
+
+- P1: Must have — blocks RBIA workflow
+- P2: Should have — multiplies value of P1 features
+- P3: Defer — low urgency, medium effort
+
+---
+
+## Complexity Estimates
+
+| Feature                               | Complexity | Effort Estimate | Key Risk                                                          |
+| ------------------------------------- | ---------- | --------------- | ----------------------------------------------------------------- |
+| Hierarchical Checklist UI (TS-V6-01)  | HIGH       | 2-3 weeks       | Tree rendering performance, state management for large trees      |
+| 4-Point Scoring + Roll-Up (TS-V6-02)  | MEDIUM     | 1-1.5 weeks     | Roll-up algorithm correctness, critical-item override             |
+| Dual Findings — APs (TS-V6-03)        | MEDIUM     | 1 week          | Promotion flow from ExaminationResponse, serial number generation |
+| 8-State Lifecycle (TS-V6-04)          | MEDIUM     | 1 week          | State guard enforcement, transition side effects                  |
+| Opening/Exit Meetings (TS-V6-05)      | LOW        | 3-4 days        | Attendee JSON form, sign-off workflow                             |
+| BM Response Batch (TS-V6-06)          | MEDIUM     | 1.5 weeks       | Batch progress tracking, deadline enforcement                     |
+| Score Display + Drill-Down (TS-V6-07) | MEDIUM     | 1 week          | Historical snapshot rendering from JSONB                          |
+| Positive Observations (TS-V6-08)      | LOW        | 2-3 days        | Simple CRUD with module reference                                 |
+| Live Score Feedback (DIFF-V6-01)      | MEDIUM     | 3-4 days        | Optimistic UI, debounced server sync                              |
+| Carry-Forward AP Linkage (DIFF-V6-02) | LOW        | 2-3 days        | Cross-engagement query, UI surfacing                              |
+| Module Filtering (DIFF-V6-03)         | LOW        | 2-3 days        | Branch-type → module selection logic                              |
+| RBIA Audit Report PDF (DIFF-V6-04)    | HIGH       | 2-3 weeks       | Report template layout, score tree rendering in PDF               |
+
+**Total estimated effort:** 16-22 weeks for 1-person technical lead with AI assistance.
+
+---
+
+## Answers to Specific Research Questions
+
+### Q1: Hierarchical examination checklists — how deep, how structured, how scored?
+
+**Answer (HIGH confidence):** RBI RBIA policy (sections 7.3-7.4) defines three tiers: Parts → Sub-parts → Activities. In practice, Indian bank audit systems implement 4-5 levels for complex areas. The ExaminationNode schema correctly models this with variable depth (0-5). Depth 0 = audit area, depth 1 = module (product/process), depth 2 = sub-module, depth 3-5 = leaf items (value statements). Scoring is bottom-up: only leaf items receive scores, parents compute via weighted average of children. Weights must sum to 100% within any parent-children group (the schema stores individual child weights and normalizes on roll-up).
+
+### Q2: 4-point compliance scoring — standard scale, weight mechanics?
+
+**Answer (HIGH confidence):** The RBI RBIA policy does not prescribe a specific 4-point scale by name but defines rating bands based on percentage scores (≤40%=Poor, >40-50%=Moderate, >50-65%=Satisfactory, >65-80%=Good, >80%=Very Good). The 4-point FULLY/LARGELY/PARTIALLY/NON_COMPLIANT scale with 1.0/0.75/0.5/0.0 values is a widely adopted interpretation in the industry (used by ICAI technical guidance and audit tool vendors). This maps logically: FULLY=80-100%, LARGELY=65-80%, PARTIALLY=50-65%, NON_COMPLIANT=0-40%. Weight mechanics: each node has a weight (Decimal 5,4) within its parent group; roll-up is weighted average of scored children only (N/A items excluded from denominator per policy 7.6.2).
+
+### Q3: Dual findings — when does each apply?
+
+**Answer (HIGH confidence from domain practice, MEDIUM from explicit policy text):** Action Points are operational/process observations that the Branch Manager can resolve at branch level — no senior committee involvement needed. They are the operational audit output (15-40 per audit). Formal Observations (5C findings) are systemic, high-risk, or repeat issues that require escalation through ZAC/ACE/ACB. They are the governance audit output (3-10 per audit). The key distinction: if the branch can self-correct within 15-30 days without systemic change → Action Point. If it represents a systemic control failure or regulatory risk → Formal Observation. The RBIA policy section 4.8.4.3(h) explicitly references different escalation paths for "critical findings" (ACB) vs other observations.
+
+### Q4: Branch Manager response workflow — timeline, process?
+
+**Answer (HIGH confidence):** Per RBIA policy section 15.7.7: initial compliance submission within 1 month of audit report receipt; FACC (Final Audit Compliance-cum-Closure Certificate) within 3 months. Standard UCB practice for Action Points: 15 days from issuance. This aligns with the BmResponseBatch.deadline field in the schema. The BM receives the full AP list as a batch (not individual emails per AP), responds per-AP with text + evidence, and submits the batch. The auditor then verifies each response and either closes or carries forward.
+
+### Q5: RBIA scoring and rating bands — how composite scores computed?
+
+**Answer (HIGH confidence):** Per RBIA policy sections 7.4-8.9: Total Score distributed to Parts (by significance weight), Sub-parts (sum must equal parent allocation), Activities (sum must equal sub-part weight). Composite score = (sum of weighted activity scores achieved) / (maximum achievable score for applicable parts). Rating bands: ≤40%=Poor (Very High/High risk), >40-50%=Moderate (Medium risk), >50-65%=Satisfactory, >65-80%=Good (Low risk), >80%=Very Good (Low risk). N/A calibration: when a part is not applicable, it is excluded from both numerator and denominator. The AEGIS implementation (BranchRbiaScore) stores composite (0.00-1.00) and rating band as a frozen snapshot.
+
+### Q6: Opening/exit meeting protocols — what's captured?
+
+**Answer (MEDIUM confidence — policy principle is clear, specifics are implementation practice):** Opening meeting (pre-audit): auditor explains scope, requests data/documents, introduces team. Required captures: date, attendees (name+designation+department), scope of modules to be examined, documents requested, key discussion points, sign-off. Exit meeting (wrap-up): auditor presents preliminary findings, BM can provide clarifications that may resolve some findings before report issuance. Required captures: date, attendees, preliminary observations discussed, BM's on-the-spot clarifications, sign-off. The EngagementMeeting model in schema correctly captures this. Policy Appendix A section 9C mandates a "Wrap-up Discussion Report."
+
+### Q7: Positive observations — how tracked and reported?
+
+**Answer (MEDIUM confidence — common practice, not explicit in RBI circular):** Positive observations ("commendable practices") are standard in Indian bank audit reports — they acknowledge branches maintaining strong controls. The RBIA policy 4.5.2c frames internal audit as "business enabler providing feedback to strengthen products, policies and processes." In practice: 1-5 positive observations per audit, title + description + module reference, no lifecycle (purely informational), included in the report before the findings section. They do not affect the composite score but are tracked per engagement. The PositiveObservation model in schema correctly captures this. Including them in the CAE dashboard ("branches with commendable practices") is a differentiator.
 
 ---
 
 ## Sources
 
-**Industry competitors (MEDIUM confidence):**
+**Primary source — project internal (HIGH confidence):**
 
-- [Audit360 - Banking Audit Solution](https://www.audit360.in/domains/audit-solution-for-banks)
-- [LaserGRC - Internal Audit Management](https://www.lasergrc.com/laser-audit-reporting-system.asp)
-- [TeamMate+ Financial Services](https://www.wolterskluwer.com/en/solutions/teammate/teammate-financial-services)
-- [AuditBoard - Operational Audit](https://auditboard.com/product/operational-audit)
+- `/Users/admin/Developer/AEGIS/RBIA-POLICY-2020.md` — IDBI Bank RBIA Policy 2020, particularly sections 7.3-7.6, 8.1-8.9, 15.7, Appendix A
+- `/Users/admin/Developer/AEGIS/prisma/schema.prisma` — v6.0 data models (ExaminationNode, ExaminationResponse, BranchRbiaScore, ActionPoint, EngagementMeeting, PositiveObservation, BmResponseBatch)
+- `/Users/admin/Developer/AEGIS/CLAUDE.md` — v6.0 design decisions in "v6.0 RBIA Redesign" section
 
-**Regulatory framework (HIGH confidence):**
+**RBI regulatory sources (HIGH confidence):**
 
-- [RBI Master Circular on Inspection and Audit in UCBs](https://taxguru.in/rbi/rbi-master-circular-inspection-audit-systems-primary-urban-cooperative-banks.html)
-- [RBI RBIA Guidelines for UCBs and NBFCs](https://www.riskpro.in/blogs/rbi-issues-guidelines-risk-based-internal-audit-nbfc-and-ucb-step-forward-towards-quality-and)
-- [RBI Circular 2023-24/117 - Internal Compliance Monitoring](https://cleartax.in/s/internal-compliance-monitoring-rbi-circular-117)
+- [RBI RBIA Framework Notification (Feb 2021)](https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12018&Mode=0) — mandates RBIA for UCBs with asset size > Rs.500 Cr
+- [FIDC India — RBI RBIA Circular Feb 2021](https://fidcindia.org.in/wp-content/uploads/2021/02/RBI-CIRCULAR-03-02-21-RISK-BASED-INTERNAL-AUDIT-1.pdf)
+- [RBI Master Circular on Inspection and Audit in UCBs](https://www.rbi.org.in/commonman/english/scripts/Notification.aspx?Id=1402)
 
-**Domain practices (MEDIUM confidence):**
+**Domain guidance (MEDIUM confidence):**
 
-- [Maker-Checker in Banking Domain](https://medium.com/@vdharam/implementation-of-maker-checker-flow-in-banking-domain-projects-17068cd05d73)
-- [Audit Finding Management](https://sgsystemsglobal.com/glossary/audit-finding-management/)
-- [PwC Audit Committee Dashboard Reporting](https://www.pwc.com/us/en/services/governance-insights-center/library/audit-committee-dashboard-reporting.html)
-- [Immutable Audit Trail Guide](https://www.hubifi.com/blog/immutable-audit-log-basics)
-
-**Technical approaches (MEDIUM confidence):**
-
-- [AWS SaaS Lens - Tenant Onboarding](https://aws.amazon.com/blogs/apn/tenant-onboarding-best-practices-in-saas-with-the-aws-well-architected-saas-lens/)
-- [PDF Generation with Next.js + React-PDF](https://medium.com/@stanleyfok/pdf-generation-with-react-componenets-using-next-js-at-server-side-ee9c2dea06a7)
-
-**Project-internal (HIGH confidence):**
-
-- `/Users/admin/Developer/AEGIS/.planning/PROJECT.md`
-- `/Users/admin/Developer/AEGIS/Project Doc/UCB_Platform_Project_Plan.md`
-- `/Users/admin/Developer/AEGIS/.planning/milestones/v1.0-REQUIREMENTS.md`
-- `/Users/admin/Developer/AEGIS/src/types/index.ts`
+- [ICAI Technical Guide on Risk-Based Internal Audit in Banks](https://kb.icai.org/pdfs/PDFFile663b07e9d230f9.29869545.pdf)
+- [ICAI Technical Guide on RBIA for NBFC (2024)](https://internalaudit.icai.org/wp-content/uploads/2024/07/final-pub.-57-4_TG-on-Risk-Based-Internal-Audit-of-NBFC-24.pdf)
+- [Vinod Kothari on Risk-based Internal Audit](https://vinodkothari.com/2021/03/risk-based-internal-prescription-for-audit-function/)
+- [Audit360 — RBIA vs Checklist Audit](https://www.audit360.in/post/risk-based-internal-audit-and-checklist-based-audit-are-they-mutually-exclusive)
+- [IIA 5C Framework for Internal Audit Findings](https://www.mbgcorp.com/in/insights/relevance-of-5-cs-in-internal-audit/)
 
 ---
 
-_Researched: 2026-02-08_
-_Researcher: Claude Opus 4.6_
-_Mode: Ecosystem (Features dimension)_
+_Feature research for: RBIA Audit Workflow — Indian UCBs_
+_Researched: 2026-02-22_
+_Researcher: Claude Sonnet 4.6_
+_Mode: Project Research — Features dimension (Subsequent milestone)_

@@ -12,10 +12,28 @@ v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Bette
 
 If nothing else works, the platform must let auditors record observations, track them to closure, and let management see the consolidated picture without manual aggregation.
 
+## Current Milestone: v6.0 RBIA Implementation
+
+**Goal:** Implement the full RBIA audit workflow using v6.0 schema models — hierarchical examination tree, 4-point scoring, dual findings (ActionPoints + Observations), 8-state engagement lifecycle, branch RBIA scoring, and enhanced reporting.
+
+**Target features:**
+
+- Hierarchical examination tree (ExaminationNode) with tenant-scoped CRUD, seeding, and tree navigation UI
+- Audit engagement workflow with 8-state lifecycle (PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED)
+- Module selection per engagement (auto + manual) based on branch type
+- 4-point scoring (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) with weighted roll-up per module and composite score
+- Dual finding model: ActionPoints (~15-40 per audit, simple lifecycle) and Observations (formal 5C, ~3-10 per audit)
+- Branch Manager batch response workflow with 15-day deadline tracking
+- Opening/exit meeting records with attendees and sign-off
+- BranchRbiaScore frozen snapshots for immutable historical scoring
+- Positive observations (commendable practices per engagement)
+- Enhanced RBIA-aware board reports and analytics
+- Cleanup: remove old ExaminationArea/ExaminationItem/AuditExaminationResponse models
+
 ## Current State
 
-**Shipped:** v6.0 RBIA Schema Expansion (2026-02-22)
-**Status:** All 104 RBIAS requirements + expanded RBIA data models. Pilot-ready.
+**Shipped:** v5.0 Pilot Readiness (2026-02-22), v6.0 Schema (models defined)
+**Status:** v6.0 schema in DB, implementation in progress.
 **Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
 **Codebase:** 271K TypeScript LOC across 580 files, 2,320-line Prisma schema (71 models, 20 enums)
 **Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
@@ -64,7 +82,7 @@ If nothing else works, the platform must let auditors record observations, track
 
 ### Active
 
-(None — v6.0 schema models defined, implementation pending)
+(Defined in REQUIREMENTS.md — v6.0 RBIA Implementation)
 
 ### Out of Scope
 
@@ -144,6 +162,12 @@ If nothing else works, the platform must let auditors record observations, track
 | **VPS + Docker deployment**            | Simpler than AWS Lightsail for single-tenant pilot; Nginx Proxy Manager for SSL         | ✓ Good                                       |
 | **Application-level tenant isolation** | WHERE clauses via prismaForTenant instead of PostgreSQL RLS policies                    | ✓ Good (simpler debugging, explicit control) |
 
+| **Hierarchical ExaminationNode tree** | Variable depth (0-5) with materialized paths replaces flat 2-level ExaminationArea/Item | — Pending |
+| **4-point scoring with weighted roll-up** | FULLY/LARGELY/PARTIALLY/NON_COMPLIANT maps to 1.0/0.75/0.5/0.0; weighted per module | — Pending |
+| **Dual findings (ActionPoint + Observation)** | ActionPoints for operational issues (simple lifecycle), Observations for formal 5C findings | — Pending |
+| **8-state engagement lifecycle** | PLANNED→TEAM_ASSIGNED→OPENING_MEETING→IN_PROGRESS→EXIT_MEETING→REPORT_DRAFT→COMPLETED | — Pending |
+| **BranchRbiaScore frozen snapshots** | Immutable JSONB scoring record per engagement for historical audit trail | — Pending |
+
 ---
 
-_Last updated: 2026-02-22 after v6.0 schema expansion_
+_Last updated: 2026-02-22 after v6.0 milestone initialization_

@@ -95,3 +95,71 @@
 **What's next:** Pilot deployment with real UCBs, user acceptance testing, and iterative improvements based on feedback.
 
 ---
+
+## v4.0 Platform Hardening (Shipped: 2026-02-21)
+
+**Delivered:** Production infrastructure hardening with automated backups, monitoring, security headers, and CI/CD test suite integration.
+
+**Key accomplishments:**
+
+- Automated PostgreSQL backups with S3 offsite storage and disaster recovery runbook
+- Enhanced health checks with subsystem monitoring (database, cache, jobs)
+- Sentry error tracking with request ID propagation for debugging
+- E2E test infrastructure in CI with PostgreSQL and Playwright
+- Unit test coverage for permissions and risk-rating modules
+- Security headers, Docker hardening, and dependency scanning
+
+**Stats:**
+
+- 7 commits (5 feat, 2 docs)
+- Bundle analyzer baseline established
+
+**Git range:** `9bb492d` (v3.0 end) → `b83cb6d` (docs: archive v4.0)
+
+**What's next:** Pilot readiness polish and demo data preparation.
+
+---
+
+## v5.0 Pilot Readiness (Shipped: 2026-02-22)
+
+**Delivered:** Dashboard polish, navigation improvements, audit execution pages, loading/error/404 infrastructure, and demo-ready UI.
+
+**Key accomplishments:**
+
+- Dashboard polish: fixed broken widgets, loading states, error boundaries, RAM banner
+- Navigation CTAs across audit lifecycle flow with next steps and compliance links
+- Audit execution pages with lifecycle fixes and engagement transitions
+- Quick actions, progress indicators, and source data links
+- Demo-ready polish for pilot deployment
+
+**Stats:**
+
+- 7 commits (6 feat, 1 docs)
+
+**Git range:** `b83cb6d` (v4.0 archive) → `fb66ba9` (docs: complete v5.0)
+
+**What's next:** Schema expansion for enhanced RBIA data models.
+
+---
+
+## v6.0 RBIA Schema Expansion (In Progress: 2026-02-22)
+
+**Delivered:** Expanded Prisma schema with new RBIA models, enums, and relations for enhanced audit tracking.
+
+**Key accomplishments:**
+
+- Added all RBIA model definitions (71 models total, up from 63)
+- Expanded enums (20 enums total, up from 16)
+- New v6.0 relations for audit tracking
+- Complete valid schema with no errors
+
+**Stats:**
+
+- 2,320-line Prisma schema (71 models, 20 enums)
+- 580 source files, 271K TypeScript LOC
+
+**Git range:** `fb66ba9` (v5.0 end) → `868f47d` (docs: map existing codebase)
+
+**What's next:** Implementation of v6.0 schema features and pilot deployment.
+
+---

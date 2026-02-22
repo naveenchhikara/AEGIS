@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) to manage internal audits and track compliance with RBI regulations. Auditors conduct branch/unit/process audits and record observations that flow through a structured 7-state lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed). These observations aggregate automatically into macro-level views — compliance status for the CCO, risk picture for the CEO, and board reports for the Audit Committee.
 
-v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Better Auth, multi-tenancy, and observation-to-board-report workflow. v3.0 completed all 104 RBIAS requirements across 18 modules, added production hardening (IDOR, XSS, typed sessions, N+1 fixes), CI/CD pipeline, and Docker deployment.
+v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Better Auth, multi-tenancy, and observation-to-board-report workflow. v3.0 completed all 104 RBIAS requirements across 18 modules with production hardening. v4.0 added platform hardening (backups, monitoring, security). v5.0 delivered pilot readiness with dashboard polish and navigation improvements. v6.0 introduces expanded RBIA data models with new enums and relations.
 
 ## Core Value
 
@@ -14,13 +14,13 @@ If nothing else works, the platform must let auditors record observations, track
 
 ## Current State
 
-**Shipped:** v3.0 RBIAS Full Platform (2026-02-21)
-**Status:** All 104 RBIAS requirements complete across 18 modules. Production deployed.
+**Shipped:** v6.0 RBIA Schema Expansion (2026-02-22)
+**Status:** All 104 RBIAS requirements + expanded RBIA data models. Pilot-ready.
 **Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
-**Codebase:** 248K TypeScript LOC across 563 files, 1,999-line Prisma schema (63 models, 16 enums)
+**Codebase:** 271K TypeScript LOC across 580 files, 2,320-line Prisma schema (71 models, 20 enums)
 **Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
 **Live:** https://aegis.nexlyadvisory.com
-**Outstanding:** AWS SES domain verification pending. Branch protection rules to configure manually.
+**Outstanding:** AWS SES domain verification pending.
 
 ## Requirements
 
@@ -64,7 +64,7 @@ If nothing else works, the platform must let auditors record observations, track
 
 ### Active
 
-(None — next milestone requirements TBD via `/gsd:new-milestone`)
+(None — v6.0 schema models defined, implementation pending)
 
 ### Out of Scope
 
@@ -146,4 +146,4 @@ If nothing else works, the platform must let auditors record observations, track
 
 ---
 
-_Last updated: 2026-02-21 after v3.0 milestone completion_
+_Last updated: 2026-02-22 after v6.0 schema expansion_

@@ -1,6 +1,8 @@
 import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ExternalLink } from "@/lib/icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PolicyTable } from "@/components/governance/policy-table";
 import { CommitteePanel } from "@/components/governance/committee-panel";
@@ -41,6 +43,22 @@ export default async function GovernancePage() {
         <p className="text-muted-foreground">
           Policy framework, committee management, and board reporting
         </p>
+        <div className="flex gap-4 pt-1">
+          <Link
+            href="/findings"
+            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+          >
+            View Findings
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+          <Link
+            href="/compliance"
+            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+          >
+            View Compliance
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
       </div>
 
       <Tabs defaultValue="policies" className="space-y-4">

@@ -14,8 +14,9 @@ import {
   ChevronLeft,
   CheckCircle2,
   FileText,
+  ExternalLink,
+  ArrowRight,
 } from "@/lib/icons";
-import { ExternalLink } from "@/lib/icons";
 import Link from "next/link";
 import type { AuthSession } from "@/lib/auth";
 
@@ -161,6 +162,76 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
 
       {/* Actions */}
       <ObservationActions observation={observation} userRoles={userRoles} />
+
+      {/* Next Steps guidance (ISS-012) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ArrowRight className="text-muted-foreground h-4 w-4" />
+            Next Steps
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {observation.status === "DRAFT" && (
+            <p className="text-muted-foreground text-sm">
+              Submit this observation for review by a senior auditor.
+            </p>
+          )}
+          {observation.status === "SUBMITTED" && (
+            <p className="text-muted-foreground text-sm">
+              Awaiting review. The senior auditor will assess and transition
+              this observation.
+            </p>
+          )}
+          {observation.status === "REVIEWED" && (
+            <p className="text-muted-foreground text-sm">
+              Under review. This observation will be issued to the branch if
+              confirmed.
+            </p>
+          )}
+          {observation.status === "ISSUED" && (
+            <p className="text-muted-foreground text-sm">
+              Observation issued to the branch.{" "}
+              <Link
+                href="/compliance"
+                className="text-blue-600 hover:underline"
+              >
+                Track compliance status
+              </Link>
+              .
+            </p>
+          )}
+          {observation.status === "RESPONSE" && (
+            <p className="text-muted-foreground text-sm">
+              Branch response received. Pending compliance review.{" "}
+              <Link
+                href="/compliance"
+                className="text-blue-600 hover:underline"
+              >
+                View compliance status
+              </Link>
+              .
+            </p>
+          )}
+          {observation.status === "COMPLIANCE" && (
+            <p className="text-muted-foreground text-sm">
+              Under compliance review.{" "}
+              <Link
+                href="/compliance"
+                className="text-blue-600 hover:underline"
+              >
+                View compliance status
+              </Link>
+              .
+            </p>
+          )}
+          {observation.status === "CLOSED" && (
+            <p className="text-muted-foreground text-sm">
+              This observation has been closed.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Resolution reason (shown when resolved during fieldwork) */}
       {observation.resolvedDuringFieldwork && observation.resolutionReason && (

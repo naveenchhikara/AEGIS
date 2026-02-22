@@ -12,8 +12,8 @@
 | P2           | 8      | Important — should fix for pilot |
 | P3           | 5      | Nice-to-have — polish items      |
 | **Total**    | **23** |                                  |
-| **Resolved** | **11** | ISS-001-011                      |
-| **Open**     | **12** |                                  |
+| **Resolved** | **16** | ISS-001-016                      |
+| **Open**     | **7**  |                                  |
 
 ## P0 — Flow Blockers
 
@@ -103,55 +103,40 @@
 - **Suggested Fix:** Fix after ISS-001 and ISS-003 create the missing index pages.
 - **Complexity:** S
 
-### [ISS-012] Findings new page: No post-creation guidance
+### [ISS-012] ~~Findings new page: No post-creation guidance~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** ui
-- **Location:** `src/components/findings/observation-form.tsx`
-- **Description:** After creating observation, redirects to detail page but no "Next Steps" section showing available actions based on role and status.
-- **Impact:** Users unclear on what to do next.
-- **Suggested Fix:** Add "Next Steps" card on finding detail showing available transitions.
-- **Complexity:** S
+- **Resolution:** Added "Next Steps" Card to finding detail page (`finding-detail.tsx`) showing contextual guidance for each observation status (DRAFT → CLOSED). ISSUED+ statuses include a link to `/compliance`. Guidance only — no action buttons (ObservationActions handles transitions).
+- **Resolved in:** Plan 02-04
 
-### [ISS-013] Auditee portal: No forward link to compliance
+### [ISS-013] ~~Auditee portal: No forward link to compliance~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/auditee/page.tsx`
-- **Description:** After auditee provides response to observation, no CTA to see compliance/review status.
-- **Impact:** Auditees can't track their response status.
-- **Suggested Fix:** Add "View Compliance Status" link after response submitted.
-- **Complexity:** S
+- **Resolution:** Added "View Compliance Status" link with ExternalLink icon on auditee observation detail page (`auditee/[observationId]/page.tsx`). Shows for RESPONSE, COMPLIANCE, and CLOSED statuses. Links to `/compliance`.
+- **Resolved in:** Plan 02-04
 
-### [ISS-014] Engagement detail: No breadcrumb to index
+### [ISS-014] ~~Engagement detail: No breadcrumb to index~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/audit-execution/[engagementId]/page.tsx`
-- **Description:** After engagement creation, user lands on detail page with no way to see other engagements except via sidebar.
-- **Impact:** User trapped on single engagement view.
-- **Suggested Fix:** Add breadcrumb navigation. Depends on ISS-001 creating the index page.
-- **Complexity:** S
+- **Resolution:** Already resolved by ISS-010 in Plan 02-03 — "Back to Audits" breadcrumb added to both engagement detail and create engagement pages. Duplicate issue.
+- **Resolved in:** Plan 02-03
 
-### [ISS-015] Governance: No reverse navigation to source data
+### [ISS-015] ~~Governance: No reverse navigation to source data~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/governance/page.tsx`
-- **Description:** Governance page shows policy, committee, ACB workspace tabs but no links back to findings or compliance source data.
-- **Impact:** Board members can't drill into underlying observations.
-- **Suggested Fix:** Add "View Observation" links from ACB escalation items.
-- **Complexity:** S
+- **Resolution:** Added "View Findings" and "View Compliance" links below the page description on governance hub page. Blue text links with ExternalLink icons linking to `/findings` and `/compliance`.
+- **Resolved in:** Plan 02-04
 
-### [ISS-016] Reports: No source data links
+### [ISS-016] ~~Reports: No source data links~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/reports/page.tsx`
-- **Description:** Report generator and history shown but no links to findings, compliance, or governance pages that reports pull data from.
-- **Impact:** Users can't verify underlying data before generating reports.
-- **Suggested Fix:** Add "View underlying data" links to findings and compliance.
-- **Complexity:** S
+- **Resolution:** Added "View Findings" and "View Compliance" links below the page description on reports page. Same styling as governance page — blue text links with ExternalLink icons.
+- **Resolved in:** Plan 02-04
 
 ### [ISS-017] Report data completeness depends on ComplianceItem fix
 

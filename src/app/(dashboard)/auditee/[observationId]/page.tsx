@@ -14,7 +14,9 @@ import {
   Clock,
   Calendar,
   MessageSquare,
+  ExternalLink,
 } from "@/lib/icons";
+import Link from "next/link";
 import { DeadlineBadge } from "@/components/auditee/deadline-badge";
 import { StatusTimeline } from "@/components/findings/status-timeline";
 import { EvidenceTimelineEntry } from "@/components/auditee/evidence-timeline-entry";
@@ -90,6 +92,17 @@ export default async function AuditeeObservationPage({
                 >
                   {observation.status}
                 </Badge>
+                {(observation.status === "RESPONSE" ||
+                  observation.status === "COMPLIANCE" ||
+                  observation.status === "CLOSED") && (
+                  <Link
+                    href="/compliance"
+                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    View Compliance Status
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                )}
               </div>
             </div>
             <DeadlineBadge dueDate={effectiveDueDate ?? null} />

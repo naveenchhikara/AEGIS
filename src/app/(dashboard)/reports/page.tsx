@@ -6,7 +6,8 @@ import { GeneratedReportsList } from "@/components/reports/generated-reports-lis
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, FileSpreadsheet, Download } from "@/lib/icons";
+import { FileText, FileSpreadsheet, Download, ExternalLink } from "@/lib/icons";
+import Link from "next/link";
 
 export default async function ReportsPage() {
   const session = await getRequiredSession();
@@ -33,6 +34,22 @@ export default async function ReportsPage() {
           <p className="text-muted-foreground">
             Generate audit reports, compliance summaries, and board reports
           </p>
+          <div className="flex gap-4 pt-1">
+            <Link
+              href="/findings"
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            >
+              View Findings
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+            <Link
+              href="/compliance"
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            >
+              View Compliance
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
 

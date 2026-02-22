@@ -83,13 +83,17 @@ export function SectionTabs({
     );
   }
 
+  const completedCount = sections.filter(
+    (s) => s.status === "COMPLETED" || s.status === "REVIEWED",
+  ).length;
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Audit Sections</CardTitle>
           <p className="text-muted-foreground text-sm">
-            {sections.length} functional areas
+            {completedCount} of {sections.length} complete
           </p>
         </div>
       </CardHeader>

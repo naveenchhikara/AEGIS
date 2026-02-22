@@ -10,7 +10,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "@/lib/icons";
+import { ArrowRight, CheckCircle2 } from "@/lib/icons";
 
 interface PageProps {
   params: Promise<{ assessmentId: string }>;
@@ -67,6 +67,16 @@ export default async function RamAssessmentDetailPage({ params }: PageProps) {
               : undefined
           }
         />
+      )}
+
+      {/* Approved banner (ISS-022) */}
+      {assessment.status === "APPROVED" && (
+        <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span className="font-medium">
+            Assessment Approved — Ready for Audit Planning
+          </span>
+        </div>
       )}
 
       {/* Next step CTA when approved (ISS-006) */}

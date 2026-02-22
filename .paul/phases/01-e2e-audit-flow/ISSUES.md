@@ -12,8 +12,8 @@
 | P2           | 8      | Important — should fix for pilot |
 | P3           | 5      | Nice-to-have — polish items      |
 | **Total**    | **23** |                                  |
-| **Resolved** | **16** | ISS-001-016                      |
-| **Open**     | **7**  |                                  |
+| **Resolved** | **23** | ISS-001-023                      |
+| **Open**     | **0**  |                                  |
 
 ## P0 — Flow Blockers
 
@@ -138,77 +138,56 @@
 - **Resolution:** Added "View Findings" and "View Compliance" links below the page description on reports page. Same styling as governance page — blue text links with ExternalLink icons.
 - **Resolved in:** Plan 02-04
 
-### [ISS-017] Report data completeness depends on ComplianceItem fix
+### [ISS-017] ~~Report data completeness depends on ComplianceItem fix~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** data-flow
-- **Location:** `src/actions/reports/generate-xlsx.ts`
-- **Description:** Report generation assumes ISSUED observations have ComplianceItems. Without ISS-004 fix, reports will have incomplete compliance data.
-- **Impact:** Generated reports may show incomplete compliance tracking.
-- **Suggested Fix:** Fix ISS-004 first. Optionally add data validation warning in report generation.
-- **Complexity:** S (after ISS-004)
+- **Resolution:** Dependency satisfied. ISS-004 (auto-create ComplianceItem on ISSUED transition) was resolved in Plan 02-02. Reports now have ComplianceItem data for all ISSUED observations. No additional code changes needed.
+- **Resolved in:** Plan 02-05 (dependency closure)
 
-### [ISS-018] Escalation status tracking misaligned with levels
+### [ISS-018] ~~Escalation status tracking misaligned with levels~~ RESOLVED
 
-- **Severity:** P2
+- **Severity:** ~~P2~~ → RESOLVED
 - **Category:** data-flow
-- **Location:** `src/lib/escalation-engine.ts`
-- **Description:** Escalation engine auto-computes escalation level based on days overdue, but ComplianceStatus enum transitions don't auto-progress. Level can be 3 while status is still OPEN.
-- **Impact:** Status and escalation level can be out of sync.
-- **Suggested Fix:** Align status auto-progression with escalation level changes. Depends on ISS-002 implementing the full lifecycle.
-- **Complexity:** M (after ISS-002)
+- **Resolution:** Acceptable as designed. Escalation level (L0-L4) indicates urgency based on days overdue. Compliance status (OPEN → BRANCH_RESPONSE_SUBMITTED → ZAC_APPROVED → etc.) indicates workflow position. These are intentionally independent dimensions — a high escalation level with an early status correctly signals "this item is overdue and hasn't progressed through the workflow." ISS-002 confirmed the compliance lifecycle works correctly (false positive). No code changes needed.
+- **Resolved in:** Plan 02-05 (design validation)
 
 ## P3 — Nice-to-Have
 
-### [ISS-019] Section tabs: No progress indicator or "next section" CTA
+### [ISS-019] ~~Section tabs: No progress indicator or "next section" CTA~~ RESOLVED
 
-- **Severity:** P3
+- **Severity:** ~~P3~~ → RESOLVED
 - **Category:** ui
-- **Location:** `src/components/audit-execution/section-tabs.tsx`
-- **Description:** Audit section tabs show status dots but no "X of Y completed" progress bar or "Proceed to next section" button.
-- **Impact:** Workflow friction during field examination.
-- **Suggested Fix:** Add progress bar and highlight next incomplete section.
-- **Complexity:** S
+- **Resolution:** Added "X of Y complete" progress text in section tabs card header. Counts sections with COMPLETED or REVIEWED status. Replaces generic "N functional areas" text.
+- **Resolved in:** Plan 02-05
 
-### [ISS-020] Dashboard: Limited cross-module quick actions
+### [ISS-020] ~~Dashboard: Limited cross-module quick actions~~ RESOLVED
 
-- **Severity:** P3
+- **Severity:** ~~P3~~ → RESOLVED
 - **Category:** ui
-- **Location:** `src/components/dashboard/quick-actions.tsx`
-- **Description:** Dashboard quick actions only link to Findings, Compliance, Audit Plans. Missing: RAM, Audit Execution, Governance, Reports.
-- **Impact:** New users can't discover full audit lifecycle from dashboard.
-- **Suggested Fix:** Add quick action buttons for all 7 lifecycle stages.
-- **Complexity:** S
+- **Resolution:** Expanded QuickActions component from 3 to 7 buttons covering all lifecycle stages: New Finding, Compliance, Audit Plans, Risk Assessment, Audit Execution, Governance, Reports. Each with appropriate icon.
+- **Resolved in:** Plan 02-05
 
-### [ISS-021] Engagement detail: No completion CTA or progress
+### [ISS-021] ~~Engagement detail: No completion CTA or progress~~ RESOLVED
 
-- **Severity:** P3
+- **Severity:** ~~P3~~ → RESOLVED
 - **Category:** ui
-- **Location:** `src/app/(dashboard)/audit-execution/[engagementId]/page.tsx`
-- **Description:** No progress indicator showing sections completed. No "Mark as Complete" button. Depends on ISS-005 for status transition.
-- **Impact:** Users can't see engagement completion progress.
-- **Suggested Fix:** Add progress bar and "Mark Complete" button (after ISS-005).
-- **Complexity:** M (after ISS-005)
+- **Resolution:** Progress indicator resolved by ISS-019 (section tabs show "X of Y complete" on engagement detail page). "Complete Audit" button already exists via ISS-005 (Plan 02-02 added status transition buttons to EngagementHeader).
+- **Resolved in:** Plan 02-05 (combined with ISS-019 + ISS-005)
 
-### [ISS-022] RAM assessment: No approved status confirmation
+### [ISS-022] ~~RAM assessment: No approved status confirmation~~ RESOLVED
 
-- **Severity:** P3
+- **Severity:** ~~P3~~ → RESOLVED
 - **Category:** ui
-- **Location:** `src/app/(dashboard)/ram/[assessmentId]/page.tsx`
-- **Description:** After approval, no confirmation banner. User sees score but unclear if ready for planning.
-- **Impact:** Unclear state communication.
-- **Suggested Fix:** Add "Assessment Approved — Ready for Audit Planning" banner.
-- **Complexity:** S
+- **Resolution:** Added green "Assessment Approved — Ready for Audit Planning" banner with CheckCircle2 icon above the existing "Next Step" CTA card. Only shown for APPROVED status.
+- **Resolved in:** Plan 02-05
 
-### [ISS-023] Dashboard NaN values in risk indicators
+### [ISS-023] ~~Dashboard NaN values in risk indicators~~ RESOLVED
 
-- **Severity:** P3
+- **Severity:** ~~P3~~ → RESOLVED
 - **Category:** ui
-- **Location:** Dashboard observation aggregation queries
-- **Description:** Known issue — Risk indicators show "NaN" when observation aggregation has null values. Carried forward from v4.0.
-- **Impact:** Visual defect on dashboard.
-- **Suggested Fix:** Add null coalescing in observation summary queries and display "0" or "N/A" instead.
-- **Complexity:** S
+- **Resolution:** Added null coalescing (`?? 0`) to all `Number()` conversions in `src/data-access/dashboard.ts`. Affected: `getComplianceSummary` (6 fields), `getObservationSeverity` (7 fields), `getObservationAging` (6 fields), `getAuditCoverage` (2 fields), `getAuditorWorkload` (3 fields). Dashboard now displays "0" instead of "NaN" when PostgreSQL views return null columns.
+- **Resolved in:** Plan 02-05
 
 ---
 

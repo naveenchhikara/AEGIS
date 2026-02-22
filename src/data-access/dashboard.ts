@@ -239,11 +239,11 @@ export async function getComplianceSummary(
 
     const r = result[0];
     return {
-      total: Number(r.total),
-      compliant: Number(r.compliant),
-      partial: Number(r.partial),
-      nonCompliant: Number(r.non_compliant),
-      pending: Number(r.pending),
+      total: Number(r.total ?? 0),
+      compliant: Number(r.compliant ?? 0),
+      partial: Number(r.partial ?? 0),
+      nonCompliant: Number(r.non_compliant ?? 0),
+      pending: Number(r.pending ?? 0),
       percentage: Number(r.compliance_percentage ?? 0),
     };
   } catch {
@@ -314,13 +314,13 @@ export async function getObservationSeverity(
 
     const r = result[0];
     return {
-      total: Number(r.total),
-      totalOpen: Number(r.total_open),
-      criticalOpen: Number(r.critical_open),
-      highOpen: Number(r.high_open),
-      mediumOpen: Number(r.medium_open),
-      lowOpen: Number(r.low_open),
-      closed: Number(r.closed),
+      total: Number(r.total ?? 0),
+      totalOpen: Number(r.total_open ?? 0),
+      criticalOpen: Number(r.critical_open ?? 0),
+      highOpen: Number(r.high_open ?? 0),
+      mediumOpen: Number(r.medium_open ?? 0),
+      lowOpen: Number(r.low_open ?? 0),
+      closed: Number(r.closed ?? 0),
     };
   } catch {
     return computeSeverityFallback(db, tenantId);
@@ -405,12 +405,12 @@ export async function getObservationAging(
 
     const r = result[0];
     return {
-      totalOpen: Number(r.total_open),
-      current: Number(r.current_count),
-      bucket030: Number(r.bucket_0_30),
-      bucket3160: Number(r.bucket_31_60),
-      bucket6190: Number(r.bucket_61_90),
-      bucket90Plus: Number(r.bucket_90_plus),
+      totalOpen: Number(r.total_open ?? 0),
+      current: Number(r.current_count ?? 0),
+      bucket030: Number(r.bucket_0_30 ?? 0),
+      bucket3160: Number(r.bucket_31_60 ?? 0),
+      bucket6190: Number(r.bucket_61_90 ?? 0),
+      bucket90Plus: Number(r.bucket_90_plus ?? 0),
     };
   } catch {
     return computeAgingFallback(db, tenantId);
@@ -479,8 +479,8 @@ export async function getAuditCoverage(
     const branches = result.map((r) => ({
       branchId: r.branch_id,
       branchName: r.branch_name,
-      completedEngagements: Number(r.completed_engagements),
-      totalEngagements: Number(r.total_engagements),
+      completedEngagements: Number(r.completed_engagements ?? 0),
+      totalEngagements: Number(r.total_engagements ?? 0),
       isCovered: r.is_covered,
     }));
 
@@ -564,9 +564,9 @@ export async function getAuditorWorkload(
     return result.map((r) => ({
       auditorId: r.assigned_to_id,
       auditorName: r.auditor_name,
-      totalAssigned: Number(r.total_assigned),
-      openCount: Number(r.open_count),
-      highCriticalOpen: Number(r.high_critical_open),
+      totalAssigned: Number(r.total_assigned ?? 0),
+      openCount: Number(r.open_count ?? 0),
+      highCriticalOpen: Number(r.high_critical_open ?? 0),
     }));
   } catch {
     return computeWorkloadFallback(db, tenantId);

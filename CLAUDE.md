@@ -5,7 +5,7 @@
 AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
 **Live:** https://aegis.nexlyadvisory.com
-**Scale:** 600 source files · 1,999-line Prisma schema · 63 DB models · 434 commits · 104 requirements across 18 modules
+**Scale:** 580 source files · 2,320-line Prisma schema · 71 DB models · 459 commits · 104 requirements across 18 modules
 **Status:** 104/104 requirements complete. Production deployed with 4 user accounts (CEO, Auditor, CAE, CCO).
 
 ## Tech Stack
@@ -53,7 +53,7 @@ messages/                      # i18n message files (en.json, hi.json, mr.json, 
 deploy/                        # Deployment scripts, Nginx config, PM2, demo scripts
 scripts/                       # Utility scripts (account creation, S3 setup, translations)
 prisma/
-├── schema.prisma              # 63 models, 16 enums, 1999 lines
+├── schema.prisma              # 71 models, 20 enums, 2320 lines
 ├── seed.ts                    # Database seeder (1,690 lines, 10 users, 2 tenants)
 ├── migrations/                # Prisma + standalone SQL migrations
 └── *.sql                      # Manual SQL (triggers, views)
@@ -118,8 +118,8 @@ src/
 - **Engine:** PostgreSQL 16 with pgcrypto + pg_trgm extensions
 - **ORM:** Prisma 7 with PostgreSQL adapter (`@prisma/adapter-pg`)
 - **Connection Pool:** pg.Pool with max 25 connections
-- **Models:** 63 models (User, Tenant, Observation, AuditEngagement, RiskRegister, ControlLibrary, etc.)
-- **Enums:** 16 enums (Role, Severity, ObservationStatus, ComplianceStatus, etc.)
+- **Models:** 71 models (User, Tenant, Observation, AuditEngagement, ExaminationNode, ActionPoint, BranchRbiaScore, etc.)
+- **Enums:** 20 enums (Role, Severity, ObservationStatus, EngagementStatus, ScoreLabel, ActionPointStatus, etc.)
 - **Views:** 4 PostgreSQL views/functions for dashboard (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) — applied via standalone SQL, not in Prisma migrations
 - **Seed Data:** 10 users, 2 tenants, 39 examination areas, 568 examination items, RAM parameters
 - **Prisma Client:** Generated to `src/generated/prisma/`
@@ -247,8 +247,19 @@ Before running E2E tests or deploying, verify:
 - Server actions body size limit is 5MB (configured in `next.config.ts`)
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from the server bundle (`serverExternalPackages`)
 
+## v6.0 RBIA Redesign (In Progress)
+
+- **Dual examination models**: Old `ExaminationArea`/`ExaminationItem`/`AuditExaminationResponse` coexist with new `ExaminationNode`/`ExaminationResponse` — old models will be removed in Phase 6
+- **ExaminationNode**: Hierarchical tree with materialized path (`path` field), variable depth 0-5, replaces flat 2-level structure
+- **4-point scoring**: `ScoreLabel` enum (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) maps to decimal scores (1.0/0.75/0.5/0.0) with weighted roll-up
+- **ActionPoint vs Observation**: ActionPoints are operational findings (~15-40 per audit, simple lifecycle), Observations are formal 5C findings (~3-10 per audit)
+- **EngagementStatus**: Now 8 states: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
+- **BranchRbiaScore**: Frozen JSONB snapshot of scoring tree at engagement completion — immutable historical record
+- **Schema is additive**: v6.0 models added alongside old models; both coexist until Phase 6 cleanup
+
 ## Known Issues
 
 1. **SES sandbox mode** — Email only goes to verified addresses; production access pending
 2. **DB views not in migrations** — 4 PostgreSQL views require manual SQL application after fresh deploy
 3. **Seed data mismatch** — Production DB may have old minimal seed vs comprehensive local seed
+4. **v6.0 models need db:push** — New ExaminationNode, ExaminationResponse, ActionPoint etc. models are in schema but may not exist in production DB yet

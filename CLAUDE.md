@@ -5,8 +5,8 @@
 AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
 **Live:** https://aegis.nexlyadvisory.com
-**Scale:** 580 source files · 2,320-line Prisma schema · 71 DB models · 459 commits · 104 requirements across 18 modules
-**Status:** 104/104 requirements complete. Production deployed with 4 user accounts (CEO, Auditor, CAE, CCO).
+**Scale:** 580 source files · 2,320-line Prisma schema · 71 DB models · 472 commits · 104 v1-v5 requirements + 41 v6.0 requirements
+**Status:** v5.0 complete (104/104 requirements). v6.0 RBIA Implementation in progress — Phase 18 (Foundation) planned, ready for execution.
 
 ## Tech Stack
 
@@ -249,13 +249,18 @@ Before running E2E tests or deploying, verify:
 
 ## v6.0 RBIA Redesign (In Progress)
 
-- **Dual examination models**: Old `ExaminationArea`/`ExaminationItem`/`AuditExaminationResponse` coexist with new `ExaminationNode`/`ExaminationResponse` — old models will be removed in Phase 6
+**Phase 18 (Foundation)** is fully planned with 5 plans ready for execution. 41 requirements across 6 phases (18-23), 12 requirements in Phase 18.
+
+- **Dual examination models**: Old `ExaminationArea`/`ExaminationItem`/`AuditExaminationResponse` coexist with new `ExaminationNode`/`ExaminationResponse` — old models will be removed in Phase 23 cleanup
 - **ExaminationNode**: Hierarchical tree with materialized path (`path` field), variable depth 0-5, replaces flat 2-level structure
-- **4-point scoring**: `ScoreLabel` enum (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) maps to decimal scores (1.0/0.75/0.5/0.0) with weighted roll-up
+- **4-point scoring**: `ScoreLabel` enum (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) maps to decimal scores (1.0/0.75/0.5/0.0) with weighted roll-up and critical-item cap at module level
+- **Rating bands**: >80% Very Good, >65% Good, >50% Satisfactory, >40% Moderate, ≤40% Poor (RBIA Policy 2020, Section 8.9.1)
 - **ActionPoint vs Observation**: ActionPoints are operational findings (~15-40 per audit, simple lifecycle), Observations are formal 5C findings (~3-10 per audit)
 - **EngagementStatus**: Now 8 states: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
-- **BranchRbiaScore**: Frozen JSONB snapshot of scoring tree at engagement completion — immutable historical record
-- **Schema is additive**: v6.0 models added alongside old models; both coexist until Phase 6 cleanup
+- **BranchRbiaScore**: Frozen JSONB snapshot (summary: composite score, per-module scores, rating band) — DB trigger enforces immutability after freeze
+- **Schema is additive**: v6.0 models added alongside old models; both coexist until cleanup phase
+- **Terminology**: "Chief Audit Executive (CAE)" display strings renamed to "Head of Internal Audit (HIA)" — `Role.CAE` enum and `cae:*` permissions unchanged
+- **Planning docs**: `.planning/phases/18-foundation/` contains CONTEXT, RESEARCH, and 5 PLAN files
 
 ## Known Issues
 

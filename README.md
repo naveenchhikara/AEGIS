@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). 104/104 requirements complete across 18 modules. 600 source files, 63 DB models, 434 commits.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v5.0 complete (104/104 requirements, 18 modules). v6.0 RBIA Implementation in progress (41 new requirements, 6 phases). 580+ source files, 71 DB models, 470+ commits.
 
 ## Key Features
 
@@ -18,6 +18,15 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - **Reports** — XLSX multi-tab and PDF generation for board reporting
 - **Multi-language** — English, Hindi, Marathi, Gujarati (next-intl)
 - **RBAC** — 17 roles, 60+ permissions, multi-role support with maker-checker enforcement
+
+### v6.0 RBIA Features (In Development)
+
+- **Hierarchical Examination Tree** — Variable depth (0-5) with materialized path, replacing flat 2-level structure
+- **4-Point Scoring** — FULLY/LARGELY/PARTIALLY/NON_COMPLIANT with weighted roll-up and critical-item cap
+- **8-State Engagement Lifecycle** — PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED
+- **Dual Findings** — ActionPoints (operational, ~15-40/audit) + Observations (formal 5C, ~3-10/audit)
+- **Branch RBIA Scoring** — Frozen immutable snapshots with DB-level trigger protection
+- **Branch Manager Response** — Batch response workflow with 15-day deadline tracking
 
 ## Quick Start
 
@@ -121,7 +130,7 @@ src/
   stores/               # Zustand stores
   types/                # TypeScript definitions
 prisma/
-  schema.prisma         # 63 models, 16 enums, 1,999 lines
+  schema.prisma         # 71 models, 20 enums, 2,320 lines
   seed.ts               # Database seeder (10 users, 2 tenants)
 tests/
   e2e/                  # Playwright E2E specs
@@ -253,15 +262,26 @@ After a fresh deployment with a new database:
 
 ## Roadmap
 
-| Phase | Focus                            | Status   |
-| ----- | -------------------------------- | -------- |
-| 1     | Core Audit Domain (Foundation)   | Complete |
-| 2     | Reporting & Compliance Lifecycle | Complete |
-| 3     | GRC & Issue Management           | Complete |
-| 4     | UCB Regulatory & Governance      | Complete |
-| 5     | Advanced Analytics & AI          | Deferred |
-| 6     | Specialized Regulatory Modules   | Complete |
-| 17    | Critical Security & Quality      | Complete |
+### Shipped (v1.0–v5.0)
+
+| Milestone | Focus               | Phases | Status   |
+| --------- | ------------------- | ------ | -------- |
+| v1.0      | Clickable Prototype | 1-4    | Complete |
+| v2.0      | Working Core MVP    | 5-14   | Complete |
+| v3.0      | RBIAS Full Platform | 15-17  | Complete |
+| v4.0      | Platform Hardening  | —      | Complete |
+| v5.0      | Pilot Readiness     | —      | Complete |
+
+### v6.0 RBIA Implementation (In Progress)
+
+| Phase | Focus                                                             | Requirements | Status  |
+| ----- | ----------------------------------------------------------------- | ------------ | ------- |
+| 18    | Foundation (scoring engine, state machine, DB guards, encryption) | 12           | Planned |
+| 19    | Data Access Layer (tree queries, module selection, findings DAL)  | 4            | Pending |
+| 20    | Server Actions (score freeze, meetings, findings mutations)       | 11           | Pending |
+| 21    | Examination UI (tree view, score picker, progress, filters)       | 4            | Pending |
+| 22    | Findings & Meetings (dual tabs, meeting forms, lifecycle UI)      | 6            | Pending |
+| 23    | BM Response & Reporting (batch response, score display, RBIA PDF) | 4            | Pending |
 
 See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for detailed phase breakdowns.
 

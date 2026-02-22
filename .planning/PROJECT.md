@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) to manage internal audits and track compliance with RBI regulations. Auditors conduct branch/unit/process audits and record observations that flow through a structured 7-state lifecycle (Draft → Submitted → Reviewed → Issued → Response → Compliance → Closed). These observations aggregate automatically into macro-level views — compliance status for the CCO, risk picture for the CEO, and board reports for the Audit Committee.
 
-v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Better Auth, multi-tenancy, and observation-to-board-report workflow. v3.0 completed all 104 RBIAS requirements across 18 modules with production hardening. v4.0 added platform hardening (backups, monitoring, security). v5.0 delivered pilot readiness with dashboard polish and navigation improvements. v6.0 introduces expanded RBIA data models with new enums and relations.
+v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Better Auth, multi-tenancy, and observation-to-board-report workflow. v3.0 completed all 104 RBIAS requirements across 18 modules with production hardening. v4.0 added platform hardening (backups, monitoring, security). v5.0 delivered pilot readiness with dashboard polish and navigation improvements. v6.0 implements the full RBIA audit workflow — hierarchical examination trees, 4-point weighted scoring, dual findings (ActionPoints + Observations), 8-state engagement lifecycle, and enhanced reporting. Phase 18 (Foundation) is fully planned with 5 plans across scoring engine, state machine, DB guards, terminology rename, and data encryption audit.
 
 ## Core Value
 
@@ -33,7 +33,7 @@ If nothing else works, the platform must let auditors record observations, track
 ## Current State
 
 **Shipped:** v5.0 Pilot Readiness (2026-02-22), v6.0 Schema (models defined)
-**Status:** v6.0 schema in DB, implementation in progress.
+**Status:** v6.0 Phase 18 (Foundation) fully planned — 5 plans ready for execution. 41 requirements across 6 phases (18-23).
 **Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
 **Codebase:** 271K TypeScript LOC across 580 files, 2,320-line Prisma schema (71 models, 20 enums)
 **Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
@@ -170,4 +170,4 @@ If nothing else works, the platform must let auditors record observations, track
 
 ---
 
-_Last updated: 2026-02-22 after v6.0 milestone initialization_
+_Last updated: 2026-02-22 after Phase 18 planning complete (5 plans, verified)_

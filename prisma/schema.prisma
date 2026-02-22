@@ -122,9 +122,43 @@ enum AuditPlanStatus {
 
 enum EngagementStatus {
   PLANNED
+  TEAM_ASSIGNED
+  OPENING_MEETING
   IN_PROGRESS
+  EXIT_MEETING
+  REPORT_DRAFT
   COMPLETED
   CANCELLED
+}
+
+// ─── v6.0 RBIA Enums ──────────────────────────────────────────────────────
+
+enum ScoreLabel {
+  FULLY_COMPLIANT
+  LARGELY_COMPLIANT
+  PARTIALLY_COMPLIANT
+  NON_COMPLIANT
+}
+
+enum ActionPointStatus {
+  DRAFT
+  ISSUED
+  BM_RESPONSE_DUE
+  BM_RESPONDED
+  VERIFIED
+  CLOSED
+  CARRIED_FORWARD
+}
+
+enum MeetingType {
+  OPENING
+  EXIT
+}
+
+enum BmBatchStatus {
+  PENDING
+  SUBMITTED
+  OVERDUE
 }
 
 enum ResponseType {
@@ -265,6 +299,9 @@ model Tenant {
   auditAreas             AuditArea[]
   auditPlans             AuditPlan[]
   auditEngagements       AuditEngagement[]
+  // v6.0 RBIA relations
+  examinationNodes       ExaminationNode[]
+  positiveObservations   PositiveObservation[]
   userBranchAssignments   UserBranchAssignment[]
   auditeeResponses        AuditeeResponse[]
   notificationQueues      NotificationQueue[]
@@ -516,12 +553,17 @@ model Evidence {
   uploadedById String @db.Uuid
   uploadedBy   User   @relation("UploadedBy", fields: [uploadedById], references: [id])
 
+  // v6.0: new examination response evidence
+  newExaminationResponseId String?              @db.Uuid
+  newExaminationResponse   ExaminationResponse? @relation("ExaminationResponseEvidence", fields: [newExaminationResponseId], references: [id], onDelete: Cascade)
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
 
   @@index([tenantId])
   @@index([observationId])
   @@index([examinationResponseId])
+  @@index([newExaminationResponseId])
 }
 
 // ─── Compliance Requirement ──────────────────────────────────────────────────
@@ -738,6 +780,12 @@ model AuditEngagement {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // v6.0: HIA engagement closure
+  hiaClosedById    String?   @db.Uuid
+  hiaClosedAt      DateTime?
+  closureRemarks   String?   @db.Text
+  allItemsResolved Boolean   @default(false)
+
   // Relations
   observations Observation[]
   teamMembers          AuditTeamMember[]
@@ -751,6 +799,14 @@ model AuditEngagement {
   workProgramItems     WorkProgramItem[]
   riskAuditLinkages    RiskAuditLinkage[]
   isAuditChecklists    IsAuditChecklist[]
+  // v6.0 RBIA relations
+  examinationResponsesV2  ExaminationResponse[]
+  branchRbiaScore         BranchRbiaScore?
+  moduleSelections        EngagementModuleSelection[]
+  meetings                EngagementMeeting[]
+  actionPointsV2          ActionPoint[]
+  bmResponseBatch         BmResponseBatch?
+  positiveObservations    PositiveObservation[]
 
   @@index([tenantId])
   @@index([auditPlanId])

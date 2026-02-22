@@ -15,7 +15,7 @@ Pure scoring engine, typed engagement state machine, database-level guards, data
 
 ### Scoring Engine Behavior
 
-- **Rating band thresholds:** Use RBIA Policy 2020 values — >80% Very Good, 65-80% Good, 50-65% Fair, 35-50% Marginal, <35% Poor
+- **Rating band thresholds:** Use RBIA Policy 2020 values — >80% Very Good, >65-80% Good, >50-65% Satisfactory, >40-50% Moderate, ≤40% Poor
 - **Score mapping:** FULLY_COMPLIANT=1.0, LARGELY_COMPLIANT=0.75, PARTIALLY_COMPLIANT=0.5, NON_COMPLIANT=0.0 (confirmed, no changes)
 - **Display precision:** Integer percentages only (e.g., 79%, not 78.54%) — both in live UI and frozen JSONB snapshot
 - **Partial scoring:** Calculate from scored items only — score reflects what's been evaluated so far; unscored items excluded from calculation

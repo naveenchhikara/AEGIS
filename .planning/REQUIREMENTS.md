@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXAM-07     | Phase 21 | Pending |
 | EXAM-08     | Phase 21 | Pending |
 | EXAM-09     | Phase 20 | Pending |
-| EXAM-10     | Phase 18 | Pending |
+| EXAM-10     | Phase 20 | Pending |
 | EXAM-11     | Phase 18 | Pending |
 | EXAM-12     | Phase 18 | Pending |
 | ENGG-01     | Phase 18 | Pending |
@@ -155,9 +155,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 Phase breakdown:
 
-- Phase 18 (Foundation): EXAM-05, EXAM-06, EXAM-10, EXAM-11, EXAM-12, ENGG-01, ENGG-02, DSEC-01, DSEC-02, DSEC-03, DSEC-04, DSEC-05, TERM-01 — 13 requirements
+- Phase 18 (Foundation): EXAM-05, EXAM-06, EXAM-11, EXAM-12, ENGG-01, ENGG-02, DSEC-01, DSEC-02, DSEC-03, DSEC-04, DSEC-05, TERM-01 — 12 requirements
 - Phase 19 (Data Access Layer): ENGG-05, ENGG-06, ENGG-07, FIND-05 — 4 requirements
-- Phase 20 (Server Actions): EXAM-03, EXAM-04, EXAM-09, ENGG-03, ENGG-04, FIND-01, FIND-02, FIND-03, FIND-06, BMRP-01 — 10 requirements
+- Phase 20 (Server Actions): EXAM-03, EXAM-04, EXAM-09, EXAM-10, ENGG-03, ENGG-04, FIND-01, FIND-02, FIND-03, FIND-06, BMRP-01 — 11 requirements
 - Phase 21 (Examination UI): EXAM-01, EXAM-02, EXAM-07, EXAM-08 — 4 requirements
 - Phase 22 (Findings and Meetings): FIND-04, BMRP-02, BMRP-03, BMRP-04, REPT-01, REPT-03 — 6 requirements
 - Phase 23 (BM Response and Reporting): BMRP-05, REPT-02, REPT-04, REPT-05 — 4 requirements

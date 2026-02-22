@@ -43,7 +43,7 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 
 **Depends on**: Nothing (first phase of v6.0 milestone)
 
-**Requirements**: EXAM-05, EXAM-06, EXAM-10, EXAM-11, EXAM-12, ENGG-01, ENGG-02, DSEC-01, DSEC-02, DSEC-03, DSEC-04, DSEC-05, TERM-01
+**Requirements**: EXAM-05, EXAM-06, EXAM-11, EXAM-12, ENGG-01, ENGG-02, DSEC-01, DSEC-02, DSEC-03, DSEC-04, DSEC-05, TERM-01
 
 **Success Criteria** (what must be TRUE):
 
@@ -96,7 +96,7 @@ Plans:
 
 **Depends on**: Phase 19
 
-**Requirements**: EXAM-03, EXAM-04, EXAM-09, ENGG-03, ENGG-04, FIND-01, FIND-02, FIND-03, FIND-06, BMRP-01
+**Requirements**: EXAM-03, EXAM-04, EXAM-09, EXAM-10, ENGG-03, ENGG-04, FIND-01, FIND-02, FIND-03, FIND-06, BMRP-01
 
 **Success Criteria** (what must be TRUE):
 

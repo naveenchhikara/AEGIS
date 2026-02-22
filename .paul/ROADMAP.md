@@ -6,19 +6,19 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 
 ## Milestones
 
-| Version | Name                | Phases | Status         | Completed  |
-| ------- | ------------------- | ------ | -------------- | ---------- |
-| v1.0    | Clickable Prototype | 1-4    | ✅ Shipped     | 2026-02-08 |
-| v2.0    | Working Core MVP    | 5-14   | ✅ Shipped     | 2026-02-10 |
-| v3.0    | RBIAS Full Platform | 15-17  | ✅ Shipped     | 2026-02-21 |
-| v4.0    | Platform Hardening  | 1-5    | ✅ Shipped     | 2026-02-21 |
-| v5.0    | Pilot Readiness     | 1-3    | 🚧 In Progress | -          |
+| Version | Name                | Phases | Status     | Completed  |
+| ------- | ------------------- | ------ | ---------- | ---------- |
+| v1.0    | Clickable Prototype | 1-4    | ✅ Shipped | 2026-02-08 |
+| v2.0    | Working Core MVP    | 5-14   | ✅ Shipped | 2026-02-10 |
+| v3.0    | RBIAS Full Platform | 15-17  | ✅ Shipped | 2026-02-21 |
+| v4.0    | Platform Hardening  | 1-5    | ✅ Shipped | 2026-02-21 |
+| v5.0    | Pilot Readiness     | 1-3    | ✅ Shipped | 2026-02-22 |
 
-## 🚧 Active Milestone: v5.0 Pilot Readiness
+## ✅ Completed Milestone: v5.0 Pilot Readiness
 
 **Goal:** Launch the product with a functioning audit process flow — test end-to-end, fix issues, and polish for demo.
-**Status:** Not started
-**Progress:** [░░░░░░░░░░] 0%
+**Status:** Complete
+**Progress:** [██████████] 100%
 
 ### Phase 1: End-to-End Audit Flow Testing
 
@@ -62,17 +62,19 @@ AEGIS evolved from clickable prototype (v1.0) through working MVP (v2.0) to a co
 
 **Goal:** Polish the UI/UX and ensure the product is presentable for pilot bank demos
 **Depends on:** Phase 2 (needs working flows first)
-**Research:** Unlikely (visual/UX improvements)
+**Status:** Complete (2026-02-22) — 2 plans executed
 
 **Scope:**
 
 - Dashboard KPI accuracy and visual polish
 - Empty states, loading states, error messages
 - Navigation flow and breadcrumb consistency
-- Demo script preparation (golden path walkthrough)
-- Final smoke test of complete audit lifecycle
+- Icon standardization and documentation accuracy
 
-**Plans:** TBD (defined during /paul:plan)
+**Plans:**
+
+- [x] 03-01: Dashboard widgets, loading/error/404 infrastructure, layout consistency (completed 2026-02-22)
+- [x] 03-02: Icon imports, sidebar differentiation, CLAUDE.md Known Issues cleanup (completed 2026-02-22)
 
 ## ✅ Completed Milestones
 

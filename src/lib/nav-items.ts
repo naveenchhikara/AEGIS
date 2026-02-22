@@ -126,7 +126,7 @@ export const navItems: NavItem[] = [
   {
     title: "Risk Management",
     href: "/risk-management",
-    icon: Shield,
+    icon: ShieldCheck,
     tKey: "riskManagement",
     requiredPermission: "risk_register:read",
   },

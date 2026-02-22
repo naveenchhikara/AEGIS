@@ -249,8 +249,6 @@ Before running E2E tests or deploying, verify:
 
 ## Known Issues
 
-1. **Dashboard NaN values** — Risk indicators show "NaN" when observation aggregation has null values
-2. **SES sandbox mode** — Email only goes to verified addresses; production access pending
-3. **Missing index pages** — `/audit-execution` and `/admin` return 404 (only nested routes exist)
-4. **DB views not in migrations** — 4 PostgreSQL views require manual SQL application after fresh deploy
-5. **Seed data mismatch** — Production DB may have old minimal seed vs comprehensive local seed
+1. **SES sandbox mode** — Email only goes to verified addresses; production access pending
+2. **DB views not in migrations** — 4 PostgreSQL views require manual SQL application after fresh deploy
+3. **Seed data mismatch** — Production DB may have old minimal seed vs comprehensive local seed

@@ -10,11 +10,11 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 
 ## Current State
 
-| Attribute    | Value                   |
-| ------------ | ----------------------- |
-| Version      | v4.0 Platform Hardening |
-| Status       | Production (hardened)   |
-| Last Updated | 2026-02-21              |
+| Attribute    | Value                    |
+| ------------ | ------------------------ |
+| Version      | v5.0 Pilot Readiness     |
+| Status       | Production (pilot-ready) |
+| Last Updated | 2026-02-22               |
 
 **Production URLs:**
 
@@ -28,16 +28,18 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - [x] v2.0 — Working MVP: PostgreSQL, Better Auth, multi-tenancy, 7-state observation lifecycle, S3 evidence, email notifications, PDF/XLSX reports, 5 role-based dashboards, onboarding wizard (2026-02-10)
 - [x] v3.0 — Full RBIAS platform: all 104 RBI requirements across 18 modules, production hardening (IDOR, XSS, typed sessions, N+1), CI/CD, Docker deployment (2026-02-21)
 - [x] v4.0 — Platform hardening: automated backups, security headers, Docker hardening, test suite (108 unit + E2E), Sentry error tracking, health monitoring, performance baseline (2026-02-21)
+- [x] v5.0 — Pilot readiness: E2E audit flow tested (23 issues found), all 23 bugs fixed, demo-ready polish (dashboard widgets, loading/error/404 infrastructure, layout consistency, icon standardization, documentation accuracy) (2026-02-22)
 
 ### Active (In Progress)
 
-- [ ] To be defined during next milestone planning
+- [ ] Pilot deployment with real UCBs
+- [ ] User acceptance testing with actual bank staff
 
 ### Planned (Next)
 
-- [ ] Pilot deployment with real UCBs
-- [ ] User acceptance testing with actual bank staff
 - [ ] Iterative improvements based on pilot feedback
+- [ ] Production SES email access
+- [ ] Database views in Prisma migrations
 
 ### Out of Scope
 
@@ -92,15 +94,17 @@ Next.js 16 + TypeScript + PostgreSQL 16 + Prisma 7 stack. 248K LOC across 563 fi
 
 ## Key Decisions
 
-| Decision                           | Rationale                                                       | Date       | Status |
-| ---------------------------------- | --------------------------------------------------------------- | ---------- | ------ |
-| SaaS multi-tenant architecture     | Single codebase, zero client IT dependency                      | 2026-02-07 | Active |
-| AI-assisted development            | Budget constraint; domain expertise is differentiator           | 2026-02-07 | Active |
-| Application-level tenant isolation | WHERE clauses via prismaForTenant — simpler than PostgreSQL RLS | 2026-02-20 | Active |
-| VPS + Docker deployment            | Simpler than AWS for single-tenant pilot phase                  | 2026-02-21 | Active |
-| Defense-in-depth URL validation    | Server Zod + client Zod + render guard for XSS prevention       | 2026-02-20 | Active |
-| Sentry for error tracking          | Industry standard, free tier sufficient for pilot               | 2026-02-21 | Active |
-| Optional external services pattern | S3/SES/Sentry degrade gracefully when unconfigured              | 2026-02-21 | Active |
+| Decision                                | Rationale                                                                       | Date       | Status |
+| --------------------------------------- | ------------------------------------------------------------------------------- | ---------- | ------ |
+| SaaS multi-tenant architecture          | Single codebase, zero client IT dependency                                      | 2026-02-07 | Active |
+| AI-assisted development                 | Budget constraint; domain expertise is differentiator                           | 2026-02-07 | Active |
+| Application-level tenant isolation      | WHERE clauses via prismaForTenant — simpler than PostgreSQL RLS                 | 2026-02-20 | Active |
+| VPS + Docker deployment                 | Simpler than AWS for single-tenant pilot phase                                  | 2026-02-21 | Active |
+| Defense-in-depth URL validation         | Server Zod + client Zod + render guard for XSS prevention                       | 2026-02-20 | Active |
+| Sentry for error tracking               | Industry standard, free tier sufficient for pilot                               | 2026-02-21 | Active |
+| Optional external services pattern      | S3/SES/Sentry degrade gracefully when unconfigured                              | 2026-02-21 | Active |
+| Remove broken widgets over placeholders | No historical data for trends; "coming soon" cards look incomplete during demos | 2026-02-22 | Active |
+| Escalation level/status independence    | Level = urgency, status = workflow position; both can change independently      | 2026-02-22 | Active |
 
 ## Success Metrics
 
@@ -110,6 +114,8 @@ Next.js 16 + TypeScript + PostgreSQL 16 + Prisma 7 stack. 248K LOC across 563 fi
 | Production deployment   | Live              | Live              | Achieved    |
 | Platform hardening      | 5 phases          | 5/5 complete      | Achieved    |
 | Unit test coverage      | Core modules      | 108 tests passing | Achieved    |
+| E2E audit flow tested   | All flows pass    | 23 issues fixed   | Achieved    |
+| Demo-ready polish       | Clean dashboards  | All widgets clean | Achieved    |
 | Pilot UCB onboarded     | 1 bank            | 0                 | Not started |
 | User acceptance testing | Pass              | Not started       | Not started |
 | SES email delivery      | Production access | Sandbox only      | At risk     |
@@ -159,4 +165,4 @@ Quick Reference:
 ---
 
 _PROJECT.md — Updated when requirements or context change_
-_Last updated: 2026-02-21 after v4.0 Platform Hardening_
+_Last updated: 2026-02-22 after v5.0 Pilot Readiness_

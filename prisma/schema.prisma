@@ -462,6 +462,9 @@ model Observation {
   // Risk categorization
   riskCategory String?
 
+  // v6.0: discriminator for observation type
+  observationType String @default("AUTO_LEGACY") // "FORMAL" or "AUTO_LEGACY"
+
   // Engagement tracking (Phase 12 — links observation to audit engagement)
   engagementId String?          @db.Uuid
   engagement   AuditEngagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)
@@ -1964,6 +1967,13 @@ model BoardReport {
   // Snapshot of key metrics at generation time
   metricsSnapshot Json?
 
+  // v6.0: enhanced board synthesis fields
+  hiaRecommendations       String?  @db.Text
+  branchRatingDistribution Json?    // { "VERY_GOOD": 3, "GOOD": 5, ... }
+  systemicFindings         Json?    // [{ finding, affectedBranches, severity }]
+  complianceAging          Json?    // { "0-30": 10, "31-60": 5, ... }
+  trendData                Json?    // [{ quarter, avgScore, branchCount }]
+
   @@index([tenantId])
   @@index([tenantId, year, quarter])
 }
@@ -2039,6 +2049,261 @@ model OnboardingProgress {
   updatedAt DateTime @updatedAt
 
   @@index([tenantId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v6.0: RBIA Redesign Models
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Examination Node (v6.0 — hierarchical examination framework) ──────────
+// Replaces ExaminationArea + ExaminationItem with variable-depth tree.
+// Leaf nodes (isLeaf=true) are value statements that get scored.
+// Non-leaf nodes are groupings whose scores are computed via weighted child roll-up.
+
+model ExaminationNode {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  code     String   // e.g., "OPS", "OPS-KYC", "OPS-KYC-001"
+  name     String   // Display name e.g., "KYC/AML Compliance"
+  path     String   // Materialized path e.g., "OPS/OPS-KYC/OPS-KYC-001"
+  depth    Int      // 0=root area, 1=module, 2=sub-module, 3+=leaf items
+  isLeaf   Boolean  @default(false)
+
+  parentId String?          @db.Uuid
+  parent   ExaminationNode? @relation("NodeHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children ExaminationNode[] @relation("NodeHierarchy")
+
+  weight      Decimal  @db.Decimal(5, 4) @default(1.0) // Weight within parent group
+  isCritical  Boolean  @default(false) // Critical item override: if NON_COMPLIANT, caps parent score
+
+  riskCategory        String?  // e.g., "Operational Risk", "Credit Risk"
+  regulatoryRef       String?  // RBI circular reference
+  applicableBranchTypes String[] // e.g., ["LARGE", "MEDIUM", "SMALL"] — empty = all
+  description         String?  @db.Text // Value statement text for leaf nodes
+
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  responses            ExaminationResponse[]
+  moduleSelections     EngagementModuleSelection[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([tenantId, path])
+  @@index([parentId])
+  @@index([tenantId, depth, isActive])
+}
+
+// ─── Examination Response (v6.0 — per-item audit response with 4-point scoring) ─
+
+model ExaminationResponse {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+
+  engagementId String          @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  nodeId String          @db.Uuid
+  node   ExaminationNode @relation(fields: [nodeId], references: [id])
+
+  // 4-point scoring: 1.0 (Fully), 0.75 (Largely), 0.5 (Partially), 0.0 (Non-Compliant), NULL (not yet scored)
+  score      Decimal?   @db.Decimal(4, 2)
+  scoreLabel ScoreLabel?
+
+  workingNotes       String?  @db.Text  // Auditor's detailed notes
+  flagForObservation Boolean  @default(false) // Flag for promotion to formal 5C Observation
+  flagForActionPoint Boolean  @default(false) // Flag for promotion to Action Point
+
+  respondedById String?  @db.Uuid
+  respondedAt   DateTime?
+
+  // Evidence
+  evidence Evidence[] @relation("ExaminationResponseEvidence")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations to findings
+  actionPoints ActionPoint[]
+
+  @@unique([engagementId, nodeId])
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([engagementId, flagForObservation])
+  @@index([engagementId, flagForActionPoint])
+}
+
+// ─── Branch RBIA Score (v6.0 — frozen score snapshot per engagement) ─────────
+
+model BranchRbiaScore {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+
+  engagementId String @unique @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  branchId String @db.Uuid
+
+  compositeScore Decimal  @db.Decimal(5, 2) // 0.00 - 1.00
+  ratingBand     String   // "VERY_GOOD", "GOOD", "SATISFACTORY", "MODERATE", "POOR"
+
+  // JSONB snapshots — authoritative historical record
+  moduleScores       Json // { "OPS": 0.85, "CREDIT": 0.72, ... }
+  scoringTreeSnapshot Json // Full tree with per-node scores for drill-down
+
+  frozenAt   DateTime? // NULL = live/draft, non-NULL = frozen (immutable)
+  frozenById String?   @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([branchId, frozenAt])
+}
+
+// ─── Engagement Module Selection (v6.0 — dynamic module selection per engagement) ─
+
+model EngagementModuleSelection {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String @db.Uuid
+
+  engagementId   String          @db.Uuid
+  engagement     AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  moduleNodeId   String          @db.Uuid
+  moduleNode     ExaminationNode @relation(fields: [moduleNodeId], references: [id])
+
+  isAutoSelected  Boolean @default(false)
+  selectionReason String?  // e.g., "Branch type: LARGE", "Manual addition by Lead Auditor"
+
+  createdAt DateTime @default(now())
+
+  @@unique([engagementId, moduleNodeId])
+  @@index([tenantId])
+  @@index([engagementId])
+}
+
+// ─── Engagement Meeting (v6.0 — opening/exit meeting records) ───────────────
+
+model EngagementMeeting {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String @db.Uuid
+
+  engagementId   String      @db.Uuid
+  engagement     AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  meetingType    MeetingType
+  meetingDate    DateTime
+  attendees      Json         // [{ name, role, designation }]
+  minutesText    String?      @db.Text
+  keyDiscussionPoints String? @db.Text
+  signedOff      Boolean      @default(false)
+  signedOffById  String?      @db.Uuid
+  signedOffAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, meetingType])
+  @@index([tenantId])
+}
+
+// ─── Action Point (v6.0 — operational findings with simple lifecycle) ────────
+
+model ActionPoint {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+
+  engagementId String          @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  branchId     String          @db.Uuid
+
+  serialNo     Int             // Sequential within engagement: AP-001, AP-002
+  title        String
+  description  String          @db.Text
+  severity     Severity
+  moduleCode   String          // ExaminationNode code for traceability
+
+  // Source traceability
+  sourceResponseId String?             @db.Uuid
+  sourceResponse   ExaminationResponse? @relation(fields: [sourceResponseId], references: [id])
+
+  status ActionPointStatus @default(DRAFT)
+
+  // Branch Manager response
+  bmResponseText     String?   @db.Text
+  bmResponseDate     DateTime?
+  bmResponseDeadline DateTime? // 15 days from report issuance
+
+  // Verification & closure
+  verifiedById String?   @db.Uuid
+  verifiedAt   DateTime?
+  closedById   String?   @db.Uuid
+  closedAt     DateTime?
+
+  // Carry-forward linkage
+  carriedForwardToEngagementId String? @db.Uuid
+
+  createdById String @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([engagementId, status])
+  @@index([branchId, status])
+}
+
+// ─── BM Response Batch (v6.0 — branch manager batch response tracking) ──────
+
+model BmResponseBatch {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String @db.Uuid
+
+  engagementId   String @unique @db.Uuid
+  engagement     AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  totalActionPoints    Int
+  respondedActionPoints Int @default(0)
+  deadline             DateTime  // 15 days from report issuance
+  status               BmBatchStatus @default(PENDING)
+  submittedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status, deadline])
+}
+
+// ─── Positive Observation (v6.0 — commendable practices per engagement) ─────
+
+model PositiveObservation {
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String @db.Uuid
+  tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId   String          @db.Uuid
+  engagement     AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String @db.Text
+  moduleCode     String // ExaminationNode code
+
+  createdById    String @db.Uuid
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([engagementId])
 }
 
 // ─── Failed Login Attempt Tracking (Phase 11 — account lockout) ─────────────

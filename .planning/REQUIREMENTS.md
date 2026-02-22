@@ -57,6 +57,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **REPT-04**: RBIA audit report PDF generated with dual sections: score summary + findings (8-section format)
 - [ ] **REPT-05**: Board analytics includes RadarChart for module scores and branch rating distribution chart
 
+### Data Security
+
+- [ ] **DSEC-01**: All client-server communication encrypted via TLS 1.2+ (HTTPS enforced, HSTS header)
+- [ ] **DSEC-02**: PostgreSQL connections use SSL mode (sslmode=require in connection string)
+- [ ] **DSEC-03**: S3 evidence bucket has server-side encryption enabled (SSE-S3 or SSE-KMS) with bucket policy enforcing encryption
+- [ ] **DSEC-04**: VPS disk encryption at rest for PostgreSQL data directory (LUKS or equivalent)
+- [ ] **DSEC-05**: Tenant data isolation verified — no cross-tenant data leakage possible even with direct DB access (application-level WHERE + audit verification)
+
 ### Terminology
 
 - [ ] **TERM-01**: All UI displays "Head of Internal Audit (HIA)" instead of "Chief Audit Executive (CAE)" — Role.CAE enum preserved internally
@@ -95,52 +103,66 @@ Deferred to post-v6.0. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| EXAM-01     | —     | Pending |
-| EXAM-02     | —     | Pending |
-| EXAM-03     | —     | Pending |
-| EXAM-04     | —     | Pending |
-| EXAM-05     | —     | Pending |
-| EXAM-06     | —     | Pending |
-| EXAM-07     | —     | Pending |
-| EXAM-08     | —     | Pending |
-| EXAM-09     | —     | Pending |
-| EXAM-10     | —     | Pending |
-| EXAM-11     | —     | Pending |
-| EXAM-12     | —     | Pending |
-| ENGG-01     | —     | Pending |
-| ENGG-02     | —     | Pending |
-| ENGG-03     | —     | Pending |
-| ENGG-04     | —     | Pending |
-| ENGG-05     | —     | Pending |
-| ENGG-06     | —     | Pending |
-| ENGG-07     | —     | Pending |
-| FIND-01     | —     | Pending |
-| FIND-02     | —     | Pending |
-| FIND-03     | —     | Pending |
-| FIND-04     | —     | Pending |
-| FIND-05     | —     | Pending |
-| FIND-06     | —     | Pending |
-| BMRP-01     | —     | Pending |
-| BMRP-02     | —     | Pending |
-| BMRP-03     | —     | Pending |
-| BMRP-04     | —     | Pending |
-| BMRP-05     | —     | Pending |
-| REPT-01     | —     | Pending |
-| REPT-02     | —     | Pending |
-| REPT-03     | —     | Pending |
-| REPT-04     | —     | Pending |
-| REPT-05     | —     | Pending |
-| TERM-01     | —     | Pending |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| EXAM-01     | Phase 21 | Pending |
+| EXAM-02     | Phase 21 | Pending |
+| EXAM-03     | Phase 20 | Pending |
+| EXAM-04     | Phase 20 | Pending |
+| EXAM-05     | Phase 18 | Pending |
+| EXAM-06     | Phase 18 | Pending |
+| EXAM-07     | Phase 21 | Pending |
+| EXAM-08     | Phase 21 | Pending |
+| EXAM-09     | Phase 20 | Pending |
+| EXAM-10     | Phase 18 | Pending |
+| EXAM-11     | Phase 18 | Pending |
+| EXAM-12     | Phase 18 | Pending |
+| ENGG-01     | Phase 18 | Pending |
+| ENGG-02     | Phase 18 | Pending |
+| ENGG-03     | Phase 20 | Pending |
+| ENGG-04     | Phase 20 | Pending |
+| ENGG-05     | Phase 19 | Pending |
+| ENGG-06     | Phase 19 | Pending |
+| ENGG-07     | Phase 19 | Pending |
+| FIND-01     | Phase 20 | Pending |
+| FIND-02     | Phase 20 | Pending |
+| FIND-03     | Phase 20 | Pending |
+| FIND-04     | Phase 22 | Pending |
+| FIND-05     | Phase 19 | Pending |
+| FIND-06     | Phase 20 | Pending |
+| BMRP-01     | Phase 20 | Pending |
+| BMRP-02     | Phase 22 | Pending |
+| BMRP-03     | Phase 22 | Pending |
+| BMRP-04     | Phase 22 | Pending |
+| BMRP-05     | Phase 23 | Pending |
+| REPT-01     | Phase 22 | Pending |
+| REPT-02     | Phase 23 | Pending |
+| REPT-03     | Phase 22 | Pending |
+| REPT-04     | Phase 23 | Pending |
+| REPT-05     | Phase 23 | Pending |
+| DSEC-01     | Phase 18 | Pending |
+| DSEC-02     | Phase 18 | Pending |
+| DSEC-03     | Phase 18 | Pending |
+| DSEC-04     | Phase 18 | Pending |
+| DSEC-05     | Phase 18 | Pending |
+| TERM-01     | Phase 18 | Pending |
 
 **Coverage:**
 
-- v6.0 requirements: 36 total
-- Mapped to phases: 0
-- Unmapped: 36 (pending roadmap creation)
+- v6.0 requirements: 41 total
+- Mapped to phases: 41
+- Unmapped: 0
+
+Phase breakdown:
+
+- Phase 18 (Foundation): EXAM-05, EXAM-06, EXAM-10, EXAM-11, EXAM-12, ENGG-01, ENGG-02, DSEC-01, DSEC-02, DSEC-03, DSEC-04, DSEC-05, TERM-01 — 13 requirements
+- Phase 19 (Data Access Layer): ENGG-05, ENGG-06, ENGG-07, FIND-05 — 4 requirements
+- Phase 20 (Server Actions): EXAM-03, EXAM-04, EXAM-09, ENGG-03, ENGG-04, FIND-01, FIND-02, FIND-03, FIND-06, BMRP-01 — 10 requirements
+- Phase 21 (Examination UI): EXAM-01, EXAM-02, EXAM-07, EXAM-08 — 4 requirements
+- Phase 22 (Findings and Meetings): FIND-04, BMRP-02, BMRP-03, BMRP-04, REPT-01, REPT-03 — 6 requirements
+- Phase 23 (BM Response and Reporting): BMRP-05, REPT-02, REPT-04, REPT-05 — 4 requirements
 
 ---
 
 _Requirements defined: 2026-02-22_
-_Last updated: 2026-02-22 after initial definition_
+_Last updated: 2026-02-22 — traceability filled after roadmap creation_

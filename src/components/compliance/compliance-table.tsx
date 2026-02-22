@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, ArrowUpDown } from "@/lib/icons";
+import Link from "next/link";
 import { BranchResponseForm } from "./branch-response-form";
 import { ZacReviewPanel } from "./zac-review-panel";
 
@@ -217,12 +218,17 @@ export function ComplianceTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div
-                      className="max-w-xs truncate"
-                      title={item.observation?.title}
-                    >
-                      {item.observation?.title ?? "—"}
-                    </div>
+                    {item.observation ? (
+                      <Link
+                        href={`/findings/${item.observation.id}`}
+                        className="max-w-xs truncate text-blue-600 hover:underline"
+                        title={item.observation.title}
+                      >
+                        {item.observation.title}
+                      </Link>
+                    ) : (
+                      <span className="max-w-xs truncate">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {item.observation?.severity ? (

@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 /**
  * Get status badge variant for AuditPlanStatus
@@ -174,7 +175,16 @@ export default async function AuditPlansPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {plan.engagements.length}
+                          {plan.engagements.length > 0 ? (
+                            <Link
+                              href="/audit-execution"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {plan.engagements.length}
+                            </Link>
+                          ) : (
+                            plan.engagements.length
+                          )}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {branches}

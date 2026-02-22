@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChevronLeft } from "@/lib/icons";
 
 /**
  * Create Audit Engagement page.
@@ -59,6 +60,14 @@ export default async function CreateEngagementPage() {
 
   return (
     <div className="container max-w-4xl py-8">
+      <a
+        href="/audit-execution"
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm transition-colors"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Back to Audits
+      </a>
+
       <Card>
         <CardHeader>
           <CardTitle>Create Audit Engagement</CardTitle>

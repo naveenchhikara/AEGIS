@@ -7,6 +7,7 @@ import { TeamPanel } from "@/components/audit-execution/team-panel";
 import { RefreshWorkProgramButton } from "@/components/audit-execution/refresh-work-program-button";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect, notFound } from "next/navigation";
+import { ChevronLeft } from "@/lib/icons";
 
 interface PageProps {
   params: Promise<{ engagementId: string }>;
@@ -58,6 +59,14 @@ export default async function AuditExecutionPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <a
+        href="/audit-execution"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Back to Audits
+      </a>
+
       <div className="flex items-center justify-between">
         <EngagementHeader
           engagement={engagement as any}

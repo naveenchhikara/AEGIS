@@ -3,8 +3,22 @@ import { getComplianceItems } from "@/data-access/compliance";
 import { ComplianceTable } from "@/components/compliance/compliance-table";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Clock, AlertTriangle, CheckCircle2 } from "@/lib/icons";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Shield,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowRight,
+} from "@/lib/icons";
+import Link from "next/link";
 
 export default async function CompliancePage() {
   const session = await getRequiredSession();
@@ -103,6 +117,24 @@ export default async function CompliancePage() {
         canBranchResponse={canBranchResponse}
         canZacReview={canZacReview}
       />
+
+      {/* Board Reporting CTA (ISS-009) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Board Reporting</CardTitle>
+          <CardDescription>
+            Prepare compliance reports for ACB and board review.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/governance">
+              Prepare Board Report
+              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

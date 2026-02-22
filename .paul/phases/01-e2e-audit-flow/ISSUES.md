@@ -12,8 +12,8 @@
 | P2           | 8      | Important — should fix for pilot |
 | P3           | 5      | Nice-to-have — polish items      |
 | **Total**    | **23** |                                  |
-| **Resolved** | **6**  | ISS-001,002,003,004,005,011      |
-| **Open**     | **17** |                                  |
+| **Resolved** | **11** | ISS-001-011                      |
+| **Open**     | **12** |                                  |
 
 ## P0 — Flow Blockers
 
@@ -56,55 +56,40 @@
 - **Resolution:** Created `updateEngagementStatus` server action with validated transitions: PLANNED → IN_PROGRESS (sets actualStartDate), IN_PROGRESS → COMPLETED (sets actualEndDate), PLANNED/IN_PROGRESS → CANCELLED. Added "Start Audit", "Complete Audit", and "Cancel" buttons to EngagementHeader component, visible only with `audit_execution:manage_team` permission.
 - **Resolved in:** Plan 02-02
 
-### [ISS-006] RAM detail: No CTA to proceed to Audit Planning
+### [ISS-006] ~~RAM detail: No CTA to proceed to Audit Planning~~ RESOLVED
 
-- **Severity:** P1
+- **Severity:** ~~P1~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/ram/[assessmentId]/page.tsx`
-- **Description:** After RAM assessment is APPROVED, page shows score and frequency but no link or button to navigate to `/audit-plans`. Users must manually find the next step.
-- **Impact:** Flow disconnect between risk assessment and audit planning.
-- **Suggested Fix:** After APPROVED status, show "Next Step: Generate Audit Plans" card with button linking to `/audit-plans`.
-- **Complexity:** S
+- **Resolution:** Added "Next Step" card on RAM detail page when assessment status is APPROVED. Green card with "Proceed to Audit Planning" button linking to `/audit-plans`. Only shown for APPROVED status.
+- **Resolved in:** Plan 02-03
 
-### [ISS-007] Audit Plans: No CTA to create/view engagements after plan commit
+### [ISS-007] ~~Audit Plans: No CTA to create/view engagements after plan commit~~ RESOLVED
 
-- **Severity:** P1
+- **Severity:** ~~P1~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/audit-plans/page.tsx:103-220`
-- **Description:** After committing annual plan, only shows toast "Annual plan created! X audits scheduled." No button to view created engagements or navigate to audit execution. Existing plans table rows are not clickable.
-- **Impact:** Users don't know what to do after planning. Flow disconnected.
-- **Suggested Fix:** After plan commit, show "View Engagements" button. Make existing plans table rows clickable — link engagement count to filtered `/audit-execution?planId=X`.
-- **Complexity:** M
+- **Resolution:** Made engagement count column in plans table a clickable blue link to `/audit-execution`. Count = 0 renders as plain text. Connects planning to execution flow.
+- **Resolved in:** Plan 02-03
 
-### [ISS-008] Finding detail: No link to compliance status
+### [ISS-008] ~~Finding detail: No link to compliance status~~ RESOLVED
 
-- **Severity:** P1
+- **Severity:** ~~P1~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/components/findings/finding-detail.tsx`
-- **Description:** Observation detail page shows lifecycle timeline but no link to view the observation's compliance tracking status. Users can't navigate from findings to compliance.
-- **Impact:** Workflow gap between findings and compliance tracking.
-- **Suggested Fix:** Add "View Compliance Status" link/badge on finding detail when status >= ISSUED. Link to `/compliance` filtered by observation.
-- **Complexity:** S
+- **Resolution:** Added "View Compliance" link with ExternalLink icon in finding detail header area. Shows for ISSUED, RESPONSE, COMPLIANCE, and CLOSED statuses. Links to `/compliance`.
+- **Resolved in:** Plan 02-03
 
-### [ISS-009] Compliance page: No cross-navigation to findings or governance
+### [ISS-009] ~~Compliance page: No cross-navigation to findings or governance~~ RESOLVED
 
-- **Severity:** P1
+- **Severity:** ~~P1~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/compliance/page.tsx`
-- **Description:** Compliance table shows items but rows don't link to observation detail pages. No forward navigation to governance/board reporting.
-- **Impact:** Compliance page is isolated — users can't drill into source observations or proceed to board.
-- **Suggested Fix:** Make compliance table rows link to `/findings/{observationId}`. Add "Prepare Board Report" CTA linking to `/governance`.
-- **Complexity:** S
+- **Resolution:** Made compliance table observation titles clickable links to `/findings/{observationId}`. Added "Board Reporting" card at bottom of compliance page with "Prepare Board Report" button linking to `/governance`.
+- **Resolved in:** Plan 02-03
 
-### [ISS-010] Audit Execution detail/create: No back navigation
+### [ISS-010] ~~Audit Execution detail/create: No back navigation~~ RESOLVED
 
-- **Severity:** P1
+- **Severity:** ~~P1~~ → RESOLVED
 - **Category:** navigation
-- **Location:** `src/app/(dashboard)/audit-execution/[engagementId]/page.tsx`, `src/app/(dashboard)/audit-execution/create/page.tsx`
-- **Description:** Neither the engagement detail page nor the create page have a "Back to Audits" breadcrumb or link. Users are stuck without browser back button.
-- **Impact:** Poor UX, users feel trapped on detail pages.
-- **Suggested Fix:** Add breadcrumb `< Back to Audits` at top of both pages, consistent with findings detail page pattern.
-- **Complexity:** S
+- **Resolution:** Added "Back to Audits" breadcrumb (ChevronLeft icon + text) at top of both engagement detail and create engagement pages. Links to `/audit-execution`. Follows same pattern as finding detail's "Back to Findings".
+- **Resolved in:** Plan 02-03
 
 ## P2 — Important
 

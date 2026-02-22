@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   FileText,
 } from "@/lib/icons";
+import { ExternalLink } from "@/lib/icons";
+import Link from "next/link";
 import type { AuthSession } from "@/lib/auth";
 
 interface FindingDetailProps {
@@ -54,6 +56,12 @@ interface FindingDetailProps {
 }
 
 const POST_RESPONSE_STATUSES = new Set(["RESPONSE", "COMPLIANCE", "CLOSED"]);
+const COMPLIANCE_LINKED_STATUSES = new Set([
+  "ISSUED",
+  "RESPONSE",
+  "COMPLIANCE",
+  "CLOSED",
+]);
 
 export function FindingDetail({ observation, session }: FindingDetailProps) {
   const userRoles = session.user.roles;
@@ -105,6 +113,15 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
               >
                 Resolved During Fieldwork
               </Badge>
+            )}
+            {COMPLIANCE_LINKED_STATUSES.has(observation.status) && (
+              <Link
+                href="/compliance"
+                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+              >
+                View Compliance
+                <ExternalLink className="h-3 w-3" />
+              </Link>
             )}
           </div>
 

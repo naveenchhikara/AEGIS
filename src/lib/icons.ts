@@ -86,4 +86,5 @@ export {
   Pencil as Edit,
   Repeat2,
   Play,
+  FileQuestion,
 } from "lucide-react";

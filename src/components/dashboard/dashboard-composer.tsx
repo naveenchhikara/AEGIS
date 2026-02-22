@@ -135,12 +135,6 @@ function renderWidget(
       );
     case "finding-aging":
       return <FindingAgingChart data={data.observationAging ?? EMPTY_AGING} />;
-    case "high-critical-trend":
-    case "severity-trend":
-    case "compliance-trend":
-      // TODO: Implement trend chart widgets
-      return null;
-
     // Auditor widgets
     case "my-observations":
       return (
@@ -184,8 +178,27 @@ function renderWidget(
       return (
         <RegulatoryCalendarWidget deadlines={data.regulatoryCalendar ?? []} />
       );
-    case "compliance-summary":
-      return <ComplianceTasks categories={[]} />;
+    case "compliance-summary": {
+      const cs = data.complianceSummary ?? EMPTY_COMPLIANCE;
+      return (
+        <ComplianceTasks
+          categories={
+            cs.total > 0
+              ? [
+                  {
+                    category: "Overall Compliance",
+                    total: cs.total,
+                    compliant: cs.compliant,
+                    partial: cs.partial,
+                    nonCompliant: cs.nonCompliant,
+                    pending: cs.pending,
+                  },
+                ]
+              : []
+          }
+        />
+      );
+    }
 
     // CEO widgets
     case "risk-indicators": {

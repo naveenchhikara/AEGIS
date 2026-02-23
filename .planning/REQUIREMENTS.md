@@ -38,7 +38,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **FIND-02**: ActionPoint follows 6-state lifecycle: DRAFT → ISSUED → BM_RESPONSE_DUE → BM_RESPONDED → VERIFIED → CLOSED (or CARRIED_FORWARD)
 - [ ] **FIND-03**: Auditor can promote flagged examination responses to formal Observations (5C format, ~3-10 per audit)
 - [ ] **FIND-04**: ActionPoints and Observations display in separate tabs within findings view (not mixed in single list)
-- [ ] **FIND-05**: System detects carry-forward ActionPoints from previous engagement and surfaces them at new engagement start
+- [x] **FIND-05**: System detects carry-forward ActionPoints from previous engagement and surfaces them at new engagement start
 - [ ] **FIND-06**: Each ActionPoint has serial number, title, description, severity, module code, and source examination response link
 
 ### Branch Manager Response
@@ -128,7 +128,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIND-02     | Phase 20 | Pending  |
 | FIND-03     | Phase 20 | Pending  |
 | FIND-04     | Phase 22 | Pending  |
-| FIND-05     | Phase 19 | Pending  |
+| FIND-05     | Phase 19 | Complete |
 | FIND-06     | Phase 20 | Pending  |
 | BMRP-01     | Phase 20 | Pending  |
 | BMRP-02     | Phase 22 | Pending  |

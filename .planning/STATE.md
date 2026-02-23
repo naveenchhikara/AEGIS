@@ -49,6 +49,7 @@ _Updated after each plan completion_
 | Phase 18 P03 | 5 | 1 tasks | 1 files |
 | Phase 18 P04 | 5 | 1 tasks | 5 files |
 | Phase 18 P05 | 5 | 2 tasks | 3 files |
+| Phase 18-foundation P02 | 12 | 2 tasks | 5 files |
 
 ## Milestone History
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 18]: Role.CAE enum and cae:\* permissions unchanged — only display strings updated for TERM-01 compliance
 - [Phase 18-01]: Critical-item cap is a ceiling (not floor) — scores below 0.5 are NOT raised by cap
 - [Phase 18-01]: toPercentage uses Math.round to prevent floating-point under-counting (14-item edge case)
+- [Phase 18-foundation]: Typed Record<EngagementStatus, EngagementTransitionDef[]> state machine: compile-time exhaustiveness for engagement lifecycle
 
 ### Pending Todos
 

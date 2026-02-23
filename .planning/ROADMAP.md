@@ -28,7 +28,7 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 
 ## Phases
 
-- [ ] **Phase 18: Foundation** — Scoring engine, engagement state machine, DB guards, data encryption, and terminology rename
+- [x] **Phase 18: Foundation** — Scoring engine, engagement state machine, DB guards, data encryption, and terminology rename (completed 2026-02-23)
 - [ ] **Phase 19: Data Access Layer** — Tenant-scoped DAL for tree, scoring, findings, meetings, and module selection
 - [ ] **Phase 20: Server Actions** — Zod schemas and server action mutations for all v6.0 operations
 - [ ] **Phase 21: Examination UI** — Hierarchical tree view, 4-button score picker, progress indicators, and filters
@@ -198,7 +198,7 @@ Plans:
 
 | Phase                         | Milestone | Plans Complete | Status      | Completed |
 | ----------------------------- | --------- | -------------- | ----------- | --------- |
-| 18. Foundation                | 4/5 | In Progress|  | -         |
+| 18. Foundation                | 5/5 | Complete   | 2026-02-23 | -         |
 | 19. Data Access Layer         | v6.0      | 0/5            | Not started | -         |
 | 20. Server Actions            | v6.0      | 0/5            | Not started | -         |
 | 21. Examination UI            | v6.0      | 0/4            | Not started | -         |

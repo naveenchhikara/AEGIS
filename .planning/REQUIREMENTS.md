@@ -24,8 +24,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Engagement Lifecycle
 
-- [ ] **ENGG-01**: Engagement follows 8-state lifecycle: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
-- [ ] **ENGG-02**: Each state transition has server-enforced prerequisite guards (e.g., team assigned before TEAM_ASSIGNED, meeting recorded before IN_PROGRESS)
+- [x] **ENGG-01**: Engagement follows 8-state lifecycle: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
+- [x] **ENGG-02**: Each state transition has server-enforced prerequisite guards (e.g., team assigned before TEAM_ASSIGNED, meeting recorded before IN_PROGRESS)
 - [ ] **ENGG-03**: HIA/Audit Manager can record opening meeting with attendees, minutes, and sign-off before IN_PROGRESS transition
 - [ ] **ENGG-04**: HIA/Audit Manager can record exit meeting with attendees, key discussion points, and sign-off before REPORT_DRAFT transition
 - [ ] **ENGG-05**: System auto-selects applicable examination modules based on branch type (LARGE/MEDIUM/SMALL) using applicableBranchTypes
@@ -117,8 +117,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXAM-10     | Phase 20 | Pending  |
 | EXAM-11     | Phase 18 | Complete |
 | EXAM-12     | Phase 18 | Complete |
-| ENGG-01     | Phase 18 | Pending  |
-| ENGG-02     | Phase 18 | Pending  |
+| ENGG-01     | Phase 18 | Complete |
+| ENGG-02     | Phase 18 | Complete |
 | ENGG-03     | Phase 20 | Pending  |
 | ENGG-04     | Phase 20 | Pending  |
 | ENGG-05     | Phase 19 | Pending  |

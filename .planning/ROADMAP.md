@@ -132,14 +132,14 @@ Plans:
 4. Auditor can filter the examination tree to show only: (a) unscored items, (b) items flagged for Action Point, (c) items flagged for Observation — the filtered view hides all non-matching items
 5. Closing the browser mid-session and reopening the examination page shows all previously saved scores — no data loss from incomplete sessions
 
-**Plans**: TBD
+**Plans**: 4 plans (Wave 1: components, Wave 2: page assembly)
 
 Plans:
 
-- [ ] 21-01: `rbia-module-grid.tsx` — module selection grid with status badges and branch-type auto-selection display
-- [ ] 21-02: `rbia-examination-tree.tsx` — TanStack Table expanding tree with 4-button score picker, critical item warning, and working notes input
-- [ ] 21-03: `rbia-score-panel.tsx` — module score bars + composite score + freeze trigger (read-only display for Phase 21; freeze in Phase 20)
-- [ ] 21-04: RBIA engagement dashboard page (`/rbia/page.tsx`) + module examination page (`/rbia/module/[moduleCode]/page.tsx`)
+- [ ] 21-01-PLAN.md — `rbia-module-grid.tsx`: module selection grid with status badges, progress bars, and branch-type auto-selection display
+- [ ] 21-02-PLAN.md — `rbia-examination-tree.tsx`: TanStack Table expanding tree with 4-button score picker, working notes expansion, filter toggles, URL state, and critical item styling
+- [ ] 21-03-PLAN.md — `rbia-score-panel.tsx`: composite score display with module breakdown, rating band badge, and freeze button stub
+- [ ] 21-04-PLAN.md — RBIA engagement dashboard page (`/rbia/page.tsx`) + module examination page (`/rbia/module/[moduleCode]/page.tsx`)
 
 ### Phase 22: Findings and Meetings
 

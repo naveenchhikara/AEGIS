@@ -52,6 +52,9 @@ _Updated after each plan completion_
 | Phase 18-foundation P02 | 12 | 2 tasks | 5 files |
 | Phase 19 P02 | 8 | 1 tasks | 1 files |
 | Phase 19-data-access-layer P01 | 8 | 1 tasks | 1 files |
+| Phase 19 P05 | 8 | 2 tasks | 3 files |
+| Phase 19 P03 | 8 | 1 tasks | 1 files |
+| Phase 19 P04 | 5 | 1 tasks | 1 files |
 
 ## Milestone History
 
@@ -89,6 +92,10 @@ Recent decisions affecting current work:
 - [Phase 19]: Engagement gateway uses auditType === "RBIA" with compound sectionInstances check
 - [Phase 19]: getEngagementModuleScores uses bulk findMany + TypeScript grouping (not N+1)
 - [Phase 19]: buildTree() pure function exported from rbia-examination DAL for testability
+- [Phase 19]: Engagement gateway uses compound check (auditType=RBIA AND no sectionInstances) to safely handle pre-v6.0 engagements
+- [Phase 19]: Two typed arrays (actionPoints[] + observations[]) for RBIA findings — maps to Phase 22 separate tabs
+- [Phase 19]: Carry-forward: ISSUED + BM_RESPONSE_DUE + BM_RESPONDED (mapped from OPEN + PARTIALLY_RESOLVED per CONTEXT.md)
+- [Phase 19]: Import MeetingType from @/generated/prisma/enums (no barrel index.ts in generated folder)
 
 ### Pending Todos
 

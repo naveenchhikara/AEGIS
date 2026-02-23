@@ -106,15 +106,15 @@ Plans:
 4. A BmResponseBatch is created with a 15-day deadline when ActionPoints are issued at the REPORT_DRAFT transition — the batch has correct counts and deadline timestamp
 5. New permissions (`rbia:examine`, `rbia:score_freeze`, `action_point:manage`, `action_point:bm_respond`) exist in `permissions.ts` and are enforced in each relevant server action
 
-**Plans**: TBD
+**Plans**: 5 plans (Wave 1: foundation, Wave 2: domain actions, Wave 3: freeze)
 
 Plans:
 
-- [ ] 20-01: `schemas.ts` — shared Zod schemas for all v6.0 operations
-- [ ] 20-02: `save-examination-response` + `select-modules` server actions
-- [ ] 20-03: `record-meeting` + `create-action-point` + `promote-to-observation` server actions
-- [ ] 20-04: `submit-bm-response` + `freeze-rbia-score` server actions (atomic transactions)
-- [ ] 20-05: Permissions — add `rbia:*` and `action_point:*` entries to `permissions.ts`
+- [ ] 20-01-PLAN.md — Schema change (sourceActionPointId) + 4 RBIA permissions + shared Zod schemas + ActionResult type
+- [ ] 20-02-PLAN.md — saveExaminationResponse (upsert + silent draft AP) + module selection server actions
+- [ ] 20-03-PLAN.md — recordMeeting (atomic meeting + status transition) + signOffMeeting server actions
+- [ ] 20-04-PLAN.md — createActionPoint + updateActionPoint + deleteActionPoint + promoteToObservation + submitBmResponse
+- [ ] 20-05-PLAN.md — freezeRbiaScore (5-step atomic transaction: scores + BranchRbiaScore + issue APs + BmResponseBatch)
 
 ### Phase 21: Examination UI
 
@@ -199,8 +199,8 @@ Plans:
 | Phase                         | Milestone | Plans Complete | Status      | Completed |
 | ----------------------------- | --------- | -------------- | ----------- | --------- |
 | 18. Foundation                | 5/5       | Complete       | 2026-02-23  | -         |
-| 19. Data Access Layer         | 5/5       | Complete    | 2026-02-23 | -         |
-| 20. Server Actions            | v6.0      | 0/5            | Not started | -         |
+| 19. Data Access Layer         | 5/5       | Complete       | 2026-02-23  | -         |
+| 20. Server Actions            | v6.0      | 0/5            | Planned     | -         |
 | 21. Examination UI            | v6.0      | 0/4            | Not started | -         |
 | 22. Findings and Meetings     | v6.0      | 0/4            | Not started | -         |
 | 23. BM Response and Reporting | v6.0      | 0/5            | Not started | -         |

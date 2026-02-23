@@ -80,15 +80,15 @@ Plans:
 3. The engagement detail page routes RBIA engagements to the v6.0 `/rbia/` path and legacy engagements to the existing `/sections/` path — the fork logic exists and is verified
 4. Carry-forward ActionPoints from a previous engagement are surfaced when a new engagement starts for the same branch — the DAL function returns them correctly
 
-**Plans**: TBD
+**Plans**: 5 plans (all Wave 1 — fully parallel)
 
 Plans:
 
-- [ ] 19-01: `rbia-examination.ts` — flat tree load + `buildTree()` + module selection DAL
-- [ ] 19-02: `rbia-scoring.ts` — module scores query, BranchRbiaScore history query
-- [ ] 19-03: `rbia-findings.ts` — unified `getEngagementFindings()` returning both ActionPoints and Observations as typed union + carry-forward detection
-- [ ] 19-04: `rbia-meetings.ts` — EngagementMeeting query and upsert DAL functions
-- [ ] 19-05: Engagement gateway — modify `[engagementId]/page.tsx` to fork on `auditType === "RBIA"` + update `audit-execution.ts` to handle all 8 EngagementStatus values
+- [ ] 19-01-PLAN.md — `rbia-examination.ts`: flat tree load + `buildTree()` + module auto-selection + manual add/remove
+- [ ] 19-02-PLAN.md — `rbia-scoring.ts`: module scores query, BranchRbiaScore history, engagement score
+- [ ] 19-03-PLAN.md — `rbia-findings.ts`: unified `getEngagementFindings()` (two typed arrays) + carry-forward detection
+- [ ] 19-04-PLAN.md — `rbia-meetings.ts`: EngagementMeeting query + atomic upsert DAL functions
+- [ ] 19-05-PLAN.md — Engagement gateway: fork RBIA to `/rbia/` route + stub page + auditType in DAL query
 
 ### Phase 20: Server Actions
 
@@ -198,7 +198,7 @@ Plans:
 
 | Phase                         | Milestone | Plans Complete | Status      | Completed |
 | ----------------------------- | --------- | -------------- | ----------- | --------- |
-| 18. Foundation                | 5/5       | Complete    | 2026-02-23 | -         |
+| 18. Foundation                | 5/5       | Complete       | 2026-02-23  | -         |
 | 19. Data Access Layer         | v6.0      | 0/5            | Not started | -         |
 | 20. Server Actions            | v6.0      | 0/5            | Not started | -         |
 | 21. Examination UI            | v6.0      | 0/4            | Not started | -         |

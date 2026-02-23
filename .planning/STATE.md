@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 18 of 23 (Foundation)
-Plan: 1 of 5 in current phase
-Status: In Progress — 18-03 complete
-Last activity: 2026-02-23 — 18-03 DB guards complete (BranchRbiaScore trigger + ExaminationNode path CHECK)
+Plan: 2 of 5 in current phase
+Status: In Progress — 18-04 complete
+Last activity: 2026-02-23 — 18-04 complete (CAE-to-HIA terminology rename, 5 files)
 
 Progress: [░░░░░░░░░░] 4% (1/28 plans complete)
 
@@ -46,6 +46,7 @@ All 5 plans are Wave 1 (fully parallel, no dependencies).
 
 _Updated after each plan completion_
 | Phase 18 P03 | 5 | 1 tasks | 1 files |
+| Phase 18 P04 | 5 | 1 tasks | 5 files |
 
 ## Milestone History
 
@@ -73,6 +74,7 @@ Recent decisions affecting current work:
 - v6.0: Critical-item cap at module level only — does not propagate to composite score
 - v6.0: EXAM-10 (freeze server action) moved to Phase 20 (Server Actions) — Phase 18 provides computation functions only
 - [Phase 18]: BEFORE UPDATE trigger chosen for BranchRbiaScore so exception fires before write occurs
+- [Phase 18]: Role.CAE enum and cae:\* permissions unchanged — only display strings updated for TERM-01 compliance
 
 ### Pending Todos
 
@@ -86,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 18-03-PLAN.md
+Stopped at: Completed 18-04-PLAN.md (CAE-to-HIA terminology rename)
 Resume with: `/gsd:execute-phase 18`

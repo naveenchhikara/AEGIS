@@ -67,7 +67,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Terminology
 
-- [ ] **TERM-01**: All UI displays "Head of Internal Audit (HIA)" instead of "Chief Audit Executive (CAE)" — Role.CAE enum preserved internally
+- [x] **TERM-01**: All UI displays "Head of Internal Audit (HIA)" instead of "Chief Audit Executive (CAE)" — Role.CAE enum preserved internally
 
 ## Future Requirements
 
@@ -145,7 +145,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DSEC-03     | Phase 18 | Pending  |
 | DSEC-04     | Phase 18 | Pending  |
 | DSEC-05     | Phase 18 | Pending  |
-| TERM-01     | Phase 18 | Pending  |
+| TERM-01     | Phase 18 | Complete |
 
 **Coverage:**
 

@@ -13,14 +13,14 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **EXAM-02**: Auditor can score leaf examination items using 4-button picker (FULLY / LARGELY / PARTIALLY / NON_COMPLIANT)
 - [ ] **EXAM-03**: Auditor can add working notes (500-2000 chars) per leaf item as evidence and rationale
 - [ ] **EXAM-04**: Auditor can flag leaf items for Action Point and/or Observation promotion
-- [ ] **EXAM-05**: System computes weighted score roll-up from leaf → parent → module → composite in real-time as items are scored
-- [ ] **EXAM-06**: Critical items (isCritical=true) cap parent module score at 0.5 when scored NON_COMPLIANT
+- [x] **EXAM-05**: System computes weighted score roll-up from leaf → parent → module → composite in real-time as items are scored
+- [x] **EXAM-06**: Critical items (isCritical=true) cap parent module score at 0.5 when scored NON_COMPLIANT
 - [ ] **EXAM-07**: System displays progress indicator per module ("12/24 items scored" with percentage)
 - [ ] **EXAM-08**: Auditor can filter examination items by: not yet scored, flagged for AP, flagged for observation
 - [ ] **EXAM-09**: Examination state saves incrementally — no data loss if auditor closes mid-session
 - [ ] **EXAM-10**: HIA can freeze RBIA score at engagement completion, creating immutable BranchRbiaScore JSONB snapshot
 - [x] **EXAM-11**: Frozen BranchRbiaScore cannot be mutated after freeze (DB-level trigger protection)
-- [ ] **EXAM-12**: System assigns rating band based on composite score (Poor ≤40%, Moderate >40-50%, Satisfactory >50-65%, Good >65-80%, Very Good >80%)
+- [x] **EXAM-12**: System assigns rating band based on composite score (Poor ≤40%, Moderate >40-50%, Satisfactory >50-65%, Good >65-80%, Very Good >80%)
 
 ### Engagement Lifecycle
 
@@ -59,11 +59,11 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Data Security
 
-- [ ] **DSEC-01**: All client-server communication encrypted via TLS 1.2+ (HTTPS enforced, HSTS header)
-- [ ] **DSEC-02**: PostgreSQL connections use SSL mode (sslmode=require in connection string)
-- [ ] **DSEC-03**: S3 evidence bucket has server-side encryption enabled (SSE-S3 or SSE-KMS) with bucket policy enforcing encryption
-- [ ] **DSEC-04**: VPS disk encryption at rest for PostgreSQL data directory (LUKS or equivalent)
-- [ ] **DSEC-05**: Tenant data isolation verified — no cross-tenant data leakage possible even with direct DB access (application-level WHERE + audit verification)
+- [x] **DSEC-01**: All client-server communication encrypted via TLS 1.2+ (HTTPS enforced, HSTS header)
+- [x] **DSEC-02**: PostgreSQL connections use SSL mode (sslmode=require in connection string)
+- [x] **DSEC-03**: S3 evidence bucket has server-side encryption enabled (SSE-S3 or SSE-KMS) with bucket policy enforcing encryption
+- [x] **DSEC-04**: VPS disk encryption at rest for PostgreSQL data directory (LUKS or equivalent)
+- [x] **DSEC-05**: Tenant data isolation verified — no cross-tenant data leakage possible even with direct DB access (application-level WHERE + audit verification)
 
 ### Terminology
 
@@ -109,14 +109,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXAM-02     | Phase 21 | Pending  |
 | EXAM-03     | Phase 20 | Pending  |
 | EXAM-04     | Phase 20 | Pending  |
-| EXAM-05     | Phase 18 | Pending  |
-| EXAM-06     | Phase 18 | Pending  |
+| EXAM-05     | Phase 18 | Complete |
+| EXAM-06     | Phase 18 | Complete |
 | EXAM-07     | Phase 21 | Pending  |
 | EXAM-08     | Phase 21 | Pending  |
 | EXAM-09     | Phase 20 | Pending  |
 | EXAM-10     | Phase 20 | Pending  |
 | EXAM-11     | Phase 18 | Complete |
-| EXAM-12     | Phase 18 | Pending  |
+| EXAM-12     | Phase 18 | Complete |
 | ENGG-01     | Phase 18 | Pending  |
 | ENGG-02     | Phase 18 | Pending  |
 | ENGG-03     | Phase 20 | Pending  |
@@ -140,11 +140,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPT-03     | Phase 22 | Pending  |
 | REPT-04     | Phase 23 | Pending  |
 | REPT-05     | Phase 23 | Pending  |
-| DSEC-01     | Phase 18 | Pending  |
-| DSEC-02     | Phase 18 | Pending  |
-| DSEC-03     | Phase 18 | Pending  |
-| DSEC-04     | Phase 18 | Pending  |
-| DSEC-05     | Phase 18 | Pending  |
+| DSEC-01     | Phase 18 | Complete |
+| DSEC-02     | Phase 18 | Complete |
+| DSEC-03     | Phase 18 | Complete |
+| DSEC-04     | Phase 18 | Complete |
+| DSEC-05     | Phase 18 | Complete |
 | TERM-01     | Phase 18 | Complete |
 
 **Coverage:**

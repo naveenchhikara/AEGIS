@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 18 of 23 (Foundation)
-Plan: 2 of 5 in current phase
-Status: In Progress — 18-04 complete
-Last activity: 2026-02-23 — 18-04 complete (CAE-to-HIA terminology rename, 5 files)
+Plan: 5 of 5 in current phase
+Status: In Progress — 18-01 complete (all 5 Phase 18 plans now executed)
+Last activity: 2026-02-23 — 18-01 complete (RBIA scoring engine, 40 unit tests, TDD)
 
-Progress: [░░░░░░░░░░] 4% (1/28 plans complete)
+Progress: [██░░░░░░░░] 18% (5/28 plans complete)
 
 ## Phase 18 Plans
 
@@ -32,21 +32,23 @@ All 5 plans are Wave 1 (fully parallel, no dependencies).
 
 **Velocity:**
 
-- Total plans completed: 0 (v6.0 start)
-- Average duration: — min
-- Total execution time: 0 hours
+- Total plans completed: 5 (v6.0)
+- Average duration: ~10 min
+- Total execution time: ~50 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
-| -     | -     | -     | -        |
+| 18    | 5     | ~50m  | ~10m     |
 
-**Recent Trend:** — (no data yet)
+**Recent Trend:** Phase 18 complete (5/5 plans)
 
 _Updated after each plan completion_
+| Phase 18 P01 | 2 | 8 min | 2 files |
 | Phase 18 P03 | 5 | 1 tasks | 1 files |
 | Phase 18 P04 | 5 | 1 tasks | 5 files |
+| Phase 18 P05 | 5 | 2 tasks | 3 files |
 
 ## Milestone History
 
@@ -75,6 +77,8 @@ Recent decisions affecting current work:
 - v6.0: EXAM-10 (freeze server action) moved to Phase 20 (Server Actions) — Phase 18 provides computation functions only
 - [Phase 18]: BEFORE UPDATE trigger chosen for BranchRbiaScore so exception fires before write occurs
 - [Phase 18]: Role.CAE enum and cae:\* permissions unchanged — only display strings updated for TERM-01 compliance
+- [Phase 18-01]: Critical-item cap is a ceiling (not floor) — scores below 0.5 are NOT raised by cap
+- [Phase 18-01]: toPercentage uses Math.round to prevent floating-point under-counting (14-item edge case)
 
 ### Pending Todos
 
@@ -88,5 +92,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 18-04-PLAN.md (CAE-to-HIA terminology rename)
-Resume with: `/gsd:execute-phase 18`
+Stopped at: Completed 18-01-PLAN.md (RBIA scoring engine — all Phase 18 plans complete)
+Resume with: `/gsd:execute-phase 19`

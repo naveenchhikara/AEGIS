@@ -465,6 +465,9 @@ model Observation {
   // v6.0: discriminator for observation type
   observationType String @default("AUTO_LEGACY") // "FORMAL" or "AUTO_LEGACY"
 
+  // RBIA: source action point that was promoted to this observation
+  sourceActionPointId String? @db.Uuid
+
   // Engagement tracking (Phase 12 — links observation to audit engagement)
   engagementId String?          @db.Uuid
   engagement   AuditEngagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)

@@ -110,7 +110,12 @@ export type Permission =
   | "is_audit:read"
   | "is_audit:manage"
   // Risk Head Dashboard (R90)
-  | "dashboard:risk_head";
+  | "dashboard:risk_head"
+  // RBIA (Phase 20)
+  | "rbia:examine"
+  | "rbia:score_freeze"
+  | "action_point:manage"
+  | "action_point:bm_respond";
 
 /**
  * Role-to-permission mapping.
@@ -151,6 +156,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_universe:read",
     "audit_universe:manage",
     "dashboard:manager",
+    "rbia:score_freeze",
+    "action_point:manage",
   ],
   CAE: [
     "observation:read",
@@ -193,6 +200,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit_universe:read",
     "audit_universe:manage",
     "dashboard:cae",
+    "rbia:score_freeze",
+    "action_point:manage",
   ],
   CCO: [
     "compliance:read",
@@ -251,6 +260,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "issue:read",
     "issue:manage",
     "dashboard:auditor",
+    "rbia:examine",
+    "action_point:manage",
   ],
   FIELD_AUDITOR: [
     "observation:create",
@@ -266,6 +277,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "control_library:read",
     "issue:read",
     "dashboard:auditor",
+    "rbia:examine",
   ],
   BRANCH_HEAD: [
     "observation:read",
@@ -273,6 +285,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "examination:read",
     "bh_certificate:sign",
     "compliance:branch_response",
+    "action_point:bm_respond",
   ],
   ZONAL_AUDITOR: [
     "observation:read",

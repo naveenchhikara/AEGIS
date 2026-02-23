@@ -17,14 +17,17 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 };
 
 /**
- * Transition an audit engagement's status.
- * Security: Requires audit_execution:manage_team permission.
- * Valid transitions: PLANNED → IN_PROGRESS, IN_PROGRESS → COMPLETED, any active → CANCELLED.
- * Side effects: Sets actualStartDate on IN_PROGRESS, actualEndDate on COMPLETED.
+ * @deprecated Use transitionEngagementStatus instead.
+ * This action uses a simplified 3-state transition map that does not cover the
+ * full 8-state RBIA engagement lifecycle. It lacks prerequisite guards and
+ * role-based checks enforced by the typed state machine.
  */
 export async function updateEngagementStatus(
   input: UpdateEngagementStatusInput,
 ) {
+  console.warn(
+    "DEPRECATED: updateEngagementStatus called — use transitionEngagementStatus",
+  );
   const session = await getRequiredSession();
   const userRoles = session.user.roles;
   const tenantId = session.user.tenantId;

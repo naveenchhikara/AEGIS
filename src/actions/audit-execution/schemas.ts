@@ -217,6 +217,11 @@ export const SaveSmaNpaEntriesSchema = z.object({
 export type SaveSmaNpaEntriesInput = z.infer<typeof SaveSmaNpaEntriesSchema>;
 
 // ─── Engagement Status Transition (ISS-005) ─────────────────
+
+/**
+ * @deprecated Use TransitionEngagementStatusSchema and transitionEngagementStatus instead.
+ * This schema only covers 3 of the 8 engagement states. Kept for backward compatibility.
+ */
 export const UpdateEngagementStatusSchema = z.object({
   engagementId: z.string().uuid("Invalid engagement ID"),
   targetStatus: z.enum(["IN_PROGRESS", "COMPLETED", "CANCELLED"], {
@@ -226,4 +231,30 @@ export const UpdateEngagementStatusSchema = z.object({
 
 export type UpdateEngagementStatusInput = z.infer<
   typeof UpdateEngagementStatusSchema
+>;
+
+/**
+ * Schema for the new state-machine-backed engagement status transition action.
+ * Covers all 7 non-PLANNED target statuses in the 8-state RBIA engagement lifecycle.
+ */
+export const TransitionEngagementStatusSchema = z.object({
+  engagementId: z.string().uuid("Invalid engagement ID"),
+  targetStatus: z.enum(
+    [
+      "TEAM_ASSIGNED",
+      "OPENING_MEETING",
+      "IN_PROGRESS",
+      "EXIT_MEETING",
+      "REPORT_DRAFT",
+      "COMPLETED",
+      "CANCELLED",
+    ],
+    {
+      message: "Invalid target status",
+    },
+  ),
+});
+
+export type TransitionEngagementStatusInput = z.infer<
+  typeof TransitionEngagementStatusSchema
 >;

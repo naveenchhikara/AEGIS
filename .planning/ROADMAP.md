@@ -143,28 +143,30 @@ Plans:
 
 ### Phase 22: Findings and Meetings
 
-**Goal**: Auditors can create and manage ActionPoints and formal Observations in separate tabs, record opening and exit meetings with attendees, and the engagement lifecycle enforces meeting prerequisites before status transitions — completing the dual findings workflow.
+**Goal**: Auditors can create and manage ActionPoints and formal Observations in a unified findings list with type filters, record opening and exit meetings with structured minutes and attendee sign-off, view composite RBIA score with drill-down, and the engagement lifecycle enforces meeting prerequisites before status transitions — completing the dual findings workflow and score visualization.
 
 **Depends on**: Phase 21
 
-**Requirements**: FIND-04, BMRP-02, BMRP-03, BMRP-04
+**Requirements**: FIND-04, BMRP-02, BMRP-03, BMRP-04, REPT-01, REPT-03
 
 **Success Criteria** (what must be TRUE):
 
-1. The findings page shows ActionPoints and Formal Observations in separate tabs — an auditor viewing "Action Points" sees only APs, never Observations mixed in
+1. The findings page shows ActionPoints and Formal Observations in a unified list with type badges — auditor can filter by type (AP only, Observation only) to get focused views
 2. An auditor can create an ActionPoint with serial number, title, description, severity, module code, and source examination response link — all fields save and display correctly
-3. Auditor can record an opening meeting with attendees list, minutes, and sign-off before the engagement transitions to IN_PROGRESS — the transition button is disabled until a meeting record exists
+3. Auditor can record an opening meeting with attendees list, structured minutes, and sign-off before the engagement transitions to IN_PROGRESS — the transition button is disabled until a meeting record exists
 4. Auditor can record an exit meeting before the engagement transitions to REPORT_DRAFT — the transition button is disabled until an exit meeting record exists
 5. The BM response panel shows a progress counter (responded / total ActionPoints) and a deadline countdown — updating after each individual AP response is submitted
+6. Composite RBIA score displayed as a prominent gauge with module breakdown bars and 5-color rating band gradient — drill-down from composite to leaf level available
 
-**Plans**: TBD
+**Plans**: 5 plans (Wave 1: components, Wave 2: page assembly)
 
 Plans:
 
-- [ ] 22-01: `action-points-table.tsx` + `action-point-form.tsx` — AP list with status filter, create/edit form
-- [ ] 22-02: `meeting-form.tsx` — opening and exit meeting forms with attendee JSON array and sign-off
-- [ ] 22-03: `/rbia/findings/page.tsx` + `/rbia/meetings/page.tsx` — page assembly with tabs
-- [ ] 22-04: `bm-response-panel.tsx` stub — per-AP inline response forms, progress counter, deadline countdown (BM-facing route wired in Phase 23)
+- [ ] 22-01-PLAN.md — Engagement stepper + unified findings list with type filters + finding form (FIND-04)
+- [ ] 22-02-PLAN.md — Meeting forms (opening + exit) with attendee multi-select and structured minutes (BMRP-02)
+- [ ] 22-03-PLAN.md — Score gauge visualization + module bars + drill-down tree (REPT-01, REPT-03)
+- [ ] 22-04-PLAN.md — BM response panel with stacked AP cards, progress counter, deadline countdown (BMRP-02, BMRP-03, BMRP-04)
+- [ ] 22-05-PLAN.md — Page assembly: RBIA layout with tab navigation + findings/meetings/score server pages (all requirements)
 
 ### Phase 23: BM Response and Reporting
 

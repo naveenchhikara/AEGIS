@@ -21,6 +21,7 @@ import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+import { SCORE_VALUES } from "@/lib/rbia-scoring-engine";
 import {
   SaveExaminationResponseSchema,
   AutoSelectModulesSchema,
@@ -32,15 +33,6 @@ import {
   type AddModuleSelectionInput,
   type RemoveModuleSelectionInput,
 } from "./schemas";
-
-// ─── Score Numeric Mapping ────────────────────────────────────────────────────
-
-const SCORE_MAP: Record<string, number> = {
-  FULLY_COMPLIANT: 1.0,
-  LARGELY_COMPLIANT: 0.75,
-  PARTIALLY_COMPLIANT: 0.5,
-  NON_COMPLIANT: 0.0,
-};
 
 /** Map scoreLabel → default ActionPoint severity when auto-creating. */
 const AP_SEVERITY_MAP: Record<
@@ -60,6 +52,7 @@ const AP_SEVERITY_MAP: Record<
  *
  * If flagForActionPoint=true and no ActionPoint yet links to this response,
  * a DRAFT ActionPoint is auto-created with the next serial number.
+ * Serial is assigned atomically via _max aggregate inside the transaction.
  *
  * Security: Requires rbia:examine permission.
  * Atomicity: Response upsert + optional ActionPoint creation in one transaction.
@@ -97,12 +90,15 @@ export async function saveExaminationResponse(
   }
   const validated = parsed.data;
 
+  // Decimal score from canonical SCORE_VALUES map
+  const score = SCORE_VALUES[validated.scoreLabel];
+
   const db = prismaForTenant(tenantId);
 
   try {
     const result = await db.$transaction(async (tx: any) => {
       await setAuditContext(tx, {
-        actionType: "rbia.examination_response.saved",
+        actionType: "examination_response.saved",
         userId: session.user.id,
         tenantId,
         sessionId: session.session.id,
@@ -117,16 +113,7 @@ export async function saveExaminationResponse(
         throw new Error("Engagement not found.");
       }
 
-      // Verify node exists and load details for ActionPoint creation
-      const node = await tx.examinationNode.findFirst({
-        where: { id: validated.nodeId, tenantId, isActive: true },
-        select: { id: true, code: true, name: true },
-      });
-      if (!node) {
-        throw new Error("Examination node not found.");
-      }
-
-      // Upsert ExaminationResponse
+      // Upsert ExaminationResponse on compound unique (engagementId, nodeId)
       const response = await tx.examinationResponse.upsert({
         where: {
           engagementId_nodeId: {
@@ -135,9 +122,9 @@ export async function saveExaminationResponse(
           },
         },
         update: {
-          score: SCORE_MAP[validated.scoreLabel],
+          score,
           scoreLabel: validated.scoreLabel,
-          workingNotes: validated.workingNotes,
+          workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,
           respondedById: session.user.id,
@@ -147,18 +134,21 @@ export async function saveExaminationResponse(
           tenantId,
           engagementId: validated.engagementId,
           nodeId: validated.nodeId,
-          score: SCORE_MAP[validated.scoreLabel],
+          score,
           scoreLabel: validated.scoreLabel,
-          workingNotes: validated.workingNotes,
+          workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,
           respondedById: session.user.id,
           respondedAt: new Date(),
         },
-        select: { id: true, actionPoints: { select: { id: true } } },
+        select: {
+          id: true,
+          actionPoints: { select: { id: true }, take: 1 },
+        },
       });
 
-      // Auto-create DRAFT ActionPoint if requested and none yet exists
+      // Auto-create DRAFT ActionPoint (silent — no extra notification)
       let actionPointId: string | null = null;
       let autoCreatedActionPoint = false;
 
@@ -167,26 +157,37 @@ export async function saveExaminationResponse(
         response.actionPoints.length === 0 &&
         engagement.branchId
       ) {
-        // Compute next serial for this engagement
-        const existingCount = await tx.actionPoint.count({
-          where: { engagementId: validated.engagementId, tenantId },
+        // Load node details for AP prefill
+        const node = await tx.examinationNode.findUnique({
+          where: { id: validated.nodeId },
+          select: { code: true, name: true, path: true },
         });
-        const serialNo = existingCount + 1;
+
+        // Atomic serial: use _max to avoid race conditions
+        const maxSerial = await tx.actionPoint.aggregate({
+          where: { engagementId: validated.engagementId },
+          _max: { serialNo: true },
+        });
+        const nextSerialNo = (maxSerial._max.serialNo ?? 0) + 1;
 
         const severity = AP_SEVERITY_MAP[validated.scoreLabel] ?? "MEDIUM";
+
+        // moduleCode: depth-1 segment of the path (e.g. "OPS" from "ROOT.OPS.CASH")
+        const moduleCode =
+          node?.path?.split(".")[1] ?? node?.code ?? "UNKNOWN";
 
         const ap = await tx.actionPoint.create({
           data: {
             tenantId,
             engagementId: validated.engagementId,
             branchId: engagement.branchId,
-            serialNo,
-            title: `[${node.code}] ${node.name} — Action Required`,
+            serialNo: nextSerialNo,
+            title: node?.name ?? "Action Point",
             description:
-              validated.workingNotes ||
-              `Action point raised for node: ${node.name}`,
+              validated.workingNotes?.trim() ||
+              `Action required for: ${node?.name ?? validated.nodeId}`,
             severity,
-            moduleCode: node.code,
+            moduleCode,
             sourceResponseId: response.id,
             status: "DRAFT",
             createdById: session.user.id,
@@ -207,7 +208,7 @@ export async function saveExaminationResponse(
       };
     });
 
-    revalidatePath("/rbia");
+    revalidatePath(`/audit-execution/${validated.engagementId}/rbia`);
     return { success: true, data: result };
   } catch (error) {
     const message =
@@ -281,13 +282,14 @@ export async function autoSelectModules(
 
     const branchCategory = engagement.branch?.category ?? null;
 
-    // Load depth=1 modules applicable to this branch type
+    // Load depth=1 modules (top-level modules only)
     const allModules = await db.examinationNode.findMany({
       where: { tenantId, isActive: true, depth: 1 },
       select: { id: true, code: true, applicableBranchTypes: true },
       orderBy: { displayOrder: "asc" },
     });
 
+    // Filter: empty applicableBranchTypes = all branches; otherwise must match
     const applicableModules = allModules.filter(
       (m) =>
         m.applicableBranchTypes.length === 0 ||
@@ -312,7 +314,7 @@ export async function autoSelectModules(
       skipDuplicates: true,
     });
 
-    revalidatePath("/rbia");
+    revalidatePath(`/audit-execution/${validated.engagementId}/rbia`);
     return { success: true, data: { selectedCount: result.count } };
   } catch (error) {
     const message =
@@ -370,7 +372,7 @@ export async function addModuleSelection(
   const db = prismaForTenant(tenantId);
 
   try {
-    // Look up ExaminationNode by code
+    // Look up ExaminationNode by code (depth=1: top-level modules only)
     const moduleNode = await db.examinationNode.findFirst({
       where: { tenantId, code: validated.moduleCode, isActive: true, depth: 1 },
       select: { id: true, code: true, name: true },
@@ -383,7 +385,7 @@ export async function addModuleSelection(
       };
     }
 
-    // Check for existing selection
+    // Guard: conflict if already selected
     const existing = await db.engagementModuleSelection.findUnique({
       where: {
         engagementId_moduleNodeId: {
@@ -406,12 +408,12 @@ export async function addModuleSelection(
         engagementId: validated.engagementId,
         moduleNodeId: moduleNode.id,
         isAutoSelected: false,
-        selectionReason: `Manually added by auditor`,
+        selectionReason: "Manually added by auditor",
       },
       select: { id: true },
     });
 
-    revalidatePath("/rbia");
+    revalidatePath(`/audit-execution/${validated.engagementId}/rbia`);
     return {
       success: true,
       data: {
@@ -507,7 +509,7 @@ export async function removeModuleSelection(
       },
     });
 
-    revalidatePath("/rbia");
+    revalidatePath(`/audit-execution/${validated.engagementId}/rbia`);
     return { success: true, data: { removed: true } };
   } catch (error) {
     const message =

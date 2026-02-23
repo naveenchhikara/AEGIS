@@ -19,7 +19,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **EXAM-08**: Auditor can filter examination items by: not yet scored, flagged for AP, flagged for observation
 - [ ] **EXAM-09**: Examination state saves incrementally — no data loss if auditor closes mid-session
 - [ ] **EXAM-10**: HIA can freeze RBIA score at engagement completion, creating immutable BranchRbiaScore JSONB snapshot
-- [ ] **EXAM-11**: Frozen BranchRbiaScore cannot be mutated after freeze (DB-level trigger protection)
+- [x] **EXAM-11**: Frozen BranchRbiaScore cannot be mutated after freeze (DB-level trigger protection)
 - [ ] **EXAM-12**: System assigns rating band based on composite score (Poor ≤40%, Moderate >40-50%, Satisfactory >50-65%, Good >65-80%, Very Good >80%)
 
 ### Engagement Lifecycle
@@ -103,49 +103,49 @@ Deferred to post-v6.0. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase    | Status  |
-| ----------- | -------- | ------- |
-| EXAM-01     | Phase 21 | Pending |
-| EXAM-02     | Phase 21 | Pending |
-| EXAM-03     | Phase 20 | Pending |
-| EXAM-04     | Phase 20 | Pending |
-| EXAM-05     | Phase 18 | Pending |
-| EXAM-06     | Phase 18 | Pending |
-| EXAM-07     | Phase 21 | Pending |
-| EXAM-08     | Phase 21 | Pending |
-| EXAM-09     | Phase 20 | Pending |
-| EXAM-10     | Phase 20 | Pending |
-| EXAM-11     | Phase 18 | Pending |
-| EXAM-12     | Phase 18 | Pending |
-| ENGG-01     | Phase 18 | Pending |
-| ENGG-02     | Phase 18 | Pending |
-| ENGG-03     | Phase 20 | Pending |
-| ENGG-04     | Phase 20 | Pending |
-| ENGG-05     | Phase 19 | Pending |
-| ENGG-06     | Phase 19 | Pending |
-| ENGG-07     | Phase 19 | Pending |
-| FIND-01     | Phase 20 | Pending |
-| FIND-02     | Phase 20 | Pending |
-| FIND-03     | Phase 20 | Pending |
-| FIND-04     | Phase 22 | Pending |
-| FIND-05     | Phase 19 | Pending |
-| FIND-06     | Phase 20 | Pending |
-| BMRP-01     | Phase 20 | Pending |
-| BMRP-02     | Phase 22 | Pending |
-| BMRP-03     | Phase 22 | Pending |
-| BMRP-04     | Phase 22 | Pending |
-| BMRP-05     | Phase 23 | Pending |
-| REPT-01     | Phase 22 | Pending |
-| REPT-02     | Phase 23 | Pending |
-| REPT-03     | Phase 22 | Pending |
-| REPT-04     | Phase 23 | Pending |
-| REPT-05     | Phase 23 | Pending |
-| DSEC-01     | Phase 18 | Pending |
-| DSEC-02     | Phase 18 | Pending |
-| DSEC-03     | Phase 18 | Pending |
-| DSEC-04     | Phase 18 | Pending |
-| DSEC-05     | Phase 18 | Pending |
-| TERM-01     | Phase 18 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| EXAM-01     | Phase 21 | Pending  |
+| EXAM-02     | Phase 21 | Pending  |
+| EXAM-03     | Phase 20 | Pending  |
+| EXAM-04     | Phase 20 | Pending  |
+| EXAM-05     | Phase 18 | Pending  |
+| EXAM-06     | Phase 18 | Pending  |
+| EXAM-07     | Phase 21 | Pending  |
+| EXAM-08     | Phase 21 | Pending  |
+| EXAM-09     | Phase 20 | Pending  |
+| EXAM-10     | Phase 20 | Pending  |
+| EXAM-11     | Phase 18 | Complete |
+| EXAM-12     | Phase 18 | Pending  |
+| ENGG-01     | Phase 18 | Pending  |
+| ENGG-02     | Phase 18 | Pending  |
+| ENGG-03     | Phase 20 | Pending  |
+| ENGG-04     | Phase 20 | Pending  |
+| ENGG-05     | Phase 19 | Pending  |
+| ENGG-06     | Phase 19 | Pending  |
+| ENGG-07     | Phase 19 | Pending  |
+| FIND-01     | Phase 20 | Pending  |
+| FIND-02     | Phase 20 | Pending  |
+| FIND-03     | Phase 20 | Pending  |
+| FIND-04     | Phase 22 | Pending  |
+| FIND-05     | Phase 19 | Pending  |
+| FIND-06     | Phase 20 | Pending  |
+| BMRP-01     | Phase 20 | Pending  |
+| BMRP-02     | Phase 22 | Pending  |
+| BMRP-03     | Phase 22 | Pending  |
+| BMRP-04     | Phase 22 | Pending  |
+| BMRP-05     | Phase 23 | Pending  |
+| REPT-01     | Phase 22 | Pending  |
+| REPT-02     | Phase 23 | Pending  |
+| REPT-03     | Phase 22 | Pending  |
+| REPT-04     | Phase 23 | Pending  |
+| REPT-05     | Phase 23 | Pending  |
+| DSEC-01     | Phase 18 | Pending  |
+| DSEC-02     | Phase 18 | Pending  |
+| DSEC-03     | Phase 18 | Pending  |
+| DSEC-04     | Phase 18 | Pending  |
+| DSEC-05     | Phase 18 | Pending  |
+| TERM-01     | Phase 18 | Pending  |
 
 **Coverage:**
 

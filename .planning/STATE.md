@@ -5,26 +5,26 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** Phase 18 — Foundation (scoring engine, state machine, DB guards, encryption, terminology)
+**Current focus:** Phase 19 — Data Access Layer (RBIA tree, scoring, findings, meetings, gateway)
 
 ## Current Position
 
-Phase: 18 of 23 (Foundation)
-Plan: 5 of 5 in current phase
-Status: In Progress — 18-01 complete (all 5 Phase 18 plans now executed)
-Last activity: 2026-02-23 — 18-01 complete (RBIA scoring engine, 40 unit tests, TDD)
+Phase: 19 of 23 (Data Access Layer)
+Plan: 5 of 5 planned (ready for execution)
+Status: Planned — all 5 plans created, verified, and ready for execution
+Last activity: 2026-02-23 — Phase 19 planning complete (5 plans, all Wave 1)
 
 Progress: [██░░░░░░░░] 18% (5/28 plans complete)
 
-## Phase 18 Plans
+## Phase 19 Plans
 
-| Plan  | Type    | Wave | Requirements              | What it builds                                                               |
-| ----- | ------- | ---- | ------------------------- | ---------------------------------------------------------------------------- |
-| 18-01 | TDD     | 1    | EXAM-05, EXAM-06, EXAM-12 | RBIA scoring engine (weighted roll-up, critical-item cap, rating bands)      |
-| 18-02 | TDD     | 1    | ENGG-01, ENGG-02          | Engagement state machine (8-state lifecycle, prerequisite guards)            |
-| 18-03 | Execute | 1    | EXAM-11                   | DB guards (BranchRbiaScore immutability trigger, ExaminationNode path CHECK) |
-| 18-04 | Execute | 1    | TERM-01                   | CAE-to-HIA display string rename (5 files)                                   |
-| 18-05 | Execute | 1    | DSEC-01–05                | Data encryption audit + tenant isolation test                                |
+| Plan  | Type    | Wave | Requirements     | What it builds                                                             |
+| ----- | ------- | ---- | ---------------- | -------------------------------------------------------------------------- |
+| 19-01 | Execute | 1    | ENGG-05, ENGG-06 | `rbia-examination.ts` — flat tree load + buildTree() + module selection    |
+| 19-02 | Execute | 1    | —                | `rbia-scoring.ts` — module scores, BranchRbiaScore history, Decimal→number |
+| 19-03 | Execute | 1    | FIND-05          | `rbia-findings.ts` — ActionPoints + Observations + carry-forward APs       |
+| 19-04 | Execute | 1    | —                | `rbia-meetings.ts` — meeting records query + atomic upsert                 |
+| 19-05 | Execute | 1    | ENGG-07          | Engagement gateway — RBIA/legacy fork + /rbia/ stub page                   |
 
 All 5 plans are Wave 1 (fully parallel, no dependencies).
 
@@ -42,7 +42,7 @@ All 5 plans are Wave 1 (fully parallel, no dependencies).
 | ----- | ----- | ----- | -------- |
 | 18    | 5     | ~50m  | ~10m     |
 
-**Recent Trend:** Phase 18 complete (5/5 plans)
+**Recent Trend:** Phase 18 complete (5/5 plans), Phase 19 planned (5 plans)
 
 _Updated after each plan completion_
 | Phase 18 P01 | 2 | 8 min | 2 files |
@@ -81,10 +81,15 @@ Recent decisions affecting current work:
 - [Phase 18-01]: Critical-item cap is a ceiling (not floor) — scores below 0.5 are NOT raised by cap
 - [Phase 18-01]: toPercentage uses Math.round to prevent floating-point under-counting (14-item edge case)
 - [Phase 18-foundation]: Typed Record<EngagementStatus, EngagementTransitionDef[]> state machine: compile-time exhaustiveness for engagement lifecycle
+- [Phase 19]: Flat findMany + buildTree() for tree loading (~200-500 nodes, O(n) reconstruction)
+- [Phase 19]: Two typed arrays (actionPoints[] + observations[]) for findings — maps to Phase 22 separate tabs
+- [Phase 19]: Carry-forward: OPEN mapped to ISSUED + BM_RESPONSE_DUE, PARTIALLY_RESOLVED mapped to BM_RESPONDED
+- [Phase 19]: Engagement gateway uses auditType === "RBIA" with compound sectionInstances check
+- [Phase 19]: getEngagementModuleScores uses bulk findMany + TypeScript grouping (not N+1)
 
 ### Pending Todos
 
-None yet.
+- Phase 20: Add sourceActionPointId to Observation schema for promote-to-observation link
 
 ### Blockers/Concerns
 
@@ -94,5 +99,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 18-01-PLAN.md (RBIA scoring engine — all Phase 18 plans complete)
+Stopped at: Phase 19 planning complete (5 plans, all Wave 1, verified with 0 blockers)
 Resume with: `/gsd:execute-phase 19`

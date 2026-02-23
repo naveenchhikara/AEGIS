@@ -196,8 +196,8 @@ export function EscalationPanel({
           <p>
             Concurrent auditors must immediately escalate serious irregularities
             (fraud, major deviations, regulatory breaches, critical risks) to
-            the Chief Audit Executive, CEO, or Audit Committee of the Board as
-            required by RBI guidelines.
+            the Head of Internal Audit (HIA), CEO, or Audit Committee of the
+            Board as required by RBI guidelines.
           </p>
           <ul className="ml-2 list-inside list-disc space-y-1">
             <li>

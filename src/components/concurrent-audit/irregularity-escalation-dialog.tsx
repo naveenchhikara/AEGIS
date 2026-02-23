@@ -53,7 +53,7 @@ const URGENCY_LEVELS: { value: Urgency; label: string }[] = [
 ];
 
 const RECIPIENTS: { value: Recipient; label: string }[] = [
-  { value: "CAE", label: "Chief Audit Executive (CAE)" },
+  { value: "CAE", label: "Head of Internal Audit (HIA)" },
   { value: "CEO", label: "Chief Executive Officer (CEO)" },
   { value: "ACB_MEMBER", label: "Audit Committee of Board (ACB)" },
 ];

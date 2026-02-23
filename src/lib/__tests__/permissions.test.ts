@@ -219,8 +219,8 @@ describe("getRoleDisplayName", () => {
     expect(getRoleDisplayName(Role.AUDITOR)).toBe("Auditor");
   });
 
-  it("returns 'Chief Audit Executive' for CAE", () => {
-    expect(getRoleDisplayName(Role.CAE)).toBe("Chief Audit Executive");
+  it("returns 'Head of Internal Audit (HIA)' for CAE", () => {
+    expect(getRoleDisplayName(Role.CAE)).toBe("Head of Internal Audit (HIA)");
   });
 
   it("returns 'System Admin' for SYSTEM_ADMIN", () => {

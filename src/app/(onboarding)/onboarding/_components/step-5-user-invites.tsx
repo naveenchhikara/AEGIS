@@ -54,7 +54,7 @@ type RoleKey = (typeof AVAILABLE_ROLES)[number];
 
 const ROLE_DISPLAY_NAMES: Record<RoleKey, string> = {
   CEO: "Chief Executive Officer",
-  CAE: "Chief Audit Executive",
+  CAE: "Head of Internal Audit (HIA)",
   CCO: "Chief Compliance Officer",
   AUDIT_MANAGER: "Audit Manager",
   AUDITOR: "Auditor",
@@ -213,7 +213,7 @@ export function StepUserInvites() {
 
     const allRoles = invites.flatMap((inv) => inv.roles);
     if (!allRoles.includes("CAE")) {
-      result.push("No Chief Audit Executive (CAE) invited");
+      result.push("No Head of Internal Audit (HIA) invited");
     }
     if (!allRoles.includes("CCO")) {
       result.push("No Chief Compliance Officer (CCO) invited");

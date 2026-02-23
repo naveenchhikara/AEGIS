@@ -464,7 +464,7 @@ export function getRoleDisplayName(role: Role): string {
   const displayNames: Record<Role, string> = {
     AUDITOR: "Auditor",
     AUDIT_MANAGER: "Audit Manager",
-    CAE: "Chief Audit Executive",
+    CAE: "Head of Internal Audit (HIA)",
     CCO: "Chief Compliance Officer",
     CEO: "Chief Executive Officer",
     AUDITEE: "Auditee",

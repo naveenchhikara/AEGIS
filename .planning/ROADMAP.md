@@ -182,15 +182,15 @@ Plans:
 4. The RBIA audit report PDF generates successfully with dual sections (score summary + findings) in 8-section format — the generated PDF contains the engagement details, frozen score, meeting minutes, ActionPoints, and Observations
 5. Board analytics includes a RadarChart displaying module scores and a branch rating distribution chart — both charts render with real engagement data
 
-**Plans**: TBD
+**Plans**: 5 plans (all Wave 1 — fully parallel)
 
 Plans:
 
-- [ ] 23-01: `/auditee/[id]/action-points` route — BM response UI reusing existing evidence upload and auth infrastructure
-- [ ] 23-02: BmResponseBatch overdue pg-boss cron job + email escalation to Zonal Auditor
-- [ ] 23-03: Score display page — composite score, module breakdown, rating band colors, historical trend, drill-down tree
-- [ ] 23-04: RBIA audit report PDF — `rbia-score-section.tsx` + modifications to `[engagementId]/report/page.tsx`
-- [ ] 23-05: Board analytics additions — RadarChart for module scores + branch rating distribution chart
+- [ ] 23-01-PLAN.md — BM response page + DAL + components (AP card, deadline banner, submit modal)
+- [ ] 23-02-PLAN.md — BmResponseBatch overdue escalation cron job + email template + pipeline wiring
+- [ ] 23-03-PLAN.md — Score visualization: circular gauge, module breakdown with accordion drill-down, historical trend chart
+- [ ] 23-04-PLAN.md — RBIA audit report PDF (8 sections) + DAL + generatePdfReport RBIA branch
+- [ ] 23-05-PLAN.md — Board analytics: KPI cards, RadarChart for module scores, branch rating distribution chart
 
 ## Progress
 
@@ -203,4 +203,4 @@ Plans:
 | 20. Server Actions            | v6.0      | 0/5            | Planned     | -         |
 | 21. Examination UI            | v6.0      | 0/4            | Not started | -         |
 | 22. Findings and Meetings     | v6.0      | 0/4            | Not started | -         |
-| 23. BM Response and Reporting | v6.0      | 0/5            | Not started | -         |
+| 23. BM Response and Reporting | v6.0      | 0/5            | Planned     | -         |

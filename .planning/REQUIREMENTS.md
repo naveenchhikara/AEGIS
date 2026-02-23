@@ -28,8 +28,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **ENGG-02**: Each state transition has server-enforced prerequisite guards (e.g., team assigned before TEAM_ASSIGNED, meeting recorded before IN_PROGRESS)
 - [ ] **ENGG-03**: HIA/Audit Manager can record opening meeting with attendees, minutes, and sign-off before IN_PROGRESS transition
 - [ ] **ENGG-04**: HIA/Audit Manager can record exit meeting with attendees, key discussion points, and sign-off before REPORT_DRAFT transition
-- [ ] **ENGG-05**: System auto-selects applicable examination modules based on branch type (LARGE/MEDIUM/SMALL) using applicableBranchTypes
-- [ ] **ENGG-06**: Auditor can manually add or remove modules from auto-selected set with documented reason
+- [x] **ENGG-05**: System auto-selects applicable examination modules based on branch type (LARGE/MEDIUM/SMALL) using applicableBranchTypes
+- [x] **ENGG-06**: Auditor can manually add or remove modules from auto-selected set with documented reason
 - [ ] **ENGG-07**: Engagement gateway routes RBIA engagements to v6.0 UI while legacy engagements continue using existing sections path
 
 ### Findings
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGG-02     | Phase 18 | Complete |
 | ENGG-03     | Phase 20 | Pending  |
 | ENGG-04     | Phase 20 | Pending  |
-| ENGG-05     | Phase 19 | Pending  |
-| ENGG-06     | Phase 19 | Pending  |
+| ENGG-05     | Phase 19 | Complete |
+| ENGG-06     | Phase 19 | Complete |
 | ENGG-07     | Phase 19 | Pending  |
 | FIND-01     | Phase 20 | Pending  |
 | FIND-02     | Phase 20 | Pending  |

@@ -63,6 +63,8 @@ export async function getEngagementSummary(session: Session) {
 
 /**
  * Get engagement with team members, branch, and section instances.
+ * Note: auditType (String?) used by engagement gateway fork (Phase 19 ENGG-07)
+ * sectionInstances used to distinguish legacy vs RBIA engagements
  */
 export async function getEngagementWithTeam(
   session: Session,

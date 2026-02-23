@@ -22,6 +22,7 @@ AEGIS is a **Risk-Based Internal Audit System (RBIAS)** for Urban Cooperative Ba
 All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation. Production deployed.
 
 #### Phase 1 — Core Audit Domain (28/28) ✅
+
 - RAM engine with 19 configurable parameters, weighted scoring, risk categories
 - Annual audit plan generation from RAM scores + frequency rules
 - Audit engagement management with team assignment and section allocation
@@ -32,6 +33,7 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - Pre-audit branch profiling with prior findings
 
 #### Phase 2 — Reporting & Compliance (20/20) ✅
+
 - XLSX multi-tab report generation + PDF summary with BH Certificate
 - Risk rating computation with 1.5× repeat finding multiplier
 - Report routing workflow (draft → reviewed → approved → issued)
@@ -42,6 +44,7 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - S3 download route with presigned URLs
 
 #### Phase 3 — GRC & Issue Management (20/20) ✅
+
 - Enterprise risk register with inherent/residual scoring and KRI tracking
 - Control library with test procedures and effectiveness analytics
 - Auto-generated work programs on engagement creation
@@ -54,6 +57,7 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - QA self-assessment expanded to ~50 IIA IPPF standards
 
 #### Phase 4 — UCB Regulatory & Governance (24/24) ✅
+
 - Audit universe entity registry with zone CRUD
 - Unified calendar with RBIA + concurrent + IS/EDP + statutory (edit-in-place + recurrence)
 - Concurrent audit scope templates and rapid entry workbench
@@ -69,6 +73,7 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - Board review calendar seeded with RBI-mandated items
 
 #### Phase 6 — Specialized Regulatory (12/12) ✅
+
 - SGL/CSGL reconciliation tracking
 - Broker compliance analytics
 - Investment classification audit checklist
@@ -86,6 +91,7 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 41 new requirements across 6 phases. Phase 18 (Foundation) planned and ready for execution.
 
 **Key v6.0 features:**
+
 - Hierarchical Examination Tree — variable depth (0-5) with materialized path
 - 4-Point Scoring — FULLY/LARGELY/PARTIALLY/NON_COMPLIANT with weighted roll-up
 - 8-State Engagement Lifecycle — PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED

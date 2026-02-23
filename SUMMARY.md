@@ -18,12 +18,12 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Intern
 | Language     | TypeScript 5.9                                |
 | UI           | shadcn/ui + Radix UI + Tailwind CSS v4        |
 | Database     | PostgreSQL 16 + Prisma 7 ORM                  |
-| Auth         | Better Auth (bcrypt, RBAC, session cookies)    |
+| Auth         | Better Auth (bcrypt, RBAC, session cookies)   |
 | i18n         | next-intl (English, Hindi, Marathi, Gujarati) |
 | File Storage | AWS S3 (Mumbai region)                        |
 | Email        | AWS SES (DKIM verified)                       |
 | Reports      | ExcelJS (XLSX) + @react-pdf/renderer (PDF)    |
-| Jobs         | pg-boss                                        |
+| Jobs         | pg-boss                                       |
 | Testing      | Playwright (E2E) + Vitest (unit)              |
 | Deployment   | Docker Compose, Nginx, Certbot SSL, systemd   |
 | IaC          | AWS CDK (in `infra/`)                         |
@@ -31,28 +31,29 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Intern
 
 ## Scale
 
-| Metric                | Count  |
-| --------------------- | ------ |
-| Source files (src/)    | 536    |
-| Prisma schema          | 2,320 lines |
-| Database models        | 71     |
-| Database enums         | 20     |
-| Page routes            | 54     |
-| Component files        | 214    |
-| Server actions         | 82     |
-| Data access files      | 39     |
-| Library/utility files  | 36     |
-| Job files              | 7      |
-| Email templates        | 11     |
-| RBAC roles             | 17     |
-| Permissions            | 60+    |
-| Git commits            | 473    |
-| v5.0 Requirements      | 104/104 ✅ |
-| v6.0 Requirements      | 41 (in progress) |
+| Metric                | Count            |
+| --------------------- | ---------------- |
+| Source files (src/)   | 536              |
+| Prisma schema         | 2,320 lines      |
+| Database models       | 71               |
+| Database enums        | 20               |
+| Page routes           | 54               |
+| Component files       | 214              |
+| Server actions        | 82               |
+| Data access files     | 39               |
+| Library/utility files | 36               |
+| Job files             | 7                |
+| Email templates       | 11               |
+| RBAC roles            | 17               |
+| Permissions           | 60+              |
+| Git commits           | 473              |
+| v5.0 Requirements     | 104/104 ✅       |
+| v6.0 Requirements     | 41 (in progress) |
 
 ## Milestones
 
 ### v5.0 — Complete ✅
+
 - **Phase 1:** Core Audit Domain (28/28)
 - **Phase 2:** Reporting & Compliance (20/20)
 - **Phase 3:** GRC & Issue Management (20/20)
@@ -61,6 +62,7 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Intern
 - 18 modules delivered, all gaps closed, production deployed
 
 ### v6.0 — RBIA Implementation (In Progress)
+
 - 41 new requirements across 6 phases
 - Hierarchical examination trees, 4-point scoring, 8-state engagement lifecycle
 - Dual findings system (ActionPoints + Observations)

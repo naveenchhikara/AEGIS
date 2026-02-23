@@ -37,7 +37,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **FIND-01**: Auditor can create ActionPoints from flagged examination responses (~15-40 per audit, operational findings)
 - [ ] **FIND-02**: ActionPoint follows 6-state lifecycle: DRAFT → ISSUED → BM_RESPONSE_DUE → BM_RESPONDED → VERIFIED → CLOSED (or CARRIED_FORWARD)
 - [ ] **FIND-03**: Auditor can promote flagged examination responses to formal Observations (5C format, ~3-10 per audit)
-- [ ] **FIND-04**: ActionPoints and Observations display in separate tabs within findings view (not mixed in single list)
+- [ ] **FIND-04**: ActionPoints and Observations display with clear type separation in findings view — implemented as unified list with type filter badges per user decision (filter toggles provide equivalent focused views to separate tabs)
 - [x] **FIND-05**: System detects carry-forward ActionPoints from previous engagement and surfaces them at new engagement start
 - [ ] **FIND-06**: Each ActionPoint has serial number, title, description, severity, module code, and source examination response link
 

@@ -3,7 +3,14 @@
   "depth": "standard",
   "parallelization": true,
   "commit_docs": true,
-  "model_profile": "balanced",
+  "model_profile": "quality",
+  "model_overrides": {
+    "gsd-research-synthesizer": "haiku",
+    "gsd-codebase-mapper": "haiku",
+    "gsd-verifier": "haiku",
+    "gsd-plan-checker": "haiku",
+    "gsd-integration-checker": "haiku"
+  },
   "workflow": {
     "research": true,
     "plan_check": true,

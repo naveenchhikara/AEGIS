@@ -12,6 +12,7 @@ import { createEngagement } from "@/actions/audit-execution/create-engagement";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -19,12 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 
 interface EngagementFormProps {
   branches: { id: string; name: string; code: string }[];
   auditAreas: { id: string; name: string }[];
   auditPlans: { id: string; year: number; quarter: string }[];
+  ramAssessments: {
+    id: string;
+    assessmentYear: string;
+    riskCategory: string | null;
+    branch: { code: string; name: string };
+  }[];
 }
 
 const AUDIT_TYPES = [
@@ -38,6 +45,7 @@ export function EngagementForm({
   branches,
   auditAreas,
   auditPlans,
+  ramAssessments,
 }: EngagementFormProps) {
   const router = useRouter();
 
@@ -60,6 +68,10 @@ export function EngagementForm({
       periodTo: "",
       scheduledStartDate: "",
       completionDate: "",
+      plannedOpeningMeetingDate: "",
+      plannedExitMeetingDate: "",
+      ramAssessmentId: undefined,
+      scopeNotes: "",
     },
   });
 
@@ -300,6 +312,101 @@ export function EngagementForm({
             </p>
           )}
         </div>
+
+        {/* Planned Opening Meeting Date */}
+        <div className="space-y-2">
+          <Label htmlFor="plannedOpeningMeetingDate">
+            Planned Opening Meeting Date
+          </Label>
+          <Input
+            id="plannedOpeningMeetingDate"
+            type="datetime-local"
+            disabled={isSubmitting}
+            {...register("plannedOpeningMeetingDate")}
+          />
+          <p className="text-muted-foreground text-sm">
+            Planned date for the opening meeting with branch
+          </p>
+          {errors.plannedOpeningMeetingDate && (
+            <p className="text-destructive text-sm">
+              {errors.plannedOpeningMeetingDate.message}
+            </p>
+          )}
+        </div>
+
+        {/* Planned Exit Meeting Date */}
+        <div className="space-y-2">
+          <Label htmlFor="plannedExitMeetingDate">
+            Planned Exit Meeting Date
+          </Label>
+          <Input
+            id="plannedExitMeetingDate"
+            type="datetime-local"
+            disabled={isSubmitting}
+            {...register("plannedExitMeetingDate")}
+          />
+          <p className="text-muted-foreground text-sm">
+            Planned date for the exit meeting with branch
+          </p>
+          {errors.plannedExitMeetingDate && (
+            <p className="text-destructive text-sm">
+              {errors.plannedExitMeetingDate.message}
+            </p>
+          )}
+        </div>
+
+        {/* RAM Assessment Reference */}
+        <div className="space-y-2">
+          <Label htmlFor="ramAssessmentId">RAM Assessment Reference</Label>
+          <Select
+            value={watch("ramAssessmentId") || ""}
+            onValueChange={(value) =>
+              setValue("ramAssessmentId", value || undefined)
+            }
+            disabled={isSubmitting}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Link to RAM assessment (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {ramAssessments.map((ram) => (
+                <SelectItem key={ram.id} value={ram.id}>
+                  {ram.branch.code} - {ram.branch.name} ({ram.assessmentYear}
+                  {ram.riskCategory ? ` / ${ram.riskCategory}` : ""})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-muted-foreground text-sm">
+            Optional - link to the branch risk assessment that informed this
+            audit
+          </p>
+          {errors.ramAssessmentId && (
+            <p className="text-destructive text-sm">
+              {errors.ramAssessmentId.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Scope Notes - Full Width */}
+      <div className="space-y-2">
+        <Label htmlFor="scopeNotes">Scope Notes</Label>
+        <Textarea
+          id="scopeNotes"
+          placeholder="Describe the audit scope, methodology, key areas of focus, or any special instructions..."
+          rows={4}
+          disabled={isSubmitting}
+          {...register("scopeNotes")}
+        />
+        <p className="text-muted-foreground text-sm">
+          Optional - audit scope and methodology notes (max 4000 characters)
+        </p>
+        {errors.scopeNotes && (
+          <p className="text-destructive text-sm">
+            {errors.scopeNotes.message}
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end gap-4">

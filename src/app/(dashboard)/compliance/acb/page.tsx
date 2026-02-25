@@ -39,6 +39,7 @@ export default async function AcbPage() {
         title: report.title,
         generatedAt: report.generatedAt,
         metricsSnapshot: report.metricsSnapshot,
+        s3Key: report.s3Key ?? null,
       }))
     : [];
 

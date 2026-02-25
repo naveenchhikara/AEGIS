@@ -58,6 +58,23 @@ export default async function CreateEngagementPage() {
     orderBy: [{ year: "desc" }, { quarter: "asc" }],
   });
 
+  // Fetch RAM assessments (computed/approved) for optional linking
+  const ramAssessments = await db.ramAssessment.findMany({
+    where: {
+      tenantId,
+      status: { in: ["COMPUTED", "APPROVED"] },
+    },
+    select: {
+      id: true,
+      assessmentYear: true,
+      riskCategory: true,
+      branch: {
+        select: { code: true, name: true },
+      },
+    },
+    orderBy: [{ assessmentYear: "desc" }],
+  });
+
   return (
     <div className="container max-w-4xl py-8">
       <a
@@ -80,6 +97,7 @@ export default async function CreateEngagementPage() {
             branches={branches}
             auditAreas={auditAreas}
             auditPlans={auditPlans}
+            ramAssessments={ramAssessments}
           />
         </CardContent>
       </Card>

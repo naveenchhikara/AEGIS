@@ -60,6 +60,22 @@ export async function createEngagement(input: CreateEngagementInput) {
         sessionId: session.session.id,
       });
 
+      // Build metadata with R11 optional fields
+      const metadata: Record<string, unknown> = {};
+      if (validated.plannedOpeningMeetingDate) {
+        metadata.plannedOpeningMeetingDate =
+          validated.plannedOpeningMeetingDate;
+      }
+      if (validated.plannedExitMeetingDate) {
+        metadata.plannedExitMeetingDate = validated.plannedExitMeetingDate;
+      }
+      if (validated.ramAssessmentId) {
+        metadata.ramAssessmentId = validated.ramAssessmentId;
+      }
+      if (validated.scopeNotes) {
+        metadata.scopeNotes = validated.scopeNotes;
+      }
+
       // Create AuditEngagement
       const engagement = await tx.auditEngagement.create({
         data: {
@@ -76,6 +92,7 @@ export async function createEngagement(input: CreateEngagementInput) {
             ? new Date(validated.scheduledStartDate)
             : undefined,
           status: "PLANNED",
+          ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
         },
       });
 

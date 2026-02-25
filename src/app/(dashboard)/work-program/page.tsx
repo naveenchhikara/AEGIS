@@ -32,20 +32,35 @@ export default async function WorkProgramPage({
   const tenantId = session.user.tenantId;
   const db = prismaForTenant(tenantId);
 
-  const [workItems, assignableUsers, engagements] = await Promise.all([
-    getWorkProgramItems(session, {
-      engagementId: params.engagementId,
-      assignedToId: params.assignedToId,
-      status: params.status,
-    }),
-    canExecute ? getAssignableUsers(session) : Promise.resolve([]),
-    db.auditEngagement.findMany({
-      where: { tenantId },
-      select: { id: true, auditNumber: true, status: true },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    }),
-  ]);
+  const [workItems, assignableUsers, engagements, controls] = await Promise.all(
+    [
+      getWorkProgramItems(session, {
+        engagementId: params.engagementId,
+        assignedToId: params.assignedToId,
+        status: params.status,
+      }),
+      canExecute ? getAssignableUsers(session) : Promise.resolve([]),
+      db.auditEngagement.findMany({
+        where: { tenantId },
+        select: { id: true, auditNumber: true, status: true },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      canExecute
+        ? db.controlLibrary.findMany({
+            where: { tenantId },
+            select: {
+              id: true,
+              controlCode: true,
+              processArea: true,
+              description: true,
+            },
+            orderBy: { controlCode: "asc" },
+            take: 200,
+          })
+        : Promise.resolve([]),
+    ],
+  );
 
   return (
     <div className="space-y-6">
@@ -65,6 +80,8 @@ export default async function WorkProgramPage({
         workItems={workItems}
         canExecute={canExecute}
         assignableUsers={assignableUsers}
+        engagements={engagements}
+        controls={controls}
       />
     </div>
   );

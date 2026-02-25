@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Download, Loader2, FileText } from "@/lib/icons";
 import { generateAcbReport } from "@/actions/compliance/acb-reporting";
 
 interface AcbItem {
@@ -46,6 +47,7 @@ interface BoardReport {
   title: string;
   generatedAt: Date;
   metricsSnapshot?: any;
+  s3Key?: string | null;
 }
 
 interface AcbReportBuilderProps {
@@ -61,6 +63,7 @@ export function AcbReportBuilder({
   const [executiveCommentary, setExecutiveCommentary] = useState("");
   const [quarter, setQuarter] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [exportingPdfId, setExportingPdfId] = useState<string | null>(null);
 
   // Calculate summary stats
   const totalItems = items.length;
@@ -123,6 +126,49 @@ export function AcbReportBuilder({
       window.location.reload();
     } else {
       toast.error(result.error);
+    }
+  };
+
+  const handleDownload = (s3Key: string) => {
+    window.open(`/api/download?key=${encodeURIComponent(s3Key)}`, "_blank");
+  };
+
+  const handleExportPdf = async (report: BoardReport) => {
+    setExportingPdfId(report.id);
+    try {
+      const res = await fetch("/api/reports/board-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          year: report.year,
+          quarter: report.quarter,
+          executiveCommentary: report.metricsSnapshot?.executiveCommentary,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res
+          .json()
+          .catch(() => ({ error: "PDF generation failed" }));
+        toast.error(err.error ?? "Failed to export PDF");
+        return;
+      }
+
+      // Download the returned PDF
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `acb-report-${report.quarter}-FY${report.year}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("PDF exported successfully");
+    } catch {
+      toast.error("Failed to export PDF");
+    } finally {
+      setExportingPdfId(null);
     }
   };
 
@@ -350,6 +396,7 @@ export function AcbReportBuilder({
                   <TableHead>Quarter</TableHead>
                   <TableHead>Generated At</TableHead>
                   <TableHead className="text-right">Items</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -368,12 +415,38 @@ export function AcbReportBuilder({
                     <TableCell className="text-right">
                       {report.metricsSnapshot?.totalItems ?? "N/A"}
                     </TableCell>
+                    <TableCell className="text-right">
+                      {report.s3Key ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownload(report.s3Key!)}
+                        >
+                          <Download className="mr-1 h-4 w-4" />
+                          Download
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={exportingPdfId === report.id}
+                          onClick={() => handleExportPdf(report)}
+                        >
+                          {exportingPdfId === report.id ? (
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                          ) : (
+                            <FileText className="mr-1 h-4 w-4" />
+                          )}
+                          Export PDF
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
                 {existingReports.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="text-muted-foreground h-24 text-center"
                     >
                       No board reports generated yet

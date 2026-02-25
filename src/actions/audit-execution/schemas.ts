@@ -114,6 +114,14 @@ export const CreateEngagementSchema = z.object({
   periodFrom: z.string().min(1, "Period from is required"),
   periodTo: z.string().min(1, "Period to is required"),
   visitNumber: z.number().int().min(1).default(1),
+  // R11 optional fields
+  plannedOpeningMeetingDate: z.string().optional(),
+  plannedExitMeetingDate: z.string().optional(),
+  ramAssessmentId: z.string().uuid("Invalid RAM assessment ID").optional(),
+  scopeNotes: z
+    .string()
+    .max(4000, "Scope notes must be 4000 characters or less")
+    .optional(),
 });
 
 export type CreateEngagementInput = z.infer<typeof CreateEngagementSchema>;

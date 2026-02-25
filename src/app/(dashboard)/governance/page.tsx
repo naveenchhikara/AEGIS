@@ -16,6 +16,7 @@ import {
   getCommittees,
   getCommitteeMeetings,
 } from "@/data-access/governance";
+import { prismaForTenant } from "@/data-access/prisma";
 
 export default async function GovernancePage() {
   const session = await getRequiredSession();
@@ -35,6 +36,16 @@ export default async function GovernancePage() {
   const policiesDueReview = await getPoliciesDueForReview(session, 30);
   const committees = await getCommittees(session, { isActive: true });
   const meetings = await getCommitteeMeetings(session);
+
+  // Fetch available users for committee member assignment
+  const tenantId = session.user.tenantId;
+  const availableUsers = canManageCommittee
+    ? await prismaForTenant(tenantId).user.findMany({
+        where: { tenantId },
+        select: { id: true, name: true, email: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -86,6 +97,7 @@ export default async function GovernancePage() {
             committees={committees}
             meetings={meetings}
             canManage={canManageCommittee}
+            availableUsers={availableUsers}
           />
         </TabsContent>
 

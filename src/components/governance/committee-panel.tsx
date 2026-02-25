@@ -39,6 +39,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Progress } from "@/components/ui/progress";
 import {
   Plus,
   Users,
@@ -47,7 +48,10 @@ import {
   Loader2,
   Edit,
   X,
-  Save,
+  Upload,
+  CheckCircle2,
+  XCircle,
+  Paperclip,
 } from "@/lib/icons";
 import { toast } from "sonner";
 import {
@@ -56,6 +60,10 @@ import {
   manageCommitteeMember,
   removeCommitteeMember,
 } from "@/actions/governance/manage-committee";
+import {
+  requestMinutesUpload,
+  confirmMinutesUpload,
+} from "@/actions/governance/upload-minutes";
 
 interface Committee {
   id: string;
@@ -88,10 +96,17 @@ interface Meeting {
   };
 }
 
+type AvailableUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 interface CommitteePanelProps {
   committees: Committee[];
   meetings: Meeting[];
   canManage: boolean;
+  availableUsers?: AvailableUser[];
 }
 
 const committeeSchema = z.object({
@@ -107,7 +122,7 @@ const meetingSchema = z.object({
 });
 
 const memberSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
+  userId: z.string().uuid("Please select a user"),
   role: z
     .enum(["CHAIRMAN", "MEMBER", "SECRETARY", "INVITEE"])
     .describe("Role is required"),
@@ -127,6 +142,7 @@ export function CommitteePanel({
   committees,
   meetings,
   canManage,
+  availableUsers = [],
 }: CommitteePanelProps) {
   const router = useRouter();
   const [committeeDialogOpen, setCommitteeDialogOpen] = React.useState(false);
@@ -140,8 +156,13 @@ export function CommitteePanel({
   const [expandedCommittees, setExpandedCommittees] = React.useState<
     Set<string>
   >(new Set());
-  const [editingMinutes, setEditingMinutes] = React.useState<{
-    [key: string]: string;
+  const [minutesUpload, setMinutesUpload] = React.useState<{
+    [meetingId: string]: {
+      status: "uploading" | "confirming" | "complete" | "error";
+      progress: number;
+      fileName?: string;
+      error?: string;
+    };
   }>({});
 
   const committeeForm = useForm<CommitteeFormValues>({
@@ -260,28 +281,146 @@ export function CommitteePanel({
     }
   }
 
-  async function handleSaveMinutes(meeting: Meeting, minutesRef: string) {
-    setIsSubmitting(true);
-    const result = await manageCommitteeMeeting({
-      meetingId: meeting.id,
-      committeeId: meeting.committeeId,
-      meetingDate: meeting.meetingDate,
-      minutesRef,
-      status: meeting.status as any,
-    });
+  async function handleMinutesFileUpload(meeting: Meeting, file: File) {
+    const meetingId = meeting.id;
 
-    if (result.success) {
-      toast.success("Minutes saved");
-      setEditingMinutes((prev) => {
-        const next = { ...prev };
-        delete next[meeting.id];
-        return next;
-      });
-      router.refresh();
-    } else {
-      toast.error(result.error);
+    // Read file header for magic byte validation
+    const chunk = file.slice(0, 4096);
+    const buffer = await chunk.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
-    setIsSubmitting(false);
+    const fileHeader = btoa(binary);
+
+    setMinutesUpload((prev) => ({
+      ...prev,
+      [meetingId]: { status: "uploading", progress: 0, fileName: file.name },
+    }));
+
+    try {
+      // Step 1: Request presigned URL
+      const requestResult = await requestMinutesUpload({
+        meetingId,
+        fileHeader,
+        fileName: file.name,
+        fileSize: file.size,
+        contentType: file.type || "application/octet-stream",
+      });
+
+      if (!requestResult.success) {
+        setMinutesUpload((prev) => ({
+          ...prev,
+          [meetingId]: {
+            status: "error",
+            progress: 0,
+            fileName: file.name,
+            error: requestResult.error,
+          },
+        }));
+        toast.error(requestResult.error);
+        return;
+      }
+
+      const { uploadUrl, s3Key, contentType } = requestResult.data;
+
+      // Step 2: Upload to S3 via XHR
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            setMinutesUpload((prev) => ({
+              ...prev,
+              [meetingId]: {
+                ...prev[meetingId],
+                status: "uploading",
+                progress: pct,
+              },
+            }));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(file);
+      });
+
+      // Step 3: Confirm upload
+      setMinutesUpload((prev) => ({
+        ...prev,
+        [meetingId]: {
+          ...prev[meetingId],
+          status: "confirming",
+          progress: 100,
+        },
+      }));
+
+      const confirmResult = await confirmMinutesUpload({
+        meetingId,
+        s3Key,
+        fileName: file.name,
+      });
+
+      if (!confirmResult.success) {
+        setMinutesUpload((prev) => ({
+          ...prev,
+          [meetingId]: {
+            status: "error",
+            progress: 0,
+            fileName: file.name,
+            error: confirmResult.error,
+          },
+        }));
+        toast.error(confirmResult.error);
+        return;
+      }
+
+      // Success
+      setMinutesUpload((prev) => ({
+        ...prev,
+        [meetingId]: {
+          status: "complete",
+          progress: 100,
+          fileName: file.name,
+        },
+      }));
+      toast.success("Minutes uploaded successfully");
+
+      // Clear after 2 seconds and refresh
+      setTimeout(() => {
+        setMinutesUpload((prev) => {
+          const next = { ...prev };
+          delete next[meetingId];
+          return next;
+        });
+        router.refresh();
+      }, 2000);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Upload failed";
+      setMinutesUpload((prev) => ({
+        ...prev,
+        [meetingId]: {
+          status: "error",
+          progress: 0,
+          fileName: file.name,
+          error: errorMessage,
+        },
+      }));
+      toast.error(errorMessage);
+    }
   }
 
   function toggleExpanded(committeeId: string) {
@@ -467,12 +606,46 @@ export function CommitteePanel({
             className="space-y-4 py-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="userId">User ID</Label>
-              <Input
-                id="userId"
-                {...memberForm.register("userId")}
-                placeholder="Enter user ID"
-              />
+              <Label htmlFor="userId">User</Label>
+              <Select
+                value={memberForm.watch("userId") || ""}
+                onValueChange={(value: string) =>
+                  memberForm.setValue("userId", value, {
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger id="userId">
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableUsers
+                    .filter((u) => {
+                      // Exclude users already in this committee
+                      const committee = committees.find(
+                        (c) => c.id === selectedCommitteeId,
+                      );
+                      if (!committee) return true;
+                      return !committee.members.some((m) => m.user.id === u.id);
+                    })
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  {availableUsers.filter((u) => {
+                    const committee = committees.find(
+                      (c) => c.id === selectedCommitteeId,
+                    );
+                    if (!committee) return true;
+                    return !committee.members.some((m) => m.user.id === u.id);
+                  }).length === 0 && (
+                    <SelectItem value="" disabled>
+                      No available users
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
               {memberForm.formState.errors.userId && (
                 <p className="text-destructive text-sm">
                   {memberForm.formState.errors.userId.message}
@@ -690,35 +863,101 @@ export function CommitteePanel({
                                   </Badge>
                                 </div>
                                 {canManage && (
-                                  <div className="flex items-center gap-2 pl-5">
-                                    <Input
-                                      type="text"
-                                      placeholder="Minutes URL or reference"
-                                      defaultValue={meeting.minutesRef || ""}
-                                      onChange={(e) => {
-                                        setEditingMinutes((prev) => ({
-                                          ...prev,
-                                          [meeting.id]: e.target.value,
-                                        }));
-                                      }}
-                                      className="h-7 flex-1 text-xs"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() =>
-                                        handleSaveMinutes(
-                                          meeting,
-                                          editingMinutes[meeting.id] ||
-                                            meeting.minutesRef ||
-                                            "",
-                                        )
-                                      }
-                                      disabled={isSubmitting}
-                                      className="h-7 px-2"
-                                    >
-                                      <Save className="h-3 w-3" />
-                                    </Button>
+                                  <div className="space-y-2 pl-5">
+                                    {/* Show existing minutes reference */}
+                                    {meeting.minutesRef && (
+                                      <div className="flex items-center gap-1.5 text-xs text-green-700">
+                                        <Paperclip className="h-3 w-3" />
+                                        <span>Minutes uploaded</span>
+                                      </div>
+                                    )}
+
+                                    {/* Upload state indicator */}
+                                    {minutesUpload[meeting.id] && (
+                                      <div className="space-y-1">
+                                        {(minutesUpload[meeting.id].status ===
+                                          "uploading" ||
+                                          minutesUpload[meeting.id].status ===
+                                            "confirming") && (
+                                          <>
+                                            <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                                              <Loader2 className="h-3 w-3 animate-spin" />
+                                              <span>
+                                                {minutesUpload[meeting.id]
+                                                  .status === "confirming"
+                                                  ? "Confirming..."
+                                                  : `Uploading ${minutesUpload[meeting.id].progress}%`}
+                                              </span>
+                                            </div>
+                                            <Progress
+                                              value={
+                                                minutesUpload[meeting.id]
+                                                  .progress
+                                              }
+                                              className="h-1"
+                                            />
+                                          </>
+                                        )}
+                                        {minutesUpload[meeting.id].status ===
+                                          "complete" && (
+                                          <div className="flex items-center gap-1.5 text-xs text-green-600">
+                                            <CheckCircle2 className="h-3 w-3" />
+                                            <span>Upload complete</span>
+                                          </div>
+                                        )}
+                                        {minutesUpload[meeting.id].status ===
+                                          "error" && (
+                                          <div className="text-destructive flex items-center gap-1.5 text-xs">
+                                            <XCircle className="h-3 w-3" />
+                                            <span>
+                                              {minutesUpload[meeting.id]
+                                                .error || "Upload failed"}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* File upload button */}
+                                    {(!minutesUpload[meeting.id] ||
+                                      minutesUpload[meeting.id].status ===
+                                        "error") && (
+                                      <div className="flex items-center gap-2">
+                                        <label className="cursor-pointer">
+                                          <input
+                                            type="file"
+                                            accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                if (
+                                                  file.size >
+                                                  10 * 1024 * 1024
+                                                ) {
+                                                  toast.error(
+                                                    "File must be under 10MB",
+                                                  );
+                                                  return;
+                                                }
+                                                void handleMinutesFileUpload(
+                                                  meeting,
+                                                  file,
+                                                );
+                                              }
+                                              // Reset so same file can be re-selected
+                                              e.target.value = "";
+                                            }}
+                                          />
+                                          <span className="hover:bg-accent inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-xs">
+                                            <Upload className="h-3 w-3" />
+                                            {meeting.minutesRef
+                                              ? "Replace Minutes"
+                                              : "Upload Minutes"}
+                                          </span>
+                                        </label>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </li>

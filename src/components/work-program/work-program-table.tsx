@@ -30,12 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, Loader2, UserPlus } from "@/lib/icons";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, Loader2, UserPlus, Plus } from "@/lib/icons";
 import { toast } from "sonner";
 import {
   executeWorkProgramItem,
   assignWorkProgramItem,
 } from "@/actions/work-program/execute-item";
+import { createWorkProgramItem } from "@/actions/work-program/create-item";
 
 interface WorkItem {
   id: string;
@@ -74,10 +76,25 @@ interface AssignableUser {
   email: string;
 }
 
+interface Engagement {
+  id: string;
+  auditNumber: string | null;
+  status: string;
+}
+
+interface Control {
+  id: string;
+  controlCode: string;
+  processArea: string;
+  description: string;
+}
+
 interface WorkProgramTableProps {
   workItems: WorkItem[];
   canExecute: boolean;
   assignableUsers?: AssignableUser[];
+  engagements?: Engagement[];
+  controls?: Control[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -116,14 +133,34 @@ async function submitExecuteAction(
   return executeWorkProgramItem(input);
 }
 
+async function submitCreateAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const sampleSizeRaw = formData.get("sampleSize") as string;
+  const input = {
+    engagementId: formData.get("engagementId") as string,
+    controlId: formData.get("controlId") as string,
+    name: formData.get("name") as string,
+    description: formData.get("description") as string,
+    sampleMethodology: (formData.get("sampleMethodology") as any) || undefined,
+    sampleSize: sampleSizeRaw ? parseInt(sampleSizeRaw, 10) : undefined,
+  };
+
+  return createWorkProgramItem(input);
+}
+
 export function WorkProgramTable({
   workItems,
   canExecute,
   assignableUsers = [],
+  engagements = [],
+  controls = [],
 }: WorkProgramTableProps) {
   const router = useRouter();
   const [executeDialogOpen, setExecuteDialogOpen] = React.useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = React.useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<WorkItem | null>(null);
   const [selectedUserId, setSelectedUserId] = React.useState<string>("");
   const [isAssigning, setIsAssigning] = React.useState(false);
@@ -133,8 +170,12 @@ export function WorkProgramTable({
     submitExecuteAction,
     {},
   );
+  const [createState, createFormAction, isCreating] = useActionState(
+    submitCreateAction,
+    {},
+  );
 
-  // Handle success/error feedback
+  // Handle execute success/error feedback
   React.useEffect(() => {
     if (state.success) {
       toast.success("Work program item executed successfully");
@@ -145,6 +186,17 @@ export function WorkProgramTable({
       toast.error(state.error);
     }
   }, [state, router]);
+
+  // Handle create success/error feedback
+  React.useEffect(() => {
+    if (createState.success) {
+      toast.success("Work program item created successfully");
+      setCreateDialogOpen(false);
+      router.refresh();
+    } else if (createState.error) {
+      toast.error(createState.error);
+    }
+  }, [createState, router]);
 
   function handleExecuteClick(item: WorkItem, e: React.MouseEvent) {
     e.stopPropagation();
@@ -186,6 +238,14 @@ export function WorkProgramTable({
 
   return (
     <div className="space-y-4">
+      {canExecute && controls.length > 0 && engagements.length > 0 && (
+        <div className="flex justify-end">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Item
+          </Button>
+        </div>
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -493,6 +553,141 @@ export function WorkProgramTable({
               Assign
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Create Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <form action={createFormAction}>
+            <DialogHeader>
+              <DialogTitle>Add Work Program Item</DialogTitle>
+              <DialogDescription>
+                Manually create a work program item by defining a test procedure
+                and linking it to a control and engagement.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="engagementId">
+                  Audit Engagement <span className="text-destructive">*</span>
+                </Label>
+                <Select name="engagementId" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select engagement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {engagements
+                      .filter(
+                        (e) =>
+                          e.status === "PLANNED" ||
+                          e.status === "IN_PROGRESS" ||
+                          e.status === "TEAM_ASSIGNED",
+                      )
+                      .map((engagement) => (
+                        <SelectItem key={engagement.id} value={engagement.id}>
+                          {engagement.auditNumber || engagement.id} (
+                          {engagement.status.replace(/_/g, " ")})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="controlId">
+                  Control <span className="text-destructive">*</span>
+                </Label>
+                <Select name="controlId" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select control" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {controls.map((control) => (
+                      <SelectItem key={control.id} value={control.id}>
+                        {control.controlCode} -{" "}
+                        {control.description.length > 60
+                          ? control.description.slice(0, 60) + "..."
+                          : control.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  Test Procedure Name{" "}
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="e.g., Verify KYC documentation completeness"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">
+                  Description <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  rows={3}
+                  placeholder="Describe the test procedure steps..."
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sampleMethodology">Sample Methodology</Label>
+                  <Select name="sampleMethodology">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select methodology" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RANDOM">Random</SelectItem>
+                      <SelectItem value="JUDGMENTAL">Judgmental</SelectItem>
+                      <SelectItem value="SYSTEMATIC">Systematic</SelectItem>
+                      <SelectItem value="MONETARY_UNIT">
+                        Monetary Unit
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sampleSize">Sample Size</Label>
+                  <Input
+                    id="sampleSize"
+                    name="sampleSize"
+                    type="number"
+                    min={1}
+                    placeholder="e.g., 25"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCreateDialogOpen(false)}
+                disabled={isCreating}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isCreating}>
+                {isCreating && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Create Item
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

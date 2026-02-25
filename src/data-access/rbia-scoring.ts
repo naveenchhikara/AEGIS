@@ -26,6 +26,7 @@ export type BranchRbiaScoreData = {
   compositeScore: number;
   ratingBand: string;
   moduleScores: Record<string, number>;
+  scoringTreeSnapshot: unknown | null; // JSONB — parsed ScoredNodeSnapshot tree
   frozenAt: Date | null;
   frozenById: string | null;
   engagementId: string;
@@ -73,6 +74,7 @@ export async function getBranchScoreHistory(
       compositeScore: true,
       ratingBand: true,
       moduleScores: true,
+      scoringTreeSnapshot: true,
       frozenAt: true,
       frozenById: true,
       engagementId: true,
@@ -85,6 +87,7 @@ export async function getBranchScoreHistory(
     compositeScore: Number(row.compositeScore),
     ratingBand: row.ratingBand,
     moduleScores: row.moduleScores as Record<string, number>,
+    scoringTreeSnapshot: row.scoringTreeSnapshot ?? null,
     frozenAt: row.frozenAt,
     frozenById: row.frozenById,
     engagementId: row.engagementId,
@@ -116,6 +119,7 @@ export async function getEngagementBranchScore(
       compositeScore: true,
       ratingBand: true,
       moduleScores: true,
+      scoringTreeSnapshot: true,
       frozenAt: true,
       frozenById: true,
       engagementId: true,
@@ -132,6 +136,7 @@ export async function getEngagementBranchScore(
     compositeScore: Number(row.compositeScore),
     ratingBand: row.ratingBand,
     moduleScores: row.moduleScores as Record<string, number>,
+    scoringTreeSnapshot: row.scoringTreeSnapshot ?? null,
     frozenAt: row.frozenAt,
     frozenById: row.frozenById,
     engagementId: row.engagementId,

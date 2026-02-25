@@ -15,9 +15,14 @@ import { ControlEffectivenessDashboard } from "@/components/analytics/control-ef
 import { getControlEffectivenessData } from "@/data-access/control-effectiveness";
 import { RiskMisDashboard } from "@/components/analytics/risk-mis-dashboard";
 import { getRiskMisDashboardData } from "@/data-access/risk-mis";
+import { getRbiaAnalyticsSummary } from "@/data-access/rbia-analytics";
+import { RbiaAnalyticsKpis } from "@/components/rbia/rbia-analytics-kpis";
+import { RbiaModuleRadarChart } from "@/components/rbia/rbia-analytics-radar";
+import { RbiaRatingDistribution } from "@/components/rbia/rbia-rating-distribution";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AnalyticsPage() {
   const session = await getRequiredSession();
@@ -42,6 +47,7 @@ export default async function AnalyticsPage() {
     npaMovementData,
     controlEffectivenessData,
     riskMisData,
+    rbiaData,
   ] = await Promise.all([
     getBranchRiskHeatmap(tenantId),
     getAuditPlanProgress(tenantId),
@@ -50,6 +56,7 @@ export default async function AnalyticsPage() {
     getNpaMovement(tenantId),
     getControlEffectivenessData(tenantId),
     getRiskMisDashboardData(tenantId),
+    getRbiaAnalyticsSummary(session),
   ]);
 
   return (
@@ -65,7 +72,7 @@ export default async function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="risk" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-8">
           <TabsTrigger value="risk">Branch Risk</TabsTrigger>
           <TabsTrigger value="plan">Audit Plans</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
@@ -73,6 +80,7 @@ export default async function AnalyticsPage() {
           <TabsTrigger value="npa">NPA</TabsTrigger>
           <TabsTrigger value="controls">Controls</TabsTrigger>
           <TabsTrigger value="mis">Risk MIS</TabsTrigger>
+          <TabsTrigger value="rbia">RBIA Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="risk" className="space-y-4">
@@ -101,6 +109,87 @@ export default async function AnalyticsPage() {
 
         <TabsContent value="mis" className="space-y-4">
           <RiskMisDashboard data={riskMisData} />
+        </TabsContent>
+
+        <TabsContent value="rbia" className="space-y-6">
+          {rbiaData.totalAudited === 0 ? (
+            <div className="text-muted-foreground flex min-h-[200px] items-center justify-center rounded-lg border border-dashed p-8 text-center text-sm">
+              No RBIA audits completed yet. RBIA analytics will appear after the
+              first engagement score is frozen.
+            </div>
+          ) : (
+            <>
+              {/* TODO: Period selector using getRbiaAnalyticsByPeriod */}
+
+              {/* KPI Cards */}
+              <RbiaAnalyticsKpis
+                totalAudited={rbiaData.totalAudited}
+                averageComposite={rbiaData.averageComposite}
+                branchesInPoorModerate={
+                  (rbiaData.ratingDistribution.POOR ?? 0) +
+                  (rbiaData.ratingDistribution.MODERATE ?? 0)
+                }
+                scoreImprovement={null}
+              />
+
+              {/* Charts row */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {/* RadarChart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Module Scores by Branch</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RbiaModuleRadarChart
+                      branches={rbiaData.scores.map((s) => ({
+                        branchId: s.branchId,
+                        branchName: s.branchName,
+                        moduleScores: s.moduleScores,
+                      }))}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Branch Rating Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RbiaRatingDistribution
+                      distribution={[
+                        {
+                          band: "Very Good",
+                          count: rbiaData.ratingDistribution.VERY_GOOD ?? 0,
+                          color: "hsl(142 60% 35%)",
+                        },
+                        {
+                          band: "Good",
+                          count: rbiaData.ratingDistribution.GOOD ?? 0,
+                          color: "hsl(213 90% 55%)",
+                        },
+                        {
+                          band: "Satisfactory",
+                          count: rbiaData.ratingDistribution.SATISFACTORY ?? 0,
+                          color: "hsl(45 96% 56%)",
+                        },
+                        {
+                          band: "Moderate",
+                          count: rbiaData.ratingDistribution.MODERATE ?? 0,
+                          color: "hsl(25 95% 53%)",
+                        },
+                        {
+                          band: "Poor",
+                          count: rbiaData.ratingDistribution.POOR ?? 0,
+                          color: "hsl(0 84% 60%)",
+                        },
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </div>

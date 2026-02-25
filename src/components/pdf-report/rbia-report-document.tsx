@@ -753,21 +753,596 @@ function ScoreSummarySection({ data }: { data: RbiaReportData }) {
   );
 }
 
-// ─── Section 5: Detailed Scores (placeholder -- completed in Task 2b) ──────
+// ─── Section 5: Detailed Scores ─────────────────────────────────────────────
 
-// TODO: Section 5 - Detailed Scores (scoring tree drill-down)
+/**
+ * Scoring tree node from the JSONB scoringTreeSnapshot.
+ * Each node has code, name, depth, optional score/scoreLabel, children, and isCritical flag.
+ */
+type ScoreTreeNode = {
+  code: string;
+  name: string;
+  depth: number;
+  score?: number | null;
+  scoreLabel?: string | null;
+  isCritical?: boolean;
+  weight?: number;
+  children?: ScoreTreeNode[];
+};
 
-// ─── Section 6: ActionPoints Summary (placeholder -- completed in Task 2b) ──
+/**
+ * Recursively flatten the scoring tree for PDF rendering with indentation.
+ */
+function flattenScoreTree(
+  nodes: ScoreTreeNode[],
+  result: Array<ScoreTreeNode & { displayDepth: number }> = [],
+  baseDepth = 0,
+): Array<ScoreTreeNode & { displayDepth: number }> {
+  for (const node of nodes) {
+    result.push({ ...node, displayDepth: baseDepth });
+    if (node.children && node.children.length > 0) {
+      flattenScoreTree(node.children, result, baseDepth + 1);
+    }
+  }
+  return result;
+}
 
-// TODO: Section 6 - ActionPoints Summary
+function DetailedScoresSection({ data }: { data: RbiaReportData }) {
+  const { engagement, branchScore } = data;
 
-// ─── Section 7: Observations (placeholder -- completed in Task 2b) ──────────
+  if (!branchScore?.scoringTreeSnapshot) {
+    return (
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.sectionTitle}>5. Detailed Scores</Text>
+        <Text style={styles.bodyText}>
+          No detailed scoring data available for this engagement.
+        </Text>
+        <Text style={styles.footer}>
+          RBIA Audit Report | {engagement.tenant.name} | Page 5
+        </Text>
+      </Page>
+    );
+  }
 
-// TODO: Section 7 - Observations (5C formal findings)
+  // Parse the JSONB scoring tree snapshot
+  const treeNodes = branchScore.scoringTreeSnapshot as ScoreTreeNode[];
+  const flatNodes = flattenScoreTree(Array.isArray(treeNodes) ? treeNodes : []);
 
-// ─── Section 8: Meeting Minutes (placeholder -- completed in Task 2b) ───────
+  // Split into chunks to handle page overflow (approx 40 items per page)
+  const ITEMS_PER_PAGE = 40;
+  const pages: Array<Array<ScoreTreeNode & { displayDepth: number }>> = [];
+  for (let i = 0; i < flatNodes.length; i += ITEMS_PER_PAGE) {
+    pages.push(flatNodes.slice(i, i + ITEMS_PER_PAGE));
+  }
 
-// TODO: Section 8 - Meeting Minutes
+  // If no pages (empty tree), show one page with message
+  if (pages.length === 0) {
+    pages.push([]);
+  }
+
+  return (
+    <>
+      {pages.map((pageNodes, pageIdx) => (
+        <Page key={`detail-${pageIdx}`} size="A4" style={styles.page}>
+          {pageIdx === 0 && (
+            <Text style={styles.sectionTitle}>5. Detailed Scores</Text>
+          )}
+          {pageIdx > 0 && (
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: "Helvetica-Bold",
+                color: "#6B7280",
+                marginBottom: 8,
+              }}
+            >
+              5. Detailed Scores (continued)
+            </Text>
+          )}
+
+          {pageNodes.length === 0 && pageIdx === 0 ? (
+            <Text style={styles.bodyText}>
+              Scoring tree is empty or could not be parsed.
+            </Text>
+          ) : (
+            pageNodes.map((node, idx) => {
+              const indent = node.displayDepth * 12;
+              const isModule = node.displayDepth === 0;
+              const isLeaf = !node.children || node.children.length === 0;
+              const scoreText =
+                node.score != null ? `${Math.round(node.score * 100)}%` : "--";
+              const labelText = node.scoreLabel
+                ? node.scoreLabel.replace(/_/g, " ")
+                : "";
+
+              return (
+                <View key={`${node.code}-${idx}`} style={styles.treeItem}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      paddingLeft: indent,
+                      flex: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        width: "55%",
+                        fontSize: isModule ? 10 : 9,
+                        fontFamily: isModule ? "Helvetica-Bold" : "Helvetica",
+                        color: isModule ? "#1E40AF" : "#1F2937",
+                      }}
+                    >
+                      {node.isCritical ? "[CRITICAL] " : ""}
+                      {node.code} - {node.name}
+                    </Text>
+                    {isLeaf && (
+                      <>
+                        <Text
+                          style={{
+                            width: "15%",
+                            fontSize: 9,
+                            textAlign: "right",
+                          }}
+                        >
+                          {scoreText}
+                        </Text>
+                        <Text
+                          style={{
+                            width: "30%",
+                            fontSize: 8,
+                            textAlign: "right",
+                            color:
+                              node.scoreLabel === "NON_COMPLIANT"
+                                ? "#dc2626"
+                                : node.scoreLabel === "PARTIALLY_COMPLIANT"
+                                  ? "#ca8a04"
+                                  : "#374151",
+                          }}
+                        >
+                          {labelText}
+                        </Text>
+                      </>
+                    )}
+                    {!isLeaf && node.score != null && (
+                      <Text
+                        style={{
+                          width: "45%",
+                          fontSize: 9,
+                          textAlign: "right",
+                          fontFamily: "Helvetica-Bold",
+                        }}
+                      >
+                        {scoreText}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              );
+            })
+          )}
+
+          <Text style={styles.footer}>
+            RBIA Audit Report | {engagement.tenant.name} | Page {5 + pageIdx}
+          </Text>
+        </Page>
+      ))}
+    </>
+  );
+}
+
+// ─── Section 6: ActionPoints Summary ────────────────────────────────────────
+
+function ActionPointsSummarySection({ data }: { data: RbiaReportData }) {
+  const { engagement, actionPoints } = data;
+
+  if (actionPoints.length === 0) {
+    return (
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.sectionTitle}>6. Action Points Summary</Text>
+        <Text style={styles.bodyText}>
+          No action points were raised during this engagement.
+        </Text>
+        <Text style={styles.footer}>
+          RBIA Audit Report | {engagement.tenant.name}
+        </Text>
+      </Page>
+    );
+  }
+
+  // Split into pages (approx 10 APs per page due to description)
+  const APS_PER_PAGE = 10;
+  const pages: Array<typeof actionPoints> = [];
+  for (let i = 0; i < actionPoints.length; i += APS_PER_PAGE) {
+    pages.push(actionPoints.slice(i, i + APS_PER_PAGE));
+  }
+
+  return (
+    <>
+      {pages.map((pageAps, pageIdx) => (
+        <Page key={`ap-${pageIdx}`} size="A4" style={styles.page}>
+          {pageIdx === 0 ? (
+            <Text style={styles.sectionTitle}>6. Action Points Summary</Text>
+          ) : (
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: "Helvetica-Bold",
+                color: "#6B7280",
+                marginBottom: 8,
+              }}
+            >
+              6. Action Points Summary (continued)
+            </Text>
+          )}
+
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={{ width: "6%" }}>#</Text>
+              <Text style={{ width: "22%" }}>Title</Text>
+              <Text style={{ width: "12%" }}>Module</Text>
+              <Text style={{ width: "10%" }}>Severity</Text>
+              <Text style={{ width: "30%" }}>BM Response</Text>
+              <Text style={{ width: "20%" }}>Status</Text>
+            </View>
+            {pageAps.map((ap, idx) => {
+              const sevColor = SEVERITY_COLORS[ap.severity] ?? "#64748b";
+              const bmResponse = ap.bmResponseText
+                ? ap.bmResponseText.length > 200
+                  ? ap.bmResponseText.substring(0, 200) + "..."
+                  : ap.bmResponseText
+                : "Awaiting response";
+              return (
+                <View
+                  key={`ap-row-${pageIdx}-${idx}`}
+                  style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+                >
+                  <Text style={{ width: "6%" }}>{ap.serialNo}</Text>
+                  <Text style={{ width: "22%", fontSize: 8 }}>{ap.title}</Text>
+                  <Text style={{ width: "12%", fontSize: 8 }}>
+                    {ap.moduleCode}
+                  </Text>
+                  <Text style={{ width: "10%", fontSize: 8, color: sevColor }}>
+                    {ap.severity}
+                  </Text>
+                  <Text style={{ width: "30%", fontSize: 7 }}>
+                    {bmResponse}
+                  </Text>
+                  <Text style={{ width: "20%", fontSize: 8 }}>
+                    {ap.status.replace(/_/g, " ")}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <Text style={styles.footer}>
+            RBIA Audit Report | {engagement.tenant.name}
+          </Text>
+        </Page>
+      ))}
+    </>
+  );
+}
+
+// ─── Section 7: Observations ────────────────────────────────────────────────
+
+function ObservationsSection({ data }: { data: RbiaReportData }) {
+  const { engagement, observations } = data;
+
+  if (observations.length === 0) {
+    return (
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.sectionTitle}>7. Observations</Text>
+        <Text style={styles.bodyText}>
+          No formal observations were raised during this engagement.
+        </Text>
+        <Text style={styles.footer}>
+          RBIA Audit Report | {engagement.tenant.name}
+        </Text>
+      </Page>
+    );
+  }
+
+  // Each observation gets ~half a page, so 2 per page
+  const OBS_PER_PAGE = 2;
+  const pages: Array<typeof observations> = [];
+  for (let i = 0; i < observations.length; i += OBS_PER_PAGE) {
+    pages.push(observations.slice(i, i + OBS_PER_PAGE));
+  }
+
+  return (
+    <>
+      {pages.map((pageObs, pageIdx) => (
+        <Page key={`obs-${pageIdx}`} size="A4" style={styles.page}>
+          {pageIdx === 0 ? (
+            <Text style={styles.sectionTitle}>7. Observations</Text>
+          ) : (
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: "Helvetica-Bold",
+                color: "#6B7280",
+                marginBottom: 8,
+              }}
+            >
+              7. Observations (continued)
+            </Text>
+          )}
+
+          {pageObs.map((obs, idx) => {
+            const sevColor = SEVERITY_COLORS[obs.severity] ?? "#64748b";
+            return (
+              <View
+                key={`obs-block-${pageIdx}-${idx}`}
+                style={styles.observationBlock}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text style={styles.observationTitle}>{obs.title}</Text>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <Text
+                      style={{
+                        fontSize: 8,
+                        color: sevColor,
+                        fontFamily: "Helvetica-Bold",
+                      }}
+                    >
+                      {obs.severity}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 8,
+                        color: "#6B7280",
+                      }}
+                    >
+                      {obs.status.replace(/_/g, " ")}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 5C Fields */}
+                <View style={styles.observationField}>
+                  <Text style={styles.observationFieldLabel}>Condition:</Text>
+                  <Text style={styles.observationFieldValue}>
+                    {obs.condition}
+                  </Text>
+                </View>
+                <View style={styles.observationField}>
+                  <Text style={styles.observationFieldLabel}>Criteria:</Text>
+                  <Text style={styles.observationFieldValue}>
+                    {obs.criteria}
+                  </Text>
+                </View>
+                <View style={styles.observationField}>
+                  <Text style={styles.observationFieldLabel}>Cause:</Text>
+                  <Text style={styles.observationFieldValue}>{obs.cause}</Text>
+                </View>
+                <View style={styles.observationField}>
+                  <Text style={styles.observationFieldLabel}>Effect:</Text>
+                  <Text style={styles.observationFieldValue}>{obs.effect}</Text>
+                </View>
+                <View style={styles.observationField}>
+                  <Text style={styles.observationFieldLabel}>
+                    Recommendation:
+                  </Text>
+                  <Text style={styles.observationFieldValue}>
+                    {obs.recommendation}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <Text style={styles.footer}>
+            RBIA Audit Report | {engagement.tenant.name}
+          </Text>
+        </Page>
+      ))}
+    </>
+  );
+}
+
+// ─── Section 8: Meeting Minutes ─────────────────────────────────────────────
+
+function MeetingMinutesSection({ data }: { data: RbiaReportData }) {
+  const { engagement, meetings } = data;
+
+  const openingMeeting = meetings.find((m) => m.meetingType === "OPENING");
+  const exitMeeting = meetings.find((m) => m.meetingType === "EXIT");
+
+  return (
+    <Page size="A4" style={styles.page}>
+      <Text style={styles.sectionTitle}>8. Meeting Minutes</Text>
+
+      {/* Opening Meeting */}
+      <View style={styles.meetingBlock}>
+        <Text style={styles.meetingType}>Opening Meeting</Text>
+        {openingMeeting ? (
+          <>
+            <View style={styles.row}>
+              <Text style={styles.label}>Date:</Text>
+              <Text style={styles.value}>
+                {formatDate(openingMeeting.meetingDate)}
+              </Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Signed Off:</Text>
+              <Text style={styles.value}>
+                {openingMeeting.signedOff
+                  ? `Yes${openingMeeting.signedOffByName ? ` (by ${openingMeeting.signedOffByName})` : ""}`
+                  : "No"}
+              </Text>
+            </View>
+
+            {/* Attendees */}
+            <Text
+              style={{
+                fontSize: 10,
+                fontFamily: "Helvetica-Bold",
+                marginTop: 6,
+                marginBottom: 4,
+              }}
+            >
+              Attendees:
+            </Text>
+            {openingMeeting.attendees.length > 0 ? (
+              openingMeeting.attendees.map((attendee, idx) => (
+                <Text
+                  key={`open-att-${idx}`}
+                  style={{ fontSize: 9, marginLeft: 10, marginBottom: 2 }}
+                >
+                  {attendee.name} ({attendee.designation} - {attendee.role})
+                </Text>
+              ))
+            ) : (
+              <Text style={{ fontSize: 9, color: "#6B7280", marginLeft: 10 }}>
+                No attendees recorded
+              </Text>
+            )}
+
+            {/* Minutes */}
+            {openingMeeting.minutesText && (
+              <>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "Helvetica-Bold",
+                    marginTop: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  Minutes:
+                </Text>
+                <Text style={{ fontSize: 9, lineHeight: 1.5 }}>
+                  {openingMeeting.minutesText}
+                </Text>
+              </>
+            )}
+
+            {/* Key Discussion Points */}
+            {openingMeeting.keyDiscussionPoints && (
+              <>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "Helvetica-Bold",
+                    marginTop: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  Key Discussion Points:
+                </Text>
+                <Text style={{ fontSize: 9, lineHeight: 1.5 }}>
+                  {openingMeeting.keyDiscussionPoints}
+                </Text>
+              </>
+            )}
+          </>
+        ) : (
+          <Text style={{ fontSize: 10, color: "#6B7280" }}>Not recorded</Text>
+        )}
+      </View>
+
+      {/* Exit Meeting */}
+      <View style={styles.meetingBlock}>
+        <Text style={styles.meetingType}>Exit Meeting</Text>
+        {exitMeeting ? (
+          <>
+            <View style={styles.row}>
+              <Text style={styles.label}>Date:</Text>
+              <Text style={styles.value}>
+                {formatDate(exitMeeting.meetingDate)}
+              </Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Signed Off:</Text>
+              <Text style={styles.value}>
+                {exitMeeting.signedOff
+                  ? `Yes${exitMeeting.signedOffByName ? ` (by ${exitMeeting.signedOffByName})` : ""}`
+                  : "No"}
+              </Text>
+            </View>
+
+            {/* Attendees */}
+            <Text
+              style={{
+                fontSize: 10,
+                fontFamily: "Helvetica-Bold",
+                marginTop: 6,
+                marginBottom: 4,
+              }}
+            >
+              Attendees:
+            </Text>
+            {exitMeeting.attendees.length > 0 ? (
+              exitMeeting.attendees.map((attendee, idx) => (
+                <Text
+                  key={`exit-att-${idx}`}
+                  style={{ fontSize: 9, marginLeft: 10, marginBottom: 2 }}
+                >
+                  {attendee.name} ({attendee.designation} - {attendee.role})
+                </Text>
+              ))
+            ) : (
+              <Text style={{ fontSize: 9, color: "#6B7280", marginLeft: 10 }}>
+                No attendees recorded
+              </Text>
+            )}
+
+            {/* Minutes */}
+            {exitMeeting.minutesText && (
+              <>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "Helvetica-Bold",
+                    marginTop: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  Minutes:
+                </Text>
+                <Text style={{ fontSize: 9, lineHeight: 1.5 }}>
+                  {exitMeeting.minutesText}
+                </Text>
+              </>
+            )}
+
+            {/* Key Discussion Points */}
+            {exitMeeting.keyDiscussionPoints && (
+              <>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "Helvetica-Bold",
+                    marginTop: 6,
+                    marginBottom: 4,
+                  }}
+                >
+                  Key Discussion Points:
+                </Text>
+                <Text style={{ fontSize: 9, lineHeight: 1.5 }}>
+                  {exitMeeting.keyDiscussionPoints}
+                </Text>
+              </>
+            )}
+          </>
+        ) : (
+          <Text style={{ fontSize: 10, color: "#6B7280" }}>Not recorded</Text>
+        )}
+      </View>
+
+      <Text style={styles.footer}>
+        RBIA Audit Report | {engagement.tenant.name} | Final Page
+      </Text>
+    </Page>
+  );
+}
 
 // ─── Main Document Component ────────────────────────────────────────────────
 
@@ -782,7 +1357,10 @@ export function RbiaReportDocument({ data }: RbiaReportDocumentProps) {
       <ExecutiveSummarySection data={data} />
       <EngagementDetailsSection data={data} />
       <ScoreSummarySection data={data} />
-      {/* Sections 5-8 will be added in Task 2b */}
+      <DetailedScoresSection data={data} />
+      <ActionPointsSummarySection data={data} />
+      <ObservationsSection data={data} />
+      <MeetingMinutesSection data={data} />
     </Document>
   );
 }

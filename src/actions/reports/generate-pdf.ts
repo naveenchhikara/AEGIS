@@ -7,7 +7,9 @@ import { getRequiredSession } from "@/data-access/session";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { getAuditReportData } from "@/data-access/reports";
+import { getRbiaReportData } from "@/data-access/rbia-report";
 import { AuditSummaryDocument } from "@/components/pdf-report/audit-summary-document";
+import { RbiaReportDocument } from "@/components/pdf-report/rbia-report-document";
 import { uploadToS3 } from "@/lib/s3";
 import { prismaForTenant } from "@/data-access/prisma";
 import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
@@ -65,22 +67,50 @@ export async function generatePdfReport(input: GenerateReportInput) {
 
     // R29: Allow draft/in-progress reports (not just COMPLETED)
     const isDraft = auditData.status !== "COMPLETED";
+    const isRbia = auditData.auditType === "RBIA";
 
-    // Render PDF
+    // Render PDF — detect RBIA engagements and switch to RbiaReportDocument
     logger.info(
-      { engagementId: parsed.data.engagementId, isDraft },
-      "Generating PDF audit summary",
+      { engagementId: parsed.data.engagementId, isDraft, isRbia },
+      `Generating PDF ${isRbia ? "RBIA" : "audit summary"} report`,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const buffer = await renderToBuffer(
-      React.createElement(AuditSummaryDocument, { auditData }) as any,
-    );
-    const pdfBuffer = Buffer.from(buffer);
+    let pdfBuffer: Buffer;
+    let reportLabel: string;
+
+    if (isRbia) {
+      // RBIA engagement — use score-first RBIA report format
+      const rbiaData = await getRbiaReportData(
+        session,
+        parsed.data.engagementId,
+      );
+
+      if (!rbiaData) {
+        return {
+          success: false as const,
+          error: "Failed to fetch RBIA report data.",
+        };
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buffer = await renderToBuffer(
+        React.createElement(RbiaReportDocument, { data: rbiaData }) as any,
+      );
+      pdfBuffer = Buffer.from(buffer);
+      reportLabel = "rbia_report";
+    } else {
+      // Legacy audit — use existing AuditSummaryDocument
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const buffer = await renderToBuffer(
+        React.createElement(AuditSummaryDocument, { auditData }) as any,
+      );
+      pdfBuffer = Buffer.from(buffer);
+      reportLabel = "summary";
+    }
 
     // Upload to S3
     const statusTag = isDraft ? "_DRAFT" : "";
-    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}${statusTag}_summary.pdf`;
+    const filename = `audit-reports/${tenantId}/${auditData.auditNumber || auditData.id}${statusTag}_${reportLabel}.pdf`;
     const s3Key = await uploadToS3({
       key: filename,
       body: pdfBuffer,
@@ -88,8 +118,8 @@ export async function generatePdfReport(input: GenerateReportInput) {
     });
 
     logger.info(
-      { engagementId: parsed.data.engagementId, s3Key },
-      "PDF summary uploaded to S3",
+      { engagementId: parsed.data.engagementId, s3Key, isRbia },
+      `PDF ${isRbia ? "RBIA" : "summary"} report uploaded to S3`,
     );
 
     // R29: Track generated report in BoardReport for audit trail + re-download
@@ -110,7 +140,7 @@ export async function generatePdfReport(input: GenerateReportInput) {
         tenantId,
         year: now.getFullYear(),
         quarter: quarterEnum,
-        title: `PDF Summary — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
+        title: `${isRbia ? "RBIA Report" : "PDF Summary"} — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
         s3Key,
         fileSize: pdfBuffer.length,
         generatedById: session.user.id,
@@ -125,7 +155,7 @@ export async function generatePdfReport(input: GenerateReportInput) {
       data: {
         engagementId: parsed.data.engagementId,
         s3Key,
-        filename: `${auditData.auditNumber || auditData.id}${statusTag}_summary.pdf`,
+        filename: `${auditData.auditNumber || auditData.id}${statusTag}_${reportLabel}.pdf`,
         isDraft,
       },
     };

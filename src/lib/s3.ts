@@ -103,7 +103,8 @@ export async function generateUploadUrl(
     //   browser XHR PUT, which causes 403 signature mismatch errors
   });
 
-  return getSignedUrl(s3Client, command, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AWS SDK v3 sub-package type mismatch
+  return getSignedUrl(s3Client as any, command, {
     expiresIn: PRESIGNED_URL_EXPIRY,
   });
 }
@@ -117,7 +118,8 @@ export async function generateDownloadUrl(s3Key: string): Promise<string> {
     Key: s3Key,
   });
 
-  return getSignedUrl(s3Client, command, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AWS SDK v3 sub-package type mismatch
+  return getSignedUrl(s3Client as any, command, {
     expiresIn: PRESIGNED_URL_EXPIRY,
   });
 }

@@ -101,7 +101,7 @@ export function RbiaModuleGrid({
         return (
           <Link
             key={mod.nodeId}
-            href={`/rbia/module/${mod.moduleCode}?engagementId=${engagementId}`}
+            href={`/audit-execution/${engagementId}/rbia/module/${mod.moduleCode}`}
             className="group"
           >
             <Card className="h-full transition-shadow group-hover:shadow-md">

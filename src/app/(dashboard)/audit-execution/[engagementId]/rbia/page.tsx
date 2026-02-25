@@ -1,20 +1,68 @@
+import { getRequiredSession } from "@/data-access/session";
+import {
+  getEngagementModuleScores,
+  getEngagementBranchScore,
+} from "@/data-access/rbia-scoring";
+import { getModuleSelections } from "@/data-access/rbia-examination";
+import { getEngagementWithTeam } from "@/data-access/audit-execution";
+import { RbiaScorePanel } from "@/components/rbia/rbia-score-panel";
+import { RbiaModuleGrid } from "@/components/rbia/rbia-module-grid";
+import { notFound } from "next/navigation";
+
+interface PageProps {
+  params: Promise<{ engagementId: string }>;
+}
+
 /**
- * RBIA Engagement Landing Page -- Examination Tab (default).
+ * RBIA Examination Tab -- default page for the RBIA engagement layout.
  *
- * This is the default page rendered within the shared RBIA layout.
- * The layout handles back link, stepper, transition control, and tab nav.
+ * Renders:
+ * 1. Page heading with branch name
+ * 2. RbiaScorePanel -- composite score display with module breakdown
+ * 3. RbiaModuleGrid -- clickable module cards linking to per-module tree pages
  *
- * Phase 21 will replace the placeholder below with the full examination
- * tree interface. For now, a simple placeholder communicates the intent.
+ * The parent layout handles back link, stepper, transition control, tab nav,
+ * and auth/permission checks. This page only fetches examination-specific data.
  */
-export default function RbiaExaminationPage() {
+export default async function RbiaExaminationPage({ params }: PageProps) {
+  const { engagementId } = await params;
+  const session = await getRequiredSession();
+
+  // Load engagement for branch name display
+  const engagement = await getEngagementWithTeam(session, engagementId);
+  if (!engagement) {
+    notFound();
+  }
+
+  // Fetch all RBIA examination data in parallel
+  const [moduleScores, moduleSelections, branchScore] = await Promise.all([
+    getEngagementModuleScores(session, engagementId),
+    getModuleSelections(session, engagementId),
+    getEngagementBranchScore(session, engagementId),
+  ]);
+
+  const engagementStatus = engagement.status as string;
+  const branchName = engagement.branch?.name ?? "Unknown Branch";
+
   return (
-    <div className="bg-muted/50 border-border rounded-lg border p-8 text-center">
-      <h2 className="text-lg font-semibold">RBIA Examination</h2>
-      <p className="text-muted-foreground mt-2">
-        The examination interface with hierarchical scoring tree will be built
-        in Phase 21.
-      </p>
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">
+        RBIA Examination &mdash; {branchName}
+      </h2>
+
+      {/* Composite score panel with module breakdown */}
+      <RbiaScorePanel
+        moduleScores={moduleScores}
+        branchScore={branchScore}
+        engagementStatus={engagementStatus}
+      />
+
+      {/* Module cards grid -- each card links to per-module examination tree */}
+      <RbiaModuleGrid
+        modules={moduleScores}
+        engagementId={engagementId}
+        moduleSelections={moduleSelections}
+      />
     </div>
   );
 }

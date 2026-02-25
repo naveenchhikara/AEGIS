@@ -30,10 +30,10 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 
 - [x] **Phase 18: Foundation** — Scoring engine, engagement state machine, DB guards, data encryption, and terminology rename (completed 2026-02-23)
 - [x] **Phase 19: Data Access Layer** — Tenant-scoped DAL for tree, scoring, findings, meetings, and module selection (completed 2026-02-23)
-- [ ] **Phase 20: Server Actions** — Zod schemas and server action mutations for all v6.0 operations
-- [ ] **Phase 21: Examination UI** — Hierarchical tree view, 4-button score picker, progress indicators, and filters
-- [ ] **Phase 22: Findings and Meetings** — Dual findings tabs, opening/exit meeting forms, engagement lifecycle UI
-- [ ] **Phase 23: BM Response and Reporting** — Branch manager response panel, overdue escalation, score display, and RBIA PDF report
+- [x] **Phase 20: Server Actions** — Zod schemas and server action mutations for all v6.0 operations (completed 2026-02-25)
+- [x] **Phase 21: Examination UI** — Hierarchical tree view, 4-button score picker, progress indicators, and filters (completed 2026-02-25)
+- [x] **Phase 22: Findings and Meetings** — Dual findings tabs, opening/exit meeting forms, engagement lifecycle UI (completed 2026-02-25)
+- [x] **Phase 23: BM Response and Reporting** — Branch manager response panel, overdue escalation, score display, and RBIA PDF report (completed 2026-02-25)
 
 ## Phase Details
 
@@ -202,7 +202,7 @@ Plans:
 | ----------------------------- | --------- | -------------- | ----------- | --------- |
 | 18. Foundation                | 5/5       | Complete       | 2026-02-23  | -         |
 | 19. Data Access Layer         | 5/5       | Complete       | 2026-02-23  | -         |
-| 20. Server Actions            | v6.0      | 0/5            | Planned     | -         |
-| 21. Examination UI            | v6.0      | 0/4            | Not started | -         |
-| 22. Findings and Meetings     | v6.0      | 0/4            | Not started | -         |
-| 23. BM Response and Reporting | v6.0      | 0/5            | Planned     | -         |
+| 20. Server Actions            | 5/5 | Complete    | 2026-02-25 | -         |
+| 21. Examination UI            | 4/4 | Complete    | 2026-02-25 | -         |
+| 22. Findings and Meetings     | 5/5 | Complete    | 2026-02-25 | -         |
+| 23. BM Response and Reporting | 5/5 | Complete    | 2026-02-25 | -         |

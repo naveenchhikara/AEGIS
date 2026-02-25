@@ -23,13 +23,13 @@ import { EvidenceTimelineEntry } from "@/components/auditee/evidence-timeline-en
 import { AuditeeDetailClient } from "./detail-client";
 
 interface AuditeeObservationPageProps {
-  params: Promise<{ observationId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function AuditeeObservationPage({
   params,
 }: AuditeeObservationPageProps) {
-  const { observationId } = await params;
+  const { id: observationId } = await params;
   const session = await requirePermission("observation:read");
 
   const observation = await getObservationDetailForAuditee(

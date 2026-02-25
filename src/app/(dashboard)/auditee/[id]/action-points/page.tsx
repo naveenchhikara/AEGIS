@@ -6,12 +6,12 @@ import { AlertTriangle } from "@/lib/icons";
 export default async function BmResponseActionPointsPage({
   params,
 }: {
-  params: Promise<{ engagementId: string }>;
+  params: Promise<{ id: string }>;
 }) {
   // Auth guard: only BRANCH_HEAD (action_point:bm_respond) can access
   const session = await requirePermission("action_point:bm_respond");
 
-  const { engagementId } = await params;
+  const { id: engagementId } = await params;
   const data = await getBmResponseBatchForEngagement(session, engagementId);
 
   if (!data) {

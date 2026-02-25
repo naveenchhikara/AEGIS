@@ -563,6 +563,10 @@ model Evidence {
   newExaminationResponseId String?              @db.Uuid
   newExaminationResponse   ExaminationResponse? @relation("ExaminationResponseEvidence", fields: [newExaminationResponseId], references: [id], onDelete: Cascade)
 
+  // v6.0: ActionPoint evidence (BM response attachments)
+  actionPointId   String?       @db.Uuid
+  actionPoint     ActionPoint?  @relation("ActionPointEvidence", fields: [actionPointId], references: [id], onDelete: Cascade)
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
 
@@ -570,6 +574,7 @@ model Evidence {
   @@index([observationId])
   @@index([examinationResponseId])
   @@index([newExaminationResponseId])
+  @@index([actionPointId])
 }
 
 // ─── Compliance Requirement ──────────────────────────────────────────────────
@@ -2254,6 +2259,9 @@ model ActionPoint {
 
   // Carry-forward linkage
   carriedForwardToEngagementId String? @db.Uuid
+
+  // v6.0: Evidence attachments from BM responses
+  evidence        Evidence[]    @relation("ActionPointEvidence")
 
   createdById String @db.Uuid
   createdAt   DateTime @default(now())

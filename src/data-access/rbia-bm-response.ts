@@ -9,7 +9,10 @@ import type {
 } from "@/generated/prisma/enums";
 
 /**
- * Data Access Layer for BM (Branch Manager) response batch and ActionPoint response data.
+ * Data Access Layer for BM (Branch Manager) Response page.
+ *
+ * Loads BmResponseBatch + ActionPoints for the Branch Manager's response view.
+ * BMs use this page to review issued ActionPoints and submit responses.
  *
  * Follows the canonical DAL 5-step pattern:
  * 1. Accept session object (tenantId source)
@@ -19,27 +22,15 @@ import type {
  * 5. Return typed data
  *
  * SECURITY: tenantId MUST come from session only, never from URL/body/query.
- *
- * Phase 22-04: BM response panel data access — batch progress + issued APs for response.
  */
 
 function extractTenantId(session: Session): string {
   return session.user.tenantId;
 }
 
-// -- Types ------------------------------------------------------------------
+// ---- Types ----
 
-export type BmResponseBatchData = {
-  id: string;
-  engagementId: string;
-  totalActionPoints: number;
-  respondedActionPoints: number;
-  deadline: Date;
-  status: BmBatchStatus;
-  submittedAt: Date | null;
-};
-
-export type ActionPointForBmResponse = {
+export type BmResponseActionPointData = {
   id: string;
   serialNo: number;
   title: string;
@@ -49,81 +40,79 @@ export type ActionPointForBmResponse = {
   status: ActionPointStatus;
   bmResponseText: string | null;
   bmResponseDate: Date | null;
-  bmResponseDeadline: Date | null;
+  sourceResponseId: string | null;
 };
 
-// -- getBmResponseBatch -----------------------------------------------------
+export type BmResponseBatchData = {
+  id: string;
+  deadline: Date;
+  status: BmBatchStatus;
+  totalActionPoints: number;
+  respondedActionPoints: number;
+  engagement: {
+    id: string;
+    branchName: string;
+    planLabel: string;
+  };
+};
+
+export type BmResponsePageData = {
+  batch: BmResponseBatchData;
+  actionPoints: BmResponseActionPointData[];
+};
+
+// ---- getBmResponseBatchForEngagement ----
 
 /**
- * Get the BmResponseBatch for a given engagement, or null if none exists.
+ * Load BmResponseBatch and ActionPoints for the Branch Manager response view.
  *
- * Uses findUnique on engagementId (unique field in schema).
- * Verifies tenantId post-fetch for belt-and-suspenders isolation.
+ * Returns null if no BmResponseBatch exists for this engagement (batch not yet
+ * created by the audit lifecycle).
  *
  * @param session - Authenticated session (tenantId source)
  * @param engagementId - Audit engagement UUID
- * @returns BmResponseBatchData or null
+ * @returns { batch, actionPoints } or null if no batch found
  */
-export async function getBmResponseBatch(
+export async function getBmResponseBatchForEngagement(
   session: Session,
   engagementId: string,
-): Promise<BmResponseBatchData | null> {
+): Promise<BmResponsePageData | null> {
   const tenantId = extractTenantId(session);
   const db = prismaForTenant(tenantId);
 
-  const batch = await db.bmResponseBatch.findUnique({
-    where: { engagementId },
-    select: {
-      id: true,
-      tenantId: true,
-      engagementId: true,
-      totalActionPoints: true,
-      respondedActionPoints: true,
-      deadline: true,
-      status: true,
-      submittedAt: true,
+  // Step 1: Load BmResponseBatch with engagement context
+  const batch = await db.bmResponseBatch.findFirst({
+    where: { engagementId, tenantId },
+    include: {
+      engagement: {
+        select: {
+          id: true,
+          branch: { select: { name: true } },
+          auditPlan: { select: { year: true, quarter: true } },
+        },
+      },
     },
   });
 
-  // Belt-and-suspenders: verify tenantId post-fetch
-  if (!batch || batch.tenantId !== tenantId) {
-    return null;
-  }
+  if (!batch) return null;
 
-  return {
-    id: batch.id,
-    engagementId: batch.engagementId,
-    totalActionPoints: batch.totalActionPoints,
-    respondedActionPoints: batch.respondedActionPoints,
-    deadline: batch.deadline,
-    status: batch.status,
-    submittedAt: batch.submittedAt,
+  // Build human-readable plan label from year + quarter
+  const quarterLabels: Record<string, string> = {
+    Q1_APR_JUN: "Q1 (Apr-Jun)",
+    Q2_JUL_SEP: "Q2 (Jul-Sep)",
+    Q3_OCT_DEC: "Q3 (Oct-Dec)",
+    Q4_JAN_MAR: "Q4 (Jan-Mar)",
   };
-}
+  const planLabel = batch.engagement.auditPlan
+    ? `${batch.engagement.auditPlan.year} ${quarterLabels[batch.engagement.auditPlan.quarter] ?? batch.engagement.auditPlan.quarter}`
+    : "Unknown Plan";
 
-// -- getIssuedActionPointsForBm ---------------------------------------------
-
-/**
- * Get all ActionPoints for a BM to respond to — those with status in
- * ISSUED, BM_RESPONSE_DUE, or BM_RESPONDED. Ordered by serialNo ascending.
- *
- * Returns only the fields needed for the BM response panel UI.
- *
- * @param session - Authenticated session (tenantId source)
- * @param engagementId - Audit engagement UUID
- * @returns ActionPointForBmResponse[] ordered by serialNo
- */
-export async function getIssuedActionPointsForBm(
-  session: Session,
-  engagementId: string,
-): Promise<ActionPointForBmResponse[]> {
-  const tenantId = extractTenantId(session);
-  const db = prismaForTenant(tenantId);
-
-  const rows = await db.actionPoint.findMany({
+  // Step 2: Load ActionPoints for this engagement
+  // BM sees ISSUED, BM_RESPONSE_DUE, and BM_RESPONDED APs
+  const actionPoints = await db.actionPoint.findMany({
     where: {
-      tenantId,
       engagementId,
+      tenantId,
       status: { in: ["ISSUED", "BM_RESPONSE_DUE", "BM_RESPONDED"] },
     },
     orderBy: { serialNo: "asc" },
@@ -137,9 +126,23 @@ export async function getIssuedActionPointsForBm(
       status: true,
       bmResponseText: true,
       bmResponseDate: true,
-      bmResponseDeadline: true,
+      sourceResponseId: true,
     },
   });
 
-  return rows;
+  return {
+    batch: {
+      id: batch.id,
+      deadline: batch.deadline,
+      status: batch.status,
+      totalActionPoints: batch.totalActionPoints,
+      respondedActionPoints: batch.respondedActionPoints,
+      engagement: {
+        id: batch.engagement.id,
+        branchName: batch.engagement.branch?.name ?? "Unknown Branch",
+        planLabel,
+      },
+    },
+    actionPoints,
+  };
 }

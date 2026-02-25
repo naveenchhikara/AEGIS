@@ -59,6 +59,7 @@ export async function getIssues(
           evidence: true,
           verifiedById: true,
           verifiedAt: true,
+          verifiedBy: { select: { name: true } },
         },
         orderBy: { dueDate: "asc" },
       },

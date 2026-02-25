@@ -150,6 +150,11 @@ export async function confirmMinutesUpload(input: ConfirmMinutesUploadInput) {
   const validated = parsed.data;
   const db = prismaForTenant(tenantId);
 
+  // Validate S3 key belongs to this tenant
+  if (!validated.s3Key.startsWith(`${tenantId}/minutes/`)) {
+    return { success: false as const, error: "Invalid file reference." };
+  }
+
   try {
     // Verify upload exists in S3
     const uploadResult = await verifyUpload(validated.s3Key);

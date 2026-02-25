@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
-import { hasPermission, type Role } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 
 const VerifyEvidenceSchema = z.object({
@@ -18,6 +18,10 @@ const VerifyEvidenceSchema = z.object({
  * Security: Requires issue:manage permission.
  */
 export async function verifyEvidence(input: { actionPlanId: string }) {
+  const session = await getRequiredSession();
+  const userRoles = session.user.roles;
+  const tenantId = session.user.tenantId;
+
   const parsed = VerifyEvidenceSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -25,10 +29,6 @@ export async function verifyEvidence(input: { actionPlanId: string }) {
       error: parsed.error.issues[0].message,
     };
   }
-
-  const session = await getRequiredSession();
-  const userRoles = session.user.roles;
-  const tenantId = session.user.tenantId;
 
   if (!hasPermission(userRoles, "issue:manage")) {
     return {

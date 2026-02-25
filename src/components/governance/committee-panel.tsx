@@ -460,7 +460,10 @@ export function CommitteePanel({
   function getCommitteeMeetings(committeeId: string) {
     return meetings
       .filter((m) => m.committeeId === committeeId)
-      .sort((a, b) => b.meetingDate.getTime() - a.meetingDate.getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime(),
+      )
       .slice(0, 5);
   }
 

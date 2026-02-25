@@ -359,6 +359,7 @@ model User {
   generatedReports     BoardReport[]         @relation("ReportGeneratedBy")
   auditTeamMemberships AuditTeamMember[]
   committeeMemberships CommitteeMember[]
+  verifiedActionPlans  ActionPlan[]      @relation("ActionPlanVerifier")
 
   @@unique([email])
   @@index([tenantId])
@@ -1488,6 +1489,7 @@ model ActionPlan {
   status         String   @default("PENDING") // "PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE"
   evidence       String[] // S3 keys
   verifiedById   String?  @db.Uuid
+  verifiedBy     User?    @relation("ActionPlanVerifier", fields: [verifiedById], references: [id])
   verifiedAt     DateTime?
   completionPct  Int      @default(0) // 0-100
 

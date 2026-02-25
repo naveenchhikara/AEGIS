@@ -160,7 +160,7 @@ export function WorkProgramDetail({
   const [selectedUserId, setSelectedUserId] = React.useState<string>("");
   const [isAssigning, setIsAssigning] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<string>(
-    item.status === "COMPLETED" ? "COMPLETED" : "COMPLETED",
+    item.status === "COMPLETED" ? "COMPLETED" : "IN_PROGRESS",
   );
   const [state, formAction, isPending] = useActionState(
     submitExecuteAction,

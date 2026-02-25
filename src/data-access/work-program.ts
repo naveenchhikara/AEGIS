@@ -57,55 +57,6 @@ export async function getWorkProgramItems(
 }
 
 /**
- * Get a single work program item by ID.
- */
-export async function getWorkProgramItem(session: Session, itemId: string) {
-  const tenantId = session.user.tenantId;
-  const db = prismaForTenant(tenantId);
-
-  return db.workProgramItem.findFirst({
-    where: { id: itemId, tenantId },
-    include: {
-      engagement: {
-        select: {
-          id: true,
-          auditNumber: true,
-          auditType: true,
-          status: true,
-          periodFrom: true,
-          periodTo: true,
-          branch: {
-            select: { code: true, name: true, city: true },
-          },
-        },
-      },
-      testProcedure: {
-        include: {
-          control: {
-            select: {
-              id: true,
-              controlCode: true,
-              processArea: true,
-              controlType: true,
-              frequency: true,
-              description: true,
-              isKeyControl: true,
-              riskRegister: {
-                select: {
-                  id: true,
-                  riskStatement: true,
-                  riskCategory: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-}
-
-/**
  * Get a single work program item by ID with assigned user details.
  * Used for the detail page which needs full context including the assignee name.
  */

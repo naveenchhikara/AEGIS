@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -59,6 +60,7 @@ export function AcbReportBuilder({
   items,
   existingReports,
 }: AcbReportBuilderProps) {
+  const router = useRouter();
   const [reportTitle, setReportTitle] = useState("");
   const [executiveCommentary, setExecutiveCommentary] = useState("");
   const [quarter, setQuarter] = useState("");
@@ -122,8 +124,7 @@ export function AcbReportBuilder({
       setReportTitle("");
       setExecutiveCommentary("");
       setQuarter("");
-      // Refresh page
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.error);
     }

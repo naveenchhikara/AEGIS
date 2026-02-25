@@ -31,9 +31,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, ArrowLeft, Loader2, Shield } from "@/lib/icons";
+import { Pencil, ArrowLeft, Loader2, Shield, ExternalLink } from "@/lib/icons";
 import { toast } from "sonner";
 import { updateControl } from "@/actions/control-library/update-control";
+import Link from "next/link";
+
+const EFFECTIVENESS_COLORS: Record<string, string> = {
+  EFFECTIVE: "bg-green-100 text-green-800 border-green-300",
+  PARTIALLY_EFFECTIVE: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  INEFFECTIVE: "bg-red-100 text-red-800 border-red-300",
+};
+
+function getEffectivenessLabel(
+  score: number | null | undefined,
+): string | null {
+  if (score == null) return null;
+  if (score >= 80) return "EFFECTIVE";
+  if (score >= 50) return "PARTIALLY_EFFECTIVE";
+  return "INEFFECTIVE";
+}
+
+function parseFrameworkMapping(mapping: any): {
+  COSO: string;
+  RBI: string;
+  IIA: string;
+} {
+  const defaults = { COSO: "", RBI: "", IIA: "" };
+  if (!mapping || typeof mapping !== "object") return defaults;
+  return {
+    COSO: mapping.COSO || "",
+    RBI: mapping.RBI || "",
+    IIA: mapping.IIA || "",
+  };
+}
 
 interface Control {
   id: string;
@@ -103,15 +133,15 @@ async function submitUpdateAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const frameworkMappingRaw = formData.get("frameworkMapping") as string;
-  let frameworkMapping = null;
-
-  if (frameworkMappingRaw && frameworkMappingRaw.trim()) {
-    try {
-      frameworkMapping = JSON.parse(frameworkMappingRaw);
-    } catch (e) {
-      return { error: "Invalid JSON in Framework Mapping field" };
-    }
+  const coso = (formData.get("fw_COSO") as string)?.trim() || "";
+  const rbi = (formData.get("fw_RBI") as string)?.trim() || "";
+  const iia = (formData.get("fw_IIA") as string)?.trim() || "";
+  let frameworkMapping: Record<string, string> | null = null;
+  if (coso || rbi || iia) {
+    frameworkMapping = {};
+    if (coso) frameworkMapping.COSO = coso;
+    if (rbi) frameworkMapping.RBI = rbi;
+    if (iia) frameworkMapping.IIA = iia;
   }
 
   const input = {
@@ -298,22 +328,50 @@ export function ControlDetailView({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="frameworkMapping">
-                      Framework Mapping (JSON)
-                    </Label>
-                    <Textarea
-                      id="frameworkMapping"
-                      name="frameworkMapping"
-                      rows={4}
-                      defaultValue={
-                        control.frameworkMapping
-                          ? JSON.stringify(control.frameworkMapping, null, 2)
-                          : ""
-                      }
-                      placeholder='{"COSO": "CC1.1", "RBI": "DoS.1", "IIA": "2120.A1"}'
-                    />
+                    <Label>Framework Mapping</Label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="fw_COSO" className="text-xs">
+                          COSO
+                        </Label>
+                        <Input
+                          id="fw_COSO"
+                          name="fw_COSO"
+                          defaultValue={
+                            parseFrameworkMapping(control.frameworkMapping).COSO
+                          }
+                          placeholder="e.g., CC1.1"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="fw_RBI" className="text-xs">
+                          RBI
+                        </Label>
+                        <Input
+                          id="fw_RBI"
+                          name="fw_RBI"
+                          defaultValue={
+                            parseFrameworkMapping(control.frameworkMapping).RBI
+                          }
+                          placeholder="e.g., DoS.1"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="fw_IIA" className="text-xs">
+                          IIA
+                        </Label>
+                        <Input
+                          id="fw_IIA"
+                          name="fw_IIA"
+                          defaultValue={
+                            parseFrameworkMapping(control.frameworkMapping).IIA
+                          }
+                          placeholder="e.g., 2120.A1"
+                        />
+                      </div>
+                    </div>
                     <p className="text-muted-foreground text-sm">
-                      Optional: Map control to frameworks (COSO, RBI, IIA, etc.)
+                      Optional: Map control to framework codes
                     </p>
                   </div>
                 </div>
@@ -370,11 +428,35 @@ export function ControlDetailView({
                 <Label className="text-muted-foreground">
                   Effectiveness Score
                 </Label>
-                <p className="mt-1">
-                  {control.effectivenessScore !== null
-                    ? `${Number(control.effectivenessScore).toFixed(0)}%`
-                    : "Not tested"}
-                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  {control.effectivenessScore != null ? (
+                    <>
+                      <span className="font-medium">
+                        {Number(control.effectivenessScore).toFixed(0)}%
+                      </span>
+                      {getEffectivenessLabel(
+                        Number(control.effectivenessScore),
+                      ) && (
+                        <Badge
+                          variant="outline"
+                          className={
+                            EFFECTIVENESS_COLORS[
+                              getEffectivenessLabel(
+                                Number(control.effectivenessScore),
+                              )!
+                            ]
+                          }
+                        >
+                          {getEffectivenessLabel(
+                            Number(control.effectivenessScore),
+                          )!.replace(/_/g, " ")}
+                        </Badge>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">Not tested</span>
+                  )}
+                </div>
               </div>
             </div>
             <div>
@@ -387,8 +469,16 @@ export function ControlDetailView({
                 <Label className="text-muted-foreground">
                   Framework Mapping
                 </Label>
-                <div className="bg-muted mt-2 rounded-md p-3 font-mono text-sm">
-                  <pre>{JSON.stringify(control.frameworkMapping, null, 2)}</pre>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {Object.entries(
+                    parseFrameworkMapping(control.frameworkMapping),
+                  )
+                    .filter(([, v]) => v)
+                    .map(([framework, code]) => (
+                      <Badge key={framework} variant="secondary">
+                        {framework}: {code}
+                      </Badge>
+                    ))}
                 </div>
               </div>
             )}
@@ -465,7 +555,13 @@ export function ControlDetailView({
                     className="flex items-start justify-between"
                   >
                     <div>
-                      <p className="font-medium">{issue.title}</p>
+                      <Link
+                        href={`/issues?controlId=${control.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {issue.title}
+                        <ExternalLink className="ml-1 inline h-3 w-3" />
+                      </Link>
                       <div className="mt-1 flex items-center gap-2">
                         <Badge
                           variant="outline"

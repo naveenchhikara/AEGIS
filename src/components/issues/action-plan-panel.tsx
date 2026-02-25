@@ -26,13 +26,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, CheckCircle2, Loader2, Upload, FileText } from "@/lib/icons";
+import {
+  Plus,
+  CheckCircle2,
+  Loader2,
+  Upload,
+  FileText,
+  ShieldCheck,
+} from "@/lib/icons";
 import { toast } from "sonner";
 import {
   manageActionPlan,
   updateActionPlanProgress,
   addActionPlanEvidence,
 } from "@/actions/issues/manage-action-plan";
+import { verifyEvidence } from "@/actions/issues/verify-evidence";
 import { format } from "date-fns";
 
 interface ActionPlan {
@@ -44,12 +52,14 @@ interface ActionPlan {
   evidence: string[];
   verifiedById: string | null;
   verifiedAt: Date | null;
+  verifiedBy?: { name: string } | null;
 }
 
 interface ActionPlanPanelProps {
   issueId: string;
   actionPlans: ActionPlan[];
   canManage: boolean;
+  canVerify?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -84,12 +94,26 @@ export function ActionPlanPanel({
   issueId,
   actionPlans,
   canManage,
+  canVerify = false,
 }: ActionPlanPanelProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [updatingProgress, setUpdatingProgress] = React.useState<string | null>(
     null,
   );
+  const [verifyingId, setVerifyingId] = React.useState<string | null>(null);
+
+  const handleVerifyEvidence = async (actionPlanId: string) => {
+    setVerifyingId(actionPlanId);
+    const result = await verifyEvidence({ actionPlanId });
+    if (result.success) {
+      toast.success("Evidence verified successfully");
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setVerifyingId(null);
+  };
 
   const [createState, createFormAction, isCreating] = useActionState(
     createActionPlanAction,
@@ -340,16 +364,50 @@ export function ActionPlanPanel({
                     )}
                   </div>
 
+                  {/* Evidence Verification (R61) */}
+                  <div className="space-y-2 border-t pt-2">
+                    {plan.verifiedAt ? (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Evidence verified</span>
+                        <span className="text-muted-foreground text-xs">
+                          {plan.verifiedBy?.name
+                            ? `by ${plan.verifiedBy.name}`
+                            : ""}{" "}
+                          on {format(new Date(plan.verifiedAt), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        {canVerify && plan.evidence.length > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-green-300 text-green-700 hover:bg-green-50"
+                            onClick={() => handleVerifyEvidence(plan.id)}
+                            disabled={verifyingId === plan.id}
+                          >
+                            {verifyingId === plan.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <ShieldCheck className="mr-2 h-4 w-4" />
+                            )}
+                            Verify Evidence
+                          </Button>
+                        )}
+                        {!canVerify && plan.evidence.length > 0 && (
+                          <p className="text-muted-foreground text-xs">
+                            Evidence pending verification
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+
                   {plan.status === "COMPLETED" && (
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <CheckCircle2 className="h-4 w-4" />
                       <span>Completed</span>
-                      {plan.verifiedAt && (
-                        <span className="text-muted-foreground text-xs">
-                          • Verified{" "}
-                          {format(new Date(plan.verifiedAt), "MMM d, yyyy")}
-                        </span>
-                      )}
                     </div>
                   )}
 

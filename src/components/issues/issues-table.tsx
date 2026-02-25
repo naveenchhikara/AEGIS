@@ -51,6 +51,7 @@ import { manageIssue } from "@/actions/issues/manage-issue";
 import { acceptRisk } from "@/actions/issues/accept-risk";
 import { ActionPlanPanel } from "./action-plan-panel";
 import { format } from "date-fns";
+import Link from "next/link";
 
 interface Issue {
   id: string;
@@ -432,7 +433,13 @@ export function IssuesTable({
                       )}
                       {issue.control && (
                         <div className="text-muted-foreground text-xs">
-                          Control: {issue.control.controlCode}
+                          Control:{" "}
+                          <Link
+                            href={`/controls/${issue.control.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {issue.control.controlCode}
+                          </Link>
                         </div>
                       )}
                     </div>
@@ -597,6 +604,7 @@ export function IssuesTable({
                   []) as any
               }
               canManage={canManage}
+              canVerify={canManage}
             />
           </DialogContent>
         </Dialog>

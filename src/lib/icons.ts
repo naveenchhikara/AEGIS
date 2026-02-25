@@ -87,4 +87,6 @@ export {
   Repeat2,
   Play,
   FileQuestion,
+  Circle,
+  Ban,
 } from "lucide-react";

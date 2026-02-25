@@ -13,10 +13,19 @@ import type { AuthSession } from "@/lib/auth";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type ScoreDisplayData = {
+  compositeScore: number; // 0.0-1.0
+  ratingBand: string; // "VERY_GOOD" | "GOOD" | "SATISFACTORY" | "MODERATE" | "POOR"
+  moduleScores: Record<string, number>; // e.g. { "OPS": 0.85, "CREDIT": 0.72 }
+  scoringTreeSnapshot: unknown | null; // Full JSONB tree for drill-down
+  frozenAt: Date | null;
+};
+
 export type RbiaAnalyticsSummary = {
   totalAudited: number;
   averageComposite: number; // 0.0-1.0
   ratingDistribution: Record<string, number>; // e.g. { VERY_GOOD: 3, GOOD: 5, ... }
+  moduleAverages: Record<string, number>; // Average score per module code across all branches
   scores: Array<{
     branchId: string;
     branchName: string;
@@ -25,6 +34,75 @@ export type RbiaAnalyticsSummary = {
     moduleScores: Record<string, number>;
   }>;
 };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Compute average score per module code across multiple BranchRbiaScore records.
+ * Handles varying module sets gracefully (only averages modules that appear).
+ */
+function computeModuleAverages(
+  allModuleScores: Record<string, number>[],
+): Record<string, number> {
+  const sums: Record<string, number> = {};
+  const counts: Record<string, number> = {};
+
+  for (const ms of allModuleScores) {
+    for (const [code, score] of Object.entries(ms)) {
+      sums[code] = (sums[code] ?? 0) + score;
+      counts[code] = (counts[code] ?? 0) + 1;
+    }
+  }
+
+  const averages: Record<string, number> = {};
+  for (const code of Object.keys(sums)) {
+    averages[code] = sums[code] / counts[code];
+  }
+  return averages;
+}
+
+// ─── getScoreDisplayData ─────────────────────────────────────────────────────
+
+/**
+ * Returns the BranchRbiaScore data for a specific engagement,
+ * formatted for the score visualization page (gauge + module breakdown).
+ *
+ * @param session - Authenticated session (tenantId source)
+ * @param engagementId - Engagement UUID
+ * @returns Score display data or null if no score record exists
+ */
+export async function getScoreDisplayData(
+  session: AuthSession,
+  engagementId: string,
+): Promise<ScoreDisplayData | null> {
+  const tenantId = session.user.tenantId;
+  const db = prismaForTenant(tenantId);
+
+  const score = await db.branchRbiaScore.findUnique({
+    where: { engagementId },
+    select: {
+      tenantId: true,
+      compositeScore: true,
+      ratingBand: true,
+      moduleScores: true,
+      scoringTreeSnapshot: true,
+      frozenAt: true,
+    },
+  });
+
+  if (!score) return null;
+
+  // Defense-in-depth: verify tenant ownership
+  if (score.tenantId !== tenantId) return null;
+
+  return {
+    compositeScore: Number(score.compositeScore),
+    ratingBand: score.ratingBand,
+    moduleScores: score.moduleScores as Record<string, number>,
+    scoringTreeSnapshot: score.scoringTreeSnapshot,
+    frozenAt: score.frozenAt,
+  };
+}
 
 // ─── getRbiaAnalyticsSummary ─────────────────────────────────────────────────
 
@@ -66,6 +144,7 @@ export async function getRbiaAnalyticsSummary(
       totalAudited: 0,
       averageComposite: 0,
       ratingDistribution: {},
+      moduleAverages: {},
       scores: [],
     };
   }
@@ -84,6 +163,11 @@ export async function getRbiaAnalyticsSummary(
   );
   const averageComposite = totalComposite / rows.length;
 
+  // Compute average module scores across all branches
+  const moduleAverages = computeModuleAverages(
+    rows.map((r) => r.moduleScores as Record<string, number>),
+  );
+
   // Build scores array
   const scores = rows.map((row) => ({
     branchId: row.branchId,
@@ -97,6 +181,7 @@ export async function getRbiaAnalyticsSummary(
     totalAudited: rows.length,
     averageComposite,
     ratingDistribution,
+    moduleAverages,
     scores,
   };
 }
@@ -145,6 +230,7 @@ export async function getRbiaAnalyticsByPeriod(
       totalAudited: 0,
       averageComposite: 0,
       ratingDistribution: {},
+      moduleAverages: {},
       scores: [],
     };
   }
@@ -161,6 +247,10 @@ export async function getRbiaAnalyticsByPeriod(
   );
   const averageComposite = totalComposite / rows.length;
 
+  const moduleAverages = computeModuleAverages(
+    rows.map((r) => r.moduleScores as Record<string, number>),
+  );
+
   const scores = rows.map((row) => ({
     branchId: row.branchId,
     branchName: row.engagement?.branch?.name ?? "Unknown Branch",
@@ -173,6 +263,7 @@ export async function getRbiaAnalyticsByPeriod(
     totalAudited: rows.length,
     averageComposite,
     ratingDistribution,
+    moduleAverages,
     scores,
   };
 }

@@ -2,6 +2,7 @@ import type { PgBoss } from "pg-boss";
 import { processNotifications } from "./notification-processor";
 import { processDeadlineReminders } from "./deadline-reminder";
 import { processOverdueEscalation } from "./overdue-escalation";
+import { processRbiaOverdueEscalation } from "./rbia-overdue-escalation";
 import { processWeeklyDigest } from "./weekly-digest";
 import { captureMetricsSnapshot } from "./snapshot-metrics";
 
@@ -40,6 +41,7 @@ export async function registerJobs(boss: PgBoss): Promise<void> {
   await boss.work(JOBS.DEADLINE_CHECK, async () => {
     await processDeadlineReminders();
     await processOverdueEscalation();
+    await processRbiaOverdueEscalation();
   });
 
   // Weekly digest for CAE/CCO (Monday 10:00 IST)

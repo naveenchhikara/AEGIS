@@ -18,6 +18,10 @@ import {
   BulkDigestEmail,
   getBulkDigestSubject,
 } from "./templates/bulk-digest-email";
+import {
+  BmBatchOverdueEmail,
+  getBmBatchOverdueSubject,
+} from "./templates/bm-batch-overdue-email";
 
 /**
  * Render a React Email template to HTML and plain text.
@@ -148,6 +152,18 @@ export async function renderEmailTemplate(
         auditeePortalUrl: p.auditeePortalUrl ?? `${appUrl}/auditee`,
       });
       subject = getBulkDigestSubject(bankName, (p.observations ?? []).length);
+      break;
+
+    case "bm-batch-overdue":
+      element = createElement(BmBatchOverdueEmail, {
+        bankName,
+        appUrl,
+        branchName: p.branchName ?? "",
+        engagementId: p.engagementId ?? "",
+        overdueDays: p.overdueDays ?? 1,
+        batchId: p.batchId ?? "",
+      });
+      subject = getBmBatchOverdueSubject(p.branchName ?? "Unknown Branch");
       break;
 
     default:

@@ -31,6 +31,7 @@ const TEMPLATE_MAP: Record<string, string> = {
   WEEKLY_DIGEST: "weekly-digest",
   BULK_DIGEST: "bulk-digest",
   INVITATION: "invitation",
+  BM_BATCH_OVERDUE: "bm-batch-overdue",
 };
 
 // ─── Email rendering ────────────────────────────────────────────────────────

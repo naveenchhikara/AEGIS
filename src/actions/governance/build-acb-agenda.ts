@@ -52,144 +52,147 @@ export async function buildAcbAgenda(input: BuildAcbAgendaInput) {
   const db = prismaForTenant(tenantId);
 
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "governance.acb_agenda_built",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
-
-      // 1. Get high/critical open observations
-      const criticalObservations = await tx.observation.findMany({
-        where: {
+    const result = await db.$transaction(
+      async (tx: any) => {
+        await setAuditContext(tx, {
+          actionType: "governance.acb_agenda_built",
+          userId: session.user.id,
           tenantId,
-          severity: { in: ["HIGH", "CRITICAL"] },
-          status: { notIn: ["CLOSED"] },
-        },
-        select: {
-          id: true,
-          title: true,
-          severity: true,
-          status: true,
-          branch: { select: { name: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      });
+          sessionId: session.session.id,
+        });
 
-      // 2. Compliance status summary
-      const complianceStats = await tx.complianceItem.groupBy({
-        by: ["status"],
-        where: { tenantId },
-        _count: true,
-      });
-
-      // 3. Overdue observations
-      const overdueCount = await tx.complianceItem.count({
-        where: {
-          tenantId,
-          status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] },
-          dueDate: { lt: new Date() },
-        },
-      });
-
-      // 4. Risk metrics (high-risk housekeeping)
-      const housekeepingRisks = await tx.housekeepingMetric.findMany({
-        where: {
-          tenantId,
-          agingDays: { gte: 90 },
-        },
-        select: {
-          metricType: true,
-          branch: { select: { name: true } },
-          closingBalance: true,
-          agingDays: true,
-        },
-        orderBy: { agingDays: "desc" },
-        take: 10,
-      });
-
-      // 5. Recent audit completions (this quarter)
-      const quarterDates = getQuarterDates(
-        parsed.data.year,
-        parsed.data.quarter,
-      );
-      const completedAudits = await tx.auditEngagement.count({
-        where: {
-          tenantId,
-          status: "COMPLETED",
-          completionDate: {
-            gte: quarterDates.start,
-            lte: quarterDates.end,
-          },
-        },
-      });
-
-      // 6. Find or create ACB committee
-      let committee = parsed.data.committeeId
-        ? await tx.committee.findFirst({
-            where: { id: parsed.data.committeeId, tenantId },
-          })
-        : await tx.committee.findFirst({
-            where: { tenantId, name: "ACB" },
-          });
-
-      if (!committee) {
-        committee = await tx.committee.create({
-          data: {
+        // 1. Get high/critical open observations
+        const criticalObservations = await tx.observation.findMany({
+          where: {
             tenantId,
-            name: "ACB",
-            description: "Audit Committee of Board",
-            isActive: true,
+            severity: { in: ["HIGH", "CRITICAL"] },
+            status: { notIn: ["CLOSED"] },
+          },
+          select: {
+            id: true,
+            title: true,
+            severity: true,
+            status: true,
+            branch: { select: { name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        });
+
+        // 2. Compliance status summary
+        const complianceStats = await tx.complianceItem.groupBy({
+          by: ["status"],
+          where: { tenantId },
+          _count: true,
+        });
+
+        // 3. Overdue observations
+        const overdueCount = await tx.complianceItem.count({
+          where: {
+            tenantId,
+            status: { in: ["OPEN", "BRANCH_RESPONSE_DUE"] },
+            dueDate: { lt: new Date() },
           },
         });
-      }
 
-      // 7. Build agenda
-      const agendaItems = [
-        {
-          title: "Review of High & Critical Observations",
-          description: `${criticalObservations.length} high/critical findings require board attention`,
-        },
-        {
-          title: "Compliance Status Dashboard",
-          description: `Summary: ${JSON.stringify(complianceStats)}`,
-        },
-        {
-          title: "Overdue Observations",
-          description: `${overdueCount} observations are past due date`,
-        },
-        {
-          title: "Housekeeping Risk Review",
-          description: `${housekeepingRisks.length} accounts with aging > 90 days`,
-        },
-        {
-          title: "Quarterly Audit Completion Report",
-          description: `${completedAudits} audits completed in ${parsed.data.quarter}`,
-        },
-      ];
+        // 4. Risk metrics (high-risk housekeeping)
+        const housekeepingRisks = await tx.housekeepingMetric.findMany({
+          where: {
+            tenantId,
+            agingDays: { gte: 90 },
+          },
+          select: {
+            metricType: true,
+            branch: { select: { name: true } },
+            closingBalance: true,
+            agingDays: true,
+          },
+          orderBy: { agingDays: "desc" },
+          take: 10,
+        });
 
-      // 8. Create meeting
-      const meeting = await tx.committeeMeeting.create({
-        data: {
-          tenantId,
+        // 5. Recent audit completions (this quarter)
+        const quarterDates = getQuarterDates(
+          parsed.data.year,
+          parsed.data.quarter,
+        );
+        const completedAudits = await tx.auditEngagement.count({
+          where: {
+            tenantId,
+            status: "COMPLETED",
+            completionDate: {
+              gte: quarterDates.start,
+              lte: quarterDates.end,
+            },
+          },
+        });
+
+        // 6. Find or create ACB committee
+        let committee = parsed.data.committeeId
+          ? await tx.committee.findFirst({
+              where: { id: parsed.data.committeeId, tenantId },
+            })
+          : await tx.committee.findFirst({
+              where: { tenantId, name: "ACB" },
+            });
+
+        if (!committee) {
+          committee = await tx.committee.create({
+            data: {
+              tenantId,
+              name: "ACB",
+              description: "Audit Committee of Board",
+              isActive: true,
+            },
+          });
+        }
+
+        // 7. Build agenda
+        const agendaItems = [
+          {
+            title: "Review of High & Critical Observations",
+            description: `${criticalObservations.length} high/critical findings require board attention`,
+          },
+          {
+            title: "Compliance Status Dashboard",
+            description: `Summary: ${JSON.stringify(complianceStats)}`,
+          },
+          {
+            title: "Overdue Observations",
+            description: `${overdueCount} observations are past due date`,
+          },
+          {
+            title: "Housekeeping Risk Review",
+            description: `${housekeepingRisks.length} accounts with aging > 90 days`,
+          },
+          {
+            title: "Quarterly Audit Completion Report",
+            description: `${completedAudits} audits completed in ${parsed.data.quarter}`,
+          },
+        ];
+
+        // 8. Create meeting
+        const meeting = await tx.committeeMeeting.create({
+          data: {
+            tenantId,
+            committeeId: committee.id,
+            meetingDate: quarterDates.end, // Schedule for end of quarter
+            agendaItems,
+            status: "SCHEDULED",
+            attendees: [],
+          },
+        });
+
+        return {
+          meetingId: meeting.id,
           committeeId: committee.id,
-          meetingDate: quarterDates.end, // Schedule for end of quarter
-          agendaItems,
-          status: "SCHEDULED",
-          attendees: [],
-        },
-      });
-
-      return {
-        meetingId: meeting.id,
-        committeeId: committee.id,
-        agendaItemsCount: agendaItems.length,
-        criticalObservationsCount: criticalObservations.length,
-        overdueCount,
-      };
-    });
+          agendaItemsCount: agendaItems.length,
+          criticalObservationsCount: criticalObservations.length,
+          overdueCount,
+        };
+      },
+      { maxWait: 10000, timeout: 30000 },
+    );
 
     revalidatePath("/governance/committees");
     revalidatePath("/board/acb");

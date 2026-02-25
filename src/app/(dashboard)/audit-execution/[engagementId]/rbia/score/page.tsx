@@ -5,9 +5,8 @@ import {
   getEngagementModuleScores,
 } from "@/data-access/rbia-scoring";
 import { notFound } from "next/navigation";
-import { ScoreGauge } from "@/components/rbia/score-gauge";
 import { Info } from "@/lib/icons";
-import { ScoreDrilldownWrapper } from "./score-drilldown-wrapper";
+import { ScoreSection } from "./score-section";
 
 // ---- Page Props --------------------------------------------------------------
 
@@ -51,29 +50,20 @@ export default async function ScorePage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <ScoreGauge
-        compositeScore={branchScore?.compositeScore ?? null}
-        ratingBand={branchScore?.ratingBand ?? null}
-        moduleScores={branchScore?.moduleScores ?? null}
-        moduleProgress={moduleProgress.map((m) => ({
-          moduleCode: m.moduleCode,
-          moduleName: m.moduleName,
-          scoredCount: m.scoredCount,
-          totalLeafCount: m.totalLeafCount,
-        }))}
-        frozen={
-          branchScore?.frozenAt !== null && branchScore?.frozenAt !== undefined
-        }
-      />
-
-      {/* Drill-down section -- rendered when scoringTreeSnapshot is available */}
-      {branchScore?.scoringTreeSnapshot && (
-        <ScoreDrilldownWrapper
-          scoringTree={branchScore.scoringTreeSnapshot}
-          moduleScores={branchScore.moduleScores}
-        />
-      )}
-    </div>
+    <ScoreSection
+      compositeScore={branchScore?.compositeScore ?? null}
+      ratingBand={branchScore?.ratingBand ?? null}
+      moduleScores={branchScore?.moduleScores ?? null}
+      moduleProgress={moduleProgress.map((m) => ({
+        moduleCode: m.moduleCode,
+        moduleName: m.moduleName,
+        scoredCount: m.scoredCount,
+        totalLeafCount: m.totalLeafCount,
+      }))}
+      frozen={
+        branchScore?.frozenAt !== null && branchScore?.frozenAt !== undefined
+      }
+      scoringTree={branchScore?.scoringTreeSnapshot ?? null}
+    />
   );
 }

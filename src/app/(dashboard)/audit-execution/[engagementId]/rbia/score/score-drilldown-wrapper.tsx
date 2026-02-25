@@ -11,6 +11,8 @@ import {
 interface ScoreDrilldownWrapperProps {
   scoringTree: unknown; // JSONB from DB -- will be cast to ScoredNodeSnapshot
   moduleScores: Record<string, number>;
+  selectedModule?: string | null; // controlled from parent (ScoreSection)
+  onModuleSelect?: (code: string | null) => void;
 }
 
 // ---- Component ---------------------------------------------------------------
@@ -29,8 +31,12 @@ interface ScoreDrilldownWrapperProps {
 export function ScoreDrilldownWrapper({
   scoringTree,
   moduleScores,
+  selectedModule: controlledModule,
+  onModuleSelect,
 }: ScoreDrilldownWrapperProps) {
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [internalModule, setInternalModule] = useState<string | null>(null);
+  const selectedModule = controlledModule ?? internalModule;
+  const setSelectedModule = onModuleSelect ?? setInternalModule;
 
   const tree = scoringTree as ScoredNodeSnapshot;
 

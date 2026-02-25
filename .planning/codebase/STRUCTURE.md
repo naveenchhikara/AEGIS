@@ -1,540 +1,276 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-02-22
+**Analysis Date:** 2026-02-25
 
 ## Directory Layout
 
 ```
 /Users/admin/Developer/AEGIS/
-├── .planning/                           # GSD workflow docs (PROJECT, ROADMAP, STATE, REQUIREMENTS)
-├── Project Doc/                         # Business docs, SDD, RBI circulars reference
-├── deploy/                              # Deployment scripts, Nginx, PM2, demo scripts
-├── infra/                               # AWS CDK infrastructure-as-code
-├── messages/                            # i18n message files (en.json, hi.json, mr.json, gu.json)
+├── src/                          # All application source code
+│   ├── actions/                  # Server Actions (mutations) — 81 files, 15 domain dirs
+│   ├── app/                      # Next.js App Router — 52 pages
+│   │   ├── (auth)/               # Unauthenticated routes (login, accept-invite)
+│   │   ├── (dashboard)/          # All authenticated routes with shared layout
+│   │   ├── (onboarding)/         # Tenant onboarding wizard
+│   │   └── api/                  # REST endpoints
+│   ├── components/               # UI components — 213 files, 30 dirs
+│   │   ├── ui/                   # shadcn/ui primitives (button, dialog, form, etc.)
+│   │   ├── layout/               # Shared layout (sidebar, header, nav)
+│   │   └── [domain]/             # Domain-specific components (one dir per feature)
+│   ├── data/                     # RBI regulation data (production JSON)
+│   ├── data-access/              # DAL — 39 files, one per domain
+│   ├── emails/                   # React Email templates
+│   ├── generated/prisma/         # Prisma-generated client (do not edit)
+│   ├── hooks/                    # Custom React hooks
+│   ├── i18n/                     # next-intl config and routing
+│   ├── jobs/                     # pg-boss background job handlers
+│   ├── lib/                      # Core utilities — 35 files
+│   ├── providers/                # React context providers
+│   ├── services/                 # Business logic (risk-rating computation)
+│   ├── stores/                   # Zustand client state stores
+│   ├── types/                    # TypeScript type definitions
+│   ├── env.ts                    # Environment variable validation (t3-oss/env-nextjs)
+│   ├── instrumentation.ts        # Next.js server startup hook (job registration)
+│   └── middleware.ts             # Edge middleware (route protection)
 ├── prisma/
-│   ├── schema.prisma                    # 71 models, 20 enums, 2320 lines
-│   ├── seed.ts                          # Database seeder (10 users, 2 tenants, all master data)
-│   ├── migrations/                      # Prisma migrations (pnpm db:migrate)
-│   └── *.sql                            # Manual SQL (triggers, views, custom logic)
-├── scripts/                             # Utility scripts (account creation, S3 setup, translations)
+│   ├── schema.prisma             # 71 models, 20 enums, 2320 lines
+│   ├── seed.ts                   # Database seeder (1690 lines)
+│   ├── migrations/               # Prisma migration files + standalone SQL
+│   └── *.sql                     # Manual SQL (triggers, views)
+├── messages/                     # i18n message files
+│   ├── en.json                   # English (primary)
+│   ├── hi.json                   # Hindi
+│   ├── mr.json                   # Marathi
+│   └── gu.json                   # Gujarati
 ├── tests/
-│   ├── e2e/                             # Playwright E2E specs (login, audit execution, exports)
-│   └── auth.setup.ts                    # Auth setup for E2E tests
-├── src/
-│   ├── actions/                         # Server actions (81 files across 18 domains)
-│   │   ├── admin/                       # User/branch/zone management
-│   │   ├── audit-execution/             # Engagement lifecycle
-│   │   ├── audit-plans/                 # RAM planning
-│   │   ├── compliance/                  # Compliance tracking
-│   │   ├── concurrent-audit/            # Concurrent audit lifecycle
-│   │   ├── control-library/             # Control management
-│   │   ├── governance/                  # Board governance
-│   │   ├── housekeeping/                # Housekeeping checks
-│   │   ├── investment/                  # Investment compliance
-│   │   ├── issues/                      # Issue management
-│   │   ├── observations/                # Observation lifecycle (create, update, resolve)
-│   │   ├── qa-assessment/               # QA assessment lifecycle
-│   │   ├── ram/                         # Risk assessment model
-│   │   ├── regulatory/                  # Regulatory module
-│   │   ├── repeat-findings/             # Repeat finding logic
-│   │   ├── reports/                     # Report generation
-│   │   ├── risk-management/             # Risk register
-│   │   └── work-program/                # Work program execution
-│   ├── app/                             # Next.js App Router (52 pages)
-│   │   ├── (auth)/                      # Authentication routes (public)
-│   │   │   └── login/page.tsx           # Login/signup tabs
-│   │   ├── (dashboard)/                 # Protected routes (require session)
-│   │   │   ├── dashboard/page.tsx       # Main dashboard (KPIs, widgets)
-│   │   │   ├── admin/                   # Admin pages (users, branches, zones, templates, RAM config)
-│   │   │   ├── analytics/               # Analytics dashboard
-│   │   │   ├── audit-execution/         # Audit execution workflow
-│   │   │   │   ├── [engagementId]/      # Engagement detail page
-│   │   │   │   │   ├── page.tsx         # Overview tab
-│   │   │   │   │   ├── sections/        # Field examination (568 items across sections)
-│   │   │   │   │   ├── cash-verification/
-│   │   │   │   │   ├── loan-review/
-│   │   │   │   │   ├── sma-npa/         # SMA/NPA audit
-│   │   │   │   │   ├── bh-certificate/
-│   │   │   │   │   └── report/page.tsx  # Report generation + signing
-│   │   │   │   └── create/page.tsx      # Create new engagement
-│   │   │   ├── audit-plans/page.tsx     # Annual audit planning + simulation
-│   │   │   ├── audit-trail/page.tsx     # Immutable audit log
-│   │   │   ├── auditee/                 # Auditee branch response view
-│   │   │   ├── compliance/              # Compliance tracking (ACE, ACB)
-│   │   │   ├── concurrent-audit/        # Concurrent audit module
-│   │   │   ├── controls/                # Control library
-│   │   │   ├── findings/                # Observation management (5C findings)
-│   │   │   ├── governance/              # Board governance
-│   │   │   ├── housekeeping/            # Housekeeping MIS
-│   │   │   ├── investments/             # Investment compliance
-│   │   │   ├── is-audit/                # IS audit module
-│   │   │   ├── issues/                  # Issue management + board report
-│   │   │   ├── pre-audit-profiling/     # Pre-audit branch profiling
-│   │   │   ├── qa-assessment/           # QA assessment
-│   │   │   ├── ram/                     # Risk assessment model UI
-│   │   │   ├── regulatory/              # Regulatory module
-│   │   │   ├── reports/page.tsx         # Report downloads (XLSX, PDF)
-│   │   │   ├── risk-management/         # Risk register
-│   │   │   ├── settings/                # User/notification settings
-│   │   │   ├── work-program/            # Work program execution
-│   │   │   ├── calendar/                # Event calendar
-│   │   │   ├── layout.tsx               # Dashboard layout (Layer 2 session validation)
-│   │   │   ├── error.tsx                # Error boundary
-│   │   │   ├── unauthorized-toast.tsx   # Permission denied toast
-│   │   ├── (onboarding)/                # Tenant onboarding (public but auth-gated)
-│   │   │   └── onboarding/page.tsx      # Onboarding wizard
-│   │   ├── accept-invite/page.tsx       # Invite acceptance flow
-│   │   ├── api/                         # REST API routes
-│   │   │   ├── auth/[...all]/route.ts   # Better Auth endpoints
-│   │   │   ├── health/route.ts          # Health check (DB, job queue, memory)
-│   │   │   ├── dashboard/route.ts       # Dashboard data export
-│   │   │   ├── exports/                 # Data exports
-│   │   │   │   ├── compliance/route.ts
-│   │   │   │   ├── findings/route.ts
-│   │   │   │   └── audit-plans/route.ts
-│   │   │   ├── reports/                 # Report generation
-│   │   │   │   ├── board-report/route.ts
-│   │   │   │   └── gap-analysis/route.ts
-│   │   │   ├── download/route.ts        # File download from S3
-│   │   │   ├── cron/escalation/route.ts # Escalation trigger (scheduled)
-│   │   │   └── is-audit/checklist/route.ts
-│   │   ├── page.tsx                     # Root redirect (→ /login)
-│   │   ├── layout.tsx                   # Root layout (fonts, i18n, Toaster)
-│   │   ├── error.tsx                    # Global error boundary
-├── src/components/                      # React components (213 files across 30+ domains)
-│   ├── ui/                              # shadcn/ui primitives (30+ components)
-│   │   ├── button.tsx, card.tsx, dialog.tsx, form.tsx, input.tsx, etc.
-│   ├── layout/                          # App layout
-│   │   ├── app-sidebar.tsx              # Sidebar with role-based nav
-│   │   └── top-bar.tsx                  # Header with user menu
-│   ├── auth/                            # Auth components
-│   │   ├── login-form.tsx
-│   │   ├── signup-form.tsx
-│   │   ├── session-warning-wrapper.tsx  # Session idle timeout warning
-│   ├── dashboard/                       # Dashboard widgets (13 widgets for different roles)
-│   │   ├── dashboard-composer.tsx       # Widget layout + data binding
-│   │   ├── empty-state-card.tsx
-│   │   └── [widget-name].tsx            # Specific widgets
-│   ├── admin/, analytics/, audit-execution/, audit-plans/, compliance/, controls/, etc.
-│   │   # Domain-specific components (forms, tables, detail views)
-├── src/data-access/                     # Data Access Layer (39 files)
-│   ├── session.ts                       # Session helpers (getRequiredSession, getSessionRoles)
-│   ├── prisma.ts                        # Prisma exports
-│   ├── index.ts                         # Barrel export for domain functions
-│   ├── audit-execution.ts               # Audit engagement queries
-│   ├── audit-plans.ts                   # Audit plan queries
-│   ├── audit-trail.ts                   # Audit log queries
-│   ├── compliance.ts                    # Compliance tracking queries
-│   ├── observations.ts                  # Observation queries
-│   ├── dashboard.ts                     # Dashboard metrics queries
-│   ├── governance.ts                    # Governance queries
-│   ├── analytics.ts                     # Analytics queries
-│   └── [domain].ts                      # One file per domain
-├── src/emails/                          # React Email templates
-│   ├── assignment.tsx                   # Observation assigned
-│   ├── escalation.tsx                   # Escalation notification
-│   └── weekly-digest.tsx                # Weekly digest
-├── src/generated/                       # Auto-generated code (DO NOT EDIT)
-│   └── prisma/                          # Prisma Client (pnpm db:generate)
-│       ├── client.ts                    # PrismaClient type
-│       ├── models.ts                    # Model types
-│       ├── enums.ts                     # Enum types (Role, Severity, etc.)
-│       └── internal/                    # Internal types
-├── src/hooks/                           # Custom React hooks
-│   ├── use-auto-save.ts                 # Auto-save form changes
-│   └── use-mobile.tsx                   # Mobile breakpoint detection
-├── src/i18n/                            # i18n configuration
-│   └── request.ts                       # locale request handler
-├── src/jobs/                            # Background job workers (pg-boss)
-│   ├── deadline-reminder.ts             # Deadline approaching reminders
-│   ├── notification-processor.ts        # Email processor
-│   ├── notification-batcher.ts          # Batch notifications
-│   ├── overdue-escalation.ts            # Escalation level updates
-│   ├── snapshot-metrics.ts              # Metric snapshots
-│   ├── weekly-digest.ts                 # Weekly digest generation
-│   └── index.ts                         # Job registration
-├── src/lib/                             # Core utilities (37 files)
-│   ├── auth.ts                          # Better Auth config + plugins
-│   ├── auth-client.ts                   # Client-side auth helpers
-│   ├── auth-lockout-plugin.ts           # Rate limiting + account lockout
-│   ├── permissions.ts                   # RBAC (17 roles, 60+ permissions, hasPermission)
-│   ├── guards.ts                        # Route guards (requirePermission, requireAnyPermission)
-│   ├── prisma.ts                        # Prisma singleton + prismaForTenant(tenantId)
-│   ├── logger.ts                        # pino logger
-│   ├── csrf.ts                          # CSRF protection
-│   ├── constants.ts                     # App constants
-│   ├── utils.ts                         # Utility functions (formatDate, cn, etc.)
-│   ├── icons.ts                         # Barrel export of lucide-react icons
-│   ├── job-queue.ts                     # pg-boss queue init + worker start
-│   ├── notification-service.ts          # Email/toast notification dispatch
-│   ├── dashboard-config.ts              # Widget config per role
-│   ├── *-engine.ts                      # Business logic engines
-│   │   ├── escalation-engine.ts         # Compute escalation levels
-│   │   ├── housekeeping-engine.ts       # Housekeeping rules
-│   │   ├── kri-engine.ts                # Key risk indicator scoring
-│   │   ├── ram-engine.ts                # Risk assessment model (19 parameters)
-│   ├── excel-export/                    # XLSX export templates
-│   │   ├── audit-plans.ts
-│   │   ├── observations.ts
-│   │   └── compliance.ts
-│   ├── excel-parsers/                   # XLSX import parsers
-│   │   └── onboarding-parser.ts         # Parse onboarding data
-│   ├── excel-templates/                 # Template files (Examination items, etc.)
-│   ├── investment-compliance.ts         # Investment compliance rules
-│   ├── housekeeping-mis.ts              # Housekeeping MIS calculations
-│   ├── __tests__/                       # Unit tests (Vitest)
-│   │   └── escalation-engine.test.ts
-├── src/providers/                       # React context providers
-│   └── query-provider.tsx               # TanStack Query provider
-├── src/services/                        # Domain-specific services
-│   └── risk-rating/                     # Risk rating computation (RBIA)
-├── src/stores/                          # Zustand state stores
-│   └── onboarding-store.ts              # Onboarding wizard state
-├── src/types/                           # TypeScript type definitions
-│   ├── audit.ts                         # Audit types
-│   ├── common.ts                        # Shared types
-│   ├── compliance.ts                    # Compliance types
-│   └── [domain].ts                      # Domain-specific types
-├── src/middleware.ts                    # Next.js Edge middleware (Layer 1 session check)
-├── src/instrumentation.ts               # Next.js instrumentation (Sentry + job queue init)
-├── src/env.ts                           # Environment variable validation (t3-oss/env-nextjs + Zod)
-├── next.config.ts                       # Next.js config (Turbopack, server externals)
-├── tsconfig.json                        # TypeScript config (@/* alias)
-├── prisma.config.ts                     # Prisma CLI config
-├── .prettierrc                          # Prettier formatting
-├── eslint.config.mjs                    # ESLint rules
-├── components.json                      # shadcn/ui config (new-york style)
-├── Dockerfile                           # Multi-stage build (dev + production)
-├── docker-compose.yml                   # Production compose
-├── docker-compose.dev.yml               # Development compose
-└── package.json                         # Dependencies + scripts
+│   ├── e2e/                      # Playwright E2E specs
+│   └── auth.setup.ts             # Auth setup for E2E
+├── infra/                        # AWS CDK infrastructure-as-code
+├── deploy/                       # Deployment scripts, Nginx config, PM2, demo scripts
+├── scripts/                      # Utility scripts (account creation, S3 setup)
+├── .planning/                    # GSD workflow docs (PROJECT, ROADMAP, STATE, REQUIREMENTS)
+│   ├── codebase/                 # Codebase analysis docs (this directory)
+│   └── phases/                   # Phase plans and research
+├── .env.example                  # Environment variable template
+├── next.config.ts                # Next.js configuration
+├── tailwind.config.ts            # Tailwind CSS v4 config
+├── tsconfig.json                 # TypeScript config
+├── components.json               # shadcn/ui config ("new-york" style)
+└── package.json                  # pnpm workspace + scripts
 ```
-
----
 
 ## Directory Purposes
 
-**`.planning/`:**
+**`src/actions/`:**
 
-- Purpose: GSD workflow orchestration (PROJECT, ROADMAP, STATE, REQUIREMENTS, codebase docs)
-- Contains: Project scope, roadmap, current state, phase requirements
-- Committed: Yes
+- Purpose: All data mutations — create, update, delete, state transitions
+- Contains: One subdirectory per domain (e.g., `observations/`, `compliance/`, `rbia/`), each with action files
+- Pattern: Every action calls `getRequiredSession()` first, then permission check, then Zod validation, then DAL/Prisma
+- Key files: `src/actions/observations/`, `src/actions/rbia/`, `src/actions/audit-execution/`
 
-**`Project Doc/`:**
+**`src/app/(dashboard)/`:**
 
-- Purpose: Business documentation (SDD, RBI circulars, design decisions)
-- Contains: Software Design Document (PDF/DOCX), RBI policy references
-- Committed: Yes (public docs only)
+- Purpose: All authenticated routes with the shared navigation shell
+- Contains: Subdirectory per feature route; each has `page.tsx` (Server Component) + optional `loading.tsx`, `error.tsx`
+- Key files: `src/app/(dashboard)/layout.tsx` (full session validation + nav shell)
+- Route pattern: `/[feature]` for lists, `/[feature]/[id]` for detail pages
 
-**`deploy/`:**
+**`src/app/api/`:**
 
-- Purpose: Deployment automation and configuration
-- Contains: Nginx config, PM2 ecosystem, demo data scripts, health check scripts
-- Committed: Yes
+- Purpose: REST endpoints for auth, health, exports, reports, cron, downloads
+- Contains: `auth/[...all]/route.ts` (Better Auth), `health/route.ts`, `exports/route.ts`, `reports/route.ts`, `cron/route.ts`, `download/route.ts`
 
-**`infra/`:**
+**`src/components/ui/`:**
 
-- Purpose: Infrastructure-as-code (AWS CDK)
-- Contains: VPC, security groups, RDS, S3, SES configuration
-- Committed: Yes
+- Purpose: shadcn/ui primitive components — do not customize business logic here
+- Contains: `button.tsx`, `dialog.tsx`, `form.tsx`, `table.tsx`, `badge.tsx`, `card.tsx`, etc.
+- Rule: Import these from `@/components/ui/[name]`; never import from `radix-ui` directly in pages
 
-**`messages/`:**
+**`src/components/layout/`:**
 
-- Purpose: Internationalization message files
-- Contains: `en.json`, `hi.json`, `mr.json`, `gu.json` with UI strings
-- Generated: No (manually maintained)
-- Committed: Yes
+- Purpose: App shell components shared across all dashboard pages
+- Contains: Sidebar, header, navigation items
 
-**`prisma/`:**
+**`src/components/[domain]/`:**
 
-- Purpose: Database schema and migrations
-- Contains:
-  - `schema.prisma`: 71 models, 20 enums (generated types via `pnpm db:generate`)
-  - `seed.ts`: Initial data (10 users, 2 tenants, 39 exam areas, 568 exam items)
-  - `migrations/`: Prisma migration files
-  - `*.sql`: Custom SQL (triggers, views, not tracked in Prisma)
-- Committed: Yes
+- Purpose: Feature-specific UI components (one directory per feature matching app route)
+- Examples: `src/components/findings/`, `src/components/rbia/`, `src/components/compliance/`
+
+**`src/data-access/`:**
+
+- Purpose: All database reads; single source of truth for DB queries
+- Contains: One file per domain (e.g., `observations.ts`, `compliance.ts`, `audit-execution.ts`)
+- Rule: Always call `prismaForTenant(tenantId)` and include `WHERE tenantId` in every query
+- Key files: `src/data-access/session.ts` (exports `getRequiredSession()`), `src/data-access/prisma.ts`
+
+**`src/lib/`:**
+
+- Purpose: Core utilities, engines, and integrations
 - Key files:
-  - `schema.prisma`: 2320 lines, 71 models (User, Tenant, Observation, AuditEngagement, ExaminationNode, ActionPoint, BranchRbiaScore, etc.)
-  - `seed.ts`: 1690 lines (creates demo users, branches, audit plans, RAM parameters)
+  - `src/lib/auth.ts` — Better Auth server instance
+  - `src/lib/auth-client.ts` — Better Auth browser client
+  - `src/lib/permissions.ts` — RBAC permission definitions (17 roles, 60+ permissions)
+  - `src/lib/prisma.ts` — Prisma client singleton + `prismaForTenant()`
+  - `src/lib/logger.ts` — pino logger instance
+  - `src/lib/icons.ts` — Lucide icon barrel export (always import icons from here)
+  - `src/lib/ram-engine.ts` — Risk Assessment Model computation
+  - `src/lib/rbia-scoring-engine.ts` — RBIA 4-point scoring with weighted roll-up
+  - `src/lib/escalation-engine.ts` — L1-L4 escalation rules
+  - `src/lib/engagement-state-machine.ts` — EngagementStatus 8-state machine
+  - `src/lib/notification-service.ts` — Email dispatch via AWS SES
+  - `src/lib/job-queue.ts` — pg-boss queue access
+  - `src/lib/constants.ts` — Shared constants
 
-**`scripts/`:**
+**`src/jobs/`:**
 
-- Purpose: Development and deployment utilities
-- Contains: S3 setup, translation helpers, account creation, master data loaders
-- Committed: Yes
+- Purpose: Background job handler definitions
+- Contains: Job files registered at startup via `src/instrumentation.ts`
 
-**`tests/`:**
+**`src/stores/`:**
 
-- Purpose: Test suites
-- Contains:
-  - `e2e/`: Playwright specs (login, audit execution, report generation)
-  - `auth.setup.ts`: Auth setup for E2E (fixture)
-- Run: `pnpm test:e2e` or `pnpm test:e2e:ui`
-- Committed: Yes
+- Purpose: Zustand client-side state stores
+- Rule: Only for UI state that does not belong on the server; server state uses React Query
 
----
+**`src/types/`:**
+
+- Purpose: Shared TypeScript types and interfaces not generated by Prisma
+- Rule: Prisma-generated types come from `src/generated/prisma/`; domain types live here
+
+**`prisma/migrations/`:**
+
+- Purpose: Prisma migration history + standalone SQL files
+- Note: 4 PostgreSQL views (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) are in standalone `.sql` files and must be applied manually after fresh deploys
 
 ## Key File Locations
 
 **Entry Points:**
 
-- `src/app/page.tsx`: Root redirect (→ /login)
-- `src/app/(auth)/login/page.tsx`: Authentication page (login/signup tabs)
-- `src/app/(dashboard)/layout.tsx`: Dashboard layout (Layer 2 session validation, sidebar)
-- `src/app/(dashboard)/dashboard/page.tsx`: Main dashboard (KPI widgets, role-dependent)
-- `src/app/(onboarding)/onboarding/page.tsx`: Tenant onboarding wizard
-
-**Authentication & Authorization:**
-
-- `src/lib/auth.ts`: Better Auth server config (email/password, Prisma adapter, rate limiting, lockout, multi-session)
-- `src/lib/auth-client.ts`: Client-side auth helpers
-- `src/lib/permissions.ts`: RBAC system (17 roles, 60+ permissions, hasPermission utility)
-- `src/lib/guards.ts`: Route guards (requirePermission, requireAnyPermission, requireAllPermissions)
-- `src/data-access/session.ts`: Session helpers (getRequiredSession, getSessionRoles, hasRole, hasAnyRole, hasAllRoles)
-
-**Middleware & Security:**
-
-- `src/middleware.ts`: Edge middleware (Layer 1: lightweight cookie check, request ID propagation)
-- `src/app/(dashboard)/layout.tsx`: Layout middleware (Layer 2: authoritative session validation)
-
-**Database & ORM:**
-
-- `src/lib/prisma.ts`: Prisma singleton + `prismaForTenant(tenantId)` (application-level tenant isolation)
-- `src/data-access/prisma.ts`: Re-export from lib/prisma (convenience)
-- `src/data-access/session.ts`: Session helpers (always used in DAL functions)
-- `prisma/schema.prisma`: 71 models, 20 enums (2320 lines)
-
-**Data Access Layer (39 files):**
-
-- `src/data-access/audit-execution.ts`: Engagement queries (getEngagements, getEngagementWithTeam, etc.)
-- `src/data-access/audit-plans.ts`: Audit plan queries
-- `src/data-access/compliance.ts`: Compliance tracking queries
-- `src/data-access/observations.ts`: Observation queries
-- `src/data-access/dashboard.ts`: Dashboard metrics queries (pre-fetches all widget data)
-- `src/data-access/[domain].ts`: One file per feature domain (30+ files total)
-
-**Server Actions (81 files, 18 domains):**
-
-- `src/actions/observations/create.ts`: Create observation with 5C fields
-- `src/actions/observations/transition.ts`: Observation workflow transitions
-- `src/actions/audit-execution/[...].ts`: Engagement lifecycle
-- `src/actions/compliance/[...].ts`: Compliance tracking updates
-- `src/actions/[domain]/schemas.ts`: Zod schemas per domain (validation)
-
-**Business Logic (Engines):**
-
-- `src/lib/escalation-engine.ts`: Compute escalation levels (L0-L4 based on days overdue)
-- `src/lib/housekeeping-engine.ts`: Housekeeping eligibility rules
-- `src/lib/ram-engine.ts`: Risk assessment model (19 parameters → composite score)
-- `src/lib/kri-engine.ts`: Key Risk Indicator scoring
-- `src/services/risk-rating/`: Risk rating computation
-
-**Components (213 files, 30+ domains):**
-
-- `src/components/ui/`: shadcn/ui primitives (button, card, dialog, form, input, etc.)
-- `src/components/layout/`: App structure (app-sidebar, top-bar)
-- `src/components/auth/`: Auth UI (login-form, signup-form, session-warning-wrapper)
-- `src/components/dashboard/`: Dashboard widgets (dashboard-composer, widget components)
-- `src/components/[domain]/`: Domain-specific components (forms, tables, detail views)
-
-**Background Jobs (pg-boss):**
-
-- `src/jobs/deadline-reminder.ts`: Deadline approaching reminders
-- `src/jobs/overdue-escalation.ts`: Escalation level updates
-- `src/jobs/notification-processor.ts`: Email sending
-- `src/jobs/weekly-digest.ts`: Weekly digest generation
-- `src/instrumentation.ts`: Job registration on server start
-
-**API Routes:**
-
-- `src/app/api/auth/[...all]/route.ts`: Better Auth endpoints (login, logout, session, etc.)
-- `src/app/api/health/route.ts`: Health check (DB, job queue, memory)
-- `src/app/api/dashboard/route.ts`: Dashboard data export
-- `src/app/api/exports/[type]/route.ts`: XLSX exports (compliance, findings, audit plans)
-- `src/app/api/reports/[type]/route.ts`: PDF report generation (board report, gap analysis)
-- `src/app/api/cron/escalation/route.ts`: Escalation trigger (scheduled via external cron)
+- `src/app/page.tsx`: Root redirect to `/login`
+- `src/app/(auth)/login/page.tsx`: Login page
+- `src/app/(dashboard)/layout.tsx`: Authenticated shell with full session validation
+- `src/middleware.ts`: Edge-runtime route protection
 
 **Configuration:**
 
-- `src/env.ts`: Environment variable validation (t3-oss/env-nextjs + Zod schema)
-- `src/lib/dashboard-config.ts`: Widget configuration per role
-- `src/lib/constants.ts`: Application constants
-- `next.config.ts`: Next.js configuration (Turbopack, server externals)
-- `tsconfig.json`: TypeScript compiler options (@/\* alias)
-- `components.json`: shadcn/ui configuration (style variant: new-york)
-- `prisma.config.ts`: Prisma CLI configuration
+- `src/env.ts`: All environment variables with Zod validation
+- `next.config.ts`: Next.js config (server external packages, body size limit)
+- `tailwind.config.ts`: Tailwind CSS v4 config
+- `components.json`: shadcn/ui config (new-york variant)
+- `prisma/schema.prisma`: Full database schema
 
-**Logging & Observability:**
+**Core Logic:**
 
-- `src/lib/logger.ts`: pino logger instance (development + production)
-- `sentry.server.config.ts`: Sentry error tracking (server runtime)
-- `sentry.edge.config.ts`: Sentry error tracking (edge runtime)
+- `src/data-access/session.ts`: `getRequiredSession()` — start every action/page here
+- `src/lib/prisma.ts`: `prismaForTenant()` — tenant-scoped DB access
+- `src/lib/permissions.ts`: RBAC role and permission definitions
+- `src/lib/auth.ts`: Better Auth server configuration
 
-**i18n:**
+**Testing:**
 
-- `messages/en.json`, `messages/hi.json`, `messages/mr.json`, `messages/gu.json`: Message catalogs (4 languages)
-- `src/i18n/request.ts`: locale request handler
-
----
+- `tests/e2e/`: Playwright E2E specs
+- `tests/auth.setup.ts`: Playwright auth state setup
+- `src/lib/__tests__/`: Vitest unit tests for lib utilities
 
 ## Naming Conventions
 
 **Files:**
 
-- Pages: `page.tsx` (Next.js convention, no prefix)
-- Layouts: `layout.tsx` (Next.js convention)
-- Error boundaries: `error.tsx` (Next.js convention)
-- API routes: `route.ts` (Next.js convention)
-- Components: PascalCase + `.tsx` (e.g., `LoginForm.tsx`, `DashboardComposer.tsx`)
-- Server actions: camelCase + `.ts` (e.g., `create.ts`, `update-status.ts`)
-- Data-access functions: camelCase file, camelCase exports (e.g., `audit-execution.ts` → `getEngagements()`)
-- Utilities: camelCase + `.ts` (e.g., `escalation-engine.ts`, `logger.ts`)
-- Hooks: `use[Name].ts[x]` (e.g., `use-auto-save.ts`, `use-mobile.tsx`)
-- Stores: `[name]-store.ts` (e.g., `onboarding-store.ts`)
-- Schemas: `schemas.ts` (Zod schemas for a domain)
+- Pages: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx` (Next.js conventions)
+- Server Actions: `kebab-case.ts` matching domain name (e.g., `create-observation.ts`)
+- DAL files: `kebab-case.ts` matching domain (e.g., `observations.ts`, `audit-plans.ts`)
+- Components: `PascalCase.tsx` (e.g., `ObservationCard.tsx`, `RiskMatrix.tsx`)
+- Hooks: `use-kebab-case.ts` (e.g., `use-audit-filter.ts`)
+- Lib utilities: `kebab-case.ts` (e.g., `ram-engine.ts`, `fiscal-year.ts`)
 
 **Directories:**
 
-- Feature domains: kebab-case (e.g., `audit-execution`, `audit-plans`, `compliance-management`)
-- Components: kebab-case (e.g., `dashboard/`, `audit-execution/`)
-- Actions: kebab-case (e.g., `actions/audit-execution/`, `actions/observations/`)
-- Data-access: kebab-case (e.g., `data-access/audit-execution.ts`)
+- App routes: `kebab-case` matching URL segment (e.g., `audit-execution/`, `risk-management/`)
+- Component dirs: `kebab-case` matching feature domain (e.g., `findings/`, `concurrent-audit/`)
+- Action dirs: `kebab-case` matching domain (e.g., `observations/`, `compliance/`)
 
-**Functions & Variables:**
+**Variables and Functions:**
 
-- Functions: camelCase (e.g., `getObservations()`, `computeEscalation()`)
-- Constants: UPPER_SNAKE_CASE (e.g., `MAX_FILE_SIZE`, `SESSION_TIMEOUT`)
-- React components: PascalCase (e.g., `DashboardComposer`, `LoginForm`)
-- Types: PascalCase (e.g., `AuthSession`, `EscalationResult`)
-- Enums: PascalCase (from Prisma, e.g., `Role`, `Severity`, `ObservationStatus`)
-
----
+- Functions: `camelCase` (e.g., `getRequiredSession`, `prismaForTenant`)
+- Types/Interfaces: `PascalCase` (e.g., `TenantSettings`, `ObservationWithDetails`)
+- Prisma enums: `UPPER_SNAKE_CASE` matching DB enum values (e.g., `Role.AUDITOR`, `ScoreLabel.FULLY_COMPLIANT`)
+- Constants: `UPPER_SNAKE_CASE` in `src/lib/constants.ts`
 
 ## Where to Add New Code
 
-**New Feature (e.g., "New Audit Module"):**
+**New Feature (full page + data):**
 
-- Primary code: `src/actions/[feature]/` (server actions)
-- Data access: `src/data-access/[feature].ts` (queries)
-- Types: `src/types/[feature].ts` (domain types)
-- Components: `src/components/[feature]/` (UI)
-- Pages: `src/app/(dashboard)/[feature]/` (routes)
-- Tests: `tests/e2e/[feature].spec.ts` (E2E)
-
-**New Component/Widget:**
-
-- Implementation: `src/components/[domain]/[ComponentName].tsx`
-- If part of dashboard: `src/components/dashboard/[WidgetName].tsx`
-- Styling: Tailwind CSS (v4 with CSS variables); see `src/app/globals.css` for theme
-- State management: Zustand for local state, React Query for server state
+1. Route page: `src/app/(dashboard)/[feature-name]/page.tsx`
+2. Components: `src/components/[feature-name]/`
+3. DAL reads: `src/data-access/[feature-name].ts`
+4. Server Actions: `src/actions/[feature-name]/`
+5. Tests: `tests/e2e/[feature-name].spec.ts`
 
 **New Server Action:**
 
 - File: `src/actions/[domain]/[action-name].ts`
-- Pattern:
-  1. `"use server"` directive
-  2. `getRequiredSession()` → auth check
-  3. Permission check via `hasPermission(roles, "action:name")`
-  4. Zod validation via schema from `schemas.ts`
-  5. `prismaForTenant(tenantId)` → get tenant-scoped client
-  6. `db.$transaction()` → atomic operation
-  7. `setAuditContext()` → audit logging
-  8. `revalidatePath()` → cache invalidation
-  9. Return `{ success: true/false, data?, error? }`
+- Template: Call `getRequiredSession()` → permission check → Zod validate → DAL/Prisma → return `{ success, data?, error? }`
 
-**New Database Query (DAL):**
+**New DAL Function:**
 
-- File: `src/data-access/[domain].ts`
-- Pattern:
-  1. `"server-only"` directive
-  2. Accept `session: Session` parameter
-  3. Get tenant ID: `const tenantId = session.user.tenantId`
-  4. Get client: `const db = prismaForTenant(tenantId)`
-  5. Add `WHERE tenantId = ?` clause
-  6. Return plain data (no Prisma types in response)
-  7. Export from `src/data-access/index.ts`
+- File: `src/data-access/[domain].ts` (add to existing domain file or create new)
+- Template: Accept session object → call `prismaForTenant(session.tenantId)` → query with `WHERE tenantId = session.tenantId`
+
+**New Component:**
+
+- Domain component: `src/components/[domain]/ComponentName.tsx`
+- Shared primitive: `src/components/ui/` (only if it's a generic UI element)
 
 **New Background Job:**
 
-- File: `src/jobs/[job-name].ts`
-- Pattern:
-  1. Define job handler: `export async function [jobName](job: PgBossJob<Payload>)`
-  2. Register in `src/jobs/index.ts`: `boss.work("[jobName]", [jobName])`
-  3. Enqueue in server action: `enqueueJob("[jobName]", { payload })`
-  4. Keep idempotent (can be retried)
+- Handler: `src/jobs/[job-name].ts`
+- Register: Add to `src/instrumentation.ts`
 
-**New API Route:**
+**New Engine / Business Logic:**
 
-- File: `src/app/api/[route]/route.ts`
-- Pattern:
-  1. `export const dynamic = "force-dynamic"` (no caching)
-  2. `export const runtime = "nodejs"` (if using Prisma)
-  3. Define `export async function GET/POST/PUT(request: NextRequest)`
-  4. For auth: call `auth.api.getSession()` explicitly
-  5. Return `NextResponse.json(data, { status: 200 })`
+- File: `src/lib/[domain]-engine.ts`
+- Pattern: Pure functions; no HTTP, no direct Prisma calls — accept typed inputs, return typed outputs
 
-**New Type Definition:**
+**Utilities:**
 
-- File: `src/types/[domain].ts`
-- Pattern: TypeScript interfaces matching Prisma model + custom computed fields
-- Example: `interface AuditEngagement extends Prisma.AuditEngagementGetPayload { /* custom */ }`
-- Export from `src/types/index.ts` (barrel export)
+- Shared helpers: `src/lib/[utility-name].ts`
+- Icon imports: Always use `src/lib/icons.ts` barrel — never import from `lucide-react` directly
 
-**New i18n Message:**
+**New Prisma Model:**
 
-- File: `messages/[locale].json`
-- Pattern: Nested object, e.g., `{ "Observations": { "create": "Create Observation" } }`
-- Usage in component: `const t = useTranslations("[Scope]"); t("key")`
-- Always add to all 4 locales (en, hi, mr, gu)
-
-**New Unit Test:**
-
-- File: `src/lib/__tests__/[module].test.ts`
-- Framework: Vitest + happy-dom
-- Pattern: Pure function testing (engines, utilities)
-- Run: `pnpm test` or `pnpm test:watch`
-
-**New E2E Test:**
-
-- File: `tests/e2e/[feature].spec.ts`
-- Framework: Playwright
-- Pattern: Full user workflows (login, navigate, submit form, verify result)
-- Run: `pnpm test:e2e` or `pnpm test:e2e:ui`
-- Setup: Use `auth.setup.ts` for authenticated fixtures
-
----
+- Add to `prisma/schema.prisma`
+- Run `pnpm db:generate` to regenerate client to `src/generated/prisma/`
+- Run `pnpm db:push` (dev) or `pnpm db:migrate` (prod)
 
 ## Special Directories
 
-**`.next/`:**
-
-- Purpose: Build output
-- Generated: Yes (on `pnpm build`)
-- Committed: No (in `.gitignore`)
-- Contains: JavaScript bundles, CSS, optimized images, type definitions
-
-**`node_modules/`:**
-
-- Purpose: Installed dependencies
-- Generated: Yes (on `pnpm install`)
-- Committed: No (in `.gitignore`)
-
 **`src/generated/prisma/`:**
 
-- Purpose: Auto-generated Prisma Client
-- Generated: Yes (on `pnpm db:generate`)
-- Committed: Yes (checked in for offline development)
-- Contains: PrismaClient types, model types, enum types
-- **CRITICAL:** Do NOT manually edit; regenerate after schema changes
+- Purpose: Prisma-generated TypeScript client
+- Generated: Yes (by `pnpm db:generate`)
+- Committed: Yes (for Docker builds without DB access at build time)
+- Rule: Never edit manually
 
-**`.planning/codebase/`:**
+**`.planning/`:**
 
-- Purpose: GSD codebase analysis documents
-- Generated: By `gsd map-codebase` command
+- Purpose: GSD workflow documents — PROJECT, ROADMAP, STATE, phase plans, codebase analysis
+- Generated: No (maintained by GSD agents and developers)
 - Committed: Yes
-- Contains: ARCHITECTURE.md, STRUCTURE.md, STACK.md, INTEGRATIONS.md, CONCERNS.md, CONVENTIONS.md, TESTING.md
+
+**`src/data/`:**
+
+- Purpose: Static RBI regulation JSON data (production use)
+- Note: `src/data/seed/` JSON files are deprecated for runtime use — query DB via DAL instead
+
+**`infra/`:**
+
+- Purpose: AWS CDK infrastructure-as-code (S3, SES, etc.)
+- Committed: Yes
+
+**`deploy/`:**
+
+- Purpose: Deployment scripts, Nginx config, PM2 config, demo data scripts
+- Committed: Yes
 
 ---
 
-_Structure analysis: 2026-02-22_
+_Structure analysis: 2026-02-25_

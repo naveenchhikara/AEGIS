@@ -1,252 +1,198 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-02-22
+**Analysis Date:** 2026-02-25
 
 ## Naming Patterns
 
 **Files:**
 
-- **Components:** PascalCase with dashes: `BankProfileForm`, `SettingsPage`, `UserInvitations`
-- **Actions:** kebab-case descriptive: `update-control.ts`, `manage-control.ts`, `gap-to-issue.ts`
-- **Pages:** `page.tsx` for route files (Next.js convention)
-- **Utils:** camelCase: `permissions.ts`, `state-machine.ts`, `utils.ts`
-- **Schemas:** kebab-case with descriptive suffix: `users.ts` in `src/lib/validations/`
-- **Data Access:** kebab-case descriptive: `users.ts`, `settings.ts`, `session.ts` in `src/data-access/`
+- React components: PascalCase (`ObservationCard.tsx`, `AuditPlanTable.tsx`)
+- Server actions: kebab-case, domain-prefixed (`src/actions/observations.ts`, `src/actions/audit-engagement.ts`)
+- DAL files: kebab-case, domain-prefixed (`src/data-access/observations.ts`, `src/data-access/session.ts`)
+- Hooks: `use` prefix, camelCase (`src/hooks/usePermissions.ts`)
+- Utility libs: kebab-case (`src/lib/utils.ts`, `src/lib/icons.ts`, `src/lib/permissions.ts`)
+- Config/env: camelCase for variables, SCREAMING_SNAKE_CASE for env var names
 
 **Functions:**
 
-- **Server Actions:** camelCase, descriptive verbs: `updateUserRoles()`, `updateTenantSettings()`, `getRequiredSession()`
-- **Utility Functions:** camelCase: `hasPermission()`, `canTransition()`, `getRatingBand()`, `formatDate()`
-- **React Hooks:** `use` prefix: `useToast()`, from `@/components/ui/use-toast`
-- **Components:** PascalCase: `BankProfileForm`, `Card`, `CardHeader`, `CardContent`
-- **DAL Functions:** camelCase, descriptive action: `updateUserRolesDAL()`, `getTenantSettings()`, `getRequiredSession()`
+- Server actions: verb-noun camelCase (`createObservation`, `updateAuditEngagement`, `deleteUser`)
+- DAL functions: `get`/`list`/`create`/`update`/`delete` prefix + domain noun (`getObservationById`, `listAuditEngagements`)
+- React components: PascalCase function declarations
+- Hooks: `use` prefix + PascalCase noun (`useAuditStore`, `usePermissions`)
+- Event handlers: `handle` prefix (`handleSubmit`, `handleStatusChange`)
 
 **Variables:**
 
-- **booleans:** `isPending`, `isRepeatFinding`, `isVisible`, `allowed`
-- **state:** camelCase: `shortName`, `address`, `currentMonth`, `observationUrl`
-- **constants:** UPPER_SNAKE_CASE: `TEST_PASSWORD`, `DEFAULT_RISK_RATING_CONFIG`, `TRANSITIONS`
-- **types/interfaces:** PascalCase: `BankProfileFormProps`, `UpdateRolesInput`, `ObservationInput`
+- camelCase for all local variables and function parameters
+- Boolean variables: `is`/`has`/`can` prefix (`isLoading`, `hasPermission`, `canEdit`)
+- Destructured props: camelCase matching the prop name
 
 **Types:**
 
-- **Interfaces:** PascalCase ending with descriptive noun: `BankProfileFormProps`, `TenantSettings`
-- **Union types:** Use `|` separator, exported as `export type Permission = "..." | "..."`
-- **Enums:** Re-exported from Prisma: `Role`, `Severity`, `ObservationStatus`
-- **Inferred types:** `z.infer<typeof schema>` pattern: `type UpdateRolesInput = z.infer<typeof updateRolesSchema>`
+- Interfaces: PascalCase, no `I` prefix (`ObservationFormData`, `AuditEngagementWithRelations`)
+- Type aliases: PascalCase (`SessionUser`, `TenantId`)
+- Zod schemas: PascalCase + `Schema` suffix (`CreateObservationSchema`, `UpdateUserSchema`)
+- Prisma-inferred types: imported from `@/generated/prisma` and used directly
+- Enums: SCREAMING_SNAKE_CASE values, PascalCase name (matches Prisma: `ObservationStatus.OPEN`)
 
 ## Code Style
 
 **Formatting:**
 
-- **Tool:** Prettier with `prettier-plugin-tailwindcss`
-- **Semi-colons:** Enabled (`semi: true`)
-- **Quotes:** Double quotes for strings (`singleQuote: false`)
-- **Tailwind CSS:** v4 with CSS variables; plugin auto-sorts classes (e.g., `bg-card text-card-foreground rounded-xl border shadow`)
-- **Line length:** Prettier default 80 chars; wrapped imports and long strings
+- Tool: Prettier (`.prettierrc`)
+- Double quotes for strings (`"singleQuote": false`)
+- Semicolons required (`"semi": true`)
+- Tailwind class sorting via `prettier-plugin-tailwindcss`
 
 **Linting:**
 
-- **Tool:** ESLint with Next.js flat config (`eslint.config.mjs`)
-- **Extends:** `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
-- **Key Rules (Warn Level):**
-  - `@typescript-eslint/no-explicit-any`: Warn (codebase uses `any` extensively with Prisma types)
-  - `@typescript-eslint/no-unused-vars`: Warn, ignores `_` prefix (e.g., `_error`, `_count`)
-  - `react/no-unescaped-entities`: Warn
-  - `prefer-const`: Warn
-  - `@next/next/no-html-link-for-pages`: Warn
-- **Error Level:**
-  - `react-hooks/rules-of-hooks`: Error
+- Tool: ESLint with `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`
+- Config: `eslint.config.mjs`
+- `@typescript-eslint/no-explicit-any` is a **warn** (not error) — `any` used extensively with Prisma types, use `zodResolver(Schema as any)` for react-hook-form
+- Unused vars with `_` prefix are ignored: `_unused`, `_req`
+- `react-hooks/rules-of-hooks` is the only **error**-level rule; most others are warnings
+- Ignored dirs: `.claude/`, `infra/`, `.next/`, `playwright-report/`
 
 ## Import Organization
 
-**Order:**
+**Order (by convention):**
 
-1. **External packages:** `import { useState } from "react"`; `import { z } from "zod"`; `import { clsx } from "clsx"`
-2. **Aliased paths:** `import { ... } from "@/lib/..."`; `import { ... } from "@/components/..."`; `import { ... } from "@/actions/..."`
-3. **Relative imports (rare):** `./../sibling` — avoid, use aliases instead
+1. React and Next.js framework imports (`"react"`, `"next/*"`)
+2. Third-party packages (`"zod"`, `"@tanstack/react-query"`)
+3. Internal path aliases (`"@/lib/..."`, `"@/components/..."`, `"@/actions/..."`)
+4. Relative imports (`"./MyComponent"`, `"../utils"`)
 
 **Path Aliases:**
 
-- `@/*` maps to `./src/*` (defined in `tsconfig.json`)
-- Standard locations:
-  - `@/lib/` — utilities, permissions, state machines, validations
-  - `@/components/` — React components (UI and domain-specific)
-  - `@/data-access/` — Database queries with tenant isolation
-  - `@/actions/` — Server actions with auth checks
-  - `@/generated/prisma/` — Prisma client (auto-generated)
-  - `@/types/` — Type definitions
-  - `@/hooks/` — Custom React hooks
-  - `@/services/` — Business logic
+- `@/*` maps to `./src/*` (configured in `tsconfig.json` and `vitest.config.ts`)
+- Always use `@/` for internal imports — no `../../` chains
 
-**Icon Imports:**
+**Critical import rule:**
 
-- **Always import from barrel:** `import { Building2, Shield, Save } from "@/lib/icons"`
-- **Never direct from `lucide-react`:** This ensures tree-shaking and consistency
+- Icons: always import from `@/lib/icons` (barrel export), NEVER directly from `lucide-react`
 
 ## Error Handling
 
-**Patterns:**
+**Server Actions pattern:**
 
-- **Server Actions:** Throw `Error` with message; catch `instanceof Error` to access `.message`:
-
-  ```typescript
-  if (!hasPermission(userRoles, "admin:manage_roles")) {
-    throw new Error("You do not have permission to manage roles.");
+```typescript
+// src/actions/observations.ts — standard pattern
+export async function createObservation(data: CreateObservationInput) {
+  const session = await getRequiredSession(); // throws redirect on missing auth
+  if (!hasPermission(session.user, "observations:create")) {
+    throw new Error("Unauthorized");
   }
-  try {
-    await updateUserRolesDAL(userId, roles, justification, session);
-  } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error("Failed to update roles. Please try again.");
-  }
-  ```
+  // ... business logic
+}
+```
 
-- **Client Components:** Use `useToast()` for user feedback:
+**DAL functions:** Pure DB queries, no auth checks. Auth is enforced at the server action layer.
 
-  ```typescript
-  const { toast } = useToast();
-  if (result.success) {
-    toast({ title: "Settings saved", description: "..." });
-  } else {
-    toast({
-      title: "Error",
-      description: result.error,
-      variant: "destructive",
-    });
-  }
-  ```
+**Form errors:** react-hook-form captures field errors via Zod resolver; server errors returned as thrown exceptions and caught in `onSubmit` handlers with `toast.error(...)`.
 
-- **DAL Functions:** Query failures should propagate as errors; include `WHERE tenantId = ?` for isolation
+**API routes:** Return JSON `{ error: string }` with appropriate HTTP status codes on failure.
 
-- **Validation:** Use Zod `safeParse()` and extract first issue:
-
-  ```typescript
-  const result = updateRolesSchema.safeParse(input);
-  if (!result.success) {
-    throw new Error(result.error.issues[0].message);
-  }
-  ```
-
-- **Permission Guards:** Use `getRequiredSession()` for auth check; `requirePermission(permission)` for routes:
-  ```typescript
-  export default async function SettingsPage() {
-    await requirePermission("admin:manage_settings");
-    const settings = await getTenantSettings();
-  }
-  ```
+**No global error boundary pattern** — errors surface per-page via Next.js error boundaries (`error.tsx` files).
 
 ## Logging
 
-**Framework:** No dedicated logger configured; patterns use standard approaches:
-
-- **Console (dev):** `console.log()` for debug output (not in production code)
-- **Server Actions:** Log via try-catch; errors thrown to client
-- **Instrumentation:** `src/instrumentation.ts` hooks for server startup (pg-boss job registration)
+**Framework:** pino + pino-pretty
 
 **Patterns:**
 
-- Log errors before throwing: `console.error("Context", error)` → throw
-- Use descriptive messages: "Permission denied: observation:approve" not "Access denied"
-- Include context: user ID, tenant ID, resource ID where relevant
+- Server-side structured logging via pino (`src/lib/logger.ts` or similar)
+- Console.log acceptable in development; pino used in production code paths
+- Background jobs (pg-boss) log via pino
 
 ## Comments
 
 **When to Comment:**
 
-- **JSDoc blocks:** For public functions and components (see patterns below)
-- **Inline comments:** For non-obvious business logic only (e.g., why a condition exists, not what it does)
-- **TODOs/FIXMEs:** Use sparingly; prefer issues in project management
-- **Decision references:** `(DE3)`, `(D20)` link to REQUIREMENTS.md for architectural decisions
+- Complex business logic (RBI calculations, RBIA scoring formulas)
+- Non-obvious workarounds (e.g., `suppressHydrationWarning` on `<html>` — Radix UI issue)
+- TODO/FIXME for known gaps (searched via `grep -rn "TODO\|FIXME"`)
 
-**JSDoc/TSDoc:**
+**TSDoc/JSDoc:**
 
-- **Functions:** Document purpose, parameters, return value, throws:
-
-  ```typescript
-  /**
-   * Server action to update a user's roles.
-   *
-   * This action:
-   * - Validates the current user has admin:manage_roles permission
-   * - Prevents self-role-change (security)
-   * - Updates the user's roles in the database
-   *
-   * @param input - User ID, new roles array, and justification
-   * @throws Error if permission check fails or validation errors
-   */
-  export async function updateUserRoles(input: UpdateRolesInput) { ... }
-  ```
-
-- **Components:** Document props interface and behavior:
-
-  ```typescript
-  interface BankProfileFormProps {
-    settings: TenantSettings;
-  }
-
-  /**
-   * Bank profile form with read-only and editable sections.
-   *
-   * Sections:
-   * 1. Bank Identity — read-only after onboarding
-   * 2. Contact Information — editable
-   */
-  export function BankProfileForm({ settings }: BankProfileFormProps) { ... }
-  ```
-
-- **Inline:** Only for complex business rules:
-  ```typescript
-  // Escalate LOW to MEDIUM on 2nd occurrence; any severity becomes CRITICAL on 3rd+
-  if (occurrenceCount === 2) { ... }
-  else if (occurrenceCount >= 3) { ... }
-  ```
+- Not used systematically; inline comments preferred for complex logic
+- Zod schemas are self-documenting via field names and `.describe()` calls
 
 ## Function Design
 
-**Size:**
-
-- **Server Actions:** 30-60 lines; split session check → permission check → validation → DAL call → revalidate
-- **DAL Functions:** 10-30 lines; focus on single query with WHERE tenantId clause
-- **Utility Functions:** 5-20 lines; pure functions preferred
-- **React Components:** 50-150 lines; extract subcomponents if > 200 lines
+**Size:** Server actions and DAL functions kept focused (single responsibility)
 
 **Parameters:**
 
-- **Objects over tuples:** Use Zod-validated input objects, not positional parameters
-- **Type inference:** Accept Prisma types and inferred Zod schemas
-- **Session:** Always extract from `getRequiredSession()`, never as parameter
+- Server actions accept typed input objects matching Zod schema inferred types
+- DAL functions accept `tenantId: string` as first or explicit parameter for isolation
+- Components receive typed props interfaces defined above the component
 
 **Return Values:**
 
-- **Server Actions:** Return `{ success: true }` or throw `Error`; client catches via `try-catch`
-- **DAL Functions:** Return typed Prisma result (or `null`); throw on DB error
-- **Utility Functions:** Return typed value or `boolean`; throw for exceptional cases
+- DAL functions return Prisma model types or `null` (not throwing on not-found)
+- Server actions return data directly or throw
+- Components return JSX
 
 ## Module Design
 
 **Exports:**
 
-- **Default export:** Prefer named exports for functions/components
-- **Barrel files:** Use for component groups: `src/components/ui/` exports all UI primitives
-- **Type exports:** `export type` for TypeScript-only exports; separate from value exports
+- Server actions: named exports per action function
+- Components: default export for the component, named exports for sub-components/types
+- DAL: named exports per function
+- `src/lib/icons.ts`: barrel export re-exporting all used lucide-react icons — always use this
 
 **Barrel Files:**
 
-- Location: `src/lib/icons.ts` re-exports all Lucide icons
-- Purpose: Tree-shaking and consistent import paths
-- Pattern: `export { Icon1, Icon2, Icon3 } from "lucide-react"`
+- `src/lib/icons.ts` — icon barrel (mandatory)
+- `src/generated/prisma/` — Prisma client barrel (auto-generated)
+- Domain-level barrel files not used systematically
 
-**Example Structure:**
+## Component Patterns
 
+**UI Library:** shadcn/ui "new-york" style variant (`components.json`)
+
+**Forms:**
+
+```typescript
+// Standard form pattern
+const form = useForm<z.infer<typeof MySchema>>({
+  resolver: zodResolver(MySchema as any), // `as any` required for Zod v4 + react-hook-form
+  defaultValues: { ... },
+});
 ```
-src/actions/users.ts (default: server action)
-src/data-access/users.ts (named exports: queries)
-src/lib/permissions.ts (named + type exports: utilities + types)
-src/components/settings/bank-profile-form.tsx (default: component)
-src/lib/validations/users.ts (named exports: Zod schema + inferred type)
+
+**Server Components vs Client Components:**
+
+- Pages are server components by default (data fetching at top level)
+- Interactive components: `"use client"` directive at top of file
+- Data flows down: server component fetches → passes to client component as props
+
+**Tenant Isolation (critical):**
+
+```typescript
+// Always get tenantId from session — NEVER from URL/body
+const session = await getRequiredSession();
+const data = await listObservations(session.user.tenantId);
 ```
+
+**State Management:**
+
+- Server state: React Query (`@tanstack/react-query`) for client-side data fetching
+- UI state: Zustand stores in `src/stores/`
+- Form state: react-hook-form
+
+**Date Formatting:**
+
+- Use `formatDate()` from `src/lib/utils.ts` — formats in Indian locale (en-IN)
+- Never use raw ISO strings or `toLocaleDateString()` directly
+
+**Tailwind CSS v4:**
+
+- Use `w-[var(--sidebar-width)]` NOT `w-[--sidebar-width]` (v4 change)
+- `@theme inline` block required to register CSS variable colors
+- `@custom-variant dark (&:is(.dark *));` for dark mode
 
 ---
 
-_Convention analysis: 2026-02-22_
+_Convention analysis: 2026-02-25_

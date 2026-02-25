@@ -1,165 +1,154 @@
 # Technology Stack
 
-**Analysis Date:** 2026-02-22
+**Analysis Date:** 2026-02-25
 
 ## Languages
 
 **Primary:**
 
-- TypeScript 5.9 - All application code (`.ts`, `.tsx`), type-safe development with strict mode enabled
-- JavaScript - Build tooling, configuration files
-- SQL - Database views, triggers, and standalone migrations in `prisma/migrations/`
+- TypeScript 5.9 - All application code (`src/`, `prisma/`, config files)
 
 **Secondary:**
 
-- JSX/TSX - React components and Next.js pages (React 19.2)
-- Bash - Deployment scripts in `deploy/` and utility scripts in `scripts/`
+- SQL - PostgreSQL views, triggers, manual migrations (`prisma/*.sql`)
+- CSS - Tailwind CSS v4 with native CSS variables
 
 ## Runtime
 
 **Environment:**
 
-- Node.js 22.x (Alpine) - Specified in `Dockerfile` (node:22-alpine)
-- No `.nvmrc` file present; version locked to Node 22 in Docker
+- Node.js (targeting Node 18+ for standalone Docker output)
+- Edge runtime for `src/middleware.ts` only
 
 **Package Manager:**
 
-- pnpm (latest, version controlled via corepack)
-- Lock file: `pnpm-lock.yaml` (committed, frozen installs via `--frozen-lockfile`)
+- pnpm (version from `pnpm-lock.yaml`)
+- Lockfile: present (`pnpm-lock.yaml`)
 
 ## Frameworks
 
 **Core:**
 
-- Next.js 16.1.6 - Full-stack framework with App Router, Turbopack dev server, server actions
-- React 19.2.4 - UI component library with React Server Components (RSC) support
+- Next.js 16.1.6 - Full-stack React framework with App Router
+  - Turbopack enabled for development (`next dev --turbopack`)
+  - Standalone output for Docker production deploys
+  - Server Actions with 5MB body size limit
+- React 19.2.4 - UI rendering
+- next-intl 4.8.3 - Internationalization with 4 locales (en, hi, mr, gu)
 
-**Styling & UI:**
+**UI Component System:**
 
-- Tailwind CSS 4.1.18 - Utility-first CSS with native CSS variables
-- shadcn/ui - Headless component library (30+ components)
-- Radix UI 1.2+ - Primitive components (accordion, dialog, popover, select, tabs, toggle, tooltip, etc.)
-- Lucide React 0.563 - Icon library (imported via `@/lib/icons` barrel export)
-- Recharts 3.7.0 - Chart library for KPI widgets (pie, radial bar, area, line charts)
-- Sonner 2.0.7 - Toast notifications
+- shadcn/ui "new-york" variant - Component library (see `components.json`)
+- Radix UI - Headless primitives (accordion, dialog, dropdown, select, tabs, toast, tooltip, etc.)
+- Tailwind CSS 4.2.0 - Utility-first styling with CSS-native variable system
+- tailwindcss-animate 1.0.7 - Animation utilities
+- class-variance-authority 0.7.1 - Variant management
+- tailwind-merge 3.4.0 - Conditional class merging
+- lucide-react 0.563.0 - Icons (ALWAYS import via `@/lib/icons` barrel, not directly)
 
-**Forms & Validation:**
+**Data & Forms:**
 
-- react-hook-form 7.71.1 - Form state management
-- @hookform/resolvers 5.2.2 - Integration with validation schemas
-- Zod 4.3.6 - TypeScript-first schema validation (with `zodResolver(Schema as any)` pattern)
-- @t3-oss/env-nextjs 0.13.10 - Environment variable validation at build time
+- Prisma 7.4.1 ORM with `@prisma/adapter-pg` PostgreSQL adapter
+- react-hook-form 7.71.2 - Form state management
+- @hookform/resolvers 5.2.2 - Zod resolver integration
+- Zod 4.3.6 - Schema validation (use `zodResolver(Schema as any)` for RHF compat)
+- @tanstack/react-query 5.90.20 - Server state / async data
+- @tanstack/react-table 8.21.3 - Table state management
+- zustand 5.0.11 - Client-side global state
+
+**Charts & Reports:**
+
+- recharts 3.7.0 - Data visualization (charts, dashboards)
+- exceljs 4.4.0 - XLSX multi-tab report generation (server-external bundle)
+- @react-pdf/renderer 4.3.2 - PDF report generation (server-external bundle)
 
 **Testing:**
 
-- Playwright 1.58.2 - End-to-end testing (E2E)
-- Vitest 4.0.18 - Unit test runner (node environment, happy-dom)
-- @vitest/coverage-v8 4.0.18 - Code coverage reporting
-- @playwright/test 1.58.2 - E2E test framework
+- Playwright 1.58.2 - E2E tests in `tests/e2e/`
+- Vitest 4.0.18 - Unit tests in `src/lib/__tests__/`
+- @vitest/coverage-v8 4.0.18 - Coverage reports
+- happy-dom 20.5.1 - DOM environment for unit tests
 
-**Build & Dev:**
+**Build/Dev:**
 
-- Turbopack - Dev server bundler (enabled via `next dev --turbopack`)
-- ESLint 9.39.2 - Code linting (Next.js core-web-vitals + TypeScript rules)
-- Prettier 3.8.1 - Code formatting with prettier-plugin-tailwindcss
-- @next/bundle-analyzer 16.1.6 - Bundle size analysis (enabled via ANALYZE=true)
-
-**ORM & Database:**
-
-- Prisma 7.3.0 - Database ORM
-- @prisma/adapter-pg 7.3.0 - PostgreSQL adapter for Prisma
-- Prisma Client (generated to `src/generated/prisma/`)
+- tsx 4.21.0 - TypeScript script execution (seed scripts, migrations)
+- @next/bundle-analyzer 16.1.6 - Bundle size analysis (`ANALYZE=true pnpm build:analyze`)
+- dotenv 17.3.1 - Env loading for scripts
+- pino-pretty 13.1.3 - Dev log formatting
+- react-email 5.2.8 - Email template previews
 
 ## Key Dependencies
 
 **Critical:**
 
-- better-auth 1.4.18 - Authentication (email/password, session management, RBAC)
-- @aws-sdk/client-s3 3.985.0 - S3 file storage (evidence upload)
-- @aws-sdk/client-sesv2 3.985.0 - Email sending (AWS SES)
-- @aws-sdk/s3-request-presigner 3.985.0 - Pre-signed S3 URLs
-- pg 8.18.0 - PostgreSQL client (used by pg-boss job queue)
-- pg-boss 12.9.0 - PostgreSQL-backed job queue for background jobs
+- `better-auth` 1.4.18 - Authentication engine; session DB-backed via Prisma adapter; RBAC with 17 roles
+- `pg` 8.18.0 - Raw PostgreSQL driver; used by Prisma adapter and pg-boss
+- `pg-boss` 12.9.0 - PostgreSQL-backed job queue for background jobs (reminders, escalation, email digest); server-externalized
+- `@t3-oss/env-nextjs` 0.13.10 - Build-time environment variable validation via Zod (`src/env.ts`)
+- `bcryptjs` 3.0.3 - Password hashing for authentication
+- `pino` 10.3.1 - Structured logging (JSON in production)
+- `@sentry/nextjs` 10.39.0 - Error tracking (optional; degrades gracefully)
 
-**State Management:**
+**Infrastructure:**
 
-- zustand 5.0.11 - Client state store (with persist middleware)
-- @tanstack/react-query 5.90.20 - Server state management, caching, SSR support
-- @tanstack/react-table 8.21.3 - Headless table library
-
-**Utilities:**
-
-- date-fns 4.1.0 - Date manipulation (Indian locale en-IN)
-- next-intl 4.8.2 - Internationalization (4 locales: en, hi, mr, gu)
-- next-themes 0.4.6 - Dark mode theme support
-- clsx 2.1.1 - Class name utilities
-- tailwind-merge 3.4.0 - Merge Tailwind CSS classes without conflicts
-- class-variance-authority 0.7.1 - Variant management for components
-
-**File Operations:**
-
-- exceljs 4.4.0 - Excel (XLSX) file generation (externalized from server bundle)
-- @react-pdf/renderer 4.3.2 - PDF generation from React components (externalized from server bundle)
-- react-dropzone 14.4.0 - File upload handling
-- file-type 21.3.0 - Validate file types via magic bytes
-
-**Email & Notifications:**
-
-- @react-email/components 1.0.7 - React email template components
-- react-email 5.2.8 - Email template development framework
-
-**Logging & Monitoring:**
-
-- pino 10.3.1 - Structured JSON logger
-- pino-pretty 13.1.3 - Pretty-printed logs in development
-- @sentry/nextjs 10.39.0 - Error tracking and performance monitoring
-
-**Authentication & Security:**
-
-- bcryptjs 3.0.3 - Password hashing (used by better-auth)
-- server-only 0.0.1 - Ensure server-only modules don't leak to client
+- `@aws-sdk/client-s3` 3.985.0 - S3 file storage client
+- `@aws-sdk/client-sesv2` 3.985.0 - SES email sending client
+- `@aws-sdk/s3-request-presigner` 3.985.0 - Pre-signed URL generation
+- `@react-email/components` 1.0.8 - Email template components
+- `date-fns` 4.1.0 - Date manipulation
+- `file-type` 21.3.0 - MIME type detection for uploads
+- `react-dropzone` 14.4.0 - File upload UI
+- `sonner` 2.0.7 - Toast notifications
+- `next-themes` 0.4.6 - Light/dark theme support
+- `react-day-picker` 9.13.1 - Date picker component
+- `server-only` 0.0.1 - Ensures server modules never run on client
 
 ## Configuration
 
 **Environment:**
 
-- `.env.example` - Template with all required and optional variables
-- `src/env.ts` - Centralized Zod schema for environment variable validation
-- Validation runs at build time via `next.config.ts`
-- `SKIP_ENV_VALIDATION=1` bypasses validation for Docker builds without secrets
+- Validated at build time via `src/env.ts` using `@t3-oss/env-nextjs` + Zod
+- Set `SKIP_ENV_VALIDATION=1` for Docker builds without secrets at build time
+- `NEXT_PUBLIC_*` vars must be set at Docker BUILD time (Next.js inlines at build, not runtime)
+- `BETTER_AUTH_SECRET` must be hex-only (no `+`, `=`, `\` — base64 breaks JSON parsing)
+- Required: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`
+- Optional (degrade gracefully): AWS S3, AWS SES, Sentry
 
 **Build:**
 
-- `next.config.ts` - Next.js configuration (CSP headers, Sentry, bundle analyzer, serverExternalPackages)
-- `tsconfig.json` - TypeScript strict mode, path alias `@/*` → `./src/*`
-- `.prettierrc` - Prettier config (semi: true, singleQuote: false, tailwindcss plugin)
-- `eslint.config.mjs` - ESLint flat config (Next.js core-web-vitals + TypeScript)
-- `components.json` - shadcn/ui configuration (new-york style variant, Tailwind CSS v4)
+- `next.config.ts` - Next.js config with Sentry, next-intl, bundle analyzer wrappers
+- `tsconfig.json` - TypeScript config; `@/*` maps to `./src/*`
+- `tailwind.config.ts` - Tailwind configuration
+- `postcss.config.js` - PostCSS with `@tailwindcss/postcss`
+- `eslint.config.mjs` - ESLint with next config
+- `vitest.config.ts` - Vitest unit test config
+- `playwright.config.ts` - Playwright E2E config
+- `prisma.config.ts` - Prisma config
+- `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts` - Sentry initialization per runtime
 
-**Testing:**
+**Server Bundle Externalization:**
 
-- `vitest.config.ts` - Unit test config (node environment, coverage for `src/lib/**` and `src/services/**`)
-- `playwright.config.ts` - E2E test config (serial execution, 4 user roles, storage state auth)
+These packages are excluded from Next.js server bundle (native modules or too large):
+
+- `@react-pdf/renderer`, `pg-boss`, `exceljs`
 
 ## Platform Requirements
 
 **Development:**
 
-- Node.js 22.x or compatible
-- pnpm (latest)
-- PostgreSQL 16+ for local database (Docker Compose recommended)
-- Port 3000 available for dev server
+- pnpm installed globally
+- PostgreSQL 16 running locally or via Docker
+- Node.js compatible with Next.js 16 (18+)
+- Turbopack dev server on port 3000
 
 **Production:**
 
-- Node.js 22.x Alpine runtime (Docker container)
-- PostgreSQL 16+ (local on VPS or managed service)
-- AWS region: ap-south-1 (Mumbai) for RBI data localization
-  - S3 bucket for evidence storage
-  - SES for email notifications
-- Nginx reverse proxy with SSL (Certbot for Let's Encrypt)
-- systemd service manager or Docker orchestration
+- Docker multi-stage build (Dockerfile, docker-compose.prod.yml)
+- Node.js standalone output served via systemd (`aegis.service`)
+- PostgreSQL 16 (local on VPS or container)
+- Nginx reverse proxy with SSL (Certbot)
+- AWS Mumbai region (ap-south-1) for RBI data localization compliance
 
 ---
 
-_Stack analysis: 2026-02-22_
+_Stack analysis: 2026-02-25_

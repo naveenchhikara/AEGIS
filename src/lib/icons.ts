@@ -89,4 +89,6 @@ export {
   FileQuestion,
   Circle,
   Ban,
+  Paperclip,
+  Send,
 } from "lucide-react";

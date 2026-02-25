@@ -465,6 +465,9 @@ model Observation {
   // v6.0: discriminator for observation type
   observationType String @default("AUTO_LEGACY") // "FORMAL" or "AUTO_LEGACY"
 
+  // v6.0: link back to the ActionPoint that was promoted to this Observation (Phase 20)
+  sourceActionPointId String? @db.Uuid
+
   // Engagement tracking (Phase 12 — links observation to audit engagement)
   engagementId String?          @db.Uuid
   engagement   AuditEngagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)

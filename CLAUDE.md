@@ -5,8 +5,8 @@
 AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS platform** for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
 **Live:** https://aegis.nexlyadvisory.com
-**Scale:** 536 source files · 2,320-line Prisma schema · 71 DB models · 20 enums · 473 commits · 104 v5.0 requirements (complete) + 41 v6.0 requirements (in progress)
-**Status:** v5.0 complete (104/104 requirements). v6.0 RBIA Implementation in progress — Phase 18 (Foundation) planned, ready for execution.
+**Scale:** 639 source files · 2,333-line Prisma schema · 71 DB models · 20 enums · 617 commits · 104 v5.0 requirements (complete) + 41 v6.0 requirements (in progress)
+**Status:** v5.0 complete (104/104 requirements). v6.0 RBIA Implementation — Phases 18-23 complete, Phase 24 (Score Freeze Fixes) in progress, gap-closure phases 24-26 remaining.
 
 ## Tech Stack
 
@@ -24,6 +24,12 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **multi-tenant SaaS
 - **Logging:** pino + pino-pretty
 - **Testing:** Playwright (E2E), Vitest (unit)
 - **Package Manager:** pnpm
+
+## Working Style
+
+- **Always execute verifications yourself** — run tests, check code, use browser tools. Never present manual verification steps for the user to follow.
+- **Read relevant files before acting** — if a request is ambiguous, read recent files or ask one clarifying question rather than guessing.
+- **Bash conventions:** Use `rm -f` (not `rm`) to avoid interactive prompts. Use `yes |` prefix for commands that may prompt for confirmation.
 
 ## Quick Commands
 
@@ -61,21 +67,21 @@ tests/
 ├── e2e/                       # Playwright E2E specs
 └── auth.setup.ts              # Auth setup for E2E
 src/
-├── actions/                   # Server actions (81 files across 15 domains)
-├── app/                       # Next.js App Router (52 pages)
+├── actions/                   # Server actions (91 files across 15 domains)
+├── app/                       # Next.js App Router (61 pages)
 │   ├── (auth)/                # Login, signup
 │   ├── (dashboard)/           # All authenticated pages
 │   ├── (onboarding)/          # Tenant onboarding wizard
 │   ├── api/                   # REST endpoints (auth, health, exports, cron, reports)
 │   └── page.tsx               # Root redirect → /login
-├── components/                # 213 files across 30 dirs (ui/, layout/, domain-specific/)
+├── components/                # 239 files across 30 dirs (ui/, layout/, domain-specific/)
 ├── data/                      # RBI regulations (production), seed JSON (deprecated)
-├── data-access/               # Data Access Layer (39 files) — DB queries with tenant isolation
+├── data-access/               # Data Access Layer (47 files) — DB queries with tenant isolation
 ├── emails/                    # React Email templates (assignment, escalation, digest)
 ├── generated/prisma/          # Prisma-generated client
 ├── hooks/                     # Custom React hooks
 ├── jobs/                      # pg-boss background jobs (reminders, escalation, digest)
-├── lib/                       # Core utilities (35 files) — auth, permissions, engines, S3, SES
+├── lib/                       # Core utilities (40 files) — auth, permissions, engines, S3, SES
 ├── providers/                 # React context providers
 ├── services/                  # Business logic (risk-rating computation)
 ├── stores/                    # Zustand stores
@@ -83,21 +89,22 @@ src/
 └── types/                     # TypeScript type definitions
 ```
 
-## Routes (52 pages)
+## Routes (61 pages)
 
-| Group           | Routes                                                                                                       | Purpose                                           |
-| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login/signup, invitations, tenant setup           |
-| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | KPI widgets, analytics dashboards, audit log      |
-| RAM & Planning  | `/ram/[id]`, `/audit-plans`                                                                                  | 19-parameter risk scoring, annual plan simulation |
-| Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report}`                                                 | Field audit with section examination (568 items)  |
-| Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                               | Observation lifecycle with timeline               |
-| Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                     | Compliance tracking, branch responses             |
-| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk register, control library, issue management  |
-| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | UCB-specific regulatory modules                   |
-| Reports         | `/reports`                                                                                                   | XLSX multi-tab + PDF generation                   |
-| Admin           | `/admin/{users,branches,zones,templates,ram-config}`, `/settings`                                            | User/branch management, configuration             |
-| API             | `/api/{auth,health,dashboard,exports,reports,cron,download}`                                                 | REST endpoints                                    |
+| Group           | Routes                                                                                                                     | Purpose                                            |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                                  | Login/signup, invitations, tenant setup            |
+| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                                 | KPI widgets, analytics dashboards, audit log       |
+| RAM & Planning  | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                                        | 19-parameter risk scoring, annual plan simulation  |
+| Audit Execution | `/audit-execution`, `/audit-execution/create`, `/audit-execution/[id]/{sections,cash,loans,sma-npa,report,bh-certificate}` | Field audit with section examination (568 items)   |
+| RBIA (v6.0)     | `/audit-execution/[id]/rbia`, `/rbia/module/[moduleCode]`, `/rbia/findings`, `/rbia/meetings`, `/rbia/score`               | RBIA examination tree, scoring, findings, meetings |
+| Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                                             | Observation lifecycle with timeline                |
+| Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                                   | Compliance tracking, branch responses              |
+| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                                         | Risk register, control library, issue management   |
+| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping`               | UCB-specific regulatory modules                    |
+| Reports         | `/reports`                                                                                                                 | XLSX multi-tab + PDF generation                    |
+| Admin           | `/admin/{users,branches,zones,templates,ram-config}`, `/settings`                                                          | User/branch management, configuration              |
+| API             | `/api/{auth,health,dashboard,exports,reports,cron,download}`                                                               | REST endpoints                                     |
 
 ## Authentication & Authorization
 
@@ -134,22 +141,24 @@ Page (server component)
   → Component (client/server)   # Renders data
 ```
 
-- **DAL functions** are in `src/data-access/*.ts` — 39 files covering all domains
-- **Server actions** are in `src/actions/` — 81 files with auth + permission checks
+- **DAL functions** are in `src/data-access/*.ts` — 47 files covering all domains
+- **Server actions** are in `src/actions/` — 91 files with auth + permission checks
 - **Session helper:** `getRequiredSession()` from `@/data-access/session` — ALWAYS use this, never accept tenantId from URL/body
 
 ## Deployment
 
 - **Live URL:** https://aegis.nexlyadvisory.com
-- **VPS:** 4 vCPU, 16GB RAM, Ubuntu
-- **Runtime:** Node.js standalone output (Next.js)
-- **Database:** PostgreSQL 16 (local on VPS)
-- **Reverse Proxy:** Nginx with SSL (Certbot, valid till 2026-05-18)
-- **Process Manager:** systemd (`aegis.service`)
+- **VPS:** 145.223.19.8 — 4 vCPU, 16GB RAM, Ubuntu
+- **Container management:** Dockge (Docker stacks)
+- **Runtime:** Node.js standalone output (Next.js), Docker container `aegis-app` on port 3000
+- **Database:** PostgreSQL 16 — Docker container `postgres-postgres-1` on port 5432
+- **Reverse Proxy:** Nginx Proxy Manager with SSL on `aegis.nexlyadvisory.com` (valid till 2026-05-21)
 - **Docker:** Dockerfile (multi-stage build), docker-compose.yml, docker-compose.dev.yml, docker-compose.prod.yml
 - **Infrastructure as Code:** AWS CDK in `infra/` directory
 - **CI/CD:** GitHub Actions — `ci.yml` (build + test), `claude.yml` (Claude Code), `claude-code-review.yml`
 - **Region:** AWS ap-south-1 (Mumbai) for RBI data localization
+- **Deploy workflow:** Push to GitHub → SSH to VPS → `git pull` in project dir → Docker rebuild via Dockge
+- **Schema changes:** After deploy, run `prisma db push` inside container; disable triggers before seeding (`DISABLE TRIGGER USER`)
 
 ## Environment Variables
 
@@ -246,25 +255,28 @@ Before running E2E tests or deploying, verify:
 - `src/data/seed/` JSON files are **deprecated** for runtime use — pages should query the database via DAL functions
 - Server actions body size limit is 5MB (configured in `next.config.ts`)
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from the server bundle (`serverExternalPackages`)
+- **`NEXT_PUBLIC_*` vars must be set at Docker BUILD time** (ARG/ENV in Dockerfile) — Next.js inlines them, runtime env has no effect
+- **`BETTER_AUTH_SECRET` must be hex-only** (no `+`, `=`, `\`) — base64 chars cause JSON parse errors
+- **Shell escaping:** `!` in passwords gets mangled by bash/zsh — use Python or base64 for testing
+- **Health check URL:** Must use `http://127.0.0.1:3000` (not `localhost` — IPv6 resolution fails in Docker)
 
-## v6.0 RBIA Redesign (In Progress)
+## v6.0 RBIA Implementation (In Progress)
 
-**Phase 18 (Foundation)** is fully planned with 5 plans ready for execution. 41 requirements across 6 phases (18-23), 12 requirements in Phase 18.
+**Phases 18-23 complete.** 37/41 requirements satisfied. Gap-closure phases 24-26 address remaining 4 requirements. Phase 24 (Score Freeze Fixes) in progress.
 
-- **Dual examination models**: Old `ExaminationArea`/`ExaminationItem`/`AuditExaminationResponse` coexist with new `ExaminationNode`/`ExaminationResponse` — old models will be removed in Phase 23 cleanup
 - **ExaminationNode**: Hierarchical tree with materialized path (`path` field), variable depth 0-5, replaces flat 2-level structure
 - **4-point scoring**: `ScoreLabel` enum (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) maps to decimal scores (1.0/0.75/0.5/0.0) with weighted roll-up and critical-item cap at module level
 - **Rating bands**: >80% Very Good, >65% Good, >50% Satisfactory, >40% Moderate, ≤40% Poor (RBIA Policy 2020, Section 8.9.1)
 - **ActionPoint vs Observation**: ActionPoints are operational findings (~15-40 per audit, simple lifecycle), Observations are formal 5C findings (~3-10 per audit)
-- **EngagementStatus**: Now 8 states: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
+- **EngagementStatus**: 8 states: PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED (+ CANCELLED)
 - **BranchRbiaScore**: Frozen JSONB snapshot (summary: composite score, per-module scores, rating band) — DB trigger enforces immutability after freeze
 - **Schema is additive**: v6.0 models added alongside old models; both coexist until cleanup phase
 - **Terminology**: "Chief Audit Executive (CAE)" display strings renamed to "Head of Internal Audit (HIA)" — `Role.CAE` enum and `cae:*` permissions unchanged
-- **Planning docs**: `.planning/phases/18-foundation/` contains CONTEXT, RESEARCH, and 5 PLAN files
+- **Gap-closure phases**: Phase 24 (freeze button wiring + TS error + orphan cleanup), Phase 25 (manual module management UI), Phase 26 (S3 evidence upload with presigned URLs)
+- **Planning docs**: `.planning/phases/18-foundation/` through `.planning/phases/26-evidence-upload/`
 
 ## Known Issues
 
 1. **SES sandbox mode** — Email only goes to verified addresses; production access pending
 2. **DB views not in migrations** — 4 PostgreSQL views require manual SQL application after fresh deploy
 3. **Seed data mismatch** — Production DB may have old minimal seed vs comprehensive local seed
-4. **v6.0 models need db:push** — New ExaminationNode, ExaminationResponse, ActionPoint etc. models are in schema but may not exist in production DB yet

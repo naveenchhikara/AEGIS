@@ -69,7 +69,7 @@ interface LayoutProps {
  * 1. Back link to audit list
  * 2. Engagement stepper showing current lifecycle stage
  * 3. Status transition control with disabled tooltip when prerequisite not met
- * 4. Tab navigation (Examination / Findings / Meetings / Score)
+ * 4. Tab navigation (Examination / Loan Portfolio / Sampling / Findings / Meetings / Score)
  * 5. Page content (children -- each tab is a separate Next.js page)
  */
 export default async function RbiaLayout({ children, params }: LayoutProps) {
@@ -153,6 +153,11 @@ export default async function RbiaLayout({ children, params }: LayoutProps) {
             key: "loan-portfolio",
             label: "Loan Portfolio",
             href: `${basePath}/loan-portfolio`,
+          },
+          {
+            key: "sampling",
+            label: "Sampling",
+            href: `${basePath}/sampling`,
           },
           {
             key: "findings",

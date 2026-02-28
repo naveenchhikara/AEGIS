@@ -90,7 +90,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 
 ### Phase 30: Account Examination UI
 
-**Goal**: Auditors can examine sampled accounts one-by-one, answering questions in randomized order with embedded RBI guidance, marking each as compliant or violation with optional notes — and HIA can manage the question library.
+**Goal**: Auditors can examine sampled accounts one-by-one — ALL questions are asked for each account (account-centric workflow) with embedded RBI guidance, marking each as compliant or violation with optional notes — and HIA can manage the question library.
 
 **Depends on**: Phase 29
 

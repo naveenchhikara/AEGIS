@@ -22,7 +22,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Account Examination
 
-- [ ] **AEXM-01**: When auditor opens a credit module, system presents sampled accounts one-by-one with randomized question order
+- [ ] **AEXM-01**: When auditor opens a credit module, system presents sampled accounts one-by-one — ALL questions are asked for each account (full question set per account, account-centric workflow)
 - [ ] **AEXM-02**: Each question displays embedded RBI guideline reference (if applicable) and best practice tips for auditor guidance
 - [ ] **AEXM-03**: Auditor marks each question per account as compliant or violation (instance tracking)
 - [ ] **AEXM-04**: Auditor can add notes/evidence per question per account to document findings

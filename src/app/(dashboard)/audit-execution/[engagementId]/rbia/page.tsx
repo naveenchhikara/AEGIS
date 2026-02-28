@@ -3,7 +3,10 @@ import {
   getEngagementModuleScores,
   getEngagementBranchScore,
 } from "@/data-access/rbia-scoring";
-import { getModuleSelections } from "@/data-access/rbia-examination";
+import {
+  getModuleSelections,
+  getAllModules,
+} from "@/data-access/rbia-examination";
 import { getEngagementWithTeam } from "@/data-access/audit-execution";
 import { hasPermission } from "@/lib/permissions";
 import { RbiaScorePanel } from "@/components/rbia/rbia-score-panel";
@@ -36,15 +39,31 @@ export default async function RbiaExaminationPage({ params }: PageProps) {
   }
 
   // Fetch all RBIA examination data in parallel
-  const [moduleScores, moduleSelections, branchScore] = await Promise.all([
-    getEngagementModuleScores(session, engagementId),
-    getModuleSelections(session, engagementId),
-    getEngagementBranchScore(session, engagementId),
-  ]);
+  const [moduleScores, moduleSelections, branchScore, allModules] =
+    await Promise.all([
+      getEngagementModuleScores(session, engagementId),
+      getModuleSelections(session, engagementId),
+      getEngagementBranchScore(session, engagementId),
+      getAllModules(session),
+    ]);
 
   const engagementStatus = engagement.status as string;
   const branchName = engagement.branch?.name ?? "Unknown Branch";
   const canFreeze = hasPermission(session.user.roles, "rbia:score_freeze");
+
+  // Statuses where module management is permitted
+  const MODULE_MGMT_ALLOWED_STATUSES = new Set([
+    "PLANNED",
+    "TEAM_ASSIGNED",
+    "OPENING_MEETING",
+    "IN_PROGRESS",
+  ]);
+
+  const isFrozen = branchScore !== null && branchScore.frozenAt !== null;
+  const canManageModules =
+    hasPermission(session.user.roles, "rbia:examine") &&
+    MODULE_MGMT_ALLOWED_STATUSES.has(engagementStatus) &&
+    !isFrozen;
 
   return (
     <div className="space-y-6">
@@ -66,6 +85,8 @@ export default async function RbiaExaminationPage({ params }: PageProps) {
         modules={moduleScores}
         engagementId={engagementId}
         moduleSelections={moduleSelections}
+        allModules={allModules}
+        canManageModules={canManageModules}
       />
     </div>
   );

@@ -445,31 +445,36 @@ describe("generateSample", () => {
   // ── Test 6: Cascading overflow ────────────────────────────────────────────────
   describe("cascading overflow", () => {
     it("cascades redistribution when target bucket also has insufficient accounts", () => {
-      // NEWLY_SANCTIONED: 0 eligible (all old)
-      // PRIOR_OBSERVATIONS: 0 eligible (none flagged)
-      // Both overflow to AMOUNT_WISE
-      const accounts = Array.from({ length: 5 }, (_, i) =>
+      // 30 accounts, 10% = 3 total sample
+      // NEWLY_SANCTIONED: 0 eligible (all old) — requests 1 → overflows
+      // PRIOR_OBSERVATIONS: 0 eligible (none flagged) — requests 1 → overflows
+      // AMOUNT_WISE: absorbs both overflows (has 30 eligible accounts)
+      const accounts = Array.from({ length: 30 }, (_, i) =>
         makeAccount({
           id: `ACC_${i}`,
           sanctionDate: FIVE_YEARS_AGO, // not newly sanctioned
           hasPriorObservations: false,
-          outstandingAmount: (5 - i) * 10000,
-          dpd: 0,
+          outstandingAmount: (30 - i) * 10000,
+          dpd: i,
         }),
       );
       const input: SamplingInput = {
         accounts,
-        sampleSizePct: 20, // 1 account total
+        sampleSizePct: 10, // Math.round(30 * 10/100) = 3 total
         criteriaBuckets: makeBuckets(
-          { bucket: "NEWLY_SANCTIONED", pct: 34 },
-          { bucket: "PRIOR_OBSERVATIONS", pct: 33 },
-          { bucket: "AMOUNT_WISE", pct: 33 },
+          { bucket: "AMOUNT_WISE", pct: 34 }, // ~1 account, has eligible
+          { bucket: "NEWLY_SANCTIONED", pct: 33 }, // ~1 account, 0 eligible → overflow
+          { bucket: "PRIOR_OBSERVATIONS", pct: 33 }, // ~1 account, 0 eligible → overflow
         ),
       };
       const result = generateSample(input);
-      // Should not crash, and all overflow should eventually land somewhere
+      // Both NEWLY_SANCTIONED and PRIOR_OBSERVATIONS should have warnings
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.totalSelected).toBeGreaterThanOrEqual(0);
+      // All selected accounts should come from AMOUNT_WISE (the only eligible bucket)
+      expect(result.totalSelected).toBeGreaterThan(0);
+      for (const a of result.sampledAccounts) {
+        expect(a.bucket).toBe("AMOUNT_WISE");
+      }
     });
   });
 

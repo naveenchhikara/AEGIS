@@ -108,6 +108,12 @@ export default async function RbiaLayout({ children, params }: LayoutProps) {
 
   const basePath = `/audit-execution/${engagementId}/rbia`;
 
+  // HIA/CAE only — conditionally show Questions tab
+  const canManageQuestions = hasPermission(
+    userRoles,
+    "audit_execution:manage_sections",
+  );
+
   return (
     <div className="space-y-4">
       {/* Back link */}
@@ -160,6 +166,11 @@ export default async function RbiaLayout({ children, params }: LayoutProps) {
             href: `${basePath}/sampling`,
           },
           {
+            key: "account-exam",
+            label: "Account Exam",
+            href: `${basePath}/examination/CRD-HLN`,
+          },
+          {
             key: "findings",
             label: "Findings",
             href: `${basePath}/findings`,
@@ -174,6 +185,16 @@ export default async function RbiaLayout({ children, params }: LayoutProps) {
             label: "Score",
             href: `${basePath}/score`,
           },
+          // HIA/CAE only — hidden from auditors
+          ...(canManageQuestions
+            ? [
+                {
+                  key: "questions",
+                  label: "Questions",
+                  href: `${basePath}/questions`,
+                },
+              ]
+            : []),
         ]}
       />
 

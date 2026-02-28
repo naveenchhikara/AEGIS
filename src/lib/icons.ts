@@ -91,4 +91,7 @@ export {
   Ban,
   Paperclip,
   Send,
+  Lightbulb,
+  Archive,
+  EyeOff,
 } from "lucide-react";

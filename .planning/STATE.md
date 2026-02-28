@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
-status: defining_requirements
-last_updated: "2026-02-28T12:15:00.000Z"
+status: roadmap_complete
+last_updated: "2026-02-28T12:30:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,61 +18,50 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** v7.0 Sample-Based Account Examination — defining requirements
+**Current focus:** v7.0 Sample-Based Account Examination — roadmap complete, ready to plan Phase 27
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 27 (Schema and Data Models) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-02-28 — Milestone v7.0 started
+Status: Roadmap complete, awaiting phase planning
+Last activity: 2026-02-28 — v7.0 roadmap created (5 phases, 20 requirements mapped)
 
-Progress: [██████████] 100% (34/34 plans complete)
+Progress: [----------] 0% (0/TBD plans complete)
 
-## Phase 19 Plans
+## Phase Overview
 
-| Plan  | Type    | Wave | Requirements     | What it builds                                                             |
-| ----- | ------- | ---- | ---------------- | -------------------------------------------------------------------------- |
-| 19-01 | Execute | 1    | ENGG-05, ENGG-06 | `rbia-examination.ts` — flat tree load + buildTree() + module selection    |
-| 19-02 | Execute | 1    | —                | `rbia-scoring.ts` — module scores, BranchRbiaScore history, Decimal→number |
-| 19-03 | Execute | 1    | FIND-05          | `rbia-findings.ts` — ActionPoints + Observations + carry-forward APs       |
-| 19-04 | Execute | 1    | —                | `rbia-meetings.ts` — meeting records query + atomic upsert                 |
-| 19-05 | Execute | 1    | ENGG-07          | Engagement gateway — RBIA/legacy fork + /rbia/ stub page                   |
-
-All 5 plans are Wave 1 (fully parallel, no dependencies).
+| Phase | Name                   | Requirements                                                  | Status      |
+| ----- | ---------------------- | ------------------------------------------------------------- | ----------- |
+| 27    | Schema and Data Models | QMGT-01, QMGT-04, XMOD-01, XMOD-02                            | Not started |
+| 28    | Loan Data Upload       | DATA-01, DATA-02, DATA-03                                     | Not started |
+| 29    | Sampling Engine        | SMPL-01, SMPL-02, SMPL-03, SMPL-04                            | Not started |
+| 30    | Account Examination UI | AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03 | Not started |
+| 31    | Instance-Based Scoring | CSCR-01, CSCR-02, CSCR-03, CSCR-04                            | Not started |
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (v6.0 baseline):**
 
-- Total plans completed: 5 (v6.0)
-- Average duration: ~10 min
-- Total execution time: ~50 min
+- Total plans completed: 34 (v6.0)
+- Average duration: ~10 min/plan
+- Total phases: 9 phases (18-26)
 
-**By Phase:**
+**By Phase (v6.0):**
 
-| Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| 18    | 5     | ~50m  | ~10m     |
-
-**Recent Trend:** Phase 18 complete (5/5 plans), Phase 19 planned (5 plans)
+| Phase | Plans | Avg/Plan |
+| ----- | ----- | -------- |
+| 18    | 5     | ~10m     |
+| 19    | 5     | ~10m     |
+| 20    | 5     | ~10m     |
+| 21    | 4     | ~10m     |
+| 22    | 5     | ~10m     |
+| 23    | 5     | ~10m     |
+| 24    | 2     | ~10m     |
+| 25    | 2     | ~10m     |
+| 26    | 1     | ~10m     |
 
 _Updated after each plan completion_
-| Phase 18 P01 | 2 | 8 min | 2 files |
-| Phase 18 P03 | 5 | 1 tasks | 1 files |
-| Phase 18 P04 | 5 | 1 tasks | 5 files |
-| Phase 18 P05 | 5 | 2 tasks | 3 files |
-| Phase 18-foundation P02 | 12 | 2 tasks | 5 files |
-| Phase 19 P02 | 8 | 1 tasks | 1 files |
-| Phase 19-data-access-layer P01 | 8 | 1 tasks | 1 files |
-| Phase 19 P05 | 8 | 2 tasks | 3 files |
-| Phase 19 P03 | 8 | 1 tasks | 1 files |
-| Phase 19 P04 | 5 | 1 tasks | 1 files |
-| Phase 24 P02 | 3 | 2 tasks | 4 files |
-| Phase 24 P01 | 4 | 2 tasks | 2 files |
-| Phase 25 P01 | 4 | 2 tasks | 4 files |
-| Phase 25-module-selection-ui P02 | 5 | 2 tasks | 4 files |
-| Phase 26-evidence-upload P01 | 10 | 2 tasks | 6 files |
 
 ## Milestone History
 
@@ -84,7 +73,7 @@ _Updated after each plan completion_
 | v4.0    | Platform Hardening               | 2026-02-21  | —          |
 | v5.0    | Pilot Readiness                  | 2026-02-22  | —          |
 | v6.0    | RBIA Implementation              | 2026-02-28  | 18-26      |
-| v7.0    | Sample-Based Account Examination | in progress | TBD        |
+| v7.0    | Sample-Based Account Examination | in progress | 27-31      |
 
 ## Accumulated Context
 
@@ -93,52 +82,29 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- v6.0: Hierarchical ExaminationNode tree (variable depth 0-5, materialized path) replaces flat ExaminationArea/Item
-- v6.0: 4-point scoring with weighted roll-up and critical-item cap at 0.5 when NON_COMPLIANT
-- v6.0: Dual findings — ActionPoints (operational) + Observations (formal 5C) as separate models
-- v6.0: BranchRbiaScore frozen JSONB snapshot — DB trigger enforces immutability after freeze
-- v6.0: Rating band thresholds from RBIA-POLICY-2020.md (>80% Very Good, >65% Good, >50% Satisfactory, >40% Moderate, ≤40% Poor)
-- v6.0: Critical-item cap at module level only — does not propagate to composite score
-- v6.0: EXAM-10 (freeze server action) moved to Phase 20 (Server Actions) — Phase 18 provides computation functions only
-- [Phase 18]: BEFORE UPDATE trigger chosen for BranchRbiaScore so exception fires before write occurs
-- [Phase 18]: Role.CAE enum and cae:\* permissions unchanged — only display strings updated for TERM-01 compliance
-- [Phase 18-01]: Critical-item cap is a ceiling (not floor) — scores below 0.5 are NOT raised by cap
-- [Phase 18-01]: toPercentage uses Math.round to prevent floating-point under-counting (14-item edge case)
-- [Phase 18-foundation]: Typed Record<EngagementStatus, EngagementTransitionDef[]> state machine: compile-time exhaustiveness for engagement lifecycle
-- [Phase 19]: Flat findMany + buildTree() for tree loading (~200-500 nodes, O(n) reconstruction)
-- [Phase 19]: Two typed arrays (actionPoints[] + observations[]) for findings — maps to Phase 22 separate tabs
-- [Phase 19]: Carry-forward: OPEN mapped to ISSUED + BM_RESPONSE_DUE, PARTIALLY_RESOLVED mapped to BM_RESPONDED
-- [Phase 19]: Engagement gateway uses auditType === "RBIA" with compound sectionInstances check
-- [Phase 19]: getEngagementModuleScores uses bulk findMany + TypeScript grouping (not N+1)
-- [Phase 19]: buildTree() pure function exported from rbia-examination DAL for testability
-- [Phase 19]: Engagement gateway uses compound check (auditType=RBIA AND no sectionInstances) to safely handle pre-v6.0 engagements
-- [Phase 19]: Two typed arrays (actionPoints[] + observations[]) for RBIA findings — maps to Phase 22 separate tabs
-- [Phase 19]: Carry-forward: ISSUED + BM_RESPONSE_DUE + BM_RESPONDED (mapped from OPEN + PARTIALLY_RESOLVED per CONTEXT.md)
-- [Phase 19]: Import MeetingType from @/generated/prisma/enums (no barrel index.ts in generated folder)
-- [Phase 24]: scoringTreeSnapshot is ScoredNodeSnapshot[] (array of module nodes), not a single root node — matches freezeRbiaScore output format
-- [Phase 24]: name field carried via (n as any).name cast in serializeNode since ScoredNode type lacks name property
-- [Phase 24-01]: canFreeze computed server-side via hasPermission and passed as boolean prop -- avoids client-side permission logic
-- [Phase 24-01]: Button visibility gated by canFreeze AND !isFrozen; enable state gated by allModulesScored -- separate concerns
-- [Phase 25-01]: removalReason approach: keep delete(), record reason via setAuditContext justification in transaction — simpler than soft-delete, reason captured in audit log
-- [Phase 25-01]: Scored-items guard via materialized path prefix (path: startsWith) to find leaf descendants before allowing module removal
-- [Phase 25-01]: Delete moved inline into db.$transaction with setAuditContext — ensures audit context and delete are atomic
-- [Phase 25-02]: Dialog (not AlertDialog) for Add Module — non-destructive and multi-step with per-module reasons
-- [Phase 25-02]: canManageModules hides controls entirely when falsy (not just disables) — cleaner UX for read-only RBIA pages
-- [Phase 25-02]: Remove button positioned absolutely on Link (group relative) so Trash2 icon floats top-right without disrupting card layout
-- [Phase 26-01]: bm-evidence/ S3 namespace used to segregate BM response attachments from observation/exam evidence
-- [Phase 26-01]: Evidence count limit (5/AP) enforced server-side in confirmBmEvidenceUpload before DB write
+- v7.0: Sample-based examination builds on top of v6.0 ExaminationNode tree — leaf items become per-account questions
+- v7.0: New models needed: LoanAccount, SamplingConfig, AccountExamResponse, ExaminationQuestion
+- v7.0: Existing scoring-engine.ts adapts to consume violation rates (compliance %) rather than direct 4-point scores
+- v7.0: Sampling criteria locked from auditor modification — HIA-only write access
+- v7.0: Phase ordering: schema first → upload → sampling → exam UI → scoring (each unblocks the next)
+- v7.0: QMGT-01 (default question set) placed in Phase 27 (schema) because seeding requires the model to exist
+- v7.0: XMOD-01 and XMOD-02 (cross-module architecture) placed in Phase 27 as they are schema-level concerns (moduleCode field on question model)
+- v7.0: DATA-01 upload UI placed in Phase 28 (separate from schema) to allow schema to be independently verifiable
+- v7.0: Compliance % thresholds for 4-point mapping to be confirmed against RBIA-POLICY-2020.md during Phase 31 planning
 
 ### Pending Todos
 
-- Phase 20: Add sourceActionPointId to Observation schema for promote-to-observation link
+- Confirm exact compliance % thresholds for FC/LC/PC/NC mapping (Phase 31 planning)
+- Confirm default question set content for Housing Loans (Phase 27 planning)
+- Confirm whether AccountExamResponse evidence upload reuses v6.0 S3 presigned URL pattern (Phase 30 planning)
 
 ### Blockers/Concerns
 
-- Phase 19: ExaminationNode seed completeness unknown — node count, weights, and applicableBranchTypes for full production tree must be confirmed before Phase 21 can validate tree rendering
-- Phase 23: RBIA audit report 8-section format should be validated against a real UCB RBIA audit report before PDF implementation
+- ExaminationQuestion weight field: confirm whether questions inside a credit module use the same weighted roll-up as ExaminationNode items or a simpler average
+- Sampling bucket overflow behavior (e.g., not enough newly sanctioned loans) needs product decision before Phase 29 implementation
 
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 24-01-PLAN.md (freeze button wiring) -- Phase 24 fully complete
-Resume with: `/gsd:execute-phase 25`
+Stopped at: v7.0 roadmap created — 5 phases, 20 requirements mapped
+Resume with: `/gsd:plan-phase 27`

@@ -73,17 +73,38 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ## Traceability
 
-| Requirement                         | Phase | Status |
-| ----------------------------------- | ----- | ------ |
-| (Populated during roadmap creation) |       |        |
+| Requirement | Phase                            | Status  |
+| ----------- | -------------------------------- | ------- |
+| QMGT-01     | Phase 27: Schema and Data Models | Pending |
+| QMGT-04     | Phase 27: Schema and Data Models | Pending |
+| XMOD-01     | Phase 27: Schema and Data Models | Pending |
+| XMOD-02     | Phase 27: Schema and Data Models | Pending |
+| DATA-01     | Phase 28: Loan Data Upload       | Pending |
+| DATA-02     | Phase 28: Loan Data Upload       | Pending |
+| DATA-03     | Phase 28: Loan Data Upload       | Pending |
+| SMPL-01     | Phase 29: Sampling Engine        | Pending |
+| SMPL-02     | Phase 29: Sampling Engine        | Pending |
+| SMPL-03     | Phase 29: Sampling Engine        | Pending |
+| SMPL-04     | Phase 29: Sampling Engine        | Pending |
+| AEXM-01     | Phase 30: Account Examination UI | Pending |
+| AEXM-02     | Phase 30: Account Examination UI | Pending |
+| AEXM-03     | Phase 30: Account Examination UI | Pending |
+| AEXM-04     | Phase 30: Account Examination UI | Pending |
+| AEXM-05     | Phase 30: Account Examination UI | Pending |
+| QMGT-02     | Phase 30: Account Examination UI | Pending |
+| QMGT-03     | Phase 30: Account Examination UI | Pending |
+| CSCR-01     | Phase 31: Instance-Based Scoring | Pending |
+| CSCR-02     | Phase 31: Instance-Based Scoring | Pending |
+| CSCR-03     | Phase 31: Instance-Based Scoring | Pending |
+| CSCR-04     | Phase 31: Instance-Based Scoring | Pending |
 
 **Coverage:**
 
 - v7.0 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-02-28_
-_Last updated: 2026-02-28 after initial definition_
+_Last updated: 2026-02-28 after roadmap creation (all 20 requirements mapped)_

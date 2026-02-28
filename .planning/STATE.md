@@ -1,31 +1,31 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: RBIA Implementation
-status: unknown
-last_updated: "2026-02-28T11:48:11.002Z"
+milestone: v7.0
+milestone_name: Sample-Based Account Examination
+status: defining_requirements
+last_updated: "2026-02-28T12:15:00.000Z"
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 34
-  completed_plans: 34
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-22)
+See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** v6.0 RBIA Implementation complete — all phases and requirements satisfied
+**Current focus:** v7.0 Sample-Based Account Examination — defining requirements
 
 ## Current Position
 
-Phase: 26 of 26 complete (Evidence Upload — DONE)
-Plan: 1 of 1 complete
-Status: Phase 26 complete — 26-01 BM evidence upload wired (BMRP-02 fully satisfied)
-Last activity: 2026-02-28 — Phase 26-01 complete (BmEvidenceUploadPanel + server actions + BmResponseApCard wiring)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-28 — Milestone v7.0 started
 
 Progress: [██████████] 100% (34/34 plans complete)
 
@@ -76,14 +76,15 @@ _Updated after each plan completion_
 
 ## Milestone History
 
-| Version | Name                | Date        | Phases     |
-| ------- | ------------------- | ----------- | ---------- |
-| v1.0    | Clickable Prototype | 2026-02-08  | 1-4        |
-| v2.0    | Working Core MVP    | 2026-02-10  | 5-14       |
-| v3.0    | RBIAS Full Platform | 2026-02-21  | 1-6, 15-17 |
-| v4.0    | Platform Hardening  | 2026-02-21  | —          |
-| v5.0    | Pilot Readiness     | 2026-02-22  | —          |
-| v6.0    | RBIA Implementation | in progress | 18-23      |
+| Version | Name                             | Date        | Phases     |
+| ------- | -------------------------------- | ----------- | ---------- |
+| v1.0    | Clickable Prototype              | 2026-02-08  | 1-4        |
+| v2.0    | Working Core MVP                 | 2026-02-10  | 5-14       |
+| v3.0    | RBIAS Full Platform              | 2026-02-21  | 1-6, 15-17 |
+| v4.0    | Platform Hardening               | 2026-02-21  | —          |
+| v5.0    | Pilot Readiness                  | 2026-02-22  | —          |
+| v6.0    | RBIA Implementation              | 2026-02-28  | 18-26      |
+| v7.0    | Sample-Based Account Examination | in progress | TBD        |
 
 ## Accumulated Context
 

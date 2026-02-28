@@ -142,24 +142,34 @@
 
 ---
 
-## v6.0 RBIA Schema Expansion (In Progress: 2026-02-22)
+## v6.0 RBIA Implementation (Shipped: 2026-02-28)
 
-**Delivered:** Expanded Prisma schema with new RBIA models, enums, and relations for enhanced audit tracking.
+**Delivered:** Full RBIA audit workflow — hierarchical examination tree with 4-point weighted scoring, dual findings model (ActionPoints + Observations), 8-state engagement lifecycle, branch RBIA scoring with frozen snapshots, BM batch response with evidence upload, module selection UI, and Housing Loans examination module with 6 sub-modules and 23 leaf items.
+
+**Phases completed:** 18-26 (9 phases, 34 plans)
 
 **Key accomplishments:**
 
-- Added all RBIA model definitions (71 models total, up from 63)
-- Expanded enums (20 enums total, up from 16)
-- New v6.0 relations for audit tracking
-- Complete valid schema with no errors
+- Hierarchical ExaminationNode tree with variable depth (0-5) and materialized path, replacing flat 2-level structure
+- 4-point scoring engine (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) with weighted roll-up, critical-item cap, and 5-band rating
+- Dual findings: ActionPoints (operational, ~15-40/audit) with simple lifecycle + Observations (formal 5C, ~3-10/audit)
+- 8-state engagement lifecycle (PLANNED→COMPLETED) with prerequisite guards and typed state machine
+- BranchRbiaScore frozen JSONB snapshots with DB trigger immutability enforcement
+- BM batch response workflow with 15-day deadline tracking and overdue escalation
+- S3 presigned URL evidence upload for BM action point responses
+- Module selection UI with auto-selection by branch type and manual add/remove
+- Score visualization with gauge, module breakdown bars, and drill-down
+- Housing Loans examination module seeded (6 sub-modules, 23 leaf items, weighted scoring)
+- CAE→HIA terminology rename across all display strings
 
 **Stats:**
 
-- 2,320-line Prisma schema (71 models, 20 enums)
-- 580 source files, 271K TypeScript LOC
+- 71 Prisma models, 20 enums, 2,320-line schema
+- 9 phases, 34 plans, 41 requirements satisfied
+- 639 source files
 
-**Git range:** `fb66ba9` (v5.0 end) → `868f47d` (docs: map existing codebase)
+**Git range:** `868f47d` (v5.0 end) → current HEAD
 
-**What's next:** Implementation of v6.0 schema features and pilot deployment.
+**What's next:** v7.0 Sample-Based Account Examination — transform static checklists into account-level auditing with loan data upload, sampling criteria, and instance-based compliance scoring.
 
 ---

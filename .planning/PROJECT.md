@@ -12,30 +12,28 @@ v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Bette
 
 If nothing else works, the platform must let auditors record observations, track them to closure, and let management see the consolidated picture without manual aggregation.
 
-## Current Milestone: v6.0 RBIA Implementation
+## Current Milestone: v7.0 Sample-Based Account Examination
 
-**Goal:** Implement the full RBIA audit workflow using v6.0 schema models — hierarchical examination tree, 4-point scoring, dual findings (ActionPoints + Observations), 8-state engagement lifecycle, branch RBIA scoring, and enhanced reporting.
+**Goal:** Transform RBIA credit module examination from static checklists to account-level sample-based auditing — loan data upload, HIA-controlled sampling, per-account question workflow with RBI guidance, and instance-based compliance scoring.
 
 **Target features:**
 
-- Hierarchical examination tree (ExaminationNode) with tenant-scoped CRUD, seeding, and tree navigation UI
-- Audit engagement workflow with 8-state lifecycle (PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED)
-- Module selection per engagement (auto + manual) based on branch type
-- 4-point scoring (FULLY/LARGELY/PARTIALLY/NON_COMPLIANT) with weighted roll-up per module and composite score
-- Dual finding model: ActionPoints (~15-40 per audit, simple lifecycle) and Observations (formal 5C, ~3-10 per audit)
-- Branch Manager batch response workflow with 15-day deadline tracking
-- Opening/exit meeting records with attendees and sign-off
-- BranchRbiaScore frozen snapshots for immutable historical scoring
-- Positive observations (commendable practices per engagement)
-- Enhanced RBIA-aware board reports and analytics
-- Cleanup: remove old ExaminationArea/ExaminationItem/AuditExaminationResponse models
+- Manual loan data upload (CSV/Excel) with standardized fields per credit module
+- HIA-controlled sampling criteria (% by newly sanctioned, amount, age, DPD, prior observations) — not modifiable by auditors
+- System-driven sample selection from uploaded branch loan portfolio based on configured criteria
+- Account-level question workflow — questions load one-by-one per sampled account with randomized order
+- Expanded question set with bank-customizable questions (add/edit by HIA)
+- RBI guideline references and best practice tips embedded per question
+- Instance-based violation tracking — violations per account per question noted as instances
+- Compliance % scoring — violation rate across sampled accounts maps to FC/LC/PC/NC
+- Architecture applies to all credit modules (Housing Loans, Gold Loans, Vehicle Loans, etc.)
 
 ## Current State
 
-**Shipped:** v5.0 Pilot Readiness (2026-02-22), v6.0 Schema (models defined)
-**Status:** v6.0 Phase 18 (Foundation) fully planned — 5 plans ready for execution. 41 requirements across 6 phases (18-23).
+**Shipped:** v6.0 RBIA Implementation (2026-02-28) — 9 phases, 34 plans, 41 requirements
+**Status:** v7.0 milestone starting — defining requirements
 **Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
-**Codebase:** 271K TypeScript LOC across 580 files, 2,320-line Prisma schema (71 models, 20 enums)
+**Codebase:** 639 source files, 2,320-line Prisma schema (71 models, 20 enums)
 **Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
 **Live:** https://aegis.nexlyadvisory.com
 **Outstanding:** AWS SES domain verification pending.
@@ -82,7 +80,7 @@ If nothing else works, the platform must let auditors record observations, track
 
 ### Active
 
-(Defined in REQUIREMENTS.md — v6.0 RBIA Implementation)
+(Defined in REQUIREMENTS.md — v7.0 Sample-Based Account Examination)
 
 ### Out of Scope
 
@@ -170,4 +168,11 @@ If nothing else works, the platform must let auditors record observations, track
 
 ---
 
-_Last updated: 2026-02-22 after Phase 18 planning complete (5 plans, verified)_
+| **Sample-based account examination** | Static checklists don't reflect actual loan portfolio quality; sampling provides evidence-based compliance scoring | — Pending |
+| **Manual loan data upload (CSV/Excel)** | CBS integration deferred; manual upload gives immediate value without vendor cooperation | — Pending |
+| **HIA-controlled sampling criteria** | Audit quality requires consistent sampling methodology controlled by HIA, not individual auditors | — Pending |
+| **Instance-based compliance scoring** | Violation % across sampled accounts is more objective than subjective checklist scoring | — Pending |
+
+---
+
+_Last updated: 2026-02-28 after v7.0 milestone started_

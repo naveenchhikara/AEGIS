@@ -17,22 +17,23 @@ const FIVE_YEARS_AGO = new Date("2021-02-28T00:00:00Z");
 function makeAccount(
   overrides: Partial<LoanAccountForSampling> & { id: string },
 ): LoanAccountForSampling {
-  return {
-    id: overrides.id,
-    accountNo: `ACC-${overrides.id}`,
-    borrowerName: `Borrower ${overrides.id}`,
+  const id = overrides.id;
+  const base: LoanAccountForSampling = {
+    id,
+    accountNo: `ACC-${id}`,
+    borrowerName: `Borrower ${id}`,
     productType: "TERM_LOAN",
     sanctionAmount: 100000,
-    sanctionDate: overrides.sanctionDate ?? THREE_YEARS_AGO,
-    outstandingAmount: overrides.outstandingAmount ?? 50000,
-    assetClass: overrides.assetClass ?? "STANDARD",
-    dpd: overrides.dpd ?? 0,
-    metadata: overrides.metadata ?? null,
+    sanctionDate: THREE_YEARS_AGO,
+    outstandingAmount: 50000,
+    assetClass: "STANDARD",
+    dpd: 0,
+    metadata: null,
     isSampled: false,
     sampledAt: null,
-    hasPriorObservations: overrides.hasPriorObservations ?? false,
-    ...overrides,
+    hasPriorObservations: false,
   };
+  return { ...base, ...overrides };
 }
 
 function makeBuckets(

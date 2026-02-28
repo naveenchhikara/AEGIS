@@ -43,7 +43,7 @@ export default async function PreAuditProfilingPage({ params }: PageProps) {
         </a>
 
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
             Pre-Audit Branch Profiling
           </h1>
           <p className="text-muted-foreground">

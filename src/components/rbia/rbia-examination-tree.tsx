@@ -36,6 +36,7 @@ import {
 import { saveExaminationResponse } from "@/actions/rbia/examination";
 import type { ExaminationTreeNode } from "@/data-access/rbia-examination";
 import type { ScoreLabel } from "@/generated/prisma/enums";
+import { SCORE_BUTTON_STYLES, getRatingBandBadgeClass } from "@/lib/constants";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -53,27 +54,7 @@ const SCORE_LABEL_SHORT: Record<ScoreLabel, string> = {
   NON_COMPLIANT: "NC",
 };
 
-const SCORE_BUTTON_STYLES: Record<
-  ScoreLabel,
-  { active: string; label: string }
-> = {
-  FULLY_COMPLIANT: {
-    active: "bg-green-500 text-white hover:bg-green-600 border-green-500",
-    label: "FC",
-  },
-  LARGELY_COMPLIANT: {
-    active: "bg-yellow-400 text-black hover:bg-yellow-500 border-yellow-400",
-    label: "LC",
-  },
-  PARTIALLY_COMPLIANT: {
-    active: "bg-orange-500 text-white hover:bg-orange-600 border-orange-500",
-    label: "PC",
-  },
-  NON_COMPLIANT: {
-    active: "bg-red-600 text-white hover:bg-red-700 border-red-600",
-    label: "NC",
-  },
-};
+// SCORE_BUTTON_STYLES imported from @/lib/constants
 
 const SCORE_LABELS_ORDERED: ScoreLabel[] = [
   "FULLY_COMPLIANT",
@@ -101,20 +82,8 @@ function getRatingBandLabel(score: number): RatingBandLabel {
   return "Poor";
 }
 
-function getRatingBandColor(label: RatingBandLabel): string {
-  switch (label) {
-    case "Very Good":
-      return "bg-green-700 text-white";
-    case "Good":
-      return "bg-green-500 text-white";
-    case "Satisfactory":
-      return "bg-yellow-400 text-black";
-    case "Moderate":
-      return "bg-orange-500 text-white";
-    case "Poor":
-      return "bg-red-600 text-white";
-  }
-}
+// getRatingBandColor imported from @/lib/constants as getRatingBandBadgeClass
+const getRatingBandColor = getRatingBandBadgeClass;
 
 /**
  * Recursive weighted roll-up: computes weighted average score from children.

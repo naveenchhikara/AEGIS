@@ -83,7 +83,9 @@ export default async function BhCertificatePage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">BH Certificate</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          BH Certificate
+        </h1>
         <p className="text-muted-foreground">
           {engagement.branch?.name || "Branch"} — Digital sign-off
         </p>

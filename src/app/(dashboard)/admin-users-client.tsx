@@ -3,6 +3,7 @@
 import { UserList } from "@/components/admin/user-list";
 import { RoleAssignmentForm } from "@/components/admin/role-assignment-form";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface AdminUsersClientProps {
   users: any[];
@@ -13,6 +14,7 @@ export default function AdminUsersClient({
   users,
   currentUserId,
 }: AdminUsersClientProps) {
+  const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
 
@@ -25,13 +27,15 @@ export default function AdminUsersClient({
     // In production, we'd revalidate page
     // For now, close dialog and reload page
     setShowRoleDialog(false);
-    window.location.reload();
+    router.refresh();
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Users
+        </h1>
         <p className="text-muted-foreground">
           Manage user accounts and assign roles
         </p>

@@ -85,18 +85,14 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Notifications */}
+        {/* Notifications — placeholder, no backend yet */}
         <Button
           variant="ghost"
           size="icon"
           className="relative h-10 w-10 md:h-8 md:w-8"
-          aria-label={t("notifications", { count: 3 })}
+          aria-label={t("notifications")}
         >
           <Bell className="h-4 w-4" />
-          <span
-            className="bg-destructive absolute top-1.5 right-1.5 h-2 w-2 rounded-full md:top-1 md:right-1"
-            aria-hidden="true"
-          />
         </Button>
 
         {/* User dropdown */}

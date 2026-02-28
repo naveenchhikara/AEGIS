@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { ENGAGEMENT_STATUS_STYLES } from "@/lib/constants";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 
 interface EngagementRow {
   id: string;
@@ -35,13 +37,6 @@ interface EngagementsTableProps {
   engagements: EngagementRow[];
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  PLANNED: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-green-100 text-green-800",
-  CANCELLED: "bg-red-100 text-red-800",
-};
-
 const STATUS_LABELS: Record<string, string> = {
   PLANNED: "Planned",
   IN_PROGRESS: "In Progress",
@@ -54,15 +49,11 @@ export function EngagementsTable({ engagements }: EngagementsTableProps) {
 
   if (engagements.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-        <p className="text-muted-foreground text-sm">
-          No audit engagements yet.
-        </p>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Create your first engagement from Audit Plans or click &quot;Create
-          Engagement&quot; above.
-        </p>
-      </div>
+      <EmptyStateCard
+        variant="inline"
+        title="No audit engagements yet"
+        message='Create your first engagement from Audit Plans or click "Create Engagement" above.'
+      />
     );
   }
 
@@ -83,8 +74,16 @@ export function EngagementsTable({ engagements }: EngagementsTableProps) {
           {engagements.map((engagement) => (
             <TableRow
               key={engagement.id}
-              className="cursor-pointer"
+              className="hover:bg-muted/50 cursor-pointer"
+              role="button"
+              tabIndex={0}
               onClick={() => router.push(`/audit-execution/${engagement.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/audit-execution/${engagement.id}`);
+                }
+              }}
             >
               <TableCell>
                 <div>
@@ -104,7 +103,7 @@ export function EngagementsTable({ engagements }: EngagementsTableProps) {
               <TableCell>
                 <Badge
                   variant="secondary"
-                  className={STATUS_STYLES[engagement.status] ?? ""}
+                  className={ENGAGEMENT_STATUS_STYLES[engagement.status] ?? ""}
                 >
                   {STATUS_LABELS[engagement.status] ?? engagement.status}
                 </Badge>

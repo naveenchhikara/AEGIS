@@ -80,7 +80,9 @@ export default async function IssuesPage(props: {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Issues Management</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Issues Management
+        </h1>
         <p className="text-muted-foreground">
           Track and manage audit issues, corrective actions, and risk acceptance
         </p>

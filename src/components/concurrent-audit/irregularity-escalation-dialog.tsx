@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { escalateIrregularity } from "@/actions/concurrent-audit/escalate-irregularity";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ export function IrregularityEscalationDialog({
   open,
   onOpenChange,
 }: IrregularityEscalationDialogProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(open || false);
   const [irregularityType, setIrregularityType] = useState<
     IrregularityType | ""
@@ -154,8 +156,7 @@ export function IrregularityEscalationDialog({
         }`,
       );
       handleOpenChange(false);
-      // Optionally reload the page to reflect status changes
-      setTimeout(() => window.location.reload(), 1000);
+      router.refresh();
     } else {
       toast.error(result.error);
     }

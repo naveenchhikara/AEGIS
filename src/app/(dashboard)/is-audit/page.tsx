@@ -37,7 +37,9 @@ export default async function IsAuditPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">IS/EDP Audit</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          IS/EDP Audit
+        </h1>
         <p className="text-muted-foreground">
           Information Systems audit, application inventory, and security
           checklists

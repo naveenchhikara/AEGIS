@@ -74,3 +74,83 @@ export const AUDIT_STATUS_COLORS = {
   "on-hold": "bg-amber-100 text-amber-800 border-amber-200",
   cancelled: "bg-red-100 text-red-700 border-red-200",
 } as const;
+
+/** Engagement status badge styles (keys match EngagementStatus enum) */
+export const ENGAGEMENT_STATUS_STYLES: Record<string, string> = {
+  PLANNED: "bg-blue-100 text-blue-800",
+  TEAM_ASSIGNED: "bg-indigo-100 text-indigo-800",
+  OPENING_MEETING: "bg-purple-100 text-purple-800",
+  IN_PROGRESS: "bg-yellow-100 text-yellow-800",
+  EXIT_MEETING: "bg-amber-100 text-amber-800",
+  REPORT_DRAFT: "bg-cyan-100 text-cyan-800",
+  COMPLETED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-red-100 text-red-800",
+};
+
+/** Rating band badge classes — for Badge/chip display in RBIA components */
+export const RATING_BAND_BADGE_STYLES: Record<
+  string,
+  { label: string; className: string }
+> = {
+  VERY_GOOD: {
+    label: "Very Good",
+    className: "bg-green-700 text-white border-transparent",
+  },
+  GOOD: {
+    label: "Good",
+    className: "bg-green-500 text-white border-transparent",
+  },
+  SATISFACTORY: {
+    label: "Satisfactory",
+    className: "bg-yellow-500 text-black border-transparent",
+  },
+  MODERATE: {
+    label: "Moderate",
+    className: "bg-orange-500 text-white border-transparent",
+  },
+  POOR: {
+    label: "Poor",
+    className: "bg-red-600 text-white border-transparent",
+  },
+};
+
+/** Rating band label → badge class (for display-name keyed lookups) */
+export function getRatingBandBadgeClass(label: string): string {
+  switch (label) {
+    case "Very Good":
+      return "bg-green-700 text-white";
+    case "Good":
+      return "bg-green-500 text-white";
+    case "Satisfactory":
+      return "bg-yellow-400 text-black";
+    case "Moderate":
+      return "bg-orange-500 text-white";
+    case "Poor":
+      return "bg-red-600 text-white";
+    default:
+      return "";
+  }
+}
+
+/** RBIA score button styles (keys match ScoreLabel enum) */
+export const SCORE_BUTTON_STYLES: Record<
+  string,
+  { active: string; label: string }
+> = {
+  FULLY_COMPLIANT: {
+    active: "bg-green-500 text-white hover:bg-green-600 border-green-500",
+    label: "FC",
+  },
+  LARGELY_COMPLIANT: {
+    active: "bg-yellow-400 text-black hover:bg-yellow-500 border-yellow-400",
+    label: "LC",
+  },
+  PARTIALLY_COMPLIANT: {
+    active: "bg-orange-500 text-white hover:bg-orange-600 border-orange-500",
+    label: "PC",
+  },
+  NON_COMPLIANT: {
+    active: "bg-red-600 text-white hover:bg-red-700 border-red-600",
+    label: "NC",
+  },
+};

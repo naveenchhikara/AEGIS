@@ -14,7 +14,9 @@ export default async function AdminZonesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Zone Management</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Zone Management
+        </h1>
         <p className="text-muted-foreground">
           Manage zones for grouping branches under the Zonal Audit Committee
           (ZAC) review workflow.

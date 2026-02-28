@@ -32,36 +32,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Lock, BarChart3, Loader2 } from "@/lib/icons";
+import { RATING_BAND_BADGE_STYLES } from "@/lib/constants";
 
-// ─── Rating band display config ──────────────────────────────────────────────
-
-type RatingBandConfig = {
-  label: string;
-  className: string;
-};
-
-const RATING_BAND_DISPLAY: Record<RatingBand, RatingBandConfig> = {
-  VERY_GOOD: {
-    label: "Very Good",
-    className: "bg-green-700 text-white border-transparent",
-  },
-  GOOD: {
-    label: "Good",
-    className: "bg-green-500 text-white border-transparent",
-  },
-  SATISFACTORY: {
-    label: "Satisfactory",
-    className: "bg-yellow-500 text-black border-transparent",
-  },
-  MODERATE: {
-    label: "Moderate",
-    className: "bg-orange-500 text-white border-transparent",
-  },
-  POOR: {
-    label: "Poor",
-    className: "bg-red-600 text-white border-transparent",
-  },
-};
+// Use canonical rating band config from constants
+const RATING_BAND_DISPLAY = RATING_BAND_BADGE_STYLES as Record<
+  RatingBand,
+  { label: string; className: string }
+>;
 
 // Engagement statuses where freeze button is visible
 const FREEZE_VISIBLE_STATUSES = new Set(["REPORT_DRAFT", "COMPLETED"]);

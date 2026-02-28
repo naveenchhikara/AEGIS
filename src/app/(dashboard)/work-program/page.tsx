@@ -66,7 +66,9 @@ export default async function WorkProgramPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Work Program</h1>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            Work Program
+          </h1>
           <p className="text-muted-foreground">
             Audit work program and task management
           </p>

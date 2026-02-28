@@ -16,7 +16,7 @@ import {
   Info,
 } from "@/lib/icons";
 import { updateTenantSettings } from "@/actions/settings";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import type { TenantSettings } from "@/data-access";
 
 interface BankProfileFormProps {
@@ -33,7 +33,6 @@ interface BankProfileFormProps {
  * 4. Financial Year — hardcoded April-March (DE7)
  */
 export function BankProfileForm({ settings }: BankProfileFormProps) {
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   // Editable fields state
@@ -73,16 +72,9 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
         nabardRegistrationNo: nabardRegistrationNo || null,
       });
       if (result.success) {
-        toast({
-          title: "Settings saved",
-          description: "Bank profile has been updated successfully.",
-        });
+        toast.success("Bank profile has been updated successfully.");
       } else {
-        toast({
-          title: "Error",
-          description: result.error ?? "Failed to save settings.",
-          variant: "destructive",
-        });
+        toast.error(result.error ?? "Failed to save settings.");
       }
     });
   }

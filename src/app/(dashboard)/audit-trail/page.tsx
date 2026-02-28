@@ -62,7 +62,9 @@ export default async function AuditTrailPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Audit Trail</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Audit Trail
+        </h1>
         <p className="text-muted-foreground">
           Complete, tamper-evident log of all data mutations. Entries are
           immutable and retained for 10 years per PMLA 2002.

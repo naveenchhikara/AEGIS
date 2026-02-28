@@ -98,7 +98,9 @@ export default async function ReportPage({ params }: PageProps) {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Audit Report</h1>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            Audit Report
+          </h1>
           <p className="text-muted-foreground">
             {engagement.branch?.name ?? "Branch"} — Report routing & approval
           </p>

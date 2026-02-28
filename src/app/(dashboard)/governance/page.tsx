@@ -50,7 +50,9 @@ export default async function GovernancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Governance Hub</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Governance Hub
+        </h1>
         <p className="text-muted-foreground">
           Policy framework, committee management, and board reporting
         </p>

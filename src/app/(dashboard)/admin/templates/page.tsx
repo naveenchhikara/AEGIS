@@ -36,7 +36,9 @@ export default async function AdminTemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Report Templates</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Report Templates
+        </h1>
         <p className="text-muted-foreground">
           Manage report section templates and checklists with version control
         </p>

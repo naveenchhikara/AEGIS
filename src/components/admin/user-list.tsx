@@ -56,7 +56,15 @@ export function UserList({ users, currentUserId, onUserClick }: UserListProps) {
             <TableRow
               key={user.id}
               className="hover:bg-muted/50 cursor-pointer"
+              role="button"
+              tabIndex={0}
               onClick={() => onUserClick(user)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onUserClick(user);
+                }
+              }}
             >
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell>{user.email}</TableCell>

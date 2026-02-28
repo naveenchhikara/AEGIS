@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -64,6 +65,7 @@ export function AceQuarterlyReview({
   items,
   currentQuarter,
 }: AceQuarterlyReviewProps) {
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<AceItem | null>(null);
   const [decision, setDecision] = useState<string>("");
   const [comments, setComments] = useState<string>("");
@@ -127,7 +129,7 @@ export function AceQuarterlyReview({
       setIsReviewDialogOpen(false);
       setSelectedItem(null);
       // Refresh page
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.error);
     }
@@ -144,7 +146,7 @@ export function AceQuarterlyReview({
       toast.success(
         `Processed ${result.data.processed} items for quarter ${result.data.quarter}`,
       );
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.error);
     }

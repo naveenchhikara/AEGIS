@@ -42,7 +42,9 @@ export default async function ConcurrentAuditPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Concurrent Audit</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Concurrent Audit
+        </h1>
         <p className="text-muted-foreground">
           Scope templates, rapid observations, and irregularity escalation
         </p>

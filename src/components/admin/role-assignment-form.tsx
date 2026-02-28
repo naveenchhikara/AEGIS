@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "@/lib/icons";
 
 interface RoleAssignmentFormProps {
@@ -67,22 +67,16 @@ export function RoleAssignmentForm({
     setIsSubmitting(true);
     try {
       await updateUserRoles(data);
-      toast({
-        title: "Roles updated",
-        description: `${userName}'s roles have been updated.`,
-      });
+      toast.success(`${userName}'s roles have been updated.`);
       onSuccess?.();
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Failed to update roles",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.",
+      );
     } finally {
       setIsSubmitting(false);
     }

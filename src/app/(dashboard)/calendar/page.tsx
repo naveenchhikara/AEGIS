@@ -30,7 +30,9 @@ export default async function CalendarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Audit Calendar</h1>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+            Audit Calendar
+          </h1>
           <p className="text-muted-foreground">
             Schedule and track audit engagements, meetings, and important dates
           </p>

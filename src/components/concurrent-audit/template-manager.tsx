@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   manageTemplate,
@@ -79,6 +80,7 @@ export function TemplateManager({
   templates,
   canExecute,
 }: TemplateManagerProps) {
+  const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -136,7 +138,7 @@ export function TemplateManager({
       );
       setIsCreateOpen(false);
       setEditingTemplate(null);
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.error);
     }
@@ -148,7 +150,7 @@ export function TemplateManager({
     if (result.success) {
       toast.success("Template deleted successfully");
       setDeleteConfirm(null);
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.error);
     }

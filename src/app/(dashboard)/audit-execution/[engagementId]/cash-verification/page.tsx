@@ -45,7 +45,9 @@ export default async function CashVerificationPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Cash Verification</h1>
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          Cash Verification
+        </h1>
         <p className="text-muted-foreground">
           {engagement.branch?.name} — {engagement.auditPlan?.year}{" "}
           {engagement.auditPlan?.quarter}

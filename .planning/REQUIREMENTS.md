@@ -30,7 +30,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Question Management
 
-- [ ] **QMGT-01**: System ships with expanded default question set per credit module (including account-level checks like PSL classification)
+- [x] **QMGT-01**: System ships with expanded default question set per credit module (including account-level checks like PSL classification)
 - [ ] **QMGT-02**: HIA can add custom questions to any credit module
 - [ ] **QMGT-03**: HIA can edit or deactivate existing questions (without deleting historical data)
 - [x] **QMGT-04**: Each question has fields: text, RBI reference (optional), best practice tip (optional), weight, isCritical flag
@@ -73,30 +73,30 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ## Traceability
 
-| Requirement | Phase                            | Status  |
-| ----------- | -------------------------------- | ------- |
-| QMGT-01     | Phase 27: Schema and Data Models | Pending |
+| Requirement | Phase                            | Status   |
+| ----------- | -------------------------------- | -------- |
+| QMGT-01     | Phase 27: Schema and Data Models | Complete |
 | QMGT-04     | Phase 27: Schema and Data Models | Complete |
 | XMOD-01     | Phase 27: Schema and Data Models | Complete |
 | XMOD-02     | Phase 27: Schema and Data Models | Complete |
-| DATA-01     | Phase 28: Loan Data Upload       | Pending |
-| DATA-02     | Phase 28: Loan Data Upload       | Pending |
-| DATA-03     | Phase 28: Loan Data Upload       | Pending |
-| SMPL-01     | Phase 29: Sampling Engine        | Pending |
-| SMPL-02     | Phase 29: Sampling Engine        | Pending |
-| SMPL-03     | Phase 29: Sampling Engine        | Pending |
-| SMPL-04     | Phase 29: Sampling Engine        | Pending |
-| AEXM-01     | Phase 30: Account Examination UI | Pending |
-| AEXM-02     | Phase 30: Account Examination UI | Pending |
-| AEXM-03     | Phase 30: Account Examination UI | Pending |
-| AEXM-04     | Phase 30: Account Examination UI | Pending |
-| AEXM-05     | Phase 30: Account Examination UI | Pending |
-| QMGT-02     | Phase 30: Account Examination UI | Pending |
-| QMGT-03     | Phase 30: Account Examination UI | Pending |
-| CSCR-01     | Phase 31: Instance-Based Scoring | Pending |
-| CSCR-02     | Phase 31: Instance-Based Scoring | Pending |
-| CSCR-03     | Phase 31: Instance-Based Scoring | Pending |
-| CSCR-04     | Phase 31: Instance-Based Scoring | Pending |
+| DATA-01     | Phase 28: Loan Data Upload       | Pending  |
+| DATA-02     | Phase 28: Loan Data Upload       | Pending  |
+| DATA-03     | Phase 28: Loan Data Upload       | Pending  |
+| SMPL-01     | Phase 29: Sampling Engine        | Pending  |
+| SMPL-02     | Phase 29: Sampling Engine        | Pending  |
+| SMPL-03     | Phase 29: Sampling Engine        | Pending  |
+| SMPL-04     | Phase 29: Sampling Engine        | Pending  |
+| AEXM-01     | Phase 30: Account Examination UI | Pending  |
+| AEXM-02     | Phase 30: Account Examination UI | Pending  |
+| AEXM-03     | Phase 30: Account Examination UI | Pending  |
+| AEXM-04     | Phase 30: Account Examination UI | Pending  |
+| AEXM-05     | Phase 30: Account Examination UI | Pending  |
+| QMGT-02     | Phase 30: Account Examination UI | Pending  |
+| QMGT-03     | Phase 30: Account Examination UI | Pending  |
+| CSCR-01     | Phase 31: Instance-Based Scoring | Pending  |
+| CSCR-02     | Phase 31: Instance-Based Scoring | Pending  |
+| CSCR-03     | Phase 31: Instance-Based Scoring | Pending  |
+| CSCR-04     | Phase 31: Instance-Based Scoring | Pending  |
 
 **Coverage:**
 

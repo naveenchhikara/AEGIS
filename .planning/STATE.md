@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: RBIA Implementation
 status: unknown
-last_updated: "2026-02-28T09:48:48.605Z"
+last_updated: "2026-02-28T10:52:27.004Z"
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 31
-  completed_plans: 31
+  total_plans: 33
+  completed_plans: 32
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** Phase 24 complete — Score Freeze & Score Page Fixes (gap closure)
+**Current focus:** Phase 25 in progress — Manual Module Selection UI
 
 ## Current Position
 
-Phase: 24 of 26 (Score Freeze & Score Page Fixes)
-Plan: 2 of 2 complete
-Status: Phase 24 complete — all plans executed
-Last activity: 2026-02-28 — Phase 24 complete (24-02 score drilldown fix + orphan cleanup)
+Phase: 25 of 26 (Manual Module Selection UI)
+Plan: 1 of 2 complete
+Status: Phase 25 in progress — 25-01 backend extensions complete
+Last activity: 2026-02-28 — Phase 25-01 complete (removalReason schema + scored-items guard + getAllModules DAL)
 
-Progress: [█████████░] 97% (28/29 plans complete)
+Progress: [█████████░] 97% (32/33 plans complete)
 
 ## Phase 19 Plans
 
@@ -70,6 +70,7 @@ _Updated after each plan completion_
 | Phase 19 P04 | 5 | 1 tasks | 1 files |
 | Phase 24 P02 | 3 | 2 tasks | 4 files |
 | Phase 24 P01 | 4 | 2 tasks | 2 files |
+| Phase 25 P01 | 4 | 2 tasks | 4 files |
 
 ## Milestone History
 
@@ -115,6 +116,9 @@ Recent decisions affecting current work:
 - [Phase 24]: name field carried via (n as any).name cast in serializeNode since ScoredNode type lacks name property
 - [Phase 24-01]: canFreeze computed server-side via hasPermission and passed as boolean prop -- avoids client-side permission logic
 - [Phase 24-01]: Button visibility gated by canFreeze AND !isFrozen; enable state gated by allModulesScored -- separate concerns
+- [Phase 25-01]: removalReason approach: keep delete(), record reason via setAuditContext justification in transaction — simpler than soft-delete, reason captured in audit log
+- [Phase 25-01]: Scored-items guard via materialized path prefix (path: startsWith) to find leaf descendants before allowing module removal
+- [Phase 25-01]: Delete moved inline into db.$transaction with setAuditContext — ensures audit context and delete are atomic
 
 ### Pending Todos
 

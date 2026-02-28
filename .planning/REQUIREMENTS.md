@@ -122,7 +122,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGG-03     | Phase 20 | Pending  |
 | ENGG-04     | Phase 20 | Pending  |
 | ENGG-05     | Phase 19 | Complete |
-| ENGG-06     | Phase 25 | Pending  |
+| ENGG-06     | Phase 25 | Complete |
 | ENGG-07     | Phase 19 | Complete |
 | FIND-01     | Phase 20 | Pending  |
 | FIND-02     | Phase 20 | Pending  |

@@ -9,6 +9,23 @@
             "command": "npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/admin/Developer/AEGIS && npx tsc --noEmit --pretty 2>&1 | head -20"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gsd-context-monitor.js"
+          }
+        ]
       }
     ],
     "Notification": [
@@ -21,6 +38,20 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gsd-check-update.js"
+          }
+        ]
+      }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/hooks/gsd-statusline.js"
   }
 }

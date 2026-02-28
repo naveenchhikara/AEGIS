@@ -126,3 +126,12 @@ None - no external service configuration required.
 
 _Phase: 25-module-selection-ui_
 _Completed: 2026-02-28_
+
+## Self-Check: PASSED
+
+- FOUND: src/components/rbia/add-module-dialog.tsx
+- FOUND: src/components/rbia/remove-module-alert-dialog.tsx
+- FOUND: .planning/phases/25-module-selection-ui/25-02-SUMMARY.md
+- FOUND commit: bc6962fc (Task 1 - AddModuleDialog + RemoveModuleAlertDialog)
+- FOUND commit: e160f4df (Task 2 - RbiaModuleGrid extended + RBIA page wired)
+- FOUND commit: 3e2073c0 (metadata - SUMMARY + STATE + ROADMAP)

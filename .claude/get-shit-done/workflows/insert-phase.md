@@ -34,7 +34,7 @@ Validate first argument is an integer.
 Load phase operation context:
 
 ```bash
-INIT=$(node ./.claude/get-shit-done/bin/gsd-tools.cjs init phase-op "${after_phase}")
+INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${after_phase}")
 ```
 
 Check `roadmap_exists` from init JSON. If false:
@@ -50,7 +50,7 @@ Exit.
 **Delegate the phase insertion to gsd-tools:**
 
 ```bash
-RESULT=$(node ./.claude/get-shit-done/bin/gsd-tools.cjs phase insert "${after_phase}" "${description}")
+RESULT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" phase insert "${after_phase}" "${description}")
 ```
 
 The CLI handles:

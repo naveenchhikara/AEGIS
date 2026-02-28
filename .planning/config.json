@@ -12,7 +12,7 @@
     "gsd-integration-checker": "haiku"
   },
   "workflow": {
-    "research": true,
+    "research": false,
     "plan_check": true,
     "verifier": true
   },

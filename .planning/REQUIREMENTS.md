@@ -15,8 +15,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Sampling Configuration
 
-- [ ] **SMPL-01**: HIA can configure sampling criteria with % share allocations (newly sanctioned, amount-wise, age-wise, DPD-wise, prior observations)
-- [ ] **SMPL-02**: HIA can set overall sample size % (e.g., 10% of branch loan portfolio)
+- [x] **SMPL-01**: HIA can configure sampling criteria with % share allocations (newly sanctioned, amount-wise, age-wise, DPD-wise, prior observations)
+- [x] **SMPL-02**: HIA can set overall sample size % (e.g., 10% of branch loan portfolio)
 - [ ] **SMPL-03**: Sampling criteria are locked from auditor modification — auditors can only view the configured criteria
 - [x] **SMPL-04**: System auto-selects sample accounts from uploaded portfolio based on configured criteria and share percentages
 
@@ -82,8 +82,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | DATA-01     | Phase 28: Loan Data Upload       | Complete |
 | DATA-02     | Phase 28: Loan Data Upload       | Complete |
 | DATA-03     | Phase 28: Loan Data Upload       | Complete |
-| SMPL-01     | Phase 29: Sampling Engine        | Pending  |
-| SMPL-02     | Phase 29: Sampling Engine        | Pending  |
+| SMPL-01     | Phase 29: Sampling Engine        | Complete |
+| SMPL-02     | Phase 29: Sampling Engine        | Complete |
 | SMPL-03     | Phase 29: Sampling Engine        | Pending  |
 | SMPL-04     | Phase 29: Sampling Engine        | Complete |
 | AEXM-01     | Phase 30: Account Examination UI | Pending  |

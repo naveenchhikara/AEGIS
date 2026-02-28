@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
 current_phase: 29-sampling-engine
-current_plan: 29-01 (complete)
+current_plan: 29-02 (complete)
 status: in-progress
-last_updated: "2026-02-28T16:34:00.000Z"
+last_updated: "2026-02-28T16:43:07Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 29-sampling-engine
-**Current plan:** 29-01 (complete)
+**Current plan:** 29-02 (complete)
 **Status:** In progress
 
 ## Decisions
@@ -40,6 +40,10 @@ See: .planning/PROJECT.md
 - 2026-02-28 [29-01]: hasPriorObservations added to LoanAccountForSampling interface — not in Phase 27 original; Phase 28 upload file provides this flag per column
 - 2026-02-28 [29-01]: Bucket processing order: largest pct first, alphabetical ties — ensures deterministic redistribution target selection
 - 2026-02-28 [29-01]: MS_PER_YEAR = 365.25 days for NEWLY_SANCTIONED 12-month cutoff — handles leap years correctly
+- 2026-02-28 [29-02]: saveSamplingCriteria blocks modification when sampleGenerated=true — enforces config immutability after sample generation
+- 2026-02-28 [29-02]: generateSampleAction wraps reset+mark+lock in a $transaction — atomicity, no partial state on error
+- 2026-02-28 [29-02]: samplingBucket stored in LoanAccount.metadata JSONB (not new column) — keeps v7.0 schema additive
+- 2026-02-28 [29-02]: Prisma Json type requires double cast (as unknown as BucketAllocation[]) — Json union type doesn't overlap directly
 
 ## Session Log
 
@@ -49,3 +53,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 28 Plan 01 complete — CSV/Excel parsing pipeline, fuzzy column mapping, loan portfolio DAL + server actions (DATA-01, DATA-02, DATA-03)
 - 2026-02-28: Phase 28 Plan 02 complete — Loan Portfolio upload UI with drag-drop, column mapping preview, import summary, Excel parse action, RBIA layout tab (DATA-01, DATA-02, DATA-03)
 - 2026-02-28: Phase 29 Plan 01 complete — Pure sampling engine with 5-bucket deterministic selection, overflow redistribution, 25 vitest tests (SMPL-04)
+- 2026-02-28: Phase 29 Plan 02 complete — Sampling DAL + server actions: saveSamplingCriteria, generateSampleAction, 4 DAL functions with tenant isolation (SMPL-01, SMPL-02, SMPL-04)

@@ -86,7 +86,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 3. After HIA saves sampling criteria, clicking "Generate Sample" auto-selects accounts from the uploaded portfolio according to the configured criteria, and the selected accounts are visible in a sample list
 4. If a criteria bucket requests more accounts than exist in that segment (e.g., 5 newly sanctioned requested but only 3 exist), the system fills from the next-largest bucket and displays a warning — no error or crash occurs
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 
@@ -151,6 +151,6 @@ Plans:
 | -------------------------- | -------------- | ----------- | ---------- |
 | 27. Schema and Data Models | 2/2            | Complete    | 2026-02-28 |
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
-| 29. Sampling Engine        | 1/3 | In Progress|  |
+| 29. Sampling Engine        | 2/3 | In Progress|  |
 | 30. Account Examination UI | 0/TBD          | Not started | -          |
 | 31. Instance-Based Scoring | 0/TBD          | Not started | -          |

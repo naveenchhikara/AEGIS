@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
-current_phase: 29-sampling-engine
-current_plan: 29-03 (complete)
-status: planning
-last_updated: "2026-02-28T16:58:55.933Z"
+current_phase: 30-account-examination-ui
+current_plan: 30-01 (complete)
+status: in_progress
+last_updated: "2026-02-28T17:09:25Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 13
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Session State
@@ -22,9 +22,9 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v7.0 Sample-Based Account Examination
-**Current phase:** 29-sampling-engine
-**Current plan:** 29-03 (complete)
-**Status:** Ready to plan
+**Current phase:** 30-account-examination-ui
+**Current plan:** 30-01 (complete)
+**Status:** In progress
 
 ## Decisions
 
@@ -48,6 +48,9 @@ See: .planning/PROJECT.md
 - 2026-02-28 [29-03]: CriteriaConfigForm split into ReadOnlyView + EditableForm subcomponents — keeps auditor branch clean with no edit controls
 - 2026-02-28 [29-03]: handleUnlock resets local isLocked state only — actual DB unlock happens when user saves new criteria
 - 2026-02-28 [29-03]: SampleListTable rows link to /rbia/account/[id] — 404 expected until Phase 30 creates account examination route
+- 2026-02-28 [30-01]: saveAccountExamResponse uses upsert on [engagementId, loanAccountId, questionId] — idempotent re-saving updates without duplicates
+- 2026-02-28 [30-01]: deactivateQuestion sets isActive=false (soft-delete), never deletes AccountExamResponse records — QMGT-03 historical preservation
+- 2026-02-28 [30-01]: Zod v4 z.enum() uses error string property, not errorMap callback — fixed build-breaking type error
 
 ## Session Log
 
@@ -59,3 +62,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 29 Plan 01 complete — Pure sampling engine with 5-bucket deterministic selection, overflow redistribution, 25 vitest tests (SMPL-04)
 - 2026-02-28: Phase 29 Plan 02 complete — Sampling DAL + server actions: saveSamplingCriteria, generateSampleAction, 4 DAL functions with tenant isolation (SMPL-01, SMPL-02, SMPL-04)
 - 2026-02-28: Phase 29 Plan 03 complete — Sampling UI: CriteriaConfigForm, SampleListTable, Sampling tab in RBIA layout (SMPL-01, SMPL-02, SMPL-03, SMPL-04)
+- 2026-02-28: Phase 30 Plan 01 complete — Account examination DAL (getAccountsWithProgress, getQuestionsForAccount, getViolationSummary) and server actions (saveAccountExamResponse, addQuestion, updateQuestion, deactivateQuestion, reactivateQuestion) (AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03)

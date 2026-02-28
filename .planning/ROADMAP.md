@@ -112,7 +112,7 @@ Plans:
 6. HIA can add a new custom question to a credit module, and it immediately appears in the question list for future examinations — existing AccountExamResponse records for completed accounts are not affected
 7. HIA can deactivate an existing question — it no longer appears in new examinations but historical response data for that question remains intact
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 
@@ -152,5 +152,5 @@ Plans:
 | 27. Schema and Data Models | 2/2            | Complete    | 2026-02-28 |
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
 | 29. Sampling Engine        | 3/3            | Complete    | 2026-02-28 |
-| 30. Account Examination UI | 0/TBD          | Not started | -          |
+| 30. Account Examination UI | 1/3 | In Progress|  |
 | 31. Instance-Based Scoring | 0/TBD          | Not started | -          |

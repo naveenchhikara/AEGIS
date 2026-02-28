@@ -24,15 +24,15 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **AEXM-01**: When auditor opens a credit module, system presents sampled accounts one-by-one — ALL questions are asked for each account (full question set per account, account-centric workflow)
 - [ ] **AEXM-02**: Each question displays embedded RBI guideline reference (if applicable) and best practice tips for auditor guidance
-- [ ] **AEXM-03**: Auditor marks each question per account as compliant or violation (instance tracking)
-- [ ] **AEXM-04**: Auditor can add notes/evidence per question per account to document findings
-- [ ] **AEXM-05**: System tracks violation instances across all sampled accounts per question
+- [x] **AEXM-03**: Auditor marks each question per account as compliant or violation (instance tracking)
+- [x] **AEXM-04**: Auditor can add notes/evidence per question per account to document findings
+- [x] **AEXM-05**: System tracks violation instances across all sampled accounts per question
 
 ### Question Management
 
 - [x] **QMGT-01**: System ships with expanded default question set per credit module (including account-level checks like PSL classification)
-- [ ] **QMGT-02**: HIA can add custom questions to any credit module
-- [ ] **QMGT-03**: HIA can edit or deactivate existing questions (without deleting historical data)
+- [x] **QMGT-02**: HIA can add custom questions to any credit module
+- [x] **QMGT-03**: HIA can edit or deactivate existing questions (without deleting historical data)
 - [x] **QMGT-04**: Each question has fields: text, RBI reference (optional), best practice tip (optional), weight, isCritical flag
 
 ### Compliance Scoring
@@ -88,11 +88,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | SMPL-04     | Phase 29: Sampling Engine        | Complete |
 | AEXM-01     | Phase 30: Account Examination UI | Pending  |
 | AEXM-02     | Phase 30: Account Examination UI | Pending  |
-| AEXM-03     | Phase 30: Account Examination UI | Pending  |
-| AEXM-04     | Phase 30: Account Examination UI | Pending  |
-| AEXM-05     | Phase 30: Account Examination UI | Pending  |
-| QMGT-02     | Phase 30: Account Examination UI | Pending  |
-| QMGT-03     | Phase 30: Account Examination UI | Pending  |
+| AEXM-03     | Phase 30: Account Examination UI | Complete |
+| AEXM-04     | Phase 30: Account Examination UI | Complete |
+| AEXM-05     | Phase 30: Account Examination UI | Complete |
+| QMGT-02     | Phase 30: Account Examination UI | Complete |
+| QMGT-03     | Phase 30: Account Examination UI | Complete |
 | CSCR-01     | Phase 31: Instance-Based Scoring | Pending  |
 | CSCR-02     | Phase 31: Instance-Based Scoring | Pending  |
 | CSCR-03     | Phase 31: Instance-Based Scoring | Pending  |

@@ -1,6 +1,6 @@
 # AEGIS / RBIAS — Project Status
 
-> **Date:** 2026-02-22 (updated by Neu)
+> **Date:** 2026-02-28 (auto-updated after sync)
 > **Repo:** github.com/naveenchhikara/AEGIS (private)
 > **Live:** https://aegis.nexlyadvisory.com
 > **Stack:** Next.js 16 · TypeScript 5.9 · PostgreSQL 16 · Prisma 7 · Better Auth · AWS S3/SES
@@ -11,7 +11,7 @@
 
 AEGIS is a **Risk-Based Internal Audit System (RBIAS)** for Urban Cooperative Banks under RBI supervision. It covers the full audit lifecycle — from RAM-based risk assessment and audit planning through execution, reporting, compliance tracking, and board governance.
 
-**Scale:** 536 source files · 2,320-line Prisma schema · 71 DB models · 20 enums · 473 commits · 104 v5.0 requirements complete + 41 v6.0 requirements in progress
+**Scale:** 706 source files · 2,500-line Prisma schema · 75 DB models · 21 enums · 702 commits · v5.0 complete (104/104) + v6.0 complete (41/41) + v7.0 in progress (Sample-Based Account Examination)
 
 ---
 
@@ -86,9 +86,9 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - RISK_HEAD role with dedicated dashboard and risk MIS access
 - SYSTEM_ADMIN role with admin workflows
 
-### v6.0 — RBIA Implementation (IN PROGRESS)
+### v6.0 — RBIA Implementation (COMPLETE ✅)
 
-41 new requirements across 6 phases. Phase 18 (Foundation) planned and ready for execution.
+**41/41 requirements delivered.** Phases 18–26 marked complete in `README.md` and `.planning/STATE.md`.
 
 **Key v6.0 features:**
 
@@ -100,6 +100,17 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 - Branch Manager Response — batch response workflow with 15-day deadline tracking
 
 **Schema extended:** 8 new models added (ExaminationNode, ExaminationResponse, BranchRbiaScore, EngagementModuleSelection, EngagementMeeting, ActionPoint, BmBatchStatus, ResponseType)
+
+---
+
+### v7.0 — Sample-Based Account Examination (IN PROGRESS 🟡)
+
+**Status (from `.planning/STATE.md`):**
+- Milestone: **v7.0 Sample-Based Account Examination**
+- Current phase: **30-account-examination-ui**
+- Plans: **10/13 complete**
+- Phases: **4/5 complete**
+- Next: complete remaining Phase 30 plans + final phase (reporting/closure) to satisfy remaining requirements.
 
 ---
 

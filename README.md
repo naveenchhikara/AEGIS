@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v6.0 RBIA complete (41/41 requirements). v7.0 Sample-Based Account Examination in progress (20 new requirements, 5 phases). 684 source files, 75 DB models, 21 enums, 2,500-line schema, 679 commits.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v6.0 RBIA complete (41/41 requirements). v7.0 Sample-Based Account Examination — 4/5 phases complete (16/20 requirements satisfied). 706 source files, 75 DB models, 21 enums, 2,500-line schema, 702 commits.
 
 ## Key Features
 
@@ -116,19 +116,19 @@ pnpm test:e2e:ui             # E2E tests with Playwright UI
 
 ```
 src/
-  actions/              # Server actions (96 files, 16 domains)
-  app/                  # App Router (62 pages)
+  actions/              # Server actions (103 files, 18 domains)
+  app/                  # App Router (65 pages)
     (auth)/             # Login, accept-invite
     (dashboard)/        # All authenticated screens
     (onboarding)/       # 5-step tenant setup wizard
     api/                # REST endpoints (auth, health, exports, cron, reports)
-  components/           # 242 components across 30 directories
+  components/           # 250 components across 33 directories
     ui/                 # shadcn/ui primitives
     dashboard/          # KPI widgets, charts, panels
     compliance/         # Compliance tables, filters, charts
     findings/           # Observation lifecycle, timeline
     pdf-report/         # React-PDF report components
-  data-access/          # Data Access Layer (48 files, tenant-isolated queries)
+  data-access/          # Data Access Layer (51 files, tenant-isolated queries)
   emails/               # React Email templates (assignment, escalation, digest)
   hooks/                # Custom React hooks
   jobs/                 # pg-boss background jobs
@@ -147,7 +147,7 @@ infra/                  # AWS CDK infrastructure
 deploy/                 # Deployment configs (Nginx, systemd)
 ```
 
-## Routes (62 pages)
+## Routes (65 pages)
 
 | Group           | Routes                                                                                                       | Purpose                                |
 | --------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
@@ -155,7 +155,7 @@ deploy/                 # Deployment configs (Nginx, systemd)
 | Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | KPI widgets, analytics, audit log      |
 | RAM & Planning  | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                          | 19-parameter risk scoring, annual plan |
 | Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report,bh-certificate}`                                  | Field audit with 568 items             |
-| RBIA            | `/audit-execution/[id]/rbia`, `/rbia/{module,findings,meetings,score}`                                       | RBIA examination, scoring, findings    |
+| RBIA            | `/audit-execution/[id]/rbia/{examination,loan-portfolio,sampling,findings,meetings,score,questions}`         | RBIA examination, sampling, scoring    |
 | Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                               | Observation lifecycle with timeline    |
 | Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                     | Compliance tracking, branch responses  |
 | GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk register, controls, issues        |
@@ -287,8 +287,8 @@ After a fresh deployment with a new database:
 | ----- | ----------------------------------------------------------------------- | ------------ | -------- |
 | 27    | Schema and Data Models (loan accounts, sampling config, exam questions) | 4            | Complete |
 | 28    | Loan Data Upload (CSV/Excel parsing, fuzzy mapping, import UI)          | 3            | Complete |
-| 29    | Sampling Engine (HIA criteria, locked allocations, auto-selection)      | 4            | Planned  |
-| 30    | Account Examination UI (per-account questions, RBI references, notes)   | 7            | Planned  |
+| 29    | Sampling Engine (HIA criteria, locked allocations, auto-selection)      | 4            | Complete |
+| 30    | Account Examination UI (per-account questions, RBI references, notes)   | 7            | Complete |
 | 31    | Instance-Based Scoring (compliance %, 4-point mapping, roll-up)         | 4            | Planned  |
 
 See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for detailed phase breakdowns.

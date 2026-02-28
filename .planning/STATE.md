@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: RBIA Implementation
 status: unknown
-last_updated: "2026-02-28T11:04:51.612Z"
+last_updated: "2026-02-28T11:44:36.039Z"
 progress:
   total_phases: 9
-  completed_phases: 8
-  total_plans: 33
-  completed_plans: 33
+  completed_phases: 9
+  total_plans: 34
+  completed_plans: 34
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** Phase 26 next — S3 Evidence Upload with presigned URLs
+**Current focus:** v6.0 RBIA Implementation complete — all phases and requirements satisfied
 
 ## Current Position
 
-Phase: 25 of 26 complete (Manual Module Selection UI — DONE)
-Plan: 2 of 2 complete
-Status: Phase 25 complete — 25-02 module management UI complete (ENGG-06 fully satisfied)
-Last activity: 2026-02-28 — Phase 25-02 complete (AddModuleDialog + RemoveModuleAlertDialog + grid management controls)
+Phase: 26 of 26 complete (Evidence Upload — DONE)
+Plan: 1 of 1 complete
+Status: Phase 26 complete — 26-01 BM evidence upload wired (BMRP-02 fully satisfied)
+Last activity: 2026-02-28 — Phase 26-01 complete (BmEvidenceUploadPanel + server actions + BmResponseApCard wiring)
 
-Progress: [██████████] 100% (33/33 plans complete)
+Progress: [██████████] 100% (34/34 plans complete)
 
 ## Phase 19 Plans
 
@@ -72,6 +72,7 @@ _Updated after each plan completion_
 | Phase 24 P01 | 4 | 2 tasks | 2 files |
 | Phase 25 P01 | 4 | 2 tasks | 4 files |
 | Phase 25-module-selection-ui P02 | 5 | 2 tasks | 4 files |
+| Phase 26-evidence-upload P01 | 10 | 2 tasks | 6 files |
 
 ## Milestone History
 
@@ -123,6 +124,8 @@ Recent decisions affecting current work:
 - [Phase 25-02]: Dialog (not AlertDialog) for Add Module — non-destructive and multi-step with per-module reasons
 - [Phase 25-02]: canManageModules hides controls entirely when falsy (not just disables) — cleaner UX for read-only RBIA pages
 - [Phase 25-02]: Remove button positioned absolutely on Link (group relative) so Trash2 icon floats top-right without disrupting card layout
+- [Phase 26-01]: bm-evidence/ S3 namespace used to segregate BM response attachments from observation/exam evidence
+- [Phase 26-01]: Evidence count limit (5/AP) enforced server-side in confirmBmEvidenceUpload before DB write
 
 ### Pending Todos
 

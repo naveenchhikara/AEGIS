@@ -44,7 +44,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Branch Manager Response
 
 - [ ] **BMRP-01**: System creates BmResponseBatch when ActionPoints are issued at REPORT_DRAFT transition with 15-day deadline
-- [ ] **BMRP-02**: Branch Manager can respond to each ActionPoint individually with text response and evidence upload
+- [x] **BMRP-02**: Branch Manager can respond to each ActionPoint individually with text response and evidence upload
 - [ ] **BMRP-03**: BM response panel shows progress counter (responded/total) and deadline countdown
 - [ ] **BMRP-04**: Batch submit enabled only when all ActionPoints have been addressed
 - [ ] **BMRP-05**: System transitions BmResponseBatch to OVERDUE status when deadline passes with email escalation to Zonal Auditor
@@ -131,7 +131,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIND-05     | Phase 19 | Complete |
 | FIND-06     | Phase 20 | Pending  |
 | BMRP-01     | Phase 20 | Pending  |
-| BMRP-02     | Phase 26 | Pending  |
+| BMRP-02     | Phase 26 | Complete |
 | BMRP-03     | Phase 22 | Pending  |
 | BMRP-04     | Phase 22 | Pending  |
 | BMRP-05     | Phase 23 | Pending  |

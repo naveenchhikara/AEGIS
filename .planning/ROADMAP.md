@@ -36,7 +36,7 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 - [x] **Phase 23: BM Response and Reporting** — Branch manager response panel, overdue escalation, score display, and RBIA PDF report (completed 2026-02-25)
 - [x] **Phase 24: Score Freeze & Score Page Fixes** — Wire freeze button, fix TS2322 error, wire gauge-to-drilldown, delete orphaned component (gap closure) (completed 2026-02-28)
 - [x] **Phase 25: Module Selection UI** — Add/remove module controls in module grid for manual module management (gap closure) (completed 2026-02-28)
-- [ ] **Phase 26: Evidence Upload** — S3 presigned URL generation and evidence upload for BM action point responses (gap closure)
+- [x] **Phase 26: Evidence Upload** — S3 presigned URL generation and evidence upload for BM action point responses (gap closure) (completed 2026-02-28)
 
 ## Phase Details
 
@@ -211,7 +211,7 @@ Plans:
 | 23. BM Response and Reporting | 5/5       | Complete       | 2026-02-25 | -         |
 | 24. Score Freeze & Score Page | 2/2       | Complete       | 2026-02-28 | -         |
 | 25. Module Selection UI       | 2/2       | Complete       | 2026-02-28 | -         |
-| 26. Evidence Upload           | -         | Planned        | -          | -         |
+| 26. Evidence Upload           | 1/1       | Complete       | 2026-02-28 | -         |
 
 ### Phase 24: Score Freeze & Score Page Fixes
 
@@ -243,7 +243,7 @@ Plans:
 
 **Gap Closure:** Closes evidence upload gap — buttons exist but are disabled pending S3 presigned URL integration.
 
-**Plans:** 1 plan (Wave 1)
+**Plans:** 1/1 plans complete
 
 Plans:
 

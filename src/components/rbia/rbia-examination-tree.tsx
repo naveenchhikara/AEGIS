@@ -37,6 +37,7 @@ import { saveExaminationResponse } from "@/actions/rbia/examination";
 import type { ExaminationTreeNode } from "@/data-access/rbia-examination";
 import type { ScoreLabel } from "@/generated/prisma/enums";
 import { SCORE_BUTTON_STYLES, getRatingBandBadgeClass } from "@/lib/constants";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -314,7 +315,7 @@ function ScoreButtonGroup({
               onScoreChange(nodeId, label, SCORE_LABEL_VALUES[label]);
             }}
             className={cn(
-              "rounded border px-2 py-0.5 text-xs font-medium transition-colors",
+              "min-h-[44px] min-w-[44px] rounded border px-2 py-2 text-xs font-medium transition-colors md:min-h-0 md:min-w-0 md:py-0.5",
               isActive
                 ? config.active
                 : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -1114,13 +1115,20 @@ export function RbiaExaminationTree({
               })
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {activeFilters.size > 0
-                    ? "No items match the selected filters."
-                    : "No examination items found."}
+                <TableCell colSpan={columns.length}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title={
+                      activeFilters.size > 0
+                        ? "No matching items"
+                        : "No examination items found"
+                    }
+                    message={
+                      activeFilters.size > 0
+                        ? "No items match the selected filters. Try clearing filters to see all items."
+                        : "Examination items will appear here once the module is configured."
+                    }
+                  />
                 </TableCell>
               </TableRow>
             )}

@@ -64,7 +64,7 @@ export function AuditCoverageChart({ data }: AuditCoverageChartProps) {
             className="mx-auto min-h-[160px] w-full md:min-h-[200px]"
             aria-label={`Audit coverage: ${coveredCount} of ${totalCount} branches covered (${percentage}%)`}
           >
-            <PieChart>
+            <PieChart accessibilityLayer>
               <Pie
                 data={chartData}
                 dataKey="value"
@@ -96,6 +96,7 @@ export function AuditCoverageChart({ data }: AuditCoverageChartProps) {
             <div
               className="h-2 w-2 rounded-full"
               style={{ backgroundColor: COLORS.covered }}
+              aria-hidden="true"
             />
             <span className="text-muted-foreground">
               Covered: {coveredCount}
@@ -105,6 +106,7 @@ export function AuditCoverageChart({ data }: AuditCoverageChartProps) {
             <div
               className="h-2 w-2 rounded-full"
               style={{ backgroundColor: COLORS.uncovered }}
+              aria-hidden="true"
             />
             <span className="text-muted-foreground">
               Uncovered: {uncovered}

@@ -9,6 +9,11 @@ import {
   toPercentage,
   type RatingBand,
 } from "@/lib/rbia-scoring-engine";
+import {
+  RATING_BAND_COLORS,
+  RATING_BAND_LABELS,
+  getRatingBandColors as getBandColors,
+} from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -25,64 +30,6 @@ interface ScoreGaugeProps {
   }>;
   frozen: boolean;
   onModuleClick?: (moduleCode: string) => void;
-}
-
-// ─── Rating Band Colors ──────────────────────────────────────────────────────
-
-const RATING_BAND_COLORS: Record<
-  string,
-  { bg: string; text: string; fill: string; badgeBg: string }
-> = {
-  VERY_GOOD: {
-    bg: "bg-emerald-100",
-    text: "text-emerald-800",
-    fill: "#059669",
-    badgeBg: "bg-emerald-100 text-emerald-800",
-  },
-  GOOD: {
-    bg: "bg-green-100",
-    text: "text-green-700",
-    fill: "#16a34a",
-    badgeBg: "bg-green-100 text-green-700",
-  },
-  SATISFACTORY: {
-    bg: "bg-yellow-100",
-    text: "text-yellow-800",
-    fill: "#ca8a04",
-    badgeBg: "bg-yellow-100 text-yellow-800",
-  },
-  MODERATE: {
-    bg: "bg-orange-100",
-    text: "text-orange-800",
-    fill: "#ea580c",
-    badgeBg: "bg-orange-100 text-orange-800",
-  },
-  POOR: {
-    bg: "bg-red-100",
-    text: "text-red-800",
-    fill: "#dc2626",
-    badgeBg: "bg-red-100 text-red-800",
-  },
-};
-
-const RATING_BAND_LABELS: Record<string, string> = {
-  VERY_GOOD: "Very Good",
-  GOOD: "Good",
-  SATISFACTORY: "Satisfactory",
-  MODERATE: "Moderate",
-  POOR: "Poor",
-};
-
-function getBandColors(band: string | null) {
-  if (!band || !RATING_BAND_COLORS[band]) {
-    return {
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-      fill: "#94a3b8",
-      badgeBg: "bg-muted text-muted-foreground",
-    };
-  }
-  return RATING_BAND_COLORS[band];
 }
 
 // ─── SVG Semi-circular Gauge ─────────────────────────────────────────────────
@@ -130,7 +77,7 @@ function SemiCircularGauge({
         <path
           d={arcPath}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="hsl(var(--border))"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
@@ -144,7 +91,7 @@ function SemiCircularGauge({
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={`${filledLength} ${remainingLength}`}
-            className="transition-all duration-700 ease-out"
+            className="motion-safe:transition-all motion-safe:duration-700 motion-safe:ease-out"
           />
         )}
 
@@ -230,17 +177,17 @@ function ModuleBarRow({
 
       {/* Progress bar */}
       <div className="relative flex-1">
-        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="bg-muted h-3 w-full overflow-hidden rounded-full">
           {isScored ? (
             <div
-              className="h-full rounded-full transition-all duration-500 ease-out"
+              className="h-full rounded-full motion-safe:transition-all motion-safe:duration-500 motion-safe:ease-out"
               style={{
                 width: `${percentage}%`,
                 backgroundColor: colors.fill,
               }}
             />
           ) : (
-            <div className="h-full w-full bg-slate-100" />
+            <div className="bg-muted h-full w-full" />
           )}
         </div>
       </div>

@@ -59,14 +59,14 @@ export default async function GovernancePage() {
         <div className="flex gap-4 pt-1">
           <Link
             href="/findings"
-            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
           >
             View Findings
             <ExternalLink className="h-3 w-3" />
           </Link>
           <Link
             href="/compliance"
-            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
           >
             View Compliance
             <ExternalLink className="h-3 w-3" />

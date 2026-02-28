@@ -45,7 +45,7 @@ export function TabNav({ tabs }: TabNavProps) {
                 "border-b-2 px-1 py-3 text-sm font-medium whitespace-nowrap transition-colors",
                 isActive
                   ? "border-primary text-primary"
-                  : "text-muted-foreground hover:text-foreground border-transparent hover:border-gray-300",
+                  : "text-muted-foreground hover:text-foreground hover:border-border border-transparent",
               )}
               aria-current={isActive ? "page" : undefined}
             >

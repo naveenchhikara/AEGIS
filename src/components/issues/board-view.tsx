@@ -34,6 +34,7 @@ import {
   Clock,
   ShieldAlert,
 } from "@/lib/icons";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { format } from "date-fns";
 
 interface Issue {
@@ -98,27 +99,12 @@ interface BoardViewProps {
   kriBreaches: number;
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
-
-const SOURCE_COLORS: Record<string, string> = {
-  INTERNAL_AUDIT: "bg-blue-100 text-blue-800 border-blue-300",
-  REGULATORY: "bg-purple-100 text-purple-800 border-purple-300",
-  EXTERNAL_AUDIT: "bg-indigo-100 text-indigo-800 border-indigo-300",
-  SELF_ASSESSMENT: "bg-green-100 text-green-800 border-green-300",
-  CONCURRENT: "bg-teal-100 text-teal-800 border-teal-300",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-red-100 text-red-800 border-red-300",
-  IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-300",
-  CLOSED: "bg-green-100 text-green-800 border-green-300",
-  ACCEPTED_RISK: "bg-amber-100 text-amber-800 border-amber-300",
-};
+// Colors imported from central constants
+import {
+  SEVERITY_BADGE_COLORS as SEVERITY_COLORS,
+  ISSUE_SOURCE_COLORS as SOURCE_COLORS,
+  ISSUE_STATUS_COLORS as STATUS_COLORS,
+} from "@/lib/constants";
 
 export function BoardView({
   bySource,
@@ -526,14 +512,7 @@ export function BoardView({
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  SEVERITY_COLORS[issue.severity] ?? ""
-                                }
-                              >
-                                {issue.severity}
-                              </Badge>
+                              <SeverityBadge severity={issue.severity} />
                             </TableCell>
                             <TableCell>
                               {issue.riskTheme ? (

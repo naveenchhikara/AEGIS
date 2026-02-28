@@ -28,6 +28,7 @@ import {
 } from "@/lib/icons";
 import { toast } from "sonner";
 import { deleteActionPoint } from "@/actions/rbia/findings";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { FindingForm } from "./finding-form";
 import type {
   ActionPointData,
@@ -58,12 +59,8 @@ type UnifiedFinding =
   | { type: "cf-ap"; data: CarryForwardActionPointData }
   | { type: "observation"; data: ObservationData };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-200",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-200",
-  MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  LOW: "bg-green-100 text-green-800 border-green-200",
-};
+// Colors imported from central constants
+import { SEVERITY_BADGE_COLORS as SEVERITY_COLORS } from "@/lib/constants";
 
 const AP_STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-700 border-gray-300",
@@ -263,12 +260,7 @@ function FindingRow({
             </Badge>
 
             {/* Severity badge */}
-            <Badge
-              variant="outline"
-              className={SEVERITY_COLORS[severity] ?? ""}
-            >
-              {severity.charAt(0) + severity.slice(1).toLowerCase()}
-            </Badge>
+            <SeverityBadge severity={severity} />
 
             {/* Status badge */}
             <Badge

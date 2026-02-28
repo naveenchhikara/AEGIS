@@ -9,6 +9,11 @@ import {
   toPercentage,
   SCORE_VALUES,
 } from "@/lib/rbia-scoring-engine";
+import {
+  RATING_BAND_COLORS as RATING_BAND_COLORS_FULL,
+  RATING_BAND_LABELS,
+  SCORE_LABEL_COLORS,
+} from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -35,32 +40,18 @@ export interface ScoreDrilldownProps {
   onClose: () => void;
 }
 
-// ─── Rating Band Colors (consistent with score-gauge) ────────────────────────
+// ─── Rating Band Colors (imported from constants) ────────────────────────────
 
-const RATING_BAND_COLORS: Record<string, { bg: string; text: string }> = {
-  VERY_GOOD: { bg: "bg-emerald-100", text: "text-emerald-800" },
-  GOOD: { bg: "bg-green-100", text: "text-green-700" },
-  SATISFACTORY: { bg: "bg-yellow-100", text: "text-yellow-800" },
-  MODERATE: { bg: "bg-orange-100", text: "text-orange-800" },
-  POOR: { bg: "bg-red-100", text: "text-red-800" },
-};
-
-const RATING_BAND_LABELS: Record<string, string> = {
-  VERY_GOOD: "Very Good",
-  GOOD: "Good",
-  SATISFACTORY: "Satisfactory",
-  MODERATE: "Moderate",
-  POOR: "Poor",
-};
+// Re-shape to bg/text only for local use
+const RATING_BAND_COLORS: Record<string, { bg: string; text: string }> =
+  Object.fromEntries(
+    Object.entries(RATING_BAND_COLORS_FULL).map(([k, v]) => [
+      k,
+      { bg: v.bg, text: v.text },
+    ]),
+  );
 
 // ─── Score Label Badge ───────────────────────────────────────────────────────
-
-const SCORE_LABEL_COLORS: Record<string, string> = {
-  FULLY_COMPLIANT: "bg-green-100 text-green-800",
-  LARGELY_COMPLIANT: "bg-amber-100 text-amber-800",
-  PARTIALLY_COMPLIANT: "bg-orange-100 text-orange-800",
-  NON_COMPLIANT: "bg-red-100 text-red-800",
-};
 
 const SCORE_LABEL_ABBREVIATIONS: Record<string, string> = {
   FULLY_COMPLIANT: "FC",

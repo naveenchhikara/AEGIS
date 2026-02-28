@@ -4,6 +4,7 @@ import { getObservationDetailForAuditee } from "@/data-access/auditee";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SEVERITY_COLORS, OBSERVATION_STATUS_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { formatDate } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -76,16 +77,11 @@ export default async function AuditeeObservationPage({
         <div className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
-              <h1 className="text-xl font-bold md:text-2xl">
+              <h1 className="text-2xl font-semibold tracking-tight">
                 {observation.title}
               </h1>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={SEVERITY_COLORS[severityKey] ?? ""}
-                >
-                  {observation.severity}
-                </Badge>
+                <SeverityBadge severity={observation.severity} />
                 <Badge
                   variant="outline"
                   className={OBSERVATION_STATUS_COLORS[statusKey] ?? ""}
@@ -97,7 +93,7 @@ export default async function AuditeeObservationPage({
                   observation.status === "CLOSED") && (
                   <Link
                     href="/compliance"
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                    className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
                   >
                     View Compliance Status
                     <ExternalLink className="h-3 w-3" />

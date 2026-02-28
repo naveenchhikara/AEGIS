@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Loader2, UserPlus, Plus } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { toast } from "sonner";
 import {
   executeWorkProgramItem,
@@ -262,17 +263,12 @@ export function WorkProgramTable({
           <TableBody>
             {workItems.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={canExecute ? 7 : 6}
-                  className="h-24 text-center"
-                >
-                  <div className="text-muted-foreground">
-                    No work program items found.
-                    <p className="mt-2 text-sm">
-                      Work program items are generated when you create an audit
-                      engagement.
-                    </p>
-                  </div>
+                <TableCell colSpan={canExecute ? 7 : 6}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No work program items found"
+                    message="Work program items are generated when you create an audit engagement."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -280,7 +276,15 @@ export function WorkProgramTable({
                 <TableRow
                   key={item.id}
                   className="hover:bg-muted/50 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => router.push(`/work-program/${item.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/work-program/${item.id}`);
+                    }
+                  }}
                 >
                   <TableCell className="font-medium">
                     <div>

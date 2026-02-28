@@ -70,3 +70,12 @@ export const revokeSession = (token: string) =>
  * @example await authClient.revokeOtherSessions()
  */
 export const revokeOtherSessions = () => authClient.revokeOtherSessions();
+
+/**
+ * Sign out and redirect to login page.
+ * Shared handler used by sidebar and top bar sign-out buttons.
+ */
+export async function handleSignOut() {
+  await signOut();
+  window.location.href = "/login";
+}

@@ -74,7 +74,7 @@ export function ComplianceStatusChart({ data }: ComplianceStatusChartProps) {
             className="mx-auto min-h-[160px] w-full md:min-h-[200px]"
             aria-label={`Compliance: ${percentage}% compliant out of ${total} requirements`}
           >
-            <PieChart>
+            <PieChart accessibilityLayer>
               <Pie
                 data={chartData}
                 dataKey="value"
@@ -130,6 +130,7 @@ function LegendItem({
       <div
         className="h-2 w-2 rounded-full"
         style={{ backgroundColor: color }}
+        aria-hidden="true"
       />
       <span className="text-muted-foreground">
         {label}: {count}

@@ -2,7 +2,8 @@
 
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, ArrowRight } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { TrendingUp, TrendingDown, ArrowRight, BarChart3 } from "@/lib/icons";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -37,19 +38,19 @@ const SPARKLINE_CONFIG = [
   {
     key: "healthScore" as const,
     label: "Health Score",
-    color: "#22c55e",
+    color: "hsl(var(--chart-2))",
     positiveIsGood: true,
   },
   {
     key: "compliancePercentage" as const,
     label: "Compliance %",
-    color: "#3b82f6",
+    color: "hsl(var(--chart-1))",
     positiveIsGood: true,
   },
   {
     key: "findingCount" as const,
     label: "Open Findings",
-    color: "#ef4444",
+    color: "hsl(var(--chart-4))",
     positiveIsGood: false,
   },
 ];
@@ -61,16 +62,11 @@ export function KeyTrendsSparklines({ trends }: KeyTrendsSparklinesProps) {
 
   if (!hasData) {
     return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Key Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground py-4 text-center text-sm">
-            Trend data available after first quarter.
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyStateCard
+        title="Key Trends"
+        message="Not enough data for trend analysis. Trends will appear after the first quarter of audit activity."
+        icon={<BarChart3 className="h-8 w-8" />}
+      />
     );
   }
 
@@ -99,9 +95,7 @@ export function KeyTrendsSparklines({ trends }: KeyTrendsSparklinesProps) {
                 ? TrendingDown
                 : ArrowRight;
 
-          const trendColor = isPositive
-            ? "text-green-600 dark:text-green-400"
-            : "text-red-600 dark:text-red-400";
+          const trendColor = isPositive ? "text-green-600" : "text-red-600";
 
           return (
             <div key={cfg.key} className="flex items-center gap-3">
@@ -116,7 +110,7 @@ export function KeyTrendsSparklines({ trends }: KeyTrendsSparklinesProps) {
               </div>
               <div className="h-8 flex-1">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
+                  <LineChart accessibilityLayer data={chartData}>
                     <Line
                       type="monotone"
                       dataKey="value"

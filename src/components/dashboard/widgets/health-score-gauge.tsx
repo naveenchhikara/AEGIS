@@ -39,8 +39,8 @@ export function HealthScoreGauge({
   if (score === 0) {
     return (
       <EmptyStateCard
-        title="No Health Score"
-        message="Complete onboarding to start tracking your bank's health score."
+        title="Health Score"
+        message="Health score data not available. The score will be calculated once audit and compliance data is recorded."
         icon={<Activity className="h-8 w-8" />}
       />
     );
@@ -73,6 +73,7 @@ export function HealthScoreGauge({
             aria-label={`Health score: ${score} percent — ${label}`}
           >
             <RadialBarChart
+              accessibilityLayer
               cx="50%"
               cy="50%"
               innerRadius="70%"

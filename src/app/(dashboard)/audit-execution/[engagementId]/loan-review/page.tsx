@@ -53,7 +53,9 @@ export default async function LoanReviewPage({ params }: LoanReviewPageProps) {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">Loan Portfolio Review</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Loan Portfolio Review
+        </h1>
         <p className="text-muted-foreground">
           {engagement.branch?.name || "Branch"} — Review individual loan
           accounts and import loan data from CBS extracts

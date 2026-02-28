@@ -132,6 +132,136 @@ export function getRatingBandBadgeClass(label: string): string {
   }
 }
 
+/**
+ * Severity badge colors — UPPERCASE keys matching DB enum values.
+ * Use this for components that receive severity as CRITICAL/HIGH/MEDIUM/LOW.
+ */
+export const SEVERITY_BADGE_COLORS: Record<string, string> = {
+  CRITICAL: "bg-red-100 text-red-800 border-red-300",
+  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
+  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
+  LOW: "bg-green-100 text-green-800 border-green-300",
+};
+
+/**
+ * Icon name per severity level (import the icons from @/lib/icons).
+ * Used to add accessible severity indicators for color-blind users.
+ */
+export const SEVERITY_ICON_NAMES: Record<string, string> = {
+  CRITICAL: "ShieldAlert",
+  HIGH: "AlertCircle",
+  MEDIUM: "Info",
+  LOW: "CheckCircle",
+  critical: "ShieldAlert",
+  high: "AlertCircle",
+  medium: "Info",
+  low: "CheckCircle",
+};
+
+/** Issue source badge colors (keys match IssueSource enum) */
+export const ISSUE_SOURCE_COLORS: Record<string, string> = {
+  INTERNAL_AUDIT: "bg-blue-100 text-blue-800 border-blue-300",
+  REGULATORY: "bg-purple-100 text-purple-800 border-purple-300",
+  EXTERNAL_AUDIT: "bg-indigo-100 text-indigo-800 border-indigo-300",
+  SELF_ASSESSMENT: "bg-green-100 text-green-800 border-green-300",
+  CONCURRENT: "bg-teal-100 text-teal-800 border-teal-300",
+};
+
+/** Issue status badge colors (keys match IssueStatus enum) */
+export const ISSUE_STATUS_COLORS: Record<string, string> = {
+  OPEN: "bg-red-100 text-red-800 border-red-300",
+  IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-300",
+  CLOSED: "bg-green-100 text-green-800 border-green-300",
+  ACCEPTED_RISK: "bg-amber-100 text-amber-800 border-amber-300",
+};
+
+/** ATR status badge colors (keys match ATR workflow states) */
+export const ATR_STATUS_COLORS: Record<string, string> = {
+  DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
+  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-300",
+  ACCEPTED: "bg-green-100 text-green-800 border-green-300",
+  FURTHER_INFO: "bg-orange-100 text-orange-800 border-orange-300",
+  CLOSED: "bg-purple-100 text-purple-800 border-purple-300",
+};
+
+/** Compliance item status badge colors */
+export const COMPLIANCE_STATUS_COLORS: Record<string, string> = {
+  OPEN: "bg-blue-100 text-blue-800 border-blue-300",
+  BRANCH_RESPONSE_DUE: "bg-orange-100 text-orange-800 border-orange-300",
+  BRANCH_RESPONSE_SUBMITTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  ZAC_REVIEW: "bg-purple-100 text-purple-800 border-purple-300",
+  ZAC_APPROVED: "bg-green-100 text-green-800 border-green-300",
+  ZAC_REJECTED: "bg-red-100 text-red-800 border-red-300",
+  CLOSED: "bg-gray-100 text-gray-800 border-gray-300",
+};
+
+/** Rating band colors with bg/text/fill — used by RBIA gauge & drilldown components */
+export const RATING_BAND_COLORS: Record<
+  string,
+  { bg: string; text: string; fill: string; badgeBg: string }
+> = {
+  VERY_GOOD: {
+    bg: "bg-emerald-100",
+    text: "text-emerald-800",
+    fill: "#059669",
+    badgeBg: "bg-emerald-100 text-emerald-800",
+  },
+  GOOD: {
+    bg: "bg-green-100",
+    text: "text-green-700",
+    fill: "#16a34a",
+    badgeBg: "bg-green-100 text-green-700",
+  },
+  SATISFACTORY: {
+    bg: "bg-yellow-100",
+    text: "text-yellow-800",
+    fill: "#ca8a04",
+    badgeBg: "bg-yellow-100 text-yellow-800",
+  },
+  MODERATE: {
+    bg: "bg-orange-100",
+    text: "text-orange-800",
+    fill: "#ea580c",
+    badgeBg: "bg-orange-100 text-orange-800",
+  },
+  POOR: {
+    bg: "bg-red-100",
+    text: "text-red-800",
+    fill: "#dc2626",
+    badgeBg: "bg-red-100 text-red-800",
+  },
+};
+
+/** Rating band labels for display */
+export const RATING_BAND_LABELS: Record<string, string> = {
+  VERY_GOOD: "Very Good",
+  GOOD: "Good",
+  SATISFACTORY: "Satisfactory",
+  MODERATE: "Moderate",
+  POOR: "Poor",
+};
+
+/** Get rating band colors with sensible fallback for null/unknown bands */
+export function getRatingBandColors(band: string | null) {
+  if (!band || !RATING_BAND_COLORS[band]) {
+    return {
+      bg: "bg-muted",
+      text: "text-muted-foreground",
+      fill: "hsl(var(--muted-foreground))",
+      badgeBg: "bg-muted text-muted-foreground",
+    };
+  }
+  return RATING_BAND_COLORS[band];
+}
+
+/** Score label badge colors (keys match ScoreLabel enum) */
+export const SCORE_LABEL_COLORS: Record<string, string> = {
+  FULLY_COMPLIANT: "bg-green-100 text-green-800",
+  LARGELY_COMPLIANT: "bg-amber-100 text-amber-800",
+  PARTIALLY_COMPLIANT: "bg-orange-100 text-orange-800",
+  NON_COMPLIANT: "bg-red-100 text-red-800",
+};
+
 /** RBIA score button styles (keys match ScoreLabel enum) */
 export const SCORE_BUTTON_STYLES: Record<
   string,

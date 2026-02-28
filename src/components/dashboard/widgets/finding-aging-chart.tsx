@@ -87,7 +87,7 @@ export function FindingAgingChart({ data }: FindingAgingChartProps) {
           className="mx-auto min-h-[160px] w-full md:min-h-[200px]"
           aria-label="Finding aging distribution across 5 aging buckets"
         >
-          <BarChart data={barData} layout="horizontal">
+          <BarChart accessibilityLayer data={barData} layout="horizontal">
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis dataKey="bucket" tickLine={false} axisLine={false} />
             <YAxis
@@ -112,6 +112,7 @@ export function FindingAgingChart({ data }: FindingAgingChartProps) {
               <div
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: color }}
+                aria-hidden="true"
               />
               <span className="text-muted-foreground">
                 {chartConfig[key as keyof typeof chartConfig].label}

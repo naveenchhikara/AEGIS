@@ -117,12 +117,8 @@ const CONTROL_TYPE_COLORS: Record<string, string> = {
   CORRECTIVE: "bg-orange-100 text-orange-800 border-orange-300",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
+// Severity colors imported from central constants
+import { SEVERITY_BADGE_COLORS as SEVERITY_COLORS } from "@/lib/constants";
 
 type FormState = {
   success?: boolean;
@@ -183,7 +179,12 @@ export function ControlDetailView({
     <div className="container max-w-6xl space-y-6 py-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Go back"
+            onClick={() => router.back()}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

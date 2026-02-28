@@ -112,7 +112,7 @@ export function RegulatoryCalendar() {
         <div className="mt-3 border-t pt-3">
           <a
             href="/compliance"
-            className="inline-flex min-h-[44px] items-center text-sm text-blue-600 hover:text-blue-700 md:min-h-0 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-primary hover:text-primary/80 inline-flex min-h-[44px] items-center text-sm md:min-h-0"
           >
             View All
             <ArrowRight className="ml-1 h-4 w-4" />

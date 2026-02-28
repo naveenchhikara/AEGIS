@@ -35,7 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil } from "lucide-react";
+import { Pencil } from "@/lib/icons";
+import { Label } from "@/components/ui/label";
 import { updateBranchProfile } from "@/actions/admin/manage-branch";
 
 type Branch = {
@@ -166,6 +167,7 @@ export function BranchProfileTable({
                       <Button
                         size="sm"
                         variant="ghost"
+                        aria-label="Edit branch profile"
                         onClick={() => openEdit(b)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -190,9 +192,9 @@ export function BranchProfileTable({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Zone</label>
+              <Label htmlFor="edit-zone">Zone</Label>
               <Select value={editZoneId} onValueChange={setEditZoneId}>
-                <SelectTrigger>
+                <SelectTrigger id="edit-zone">
                   <SelectValue placeholder="Select zone" />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,9 +208,9 @@ export function BranchProfileTable({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
+              <Label htmlFor="edit-category">Category</Label>
               <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger>
+                <SelectTrigger id="edit-category">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,10 +223,11 @@ export function BranchProfileTable({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <Label htmlFor="edit-business-size">
                 Business Size (₹ Lakhs)
-              </label>
+              </Label>
               <Input
+                id="edit-business-size"
                 type="number"
                 value={editBusinessSize}
                 onChange={(e) => setEditBusinessSize(e.target.value)}
@@ -232,8 +235,9 @@ export function BranchProfileTable({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Staff Strength</label>
+              <Label htmlFor="edit-staff-strength">Staff Strength</Label>
               <Input
+                id="edit-staff-strength"
                 type="number"
                 value={editStaffStrength}
                 onChange={(e) => setEditStaffStrength(e.target.value)}

@@ -79,6 +79,7 @@ export function DakshScoreGauge({ score }: DakshScoreGaugeProps) {
             aria-label={`DAKSH supervisory score: ${score} out of 5 — ${label}`}
           >
             <RadialBarChart
+              accessibilityLayer
               cx="50%"
               cy="50%"
               innerRadius="70%"

@@ -29,6 +29,7 @@ import {
   OBSERVATION_STATUS_ORDER,
 } from "@/lib/constants";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "@/lib/icons";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 
 // Observation row shape matching the DAL return type
 interface ObservationRow {
@@ -159,11 +160,8 @@ const columns: ColumnDef<ObservationRow>[] = [
     ),
     cell: ({ row }) => {
       const severity = row.getValue("severity") as string;
-      const key = severity.toLowerCase() as keyof typeof SEVERITY_COLORS;
       return (
-        <Badge variant="outline" className={SEVERITY_COLORS[key] ?? ""}>
-          {formatSeverity(severity)}
-        </Badge>
+        <SeverityBadge severity={severity} label={formatSeverity(severity)} />
       );
     },
     sortingFn: (rowA, rowB) => {

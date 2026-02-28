@@ -203,7 +203,12 @@ export function WorkProgramDetail({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Go back to work program"
+            asChild
+          >
             <Link href="/work-program">
               <ArrowLeft className="h-4 w-4" />
             </Link>

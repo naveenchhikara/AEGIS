@@ -178,7 +178,7 @@ export default async function AuditPlansPage() {
                           {plan.engagements.length > 0 ? (
                             <Link
                               href="/audit-execution"
-                              className="text-blue-600 hover:underline"
+                              className="text-primary hover:underline"
                             >
                               {plan.engagements.length}
                             </Link>

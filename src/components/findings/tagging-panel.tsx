@@ -4,6 +4,7 @@ import {
   OBSERVATION_STATUS_COLORS,
   RISK_CATEGORIES,
 } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { formatDate } from "@/lib/utils";
 import { Building2, Target, Tag, UserCircle, Calendar } from "@/lib/icons";
 
@@ -31,16 +32,7 @@ export function TaggingPanel({ observation }: TaggingPanelProps) {
         <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           Severity
         </p>
-        <Badge
-          variant="outline"
-          className={
-            SEVERITY_COLORS[
-              observation.severity.toLowerCase() as keyof typeof SEVERITY_COLORS
-            ] ?? ""
-          }
-        >
-          {observation.severity}
-        </Badge>
+        <SeverityBadge severity={observation.severity} />
       </div>
 
       {/* Status */}

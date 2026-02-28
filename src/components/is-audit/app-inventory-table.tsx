@@ -36,6 +36,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Loader2, AlertTriangle, Pencil } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { toast } from "sonner";
 import { manageApplicationInventory } from "@/actions/investment/manage-is-audit";
 import { format } from "date-fns";
@@ -448,8 +449,12 @@ export function AppInventoryTable({
           <TableBody>
             {filteredApps.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
-                  No applications in inventory.
+                <TableCell colSpan={10}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No applications in inventory"
+                    message="Add an application to start tracking IS audit and DR testing status."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -461,6 +466,14 @@ export function AppInventoryTable({
                     className={`hover:bg-muted/50 cursor-pointer ${
                       isDrOverdue ? "bg-red-50" : ""
                     }`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleEdit(app, e as unknown as React.MouseEvent);
+                      }
+                    }}
                   >
                     <TableCell className="font-medium">
                       {app.appName}
@@ -526,6 +539,7 @@ export function AppInventoryTable({
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Edit application"
                         onClick={(e) => handleEdit(app, e)}
                       >
                         <Pencil className="h-4 w-4" />

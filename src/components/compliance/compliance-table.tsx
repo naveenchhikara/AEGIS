@@ -21,7 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, ArrowUpDown } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import Link from "next/link";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { BranchResponseForm } from "./branch-response-form";
 import { ZacReviewPanel } from "./zac-review-panel";
 
@@ -58,22 +60,11 @@ interface ComplianceTableProps {
   canZacReview: boolean;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-blue-100 text-blue-800 border-blue-300",
-  BRANCH_RESPONSE_DUE: "bg-orange-100 text-orange-800 border-orange-300",
-  BRANCH_RESPONSE_SUBMITTED: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  ZAC_REVIEW: "bg-purple-100 text-purple-800 border-purple-300",
-  ZAC_APPROVED: "bg-green-100 text-green-800 border-green-300",
-  ZAC_REJECTED: "bg-red-100 text-red-800 border-red-300",
-  CLOSED: "bg-gray-100 text-gray-800 border-gray-300",
-};
-
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
+// Colors imported from central constants
+import {
+  COMPLIANCE_STATUS_COLORS as STATUS_COLORS,
+  SEVERITY_BADGE_COLORS as SEVERITY_COLORS,
+} from "@/lib/constants";
 
 export function ComplianceTable({
   items,
@@ -204,8 +195,12 @@ export function ComplianceTable({
           <TableBody>
             {filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No compliance items found.
+                <TableCell colSpan={7}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No compliance items found"
+                    message="Compliance items will appear here once observations are raised and tracked."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -221,7 +216,7 @@ export function ComplianceTable({
                     {item.observation ? (
                       <Link
                         href={`/findings/${item.observation.id}`}
-                        className="max-w-xs truncate text-blue-600 hover:underline"
+                        className="text-primary max-w-xs truncate hover:underline"
                         title={item.observation.title}
                       >
                         {item.observation.title}
@@ -232,14 +227,7 @@ export function ComplianceTable({
                   </TableCell>
                   <TableCell>
                     {item.observation?.severity ? (
-                      <Badge
-                        variant="outline"
-                        className={
-                          SEVERITY_COLORS[item.observation.severity] ?? ""
-                        }
-                      >
-                        {item.observation.severity}
-                      </Badge>
+                      <SeverityBadge severity={item.observation.severity} />
                     ) : (
                       "—"
                     )}

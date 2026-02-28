@@ -10,6 +10,7 @@ import { confirmRepeatFinding } from "@/actions/repeat-findings/confirm";
 import { dismissRepeatFinding } from "@/actions/repeat-findings/confirm";
 import type { RepeatCandidate } from "@/actions/repeat-findings/detect";
 import { SEVERITY_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 
 interface RepeatFindingBannerProps {
   candidates: RepeatCandidate[];
@@ -84,12 +85,7 @@ export function RepeatFindingBanner({
               <div className="space-y-1">
                 <p className="text-sm font-medium">{candidate.title}</p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={SEVERITY_COLORS[severityKey] ?? ""}
-                  >
-                    {candidate.severity}
-                  </Badge>
+                  <SeverityBadge severity={candidate.severity} />
                   <span className="text-muted-foreground text-xs">
                     {Math.round(candidate.similarity * 100)}% match
                   </span>

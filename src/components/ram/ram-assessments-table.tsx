@@ -32,6 +32,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Loader2 } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { toast } from "sonner";
 
 interface RamAssessmentsTableProps {
@@ -181,8 +182,12 @@ export function RamAssessmentsTable({
           <TableBody>
             {assessments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No RAM assessments found.
+                <TableCell colSpan={6}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No RAM assessments found"
+                    message="Create a new Risk Assessment Model evaluation for a branch to get started."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -190,7 +195,15 @@ export function RamAssessmentsTable({
                 <TableRow
                   key={assessment.id}
                   className="hover:bg-muted/50 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => router.push(`/ram/${assessment.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/ram/${assessment.id}`);
+                    }
+                  }}
                 >
                   <TableCell className="font-medium">
                     {assessment.branch?.name ?? "—"}

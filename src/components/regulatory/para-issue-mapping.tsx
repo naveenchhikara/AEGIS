@@ -48,6 +48,7 @@ import {
 import { toast } from "sonner";
 import { manageRegulatoryObservation } from "@/actions/regulatory/manage-observation";
 import { manageIssue } from "@/actions/issues/manage-issue";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { format } from "date-fns";
 
 interface RegulatoryObservation {
@@ -83,12 +84,8 @@ const SOURCE_LABELS: Record<string, string> = {
   EXTERNAL: "External",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
+// Colors imported from central constants
+import { SEVERITY_BADGE_COLORS as SEVERITY_COLORS } from "@/lib/constants";
 
 export function ParaIssueMapping({
   observations,
@@ -293,12 +290,7 @@ export function ParaIssueMapping({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={SEVERITY_COLORS[obs.severity] ?? ""}
-                        >
-                          {obs.severity}
-                        </Badge>
+                        <SeverityBadge severity={obs.severity} />
                       </TableCell>
                       <TableCell>
                         {obs.issue && (
@@ -368,12 +360,7 @@ export function ParaIssueMapping({
                             <Badge variant="outline">
                               {SOURCE_LABELS[obs.source] || obs.source}
                             </Badge>
-                            <Badge
-                              variant="outline"
-                              className={SEVERITY_COLORS[obs.severity] ?? ""}
-                            >
-                              {obs.severity}
-                            </Badge>
+                            <SeverityBadge severity={obs.severity} />
                           </div>
                           <CardTitle className="text-lg">
                             {obs.referenceNo}
@@ -426,14 +413,7 @@ export function ParaIssueMapping({
                     {SOURCE_LABELS[selectedObservation.source] ||
                       selectedObservation.source}
                   </Badge>
-                  <Badge
-                    variant="outline"
-                    className={
-                      SEVERITY_COLORS[selectedObservation.severity] ?? ""
-                    }
-                  >
-                    {selectedObservation.severity}
-                  </Badge>
+                  <SeverityBadge severity={selectedObservation.severity} />
                 </div>
                 <p className="font-medium">
                   {selectedObservation.referenceNo}

@@ -15,8 +15,8 @@ import type { AuditorWorkloadItem } from "@/data-access/dashboard";
 // ─── Config ─────────────────────────────────────────────────────────────────
 
 const chartConfig = {
-  highCritical: { label: "High/Critical", color: "hsl(0 84% 60%)" },
-  other: { label: "Other Open", color: "hsl(217 91% 60%)" },
+  highCritical: { label: "High/Critical", color: "hsl(var(--chart-4))" },
+  other: { label: "Other Open", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig;
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ export function TeamWorkloadChart({ auditors }: TeamWorkloadChartProps) {
           className="mx-auto min-h-[200px] w-full"
           aria-label="Team workload distribution by auditor"
         >
-          <BarChart data={chartData} layout="vertical">
+          <BarChart accessibilityLayer data={chartData} layout="vertical">
             <CartesianGrid horizontal={false} strokeDasharray="3 3" />
             <XAxis type="number" tickLine={false} axisLine={false} />
             <YAxis
@@ -83,11 +83,19 @@ export function TeamWorkloadChart({ auditors }: TeamWorkloadChartProps) {
         {/* Legend */}
         <div className="mt-3 flex justify-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-[hsl(0_84%_60%)]" />
+            <div
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: chartConfig.highCritical.color }}
+              aria-hidden="true"
+            />
             <span className="text-muted-foreground">High/Critical</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-[hsl(217_91%_60%)]" />
+            <div
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: chartConfig.other.color }}
+              aria-hidden="true"
+            />
             <span className="text-muted-foreground">Other Open</span>
           </div>
         </div>

@@ -1,21 +1,24 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { WidgetConfig } from "@/lib/dashboard-config";
 import type { DashboardData } from "@/data-access/dashboard";
 import type { Role } from "@/lib/permissions";
-import type { Quarter } from "@/lib/fiscal-year";
 import {
   getCurrentFiscalYear,
   getCurrentQuarter,
   getQuarterLabel,
 } from "@/lib/fiscal-year";
-import { FiscalYearSelector } from "@/components/dashboard/fiscal-year-selector";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, RotateCcw } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 // ─── Widget imports ─────────────────────────────────────────────────────────
 
@@ -33,7 +36,6 @@ import { BoardReportReadiness } from "@/components/dashboard/widgets/board-repor
 import { RegulatoryCalendarWidget } from "@/components/dashboard/widgets/regulatory-calendar-widget";
 import { ComplianceTasks } from "@/components/dashboard/widgets/compliance-tasks";
 import { RiskIndicators } from "@/components/dashboard/widgets/risk-indicators";
-import { PcaStatusBadge } from "@/components/dashboard/widgets/pca-status-badge";
 import { KeyTrendsSparklines } from "@/components/dashboard/widgets/key-trends-sparklines";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 
@@ -213,8 +215,6 @@ function renderWidget(
         />
       );
     }
-    case "pca-status":
-      return <PcaStatusBadge status={null} />;
     case "key-trends":
       return (
         <KeyTrendsSparklines
@@ -312,18 +312,6 @@ export function DashboardComposer({
 }: DashboardComposerProps) {
   const currentFY = getCurrentFiscalYear();
   const currentQ = getCurrentQuarter();
-  const [_fyFilter, setFyFilter] = useState<{
-    year: number;
-    quarter: Quarter | null;
-  }>({ year: currentFY.year, quarter: currentQ });
-
-  const handleFyChange = useCallback(
-    (value: { year: number; quarter: Quarter | null }) => {
-      setFyFilter(value);
-      // Future: invalidate date-based widget queries with new date range
-    },
-    [],
-  );
 
   // Empty state for new tenants
   if (widgetConfig.length === 0) {
@@ -362,7 +350,16 @@ export function DashboardComposer({
             FY {currentFY.label} &middot; {getQuarterLabel(currentQ)}
           </p>
         </div>
-        <FiscalYearSelector onChange={handleFyChange} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="cursor-default opacity-60">
+              FY {currentFY.label} &middot; {getQuarterLabel(currentQ)}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Fiscal year filtering coming soon</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Responsive widget grid */}

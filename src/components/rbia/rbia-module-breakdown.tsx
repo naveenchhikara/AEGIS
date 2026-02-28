@@ -6,6 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown, ChevronRight, AlertTriangle } from "@/lib/icons";
 import { getRatingBand, toPercentage } from "@/lib/rbia-scoring-engine";
+import {
+  RATING_BAND_COLORS as RATING_BAND_COLORS_FULL,
+  RATING_BAND_LABELS,
+  SCORE_LABEL_COLORS,
+} from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -26,53 +31,17 @@ interface RbiaModuleBreakdownProps {
   scoringTreeSnapshot: ScoreTreeNode[] | null; // full tree from BranchRbiaScore JSONB
 }
 
-// ─── Rating Band Config ─────────────────────────────────────────────────────
+// ─── Rating Band Config (derived from centralized constants) ─────────────────
 
 const RATING_BAND_COLORS: Record<
   string,
   { bg: string; text: string; progressColor: string }
-> = {
-  VERY_GOOD: {
-    bg: "bg-emerald-100",
-    text: "text-emerald-800",
-    progressColor: "#059669",
-  },
-  GOOD: {
-    bg: "bg-green-100",
-    text: "text-green-700",
-    progressColor: "#16a34a",
-  },
-  SATISFACTORY: {
-    bg: "bg-yellow-100",
-    text: "text-yellow-800",
-    progressColor: "#ca8a04",
-  },
-  MODERATE: {
-    bg: "bg-orange-100",
-    text: "text-orange-800",
-    progressColor: "#ea580c",
-  },
-  POOR: {
-    bg: "bg-red-100",
-    text: "text-red-800",
-    progressColor: "#dc2626",
-  },
-};
-
-const RATING_BAND_LABELS: Record<string, string> = {
-  VERY_GOOD: "Very Good",
-  GOOD: "Good",
-  SATISFACTORY: "Satisfactory",
-  MODERATE: "Moderate",
-  POOR: "Poor",
-};
-
-const SCORE_LABEL_COLORS: Record<string, string> = {
-  FULLY_COMPLIANT: "bg-green-100 text-green-800",
-  LARGELY_COMPLIANT: "bg-blue-100 text-blue-800",
-  PARTIALLY_COMPLIANT: "bg-yellow-100 text-yellow-800",
-  NON_COMPLIANT: "bg-red-100 text-red-800",
-};
+> = Object.fromEntries(
+  Object.entries(RATING_BAND_COLORS_FULL).map(([k, v]) => [
+    k,
+    { bg: v.bg, text: v.text, progressColor: v.fill },
+  ]),
+);
 
 const SCORE_LABEL_ABBREVIATIONS: Record<string, string> = {
   FULLY_COMPLIANT: "Fully",

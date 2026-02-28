@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SEVERITY_COLORS, OBSERVATION_STATUS_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { DeadlineBadge } from "./deadline-badge";
 
 export interface AuditeeObservation {
@@ -66,12 +67,11 @@ export function ObservationCard({ observation }: ObservationCardProps) {
           <h3 className="line-clamp-2 text-sm font-medium">
             {observation.title}
           </h3>
-          <Badge
-            variant="outline"
-            className={`shrink-0 ${SEVERITY_COLORS[severityKey] ?? ""}`}
-          >
-            {formatSeverity(observation.severity)}
-          </Badge>
+          <SeverityBadge
+            severity={observation.severity}
+            label={formatSeverity(observation.severity)}
+            className="shrink-0"
+          />
         </div>
 
         {/* Middle row: branch + audit area */}

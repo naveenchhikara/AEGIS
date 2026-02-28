@@ -58,7 +58,7 @@ export default async function AuditExecutionPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Audit Execution
           </h1>
           <p className="text-muted-foreground text-sm md:text-base">
@@ -89,6 +89,7 @@ export default async function AuditExecutionPage() {
         ))}
       </div>
 
+      {/* TODO: Add pagination for tables with >20 rows */}
       <EngagementsTable engagements={engagements} />
     </div>
   );

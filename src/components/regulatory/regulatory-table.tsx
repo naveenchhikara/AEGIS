@@ -42,6 +42,7 @@ import {
 import { toast } from "sonner";
 import { manageRegulatoryObservation } from "@/actions/regulatory/manage-observation";
 import { submitAtr } from "@/actions/regulatory/submit-atr";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { format } from "date-fns";
 
 interface RegulatoryObservation {
@@ -80,20 +81,11 @@ const SOURCE_LABELS: Record<string, string> = {
   EXTERNAL: "External",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
-
-const ATR_STATUS_COLORS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
-  SUBMITTED: "bg-blue-100 text-blue-800 border-blue-300",
-  ACCEPTED: "bg-green-100 text-green-800 border-green-300",
-  FURTHER_INFO: "bg-orange-100 text-orange-800 border-orange-300",
-  CLOSED: "bg-purple-100 text-purple-800 border-purple-300",
-};
+// Colors imported from central constants
+import {
+  SEVERITY_BADGE_COLORS as SEVERITY_COLORS,
+  ATR_STATUS_COLORS,
+} from "@/lib/constants";
 
 export function RegulatoryTable({
   observations,
@@ -472,12 +464,7 @@ export function RegulatoryTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={SEVERITY_COLORS[obs.severity] ?? ""}
-                    >
-                      {obs.severity}
-                    </Badge>
+                    <SeverityBadge severity={obs.severity} />
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">

@@ -67,7 +67,9 @@ export default async function SmaNpaPage({ params }: SmaNpaPageProps) {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold">SMA/NPA Summary</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          SMA/NPA Summary
+        </h1>
         <p className="text-muted-foreground">
           {engagement.branch?.name || "Branch"} — Category-wise asset quality
           summary

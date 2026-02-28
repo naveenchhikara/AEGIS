@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, ClipboardList } from "@/lib/icons";
 import { SEVERITY_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { getRecommendations } from "@/lib/report-utils";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -49,15 +50,10 @@ export function RecommendationsSection() {
                   </span>
                   <div className="flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        className={
-                          SEVERITY_COLORS[
-                            rec.priority as keyof typeof SEVERITY_COLORS
-                          ] || ""
-                        }
-                      >
-                        {PRIORITY_LABEL[rec.priority] || rec.priority}
-                      </Badge>
+                      <SeverityBadge
+                        severity={rec.priority}
+                        label={PRIORITY_LABEL[rec.priority] || rec.priority}
+                      />
                       <span className="text-base font-semibold">
                         {rec.title}
                       </span>

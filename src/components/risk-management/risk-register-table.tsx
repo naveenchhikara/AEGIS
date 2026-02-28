@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Loader2 } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { toast } from "sonner";
 import { manageRisk } from "@/actions/risk-management/manage-risk";
 
@@ -160,12 +161,6 @@ export function RiskRegisterTable({
                     Create a new risk entry in the enterprise risk register.
                   </DialogDescription>
                 </DialogHeader>
-
-                {state.error && (
-                  <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
-                    {state.error}
-                  </div>
-                )}
 
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -319,9 +314,16 @@ export function RiskRegisterTable({
           <TableBody>
             {risks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No risks in register.{" "}
-                  {canManage && "Click 'Add Risk' to create one."}
+                <TableCell colSpan={7}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No risks in register"
+                    message={
+                      canManage
+                        ? "Click 'Add Risk' to create one."
+                        : "No risk entries have been added yet."
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -336,7 +338,15 @@ export function RiskRegisterTable({
                   <TableRow
                     key={risk.id}
                     className="hover:bg-muted/50 cursor-pointer"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => router.push(`/risk-management/${risk.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/risk-management/${risk.id}`);
+                      }
+                    }}
                   >
                     <TableCell className="font-medium">
                       {risk.entity.name}

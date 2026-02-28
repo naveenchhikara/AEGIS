@@ -30,23 +30,21 @@ export default async function ReportsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">
-            Reports
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
           <p className="text-muted-foreground">
             Generate audit reports, compliance summaries, and board reports
           </p>
           <div className="flex gap-4 pt-1">
             <Link
               href="/findings"
-              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+              className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
             >
               View Findings
               <ExternalLink className="h-3 w-3" />
             </Link>
             <Link
               href="/compliance"
-              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+              className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
             >
               View Compliance
               <ExternalLink className="h-3 w-3" />

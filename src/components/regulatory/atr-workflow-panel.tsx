@@ -30,6 +30,7 @@ import {
 } from "@/lib/icons";
 import { toast } from "sonner";
 import { submitAtr } from "@/actions/regulatory/submit-atr";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { format } from "date-fns";
 
 interface RegulatoryObservation {
@@ -59,12 +60,8 @@ const SOURCE_LABELS: Record<string, string> = {
   EXTERNAL: "External",
 };
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
+// Colors imported from central constants
+import { SEVERITY_BADGE_COLORS as SEVERITY_COLORS } from "@/lib/constants";
 
 type WorkflowAction = "SUBMIT" | "MARK_ACCEPTED" | "REQUEST_INFO";
 
@@ -175,12 +172,7 @@ export function AtrWorkflowPanel({
                     <Badge variant="outline">
                       {SOURCE_LABELS[obs.source] || obs.source}
                     </Badge>
-                    <Badge
-                      variant="outline"
-                      className={SEVERITY_COLORS[obs.severity] ?? ""}
-                    >
-                      {obs.severity}
-                    </Badge>
+                    <SeverityBadge severity={obs.severity} />
                   </div>
                   <CardTitle className="text-lg">
                     {obs.referenceNo}
@@ -200,7 +192,7 @@ export function AtrWorkflowPanel({
               {/* Workflow Stepper */}
               <div className="flex items-center gap-2">
                 <div
-                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 0 ? "text-blue-600" : "text-muted-foreground"}`}
+                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 0 ? "text-primary" : "text-muted-foreground"}`}
                 >
                   {getWorkflowStage(obs.atrStatus) >= 1 ? (
                     <CheckCircle className="h-5 w-5" />
@@ -213,7 +205,7 @@ export function AtrWorkflowPanel({
                 <ArrowRight className="text-muted-foreground h-4 w-4" />
 
                 <div
-                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 1 ? "text-blue-600" : "text-muted-foreground"}`}
+                  className={`flex items-center gap-2 ${getWorkflowStage(obs.atrStatus) >= 1 ? "text-primary" : "text-muted-foreground"}`}
                 >
                   {getWorkflowStage(obs.atrStatus) >= 2 ? (
                     <CheckCircle className="h-5 w-5" />

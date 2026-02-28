@@ -4,6 +4,7 @@ import { TaggingPanel } from "./tagging-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SEVERITY_COLORS, OBSERVATION_STATUS_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { formatDate } from "@/lib/utils";
 import {
   Eye,
@@ -87,16 +88,7 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
           <h1 className="text-2xl font-bold">{observation.title}</h1>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className={
-                SEVERITY_COLORS[
-                  observation.severity.toLowerCase() as keyof typeof SEVERITY_COLORS
-                ] ?? ""
-              }
-            >
-              {observation.severity}
-            </Badge>
+            <SeverityBadge severity={observation.severity} />
             <Badge
               variant="outline"
               className={
@@ -118,7 +110,7 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
             {COMPLIANCE_LINKED_STATUSES.has(observation.status) && (
               <Link
                 href="/compliance"
-                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
               >
                 View Compliance
                 <ExternalLink className="h-3 w-3" />
@@ -192,10 +184,7 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
           {observation.status === "ISSUED" && (
             <p className="text-muted-foreground text-sm">
               Observation issued to the branch.{" "}
-              <Link
-                href="/compliance"
-                className="text-blue-600 hover:underline"
-              >
+              <Link href="/compliance" className="text-primary hover:underline">
                 Track compliance status
               </Link>
               .
@@ -204,10 +193,7 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
           {observation.status === "RESPONSE" && (
             <p className="text-muted-foreground text-sm">
               Branch response received. Pending compliance review.{" "}
-              <Link
-                href="/compliance"
-                className="text-blue-600 hover:underline"
-              >
+              <Link href="/compliance" className="text-primary hover:underline">
                 View compliance status
               </Link>
               .
@@ -216,10 +202,7 @@ export function FindingDetail({ observation, session }: FindingDetailProps) {
           {observation.status === "COMPLIANCE" && (
             <p className="text-muted-foreground text-sm">
               Under compliance review.{" "}
-              <Link
-                href="/compliance"
-                className="text-blue-600 hover:underline"
-              >
+              <Link href="/compliance" className="text-primary hover:underline">
                 View compliance status
               </Link>
               .

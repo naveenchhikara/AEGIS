@@ -39,6 +39,7 @@ import {
   ShieldAlert,
   MoreHorizontal,
 } from "@/lib/icons";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,7 @@ import { toast } from "sonner";
 import { manageIssue } from "@/actions/issues/manage-issue";
 import { acceptRisk } from "@/actions/issues/accept-risk";
 import { ActionPlanPanel } from "./action-plan-panel";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -99,27 +101,12 @@ interface IssuesTableProps {
   }>;
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-amber-100 text-amber-800 border-amber-300",
-  LOW: "bg-green-100 text-green-800 border-green-300",
-};
-
-const SOURCE_COLORS: Record<string, string> = {
-  INTERNAL_AUDIT: "bg-blue-100 text-blue-800 border-blue-300",
-  REGULATORY: "bg-purple-100 text-purple-800 border-purple-300",
-  EXTERNAL_AUDIT: "bg-indigo-100 text-indigo-800 border-indigo-300",
-  SELF_ASSESSMENT: "bg-green-100 text-green-800 border-green-300",
-  CONCURRENT: "bg-teal-100 text-teal-800 border-teal-300",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  OPEN: "bg-red-100 text-red-800 border-red-300",
-  IN_PROGRESS: "bg-blue-100 text-blue-800 border-blue-300",
-  CLOSED: "bg-green-100 text-green-800 border-green-300",
-  ACCEPTED_RISK: "bg-amber-100 text-amber-800 border-amber-300",
-};
+// Colors imported from central constants
+import {
+  SEVERITY_BADGE_COLORS as SEVERITY_COLORS,
+  ISSUE_SOURCE_COLORS as SOURCE_COLORS,
+  ISSUE_STATUS_COLORS as STATUS_COLORS,
+} from "@/lib/constants";
 
 type FormState = {
   success?: boolean;
@@ -411,8 +398,12 @@ export function IssuesTable({
           <TableBody>
             {issues.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No issues found.
+                <TableCell colSpan={7}>
+                  <EmptyStateCard
+                    variant="inline"
+                    title="No issues found"
+                    message="Issues from audits, regulatory reviews, and self-assessments will appear here."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -436,7 +427,7 @@ export function IssuesTable({
                           Control:{" "}
                           <Link
                             href={`/controls/${issue.control.id}`}
-                            className="text-blue-600 hover:underline"
+                            className="text-primary hover:underline"
                           >
                             {issue.control.controlCode}
                           </Link>
@@ -456,12 +447,7 @@ export function IssuesTable({
                     <Badge variant="outline">{issue.issueType}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={SEVERITY_COLORS[issue.severity] ?? ""}
-                    >
-                      {issue.severity}
-                    </Badge>
+                    <SeverityBadge severity={issue.severity} />
                   </TableCell>
                   <TableCell>
                     <Badge

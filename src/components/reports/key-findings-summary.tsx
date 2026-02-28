@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { getTopFindings } from "@/lib/report-utils";
 import type { TopFinding } from "@/lib/report-utils";
 import { SEVERITY_COLORS } from "@/lib/constants";
+import { SeverityBadge } from "@/components/ui/severity-badge";
 import { formatDate } from "@/lib/utils";
 import { AlertTriangle, Clock } from "@/lib/icons";
 
@@ -75,15 +76,7 @@ export function KeyFindingsSummary() {
                   >
                     {/* Severity Badge */}
                     <div className="hidden shrink-0 pt-0.5 sm:block">
-                      <Badge
-                        className={
-                          SEVERITY_COLORS[
-                            finding.severity as keyof typeof SEVERITY_COLORS
-                          ] || ""
-                        }
-                      >
-                        {finding.severity.toUpperCase()}
-                      </Badge>
+                      <SeverityBadge severity={finding.severity} />
                     </div>
 
                     {/* Content */}

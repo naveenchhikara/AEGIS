@@ -20,7 +20,7 @@ import {
 import { filterNavByRoles } from "@/lib/nav-items";
 import { type Role, getRoleDisplayName } from "@/lib/permissions";
 import { ChevronsUpDown, LogOut } from "@/lib/icons";
-import { signOut } from "@/lib/auth-client";
+import { handleSignOut } from "@/lib/auth-client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -177,12 +177,7 @@ export function AppSidebar({
                   <Link href="/settings">{tNav("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await signOut();
-                    window.location.href = "/login";
-                  }}
-                >
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   {tTopBar("signOut")}
                 </DropdownMenuItem>

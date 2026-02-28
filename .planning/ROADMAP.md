@@ -32,7 +32,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 - [x] **Phase 27: Schema and Data Models** — New Prisma models for loan accounts, sampling config, account exam responses, and question management (DATA-01, DATA-02, DATA-03, QMGT-01, QMGT-04, XMOD-01, XMOD-02) (completed 2026-02-28)
 - [x] **Phase 28: Loan Data Upload** — CSV/Excel upload UI, field validation, import summary, and per-branch storage (DATA-01, DATA-02, DATA-03) (completed 2026-02-28)
 - [x] **Phase 29: Sampling Engine** — HIA sampling criteria configuration, locked auditor view, auto-selection algorithm (SMPL-01, SMPL-02, SMPL-03, SMPL-04) (completed 2026-02-28)
-- [ ] **Phase 30: Account Examination UI** — Per-account question workflow, RBI references, instance tracking, notes/evidence (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03)
+- [x] **Phase 30: Account Examination UI** — Per-account question workflow, RBI references, instance tracking, notes/evidence (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03) (completed 2026-02-28)
 - [ ] **Phase 31: Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration, visualization (CSCR-01, CSCR-02, CSCR-03, CSCR-04)
 
 ## Phase Details
@@ -112,7 +112,7 @@ Plans:
 6. HIA can add a new custom question to a credit module, and it immediately appears in the question list for future examinations — existing AccountExamResponse records for completed accounts are not affected
 7. HIA can deactivate an existing question — it no longer appears in new examinations but historical response data for that question remains intact
 
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 
@@ -152,5 +152,5 @@ Plans:
 | 27. Schema and Data Models | 2/2            | Complete    | 2026-02-28 |
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
 | 29. Sampling Engine        | 3/3            | Complete    | 2026-02-28 |
-| 30. Account Examination UI | 1/3            | In Progress |            |
+| 30. Account Examination UI | 3/3            | Complete    | 2026-02-28 |
 | 31. Instance-Based Scoring | 0/TBD          | Not started | -          |

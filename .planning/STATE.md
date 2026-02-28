@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
 current_phase: 30-account-examination-ui
-current_plan: 30-01 (complete)
-status: in_progress
-last_updated: "2026-02-28T17:09:25Z"
+current_plan: 30-03 (complete)
+status: executing
+last_updated: "2026-02-28T17:26:00Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 13
-  completed_plans: 8
+  completed_plans: 10
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 30-account-examination-ui
-**Current plan:** 30-01 (complete)
+**Current plan:** 30-03 (complete)
 **Status:** In progress
 
 ## Decisions
@@ -51,6 +51,14 @@ See: .planning/PROJECT.md
 - 2026-02-28 [30-01]: saveAccountExamResponse uses upsert on [engagementId, loanAccountId, questionId] — idempotent re-saving updates without duplicates
 - 2026-02-28 [30-01]: deactivateQuestion sets isActive=false (soft-delete), never deletes AccountExamResponse records — QMGT-03 historical preservation
 - 2026-02-28 [30-01]: Zod v4 z.enum() uses error string property, not errorMap callback — fixed build-breaking type error
+- [Phase 30-03]: Module tabs use searchParams (?moduleCode=CRD-HLN) for URL-stateful navigation
+- [Phase 30-03]: EditQuestionDialog uses controlled open state from parent QuestionTable
+- [Phase 30-03]: AlertDialog for deactivation only shown when question has AccountExamResponse records
+- [Phase 30-03]: Questions tab added to RBIA layout via canManageQuestions conditional spread
+- 2026-02-28 [30-02]: Account Exam tab href defaults to CRD-HLN — most common UCB credit module; other modules navigable within the page
+- 2026-02-28 [30-02]: Date fields (respondedAt) serialized to ISO strings at page boundary — client components receive strings, avoids React serialization errors
+- 2026-02-28 [30-02]: Optimistic status update on compliance button click reverts on server action failure to maintain UI consistency
+- 2026-02-28 [30-02]: Evidence section shows placeholder text — full S3 upload integration deferred to Phase 26; responseId preserved for future wiring
 
 ## Session Log
 
@@ -63,3 +71,5 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 29 Plan 02 complete — Sampling DAL + server actions: saveSamplingCriteria, generateSampleAction, 4 DAL functions with tenant isolation (SMPL-01, SMPL-02, SMPL-04)
 - 2026-02-28: Phase 29 Plan 03 complete — Sampling UI: CriteriaConfigForm, SampleListTable, Sampling tab in RBIA layout (SMPL-01, SMPL-02, SMPL-03, SMPL-04)
 - 2026-02-28: Phase 30 Plan 01 complete — Account examination DAL (getAccountsWithProgress, getQuestionsForAccount, getViolationSummary) and server actions (saveAccountExamResponse, addQuestion, updateQuestion, deactivateQuestion, reactivateQuestion) (AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03)
+- 2026-02-28: Phase 30 Plan 02 complete — Account examination UI: examination/[moduleCode]/page.tsx server component with deterministic shuffle, AccountSidebar (colored dots), QuestionCard (compliance buttons, collapsible RBI/best practice panels, debounced notes), ExaminationProgressBar (violation badge, completion banner), Account Exam tab in RBIA layout (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05)
+- 2026-02-28: Phase 30 Plan 03 complete — Question management UI: questions/page.tsx with HIA-only guard, QuestionTable with sortable columns and deactivation warnings, AddQuestionDialog, EditQuestionDialog, conditional Questions tab in RBIA layout (QMGT-02, QMGT-03)

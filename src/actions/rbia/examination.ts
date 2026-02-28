@@ -21,7 +21,6 @@ import {
 import {
   autoSelectModules,
   addModuleSelection,
-  removeModuleSelection,
 } from "@/data-access/rbia-examination";
 
 // ─── Allowed engagement statuses for examination responses ──────────────────
@@ -342,6 +341,14 @@ export async function addModuleSelectionAction(
 /**
  * Remove a module from an engagement's examination selection.
  * Wraps the DAL removeModuleSelection with permission guards.
+ *
+ * Guards:
+ * - PERMISSION_DENIED: user lacks rbia:examine
+ * - VALIDATION_ERROR: input fails Zod schema (now includes required reason)
+ * - NOT_FOUND: moduleNodeId does not exist in this tenant
+ * - CONFLICT: module has scored examination responses (ENGG-06 data integrity)
+ *
+ * Audit trail: removal reason is recorded via setAuditContext justification field.
  */
 export async function removeModuleSelectionAction(
   input: RemoveModuleSelectionInput,
@@ -350,6 +357,7 @@ export async function removeModuleSelectionAction(
     // 1. Auth
     const session = await getRequiredSession();
     const userRoles = session.user.roles;
+    const tenantId = session.user.tenantId;
 
     // 2. Permission
     if (!hasPermission(userRoles, "rbia:examine")) {
@@ -360,7 +368,7 @@ export async function removeModuleSelectionAction(
       };
     }
 
-    // 3. Validate
+    // 3. Validate (now includes required reason field)
     const parsed = RemoveModuleSelectionSchema.safeParse(input);
     if (!parsed.success) {
       return {
@@ -372,12 +380,70 @@ export async function removeModuleSelectionAction(
 
     const validated = parsed.data;
 
-    // 4-5. Execute via DAL (handles tenant scoping internally)
-    await removeModuleSelection(
-      session,
-      validated.engagementId,
-      validated.moduleNodeId,
-    );
+    // 4. Scored-items guard — prevent removal of modules with existing examination responses
+    const db = prismaForTenant(tenantId);
+
+    // Find the module node to get its materialized path for descendant lookup
+    const moduleNode = await db.examinationNode.findFirst({
+      where: { id: validated.moduleNodeId, tenantId },
+      select: { id: true, path: true },
+    });
+
+    if (!moduleNode) {
+      return {
+        success: false,
+        error: "Module not found.",
+        code: "NOT_FOUND",
+      };
+    }
+
+    // Find all leaf descendants of this module using materialized path prefix
+    const descendantLeaves = await db.examinationNode.findMany({
+      where: {
+        tenantId,
+        isLeaf: true,
+        path: { startsWith: moduleNode.path + "." },
+      },
+      select: { id: true },
+    });
+
+    if (descendantLeaves.length > 0) {
+      const leafIds = descendantLeaves.map((n) => n.id);
+      const scoredCount = await db.examinationResponse.count({
+        where: {
+          engagementId: validated.engagementId,
+          nodeId: { in: leafIds },
+        },
+      });
+
+      if (scoredCount > 0) {
+        return {
+          success: false,
+          error: `Cannot remove module: ${scoredCount} item(s) have been scored. Clear all scores before removing.`,
+          code: "CONFLICT",
+        };
+      }
+    }
+
+    // 5. Set audit context with removal reason for audit trail (ENGG-06)
+    await db.$transaction(async (tx: any) => {
+      await setAuditContext(tx, {
+        actionType: "module_selection.removed",
+        justification: validated.reason,
+        userId: session.user.id,
+        tenantId,
+        sessionId: session.session.id,
+      });
+
+      await tx.engagementModuleSelection.delete({
+        where: {
+          engagementId_moduleNodeId: {
+            engagementId: validated.engagementId,
+            moduleNodeId: validated.moduleNodeId,
+          },
+        },
+      });
+    });
 
     // Revalidate path
     revalidatePath(`/audit-execution/${validated.engagementId}/rbia`);

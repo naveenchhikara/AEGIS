@@ -7,7 +7,7 @@
 - ✅ **v3.0 RBIAS Full Platform** — Phases 15-17 (shipped 2026-02-21)
 - ✅ **v4.0 Platform Hardening** — (shipped 2026-02-21)
 - ✅ **v5.0 Pilot Readiness** — (shipped 2026-02-22)
-- 🚧 **v6.0 RBIA Implementation** — Phases 18-23 (in progress)
+- 🚧 **v6.0 RBIA Implementation** — Phases 18-26 (in progress)
 
 ---
 
@@ -24,7 +24,7 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 
 **Milestone Goal:** Implement the full RBIA audit workflow using v6.0 schema models — hierarchical examination tree, 4-point weighted scoring, dual findings model (ActionPoints + Observations), 8-state engagement lifecycle, branch RBIA scoring, BM batch response, and RBIA reporting.
 
-**41 requirements across 6 phases (18-23). Phase numbering continues from v3.0's Phase 17.**
+**41 requirements across 9 phases (18-26). Phase numbering continues from v3.0's Phase 17. Phases 24-26 are gap closure phases from milestone audit.**
 
 ## Phases
 
@@ -34,6 +34,9 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 - [x] **Phase 21: Examination UI** — Hierarchical tree view, 4-button score picker, progress indicators, and filters (completed 2026-02-25)
 - [x] **Phase 22: Findings and Meetings** — Dual findings tabs, opening/exit meeting forms, engagement lifecycle UI (completed 2026-02-25)
 - [x] **Phase 23: BM Response and Reporting** — Branch manager response panel, overdue escalation, score display, and RBIA PDF report (completed 2026-02-25)
+- [ ] **Phase 24: Score Freeze & Score Page Fixes** — Wire freeze button, fix TS2322 error, wire gauge-to-drilldown, delete orphaned component (gap closure)
+- [ ] **Phase 25: Module Selection UI** — Add/remove module controls in module grid for manual module management (gap closure)
+- [ ] **Phase 26: Evidence Upload** — S3 presigned URL generation and evidence upload for BM action point responses (gap closure)
 
 ## Phase Details
 
@@ -206,3 +209,36 @@ Plans:
 | 21. Examination UI            | 4/4       | Complete       | 2026-02-25 | -         |
 | 22. Findings and Meetings     | 5/5       | Complete       | 2026-02-25 | -         |
 | 23. BM Response and Reporting | 5/5       | Complete       | 2026-02-25 | -         |
+| 24. Score Freeze & Score Page | -         | Planned        | -          | -         |
+| 25. Module Selection UI       | -         | Planned        | -          | -         |
+| 26. Evidence Upload           | -         | Planned        | -          | -         |
+
+### Phase 24: Score Freeze & Score Page Fixes
+
+**Goal:** Wire the freeze score button to enable the BM response workflow end-to-end, fix TypeScript compilation error in score page, wire gauge-to-drilldown interaction, and remove orphaned component.
+
+**Depends on:** Phase 23
+
+**Requirements:** EXAM-10, REPT-03
+
+**Gap Closure:** Closes critical freeze flow gap + score page compilation/wiring gaps from v6.0 audit.
+
+### Phase 25: Module Selection UI
+
+**Goal:** Provide UI controls for auditors to manually add or remove examination modules from the auto-selected set, completing the module management feature.
+
+**Depends on:** Phase 24
+
+**Requirements:** ENGG-06
+
+**Gap Closure:** Closes module add/remove UI gap — DAL and server actions exist from Phase 19/20 but lack UI consumers.
+
+### Phase 26: Evidence Upload
+
+**Goal:** Enable Branch Managers to upload evidence files when responding to Action Points, using S3 presigned URLs for secure direct-to-bucket uploads.
+
+**Depends on:** Phase 25
+
+**Requirements:** BMRP-02
+
+**Gap Closure:** Closes evidence upload gap — buttons exist but are disabled pending S3 presigned URL integration.

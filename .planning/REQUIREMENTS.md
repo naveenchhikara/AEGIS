@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXAM-07     | Phase 21 | Pending  |
 | EXAM-08     | Phase 21 | Pending  |
 | EXAM-09     | Phase 20 | Pending  |
-| EXAM-10     | Phase 20 | Pending  |
+| EXAM-10     | Phase 24 | Pending  |
 | EXAM-11     | Phase 18 | Complete |
 | EXAM-12     | Phase 18 | Complete |
 | ENGG-01     | Phase 18 | Complete |
@@ -122,7 +122,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGG-03     | Phase 20 | Pending  |
 | ENGG-04     | Phase 20 | Pending  |
 | ENGG-05     | Phase 19 | Complete |
-| ENGG-06     | Phase 19 | Complete |
+| ENGG-06     | Phase 25 | Pending  |
 | ENGG-07     | Phase 19 | Complete |
 | FIND-01     | Phase 20 | Pending  |
 | FIND-02     | Phase 20 | Pending  |
@@ -131,13 +131,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIND-05     | Phase 19 | Complete |
 | FIND-06     | Phase 20 | Pending  |
 | BMRP-01     | Phase 20 | Pending  |
-| BMRP-02     | Phase 22 | Pending  |
+| BMRP-02     | Phase 26 | Pending  |
 | BMRP-03     | Phase 22 | Pending  |
 | BMRP-04     | Phase 22 | Pending  |
 | BMRP-05     | Phase 23 | Pending  |
 | REPT-01     | Phase 22 | Pending  |
 | REPT-02     | Phase 23 | Pending  |
-| REPT-03     | Phase 22 | Pending  |
+| REPT-03     | Phase 24 | Pending  |
 | REPT-04     | Phase 23 | Pending  |
 | REPT-05     | Phase 23 | Pending  |
 | DSEC-01     | Phase 18 | Complete |

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: RBIA Implementation
 status: unknown
-last_updated: "2026-02-28T10:52:27.004Z"
+last_updated: "2026-02-28T11:00:39.240Z"
 progress:
   total_phases: 9
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 33
-  completed_plans: 32
+  completed_plans: 33
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** Phase 25 in progress — Manual Module Selection UI
+**Current focus:** Phase 26 next — S3 Evidence Upload with presigned URLs
 
 ## Current Position
 
-Phase: 25 of 26 (Manual Module Selection UI)
-Plan: 1 of 2 complete
-Status: Phase 25 in progress — 25-01 backend extensions complete
-Last activity: 2026-02-28 — Phase 25-01 complete (removalReason schema + scored-items guard + getAllModules DAL)
+Phase: 25 of 26 complete (Manual Module Selection UI — DONE)
+Plan: 2 of 2 complete
+Status: Phase 25 complete — 25-02 module management UI complete (ENGG-06 fully satisfied)
+Last activity: 2026-02-28 — Phase 25-02 complete (AddModuleDialog + RemoveModuleAlertDialog + grid management controls)
 
-Progress: [█████████░] 97% (32/33 plans complete)
+Progress: [██████████] 100% (33/33 plans complete)
 
 ## Phase 19 Plans
 
@@ -71,6 +71,7 @@ _Updated after each plan completion_
 | Phase 24 P02 | 3 | 2 tasks | 4 files |
 | Phase 24 P01 | 4 | 2 tasks | 2 files |
 | Phase 25 P01 | 4 | 2 tasks | 4 files |
+| Phase 25-module-selection-ui P02 | 5 | 2 tasks | 4 files |
 
 ## Milestone History
 
@@ -119,6 +120,9 @@ Recent decisions affecting current work:
 - [Phase 25-01]: removalReason approach: keep delete(), record reason via setAuditContext justification in transaction — simpler than soft-delete, reason captured in audit log
 - [Phase 25-01]: Scored-items guard via materialized path prefix (path: startsWith) to find leaf descendants before allowing module removal
 - [Phase 25-01]: Delete moved inline into db.$transaction with setAuditContext — ensures audit context and delete are atomic
+- [Phase 25-02]: Dialog (not AlertDialog) for Add Module — non-destructive and multi-step with per-module reasons
+- [Phase 25-02]: canManageModules hides controls entirely when falsy (not just disables) — cleaner UX for read-only RBIA pages
+- [Phase 25-02]: Remove button positioned absolutely on Link (group relative) so Trash2 icon floats top-right without disrupting card layout
 
 ### Pending Todos
 

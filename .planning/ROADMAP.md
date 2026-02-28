@@ -35,7 +35,7 @@ Phases 1-17 completed across v1.0 through v5.0 milestones. See `.planning/milest
 - [x] **Phase 22: Findings and Meetings** — Dual findings tabs, opening/exit meeting forms, engagement lifecycle UI (completed 2026-02-25)
 - [x] **Phase 23: BM Response and Reporting** — Branch manager response panel, overdue escalation, score display, and RBIA PDF report (completed 2026-02-25)
 - [x] **Phase 24: Score Freeze & Score Page Fixes** — Wire freeze button, fix TS2322 error, wire gauge-to-drilldown, delete orphaned component (gap closure) (completed 2026-02-28)
-- [ ] **Phase 25: Module Selection UI** — Add/remove module controls in module grid for manual module management (gap closure)
+- [x] **Phase 25: Module Selection UI** — Add/remove module controls in module grid for manual module management (gap closure) (completed 2026-02-28)
 - [ ] **Phase 26: Evidence Upload** — S3 presigned URL generation and evidence upload for BM action point responses (gap closure)
 
 ## Phase Details
@@ -210,7 +210,7 @@ Plans:
 | 22. Findings and Meetings     | 5/5       | Complete       | 2026-02-25 | -         |
 | 23. BM Response and Reporting | 5/5       | Complete       | 2026-02-25 | -         |
 | 24. Score Freeze & Score Page | 2/2       | Complete       | 2026-02-28 | -         |
-| 25. Module Selection UI       | 1/2       | In Progress    |            | -         |
+| 25. Module Selection UI       | 2/2       | Complete       | 2026-02-28 | -         |
 | 26. Evidence Upload           | -         | Planned        | -          | -         |
 
 ### Phase 24: Score Freeze & Score Page Fixes

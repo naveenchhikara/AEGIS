@@ -58,6 +58,8 @@ export type RbiaScorePanelProps = {
   moduleScores: EngagementModuleScoreRow[];
   branchScore: BranchRbiaScoreData | null;
   engagementStatus: string;
+  engagementId: string;
+  canFreeze: boolean;
 };
 
 // ─── Helper: compute live composite from module progress rows ────────────────
@@ -97,6 +99,8 @@ export function RbiaScorePanel({
   moduleScores,
   branchScore,
   engagementStatus,
+  engagementId,
+  canFreeze,
 }: RbiaScorePanelProps) {
   // Determine composite score source
   const isFrozen = branchScore !== null && branchScore.frozenAt !== null;

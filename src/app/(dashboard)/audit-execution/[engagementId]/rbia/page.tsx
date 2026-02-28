@@ -5,6 +5,7 @@ import {
 } from "@/data-access/rbia-scoring";
 import { getModuleSelections } from "@/data-access/rbia-examination";
 import { getEngagementWithTeam } from "@/data-access/audit-execution";
+import { hasPermission } from "@/lib/permissions";
 import { RbiaScorePanel } from "@/components/rbia/rbia-score-panel";
 import { RbiaModuleGrid } from "@/components/rbia/rbia-module-grid";
 import { notFound } from "next/navigation";
@@ -43,6 +44,7 @@ export default async function RbiaExaminationPage({ params }: PageProps) {
 
   const engagementStatus = engagement.status as string;
   const branchName = engagement.branch?.name ?? "Unknown Branch";
+  const canFreeze = hasPermission(session.user.roles, "rbia:score_freeze");
 
   return (
     <div className="space-y-6">
@@ -55,6 +57,8 @@ export default async function RbiaExaminationPage({ params }: PageProps) {
         moduleScores={moduleScores}
         branchScore={branchScore}
         engagementStatus={engagementStatus}
+        engagementId={engagementId}
+        canFreeze={canFreeze}
       />
 
       {/* Module cards grid -- each card links to per-module examination tree */}

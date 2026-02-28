@@ -150,6 +150,11 @@ export default async function RbiaLayout({ children, params }: LayoutProps) {
             href: basePath,
           },
           {
+            key: "loan-portfolio",
+            label: "Loan Portfolio",
+            href: `${basePath}/loan-portfolio`,
+          },
+          {
             key: "findings",
             label: "Findings",
             href: `${basePath}/findings`,

@@ -86,7 +86,13 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 3. After HIA saves sampling criteria, clicking "Generate Sample" auto-selects accounts from the uploaded portfolio according to the configured criteria, and the selected accounts are visible in a sample list
 4. If a criteria bucket requests more accounts than exist in that segment (e.g., 5 newly sanctioned requested but only 3 exist), the system fills from the next-largest bucket and displays a warning — no error or crash occurs
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 29-01-PLAN.md — TDD: Pure sampling algorithm with deterministic bucket-fill, overflow redistribution, dedup
+- [ ] 29-02-PLAN.md — DAL functions + server actions for criteria save and sample generation
+- [ ] 29-03-PLAN.md — Sampling UI: criteria config form, sample list table, RBIA tab integration
 
 ### Phase 30: Account Examination UI
 

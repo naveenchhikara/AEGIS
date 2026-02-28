@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
-current_phase: 28-loan-data-upload
-current_plan: 28-02 (complete)
-status: planning
-last_updated: "2026-02-28T16:27:29.285Z"
+current_phase: 29-sampling-engine
+current_plan: 29-01 (complete)
+status: in-progress
+last_updated: "2026-02-28T16:34:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Session State
@@ -22,9 +22,9 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v7.0 Sample-Based Account Examination
-**Current phase:** 28-loan-data-upload
-**Current plan:** 28-02 (complete)
-**Status:** Ready to plan
+**Current phase:** 29-sampling-engine
+**Current plan:** 29-01 (complete)
+**Status:** In progress
 
 ## Decisions
 
@@ -37,6 +37,9 @@ See: .planning/PROJECT.md
 - 2026-02-28 [28-01]: Zod v4 z.record() requires two arguments — z.record(z.string(), z.unknown()) for metadata field validation
 - 2026-02-28 [28-02]: ValidationResult passed through runImport to avoid state race between pendingValidation and direct import path
 - 2026-02-28 [28-02]: CREDIT_MODULE_CODES uses canonical keys (HOUSING_LOANS/GOLD_LOANS/VEHICLE_LOANS) to deduplicate MODULE_FIELD_CONFIGS entries in page.tsx
+- 2026-02-28 [29-01]: hasPriorObservations added to LoanAccountForSampling interface — not in Phase 27 original; Phase 28 upload file provides this flag per column
+- 2026-02-28 [29-01]: Bucket processing order: largest pct first, alphabetical ties — ensures deterministic redistribution target selection
+- 2026-02-28 [29-01]: MS_PER_YEAR = 365.25 days for NEWLY_SANCTIONED 12-month cutoff — handles leap years correctly
 
 ## Session Log
 
@@ -45,3 +48,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 27 Plan 02 complete — 25 CRD-HLN Housing Loans examination questions seeded via scripts/seed-exam-questions.ts (idempotent upsert)
 - 2026-02-28: Phase 28 Plan 01 complete — CSV/Excel parsing pipeline, fuzzy column mapping, loan portfolio DAL + server actions (DATA-01, DATA-02, DATA-03)
 - 2026-02-28: Phase 28 Plan 02 complete — Loan Portfolio upload UI with drag-drop, column mapping preview, import summary, Excel parse action, RBIA layout tab (DATA-01, DATA-02, DATA-03)
+- 2026-02-28: Phase 29 Plan 01 complete — Pure sampling engine with 5-bucket deterministic selection, overflow redistribution, 25 vitest tests (SMPL-04)

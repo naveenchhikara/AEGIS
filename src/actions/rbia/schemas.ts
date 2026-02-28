@@ -190,3 +190,32 @@ export const FreezeRbiaScoreSchema = z.object({
 });
 
 export type FreezeRbiaScoreInput = z.infer<typeof FreezeRbiaScoreSchema>;
+
+// ─── BM Evidence Upload Schemas (BMRP-02) ──────────────────────────────────
+
+export const RequestBmEvidenceUploadSchema = z.object({
+  actionPointId: z.string().uuid(),
+  engagementId: z.string().uuid(),
+  fileName: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  contentType: z.string().min(1),
+  fileHeader: z.string().optional(),
+});
+
+export type RequestBmEvidenceUploadInput = z.infer<
+  typeof RequestBmEvidenceUploadSchema
+>;
+
+export const ConfirmBmEvidenceUploadSchema = z.object({
+  actionPointId: z.string().uuid(),
+  engagementId: z.string().uuid(),
+  s3Key: z.string().min(1),
+  filename: z.string().min(1),
+  fileSize: z.number().positive(),
+  contentType: z.string().min(1),
+  description: z.string().optional(),
+});
+
+export type ConfirmBmEvidenceUploadInput = z.infer<
+  typeof ConfirmBmEvidenceUploadSchema
+>;

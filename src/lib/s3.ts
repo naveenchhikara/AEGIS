@@ -82,6 +82,18 @@ export function generateS3Key(
 }
 
 // ---------------------------------------------------------------------------
+// generateBmEvidenceS3Key — tenant-scoped BM evidence path (BMRP-02)
+// ---------------------------------------------------------------------------
+export function generateBmEvidenceS3Key(
+  tenantId: string,
+  actionPointId: string,
+  extension: string,
+): string {
+  const uuid = crypto.randomUUID();
+  return `${tenantId}/bm-evidence/${actionPointId}/${uuid}.${extension}`;
+}
+
+// ---------------------------------------------------------------------------
 // generateUploadUrl — presigned PUT with SSE-S3 encryption
 // ---------------------------------------------------------------------------
 export async function generateUploadUrl(

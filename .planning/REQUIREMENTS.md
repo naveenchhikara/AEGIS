@@ -9,9 +9,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Loan Data Management
 
-- [ ] **DATA-01**: HIA can upload branch loan portfolio as CSV/Excel with standardized fields (account number, borrower name, sanction amount, sanction date, outstanding, DPD, loan type, etc.)
-- [ ] **DATA-02**: System validates uploaded loan data and displays import summary (total accounts, field mapping, errors)
-- [ ] **DATA-03**: Uploaded loan data is stored per branch per credit module and available for sampling
+- [x] **DATA-01**: HIA can upload branch loan portfolio as CSV/Excel with standardized fields (account number, borrower name, sanction amount, sanction date, outstanding, DPD, loan type, etc.)
+- [x] **DATA-02**: System validates uploaded loan data and displays import summary (total accounts, field mapping, errors)
+- [x] **DATA-03**: Uploaded loan data is stored per branch per credit module and available for sampling
 
 ### Sampling Configuration
 
@@ -79,9 +79,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | QMGT-04     | Phase 27: Schema and Data Models | Complete |
 | XMOD-01     | Phase 27: Schema and Data Models | Complete |
 | XMOD-02     | Phase 27: Schema and Data Models | Complete |
-| DATA-01     | Phase 28: Loan Data Upload       | Pending  |
-| DATA-02     | Phase 28: Loan Data Upload       | Pending  |
-| DATA-03     | Phase 28: Loan Data Upload       | Pending  |
+| DATA-01     | Phase 28: Loan Data Upload       | Complete |
+| DATA-02     | Phase 28: Loan Data Upload       | Complete |
+| DATA-03     | Phase 28: Loan Data Upload       | Complete |
 | SMPL-01     | Phase 29: Sampling Engine        | Pending  |
 | SMPL-02     | Phase 29: Sampling Engine        | Pending  |
 | SMPL-03     | Phase 29: Sampling Engine        | Pending  |

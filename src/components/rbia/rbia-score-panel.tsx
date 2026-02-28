@@ -1,10 +1,14 @@
 "use client";
 
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   getRatingBand,
   toPercentage,
   type RatingBand,
 } from "@/lib/rbia-scoring-engine";
+import { freezeRbiaScore } from "@/actions/rbia/freeze";
 import type { EngagementModuleScoreRow } from "@/data-access/rbia-scoring";
 import type { BranchRbiaScoreData } from "@/data-access/rbia-scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +16,22 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Lock, BarChart3 } from "@/lib/icons";
+import { Lock, BarChart3, Loader2 } from "@/lib/icons";
 
 // ─── Rating band display config ──────────────────────────────────────────────
 
@@ -128,6 +142,34 @@ export function RbiaScorePanel({
   // Freeze button visibility
   const showFreezeButton = FREEZE_VISIBLE_STATUSES.has(engagementStatus);
 
+  // Freeze button state
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  // Enable condition: all modules scored + not frozen (UX guard only)
+  const allModulesScored =
+    moduleScores.length > 0 && moduleScores.every((mod) => mod.scoredCount > 0);
+  const freezeEnabled = allModulesScored && !isFrozen;
+
+  // Handle freeze confirmation
+  const handleFreeze = () => {
+    startTransition(async () => {
+      const result = await freezeRbiaScore({ engagementId });
+      if (result.success) {
+        const { compositeScore: cs, ratingBand: rb, apCount } = result.data;
+        toast.success(
+          `Score frozen: ${toPercentage(cs)}% — ${rb.replace(/_/g, " ")} (${apCount} action points issued)`,
+        );
+        setShowConfirm(false);
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "Failed to freeze score");
+        setShowConfirm(false);
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -136,7 +178,8 @@ export function RbiaScorePanel({
             <BarChart3 className="h-4 w-4" />
             RBIA Examination Score
           </CardTitle>
-          {showFreezeButton && (
+          {/* Freeze button -- permission-gated, only for REPORT_DRAFT/COMPLETED */}
+          {showFreezeButton && canFreeze && !isFrozen && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -144,16 +187,25 @@ export function RbiaScorePanel({
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled
+                      disabled={!freezeEnabled || isPending}
+                      onClick={() => setShowConfirm(true)}
                       className="gap-1.5"
                     >
-                      <Lock className="h-3.5 w-3.5" />
-                      Freeze Score
+                      {isPending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Lock className="h-3.5 w-3.5" />
+                      )}
+                      {isPending ? "Freezing..." : "Freeze Score"}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Available after all modules are complete</p>
+                  <p>
+                    {freezeEnabled
+                      ? "Permanently freeze the RBIA score"
+                      : "Available after all modules are complete"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -255,6 +307,51 @@ export function RbiaScorePanel({
           </p>
         )}
       </CardContent>
+
+      {/* Freeze confirmation dialog */}
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Freeze RBIA Score</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action is irreversible. The following scores will be
+              permanently frozen and cannot be modified.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {/* Score summary preview */}
+          <div className="bg-muted/50 space-y-2 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Composite Score</span>
+              <span className="text-lg font-bold tabular-nums">
+                {compositePercent !== null ? `${compositePercent}%` : "--"}
+              </span>
+            </div>
+            {bandConfig && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Rating Band</span>
+                <Badge className={bandConfig.className}>
+                  {bandConfig.label}
+                </Badge>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Items Scored</span>
+              <span className="text-sm tabular-nums">
+                {totalScored} / {totalItems}
+              </span>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleFreeze} disabled={isPending}>
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Freeze Score
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

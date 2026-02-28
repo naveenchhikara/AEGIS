@@ -242,3 +242,9 @@ Plans:
 **Requirements:** BMRP-02
 
 **Gap Closure:** Closes evidence upload gap — buttons exist but are disabled pending S3 presigned URL integration.
+
+**Plans:** 1 plan (Wave 1)
+
+Plans:
+
+- [ ] 26-01-PLAN.md — S3 presigned URL server actions + BmEvidenceUploadPanel component + BmResponseApCard wiring (BMRP-02)

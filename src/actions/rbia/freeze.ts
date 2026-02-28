@@ -164,13 +164,14 @@ export async function freezeRbiaScore(
       // Build tree using same two-pass Map approach as buildTree in rbia-examination.ts
       const nodeMap = new Map<
         string,
-        ScoredNode & { depth: number; parentId: string | null }
+        ScoredNode & { depth: number; parentId: string | null; name: string }
       >();
       for (const n of allNodes) {
         const resp = responseMap.get(n.id);
         nodeMap.set(n.id, {
           nodeId: n.id,
           code: n.code,
+          name: n.name,
           weight: Number(n.weight),
           isCritical: n.isCritical,
           isLeaf: n.isLeaf,
@@ -178,6 +179,10 @@ export async function freezeRbiaScore(
           children: [],
           depth: n.depth,
           parentId: n.parentId,
+        } as ScoredNode & {
+          depth: number;
+          parentId: string | null;
+          name: string;
         });
       }
 
@@ -223,6 +228,7 @@ export async function freezeRbiaScore(
         return {
           nodeId: n.nodeId,
           code: n.code,
+          name: (n as any).name ?? undefined, // Include name for human-readable display
           weight: n.weight,
           isCritical: n.isCritical,
           isLeaf: n.isLeaf,

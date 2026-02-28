@@ -20,13 +20,10 @@ interface ScoreDrilldownWrapperProps {
 /**
  * Client wrapper that manages which module's drill-down is expanded.
  *
- * The scoringTree from the DB is a root node with module-level children.
- * When a module code is selected (e.g., from ScoreGauge onModuleClick),
- * this component finds the matching module node in the tree and passes
- * it to ScoreDrilldown.
- *
- * This is a client component so it CAN handle click callbacks from ScoreGauge
- * (both are client components).
+ * The scoringTree from the DB is an ARRAY of module-level nodes (not a root
+ * node with children). When a module code is selected (e.g., from ScoreGauge
+ * onModuleClick), this component finds the matching module node in the array
+ * and passes it to ScoreDrilldown.
  */
 export function ScoreDrilldownWrapper({
   scoringTree,
@@ -38,15 +35,16 @@ export function ScoreDrilldownWrapper({
   const selectedModule = controlledModule ?? internalModule;
   const setSelectedModule = onModuleSelect ?? setInternalModule;
 
-  const tree = scoringTree as ScoredNodeSnapshot;
+  // scoringTreeSnapshot is stored as an array of module nodes by freezeRbiaScore
+  const modules = scoringTree as ScoredNodeSnapshot[];
 
-  // Find module node from the tree's children
+  // Find module node from the array
   const findModuleNode = useCallback(
     (moduleCode: string): ScoredNodeSnapshot | null => {
-      if (!tree?.children) return null;
-      return tree.children.find((child) => child.code === moduleCode) ?? null;
+      if (!modules || !Array.isArray(modules)) return null;
+      return modules.find((child) => child.code === moduleCode) ?? null;
     },
-    [tree],
+    [modules],
   );
 
   const selectedNode = selectedModule ? findModuleNode(selectedModule) : null;
@@ -61,9 +59,9 @@ export function ScoreDrilldownWrapper({
           breakdown.
         </p>
         {/* Module buttons for direct selection */}
-        {tree?.children && tree.children.length > 0 && (
+        {modules && Array.isArray(modules) && modules.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {tree.children.map((child) => (
+            {modules.map((child) => (
               <button
                 key={child.code}
                 onClick={() => setSelectedModule(child.code)}

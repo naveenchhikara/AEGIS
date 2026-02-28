@@ -6479,7 +6479,7 @@ participation in research projects.
 
 the Bank shall be informed.
 
-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Risk Based Internal Audit Strategy
+5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Risk Based Internal Audit Strategy
 
 Risk Based Internal Audit has following 5 dimensions:
 
@@ -6697,7 +6697,7 @@ their inherent risks in the business mix would be considered by assigning
 
 suitable scores for each product for arriving at weighted business at risk.
 
-6.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Annual Audit Plan
+6.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Annual Audit Plan
 
 6.1 An annual Audit plan shall be prepared by Internal Audit Department and the
 
@@ -7059,7 +7059,7 @@ neither penalized nor given undue credit for the activities not carried out by
 
 them.
 
-8.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Rating under Risk Based Internal Audit
+8.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Rating under Risk Based Internal Audit
 
 8.1 All the branches and audit units would be awarded an Audit Rating based on the
 
@@ -7218,7 +7218,7 @@ Medium
 
 Low
 
-9.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Identification of Branch Business Risk
+9.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Identification of Branch Business Risk
 
 9.1 Assessment of Branch Business Risk (IBR)
 

@@ -13,6 +13,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "seed:master-directions": "tsx prisma/seed-master-directions.ts",
+    "seed:exam-questions": "tsx scripts/seed-exam-questions.ts",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",

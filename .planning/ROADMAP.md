@@ -30,7 +30,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 ## Phases
 
 - [x] **Phase 27: Schema and Data Models** — New Prisma models for loan accounts, sampling config, account exam responses, and question management (DATA-01, DATA-02, DATA-03, QMGT-01, QMGT-04, XMOD-01, XMOD-02) (completed 2026-02-28)
-- [ ] **Phase 28: Loan Data Upload** — CSV/Excel upload UI, field validation, import summary, and per-branch storage (DATA-01, DATA-02, DATA-03)
+- [x] **Phase 28: Loan Data Upload** — CSV/Excel upload UI, field validation, import summary, and per-branch storage (DATA-01, DATA-02, DATA-03) (completed 2026-02-28)
 - [ ] **Phase 29: Sampling Engine** — HIA sampling criteria configuration, locked auditor view, auto-selection algorithm (SMPL-01, SMPL-02, SMPL-03, SMPL-04)
 - [ ] **Phase 30: Account Examination UI** — Per-account question workflow, RBI references, instance tracking, notes/evidence (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03)
 - [ ] **Phase 31: Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration, visualization (CSCR-01, CSCR-02, CSCR-03, CSCR-04)
@@ -86,7 +86,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 3. After HIA saves sampling criteria, clicking "Generate Sample" auto-selects accounts from the uploaded portfolio according to the configured criteria, and the selected accounts are visible in a sample list
 4. If a criteria bucket requests more accounts than exist in that segment (e.g., 5 newly sanctioned requested but only 3 exist), the system fills from the next-largest bucket and displays a warning — no error or crash occurs
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 
@@ -150,7 +150,7 @@ Plans:
 | Phase                      | Plans Complete | Status      | Completed  |
 | -------------------------- | -------------- | ----------- | ---------- |
 | 27. Schema and Data Models | 2/2            | Complete    | 2026-02-28 |
-| 28. Loan Data Upload       | 1/2            | In Progress |            |
+| 28. Loan Data Upload       | 2/2 | Complete   | 2026-02-28 |
 | 29. Sampling Engine        | 0/TBD          | Not started | -          |
 | 30. Account Examination UI | 0/TBD          | Not started | -          |
 | 31. Instance-Based Scoring | 0/TBD          | Not started | -          |

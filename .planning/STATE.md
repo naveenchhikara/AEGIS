@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
 current_phase: 28-loan-data-upload
-current_plan: 28-01 (complete)
+current_plan: 28-02 (complete)
 status: in_progress
-last_updated: "2026-02-28T16:10:00.000Z"
+last_updated: "2026-02-28T16:21:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 13
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 28-loan-data-upload
-**Current plan:** 28-01 (complete)
+**Current plan:** 28-02 (complete)
 **Status:** In progress
 
 ## Decisions
@@ -35,6 +35,8 @@ See: .planning/PROJECT.md
 - 2026-02-28 [28-01]: sanctionDate is required in DB (non-nullable DateTime) but optional in bank uploads — null input defaults to import timestamp with parser warning
 - 2026-02-28 [28-01]: MODULE_FIELD_CONFIGS maps both HOUSING_LOANS and CRD-HLN to same metadata config for UI/engine compatibility
 - 2026-02-28 [28-01]: Zod v4 z.record() requires two arguments — z.record(z.string(), z.unknown()) for metadata field validation
+- 2026-02-28 [28-02]: ValidationResult passed through runImport to avoid state race between pendingValidation and direct import path
+- 2026-02-28 [28-02]: CREDIT_MODULE_CODES uses canonical keys (HOUSING_LOANS/GOLD_LOANS/VEHICLE_LOANS) to deduplicate MODULE_FIELD_CONFIGS entries in page.tsx
 
 ## Session Log
 
@@ -42,3 +44,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 27 Plan 01 complete — 4 v7.0 models added to schema.prisma (ExaminationQuestion, LoanAccount, SamplingConfig, AccountExamResponse)
 - 2026-02-28: Phase 27 Plan 02 complete — 25 CRD-HLN Housing Loans examination questions seeded via scripts/seed-exam-questions.ts (idempotent upsert)
 - 2026-02-28: Phase 28 Plan 01 complete — CSV/Excel parsing pipeline, fuzzy column mapping, loan portfolio DAL + server actions (DATA-01, DATA-02, DATA-03)
+- 2026-02-28: Phase 28 Plan 02 complete — Loan Portfolio upload UI with drag-drop, column mapping preview, import summary, Excel parse action, RBIA layout tab (DATA-01, DATA-02, DATA-03)

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
 current_phase: 29-sampling-engine
-current_plan: 29-02 (complete)
+current_plan: 29-03 (complete)
 status: in-progress
-last_updated: "2026-02-28T16:43:07Z"
+last_updated: "2026-02-28T16:51:41Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 29-sampling-engine
-**Current plan:** 29-02 (complete)
+**Current plan:** 29-03 (complete)
 **Status:** In progress
 
 ## Decisions
@@ -44,6 +44,10 @@ See: .planning/PROJECT.md
 - 2026-02-28 [29-02]: generateSampleAction wraps reset+mark+lock in a $transaction — atomicity, no partial state on error
 - 2026-02-28 [29-02]: samplingBucket stored in LoanAccount.metadata JSONB (not new column) — keeps v7.0 schema additive
 - 2026-02-28 [29-02]: Prisma Json type requires double cast (as unknown as BucketAllocation[]) — Json union type doesn't overlap directly
+- 2026-02-28 [29-03]: Sampling tab inserted between Loan Portfolio and Findings — logical flow: upload → sample → examine → findings
+- 2026-02-28 [29-03]: CriteriaConfigForm split into ReadOnlyView + EditableForm subcomponents — keeps auditor branch clean with no edit controls
+- 2026-02-28 [29-03]: handleUnlock resets local isLocked state only — actual DB unlock happens when user saves new criteria
+- 2026-02-28 [29-03]: SampleListTable rows link to /rbia/account/[id] — 404 expected until Phase 30 creates account examination route
 
 ## Session Log
 
@@ -54,3 +58,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 28 Plan 02 complete — Loan Portfolio upload UI with drag-drop, column mapping preview, import summary, Excel parse action, RBIA layout tab (DATA-01, DATA-02, DATA-03)
 - 2026-02-28: Phase 29 Plan 01 complete — Pure sampling engine with 5-bucket deterministic selection, overflow redistribution, 25 vitest tests (SMPL-04)
 - 2026-02-28: Phase 29 Plan 02 complete — Sampling DAL + server actions: saveSamplingCriteria, generateSampleAction, 4 DAL functions with tenant isolation (SMPL-01, SMPL-02, SMPL-04)
+- 2026-02-28: Phase 29 Plan 03 complete — Sampling UI: CriteriaConfigForm, SampleListTable, Sampling tab in RBIA layout (SMPL-01, SMPL-02, SMPL-03, SMPL-04)

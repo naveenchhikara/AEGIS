@@ -281,20 +281,13 @@ export function generateSample(input: SamplingInput): SamplingResult {
   const selectedIds = new Set<string>();
   const sampledAccounts: SampledAccount[] = [];
 
-  // Track shortfalls for redistribution: [bucket, shortfallCount]
+  // Track shortfalls for redistribution after the first pass
   const shortfalls: Array<{ from: BucketName; amount: number }> = [];
-
-  // Track how many extra slots each bucket can absorb (capacity = target - filled)
-  // We will fill this after first pass
-  const filled = new Map<BucketName, number>();
 
   // ── First pass: fill each bucket ────────────────────────────────────────────
   for (const b of sortedBuckets) {
     const target = bucketTargets.get(b.bucket) ?? 0;
-    if (target === 0) {
-      filled.set(b.bucket, 0);
-      continue;
-    }
+    if (target === 0) continue;
 
     const pool = buildPool(b.bucket, accounts, now);
     // Exclude already-selected accounts (deduplication — first bucket wins)
@@ -307,8 +300,6 @@ export function generateSample(input: SamplingInput): SamplingResult {
       selectedIds.add(account.id);
       sampledAccounts.push({ accountId: account.id, bucket: b.bucket });
     }
-
-    filled.set(b.bucket, canTake);
 
     if (canTake < target) {
       shortfalls.push({ from: b.bucket, amount: target - canTake });
@@ -346,8 +337,7 @@ export function generateSample(input: SamplingInput): SamplingResult {
         });
       }
 
-      const takenCount = taken.length;
-      remaining -= takenCount;
+      remaining -= taken.length;
 
       if (redistributedTo === "NONE") {
         redistributedTo = targetBucket.bucket;

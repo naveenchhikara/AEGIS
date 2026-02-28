@@ -18,7 +18,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **EXAM-07**: System displays progress indicator per module ("12/24 items scored" with percentage)
 - [ ] **EXAM-08**: Auditor can filter examination items by: not yet scored, flagged for AP, flagged for observation
 - [ ] **EXAM-09**: Examination state saves incrementally — no data loss if auditor closes mid-session
-- [ ] **EXAM-10**: HIA can freeze RBIA score at engagement completion, creating immutable BranchRbiaScore JSONB snapshot
+- [x] **EXAM-10**: HIA can freeze RBIA score at engagement completion, creating immutable BranchRbiaScore JSONB snapshot
 - [x] **EXAM-11**: Frozen BranchRbiaScore cannot be mutated after freeze (DB-level trigger protection)
 - [x] **EXAM-12**: System assigns rating band based on composite score (Poor ≤40%, Moderate >40-50%, Satisfactory >50-65%, Good >65-80%, Very Good >80%)
 
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXAM-07     | Phase 21 | Pending  |
 | EXAM-08     | Phase 21 | Pending  |
 | EXAM-09     | Phase 20 | Pending  |
-| EXAM-10     | Phase 24 | Pending  |
+| EXAM-10     | Phase 24 | Complete |
 | EXAM-11     | Phase 18 | Complete |
 | EXAM-12     | Phase 18 | Complete |
 | ENGG-01     | Phase 18 | Complete |

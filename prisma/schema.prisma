@@ -161,6 +161,13 @@ enum BmBatchStatus {
   OVERDUE
 }
 
+// ─── v7.0 Account Examination Enums ──────────────────────────────────────────
+
+enum AccountExamResponseStatus {
+  COMPLIANT
+  VIOLATION
+}
+
 enum ResponseType {
   CLARIFICATION
   COMPLIANCE_ACTION
@@ -302,6 +309,10 @@ model Tenant {
   // v6.0 RBIA relations
   examinationNodes       ExaminationNode[]
   positiveObservations   PositiveObservation[]
+  // v7.0 Sample-Based Examination relations
+  examinationQuestions    ExaminationQuestion[]
+  loanAccounts           LoanAccount[]
+  samplingConfigs        SamplingConfig[]
   userBranchAssignments   UserBranchAssignment[]
   auditeeResponses        AuditeeResponse[]
   notificationQueues      NotificationQueue[]
@@ -568,6 +579,10 @@ model Evidence {
   actionPointId   String?       @db.Uuid
   actionPoint     ActionPoint?  @relation("ActionPointEvidence", fields: [actionPointId], references: [id], onDelete: Cascade)
 
+  // v7.0: AccountExamResponse evidence
+  accountExamResponseId  String?              @db.Uuid
+  accountExamResponse    AccountExamResponse? @relation("AccountExamResponseEvidence", fields: [accountExamResponseId], references: [id], onDelete: Cascade)
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
 
@@ -576,6 +591,7 @@ model Evidence {
   @@index([examinationResponseId])
   @@index([newExaminationResponseId])
   @@index([actionPointId])
+  @@index([accountExamResponseId])
 }
 
 // ─── Compliance Requirement ──────────────────────────────────────────────────
@@ -819,6 +835,10 @@ model AuditEngagement {
   actionPointsV2          ActionPoint[]
   bmResponseBatch         BmResponseBatch?
   positiveObservations    PositiveObservation[]
+  // v7.0 Sample-Based Examination relations
+  loanAccounts           LoanAccount[]
+  samplingConfigs        SamplingConfig[]
+  accountExamResponses   AccountExamResponse[]
 
   @@index([tenantId])
   @@index([auditPlanId])
@@ -2318,6 +2338,152 @@ model PositiveObservation {
 
   @@index([tenantId])
   @@index([engagementId])
+}
+
+// ─── v7.0 Examination Question (account-level question library per credit module) ──
+
+model ExaminationQuestion {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  moduleCode      String   // ExaminationNode code (e.g., "CRD-HLN") — decoupled linkage
+  text            String   @db.Text // Question text
+  rbiReference    String?  // RBI regulation area (e.g., "Master Direction on Housing Finance")
+  bestPracticeTip String?  @db.Text // 1-2 sentence practical guidance
+  category        String?  // Grouping within module (e.g., "Documentation", "Collateral", "NPA Norms")
+
+  weight     Decimal @default(1.0) @db.Decimal(5, 4) // Weight for scoring
+  isCritical Boolean @default(false) // Critical item: violation caps module score
+
+  displayOrder Int     @default(0) // For management UI ordering
+  isActive     Boolean @default(true) // Soft-delete: false hides from new examinations
+
+  createdById String?  @db.Uuid // NULL for system-seeded defaults
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  accountExamResponses AccountExamResponse[]
+
+  @@unique([tenantId, moduleCode, text])
+  @@index([tenantId])
+  @@index([tenantId, moduleCode, isActive])
+  @@index([tenantId, moduleCode, displayOrder])
+}
+
+// ─── v7.0 Loan Account (uploaded branch loan portfolio for sample-based examination) ──
+
+model LoanAccount {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String          @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  branchId   String @db.Uuid
+  moduleCode String // Credit module code (e.g., "CRD-HLN")
+
+  // Core mandatory fields
+  accountNo         String
+  borrowerName      String
+  productType       String  // "Housing Loan", "Gold Loan", "Vehicle Loan", etc.
+  sanctionAmount    Decimal @db.Decimal(15, 2)
+  sanctionDate      DateTime // For "newly sanctioned" sampling criteria
+  outstandingAmount Decimal @db.Decimal(15, 2)
+  assetClass        String  // "STANDARD", "SMA0", "SMA1", "SMA2", "NPA_SUB", "NPA_DOUBTFUL", "NPA_LOSS"
+  dpd               Int     @default(0) // Days Past Due
+
+  // JSONB for module-specific fields
+  metadata Json? // Flexible per-module fields
+
+  // Sampling state
+  isSampled Boolean   @default(false)
+  sampledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  accountExamResponses AccountExamResponse[]
+
+  @@unique([engagementId, accountNo])
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([engagementId, moduleCode])
+  @@index([engagementId, isSampled])
+  @@index([engagementId, assetClass])
+  @@index([engagementId, dpd])
+}
+
+// ─── v7.0 Sampling Config (HIA-defined sampling criteria per engagement/module) ──
+
+model SamplingConfig {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  engagementId String          @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  moduleCode    String  // Credit module code (e.g., "CRD-HLN")
+  sampleSizePct Decimal @db.Decimal(5, 2) // Overall sample size % (e.g., 10.00)
+
+  // Criteria bucket allocations — JSONB array of { bucket, pct, description }
+  criteriaBuckets Json // Array of bucket allocations, must sum to 100
+
+  isLocked   Boolean   @default(false) // Once locked, auditors cannot modify
+  lockedAt   DateTime?
+  lockedById String?   @db.Uuid
+
+  // Snapshot of generated sample metadata
+  sampleGenerated   Boolean   @default(false)
+  sampleGeneratedAt DateTime?
+  sampleCount       Int? // Number of accounts selected
+
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([engagementId, moduleCode])
+  @@index([tenantId])
+  @@index([engagementId])
+}
+
+// ─── v7.0 Account Exam Response (per-account per-question examination response) ──
+
+model AccountExamResponse {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+
+  engagementId String          @db.Uuid
+  engagement   AuditEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  loanAccountId String      @db.Uuid
+  loanAccount   LoanAccount @relation(fields: [loanAccountId], references: [id], onDelete: Cascade)
+
+  questionId String              @db.Uuid
+  question   ExaminationQuestion @relation(fields: [questionId], references: [id])
+
+  status AccountExamResponseStatus // COMPLIANT or VIOLATION
+  note   String?                   @db.Text // Auditor's finding notes
+
+  // Audit trail
+  respondedById String   @db.Uuid
+  respondedAt   DateTime @default(now())
+
+  // Evidence
+  evidence Evidence[] @relation("AccountExamResponseEvidence")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([engagementId, loanAccountId, questionId])
+  @@index([tenantId])
+  @@index([engagementId])
+  @@index([engagementId, questionId])
+  @@index([loanAccountId])
 }
 
 // ─── Failed Login Attempt Tracking (Phase 11 — account lockout) ─────────────

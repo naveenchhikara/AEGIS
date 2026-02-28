@@ -310,11 +310,14 @@ export async function addModuleSelection(
 
 /**
  * Remove a module from an engagement's selection (supports manual override removal).
+ * The `reason` parameter is accepted for API contract consistency — the server action
+ * records it via audit context (justification field) before calling this function.
  */
 export async function removeModuleSelection(
   session: Session,
   engagementId: string,
   moduleNodeId: string,
+  _reason: string, // Passed for API contract; audit context set by server action
 ): Promise<void> {
   const tenantId = extractTenantId(session);
   const db = prismaForTenant(tenantId);
@@ -323,5 +326,25 @@ export async function removeModuleSelection(
     where: {
       engagementId_moduleNodeId: { engagementId, moduleNodeId },
     },
+  });
+}
+
+// ─── getAllModules ────────────────────────────────────────────────────────────
+
+/**
+ * Return ALL active depth-1 ExaminationNode modules regardless of branch type.
+ * Used to populate the Add Module checklist dialog — shows all possible modules
+ * so an auditor can manually select any module for inclusion.
+ */
+export async function getAllModules(
+  session: Session,
+): Promise<{ id: string; code: string; name: string }[]> {
+  const tenantId = extractTenantId(session);
+  const db = prismaForTenant(tenantId);
+
+  return db.examinationNode.findMany({
+    where: { tenantId, isActive: true, depth: 1 },
+    select: { id: true, code: true, name: true },
+    orderBy: { displayOrder: "asc" },
   });
 }

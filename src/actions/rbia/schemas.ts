@@ -85,6 +85,7 @@ export type AddModuleSelectionInput = z.infer<typeof AddModuleSelectionSchema>;
 export const RemoveModuleSelectionSchema = z.object({
   engagementId: z.string().uuid(),
   moduleNodeId: z.string().uuid(),
+  reason: z.string().min(1, "Removal reason is required").max(500),
 });
 
 export type RemoveModuleSelectionInput = z.infer<

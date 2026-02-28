@@ -2192,6 +2192,7 @@ model EngagementModuleSelection {
 
   isAutoSelected  Boolean @default(false)
   selectionReason String?  // e.g., "Branch type: LARGE", "Manual addition by Lead Auditor"
+  removalReason   String? @db.Text  // Documented reason for manual removal (ENGG-06 audit trail)
 
   createdAt DateTime @default(now())
 

@@ -22,8 +22,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Account Examination
 
-- [ ] **AEXM-01**: When auditor opens a credit module, system presents sampled accounts one-by-one — ALL questions are asked for each account (full question set per account, account-centric workflow)
-- [ ] **AEXM-02**: Each question displays embedded RBI guideline reference (if applicable) and best practice tips for auditor guidance
+- [x] **AEXM-01**: When auditor opens a credit module, system presents sampled accounts one-by-one — ALL questions are asked for each account (full question set per account, account-centric workflow)
+- [x] **AEXM-02**: Each question displays embedded RBI guideline reference (if applicable) and best practice tips for auditor guidance
 - [x] **AEXM-03**: Auditor marks each question per account as compliant or violation (instance tracking)
 - [x] **AEXM-04**: Auditor can add notes/evidence per question per account to document findings
 - [x] **AEXM-05**: System tracks violation instances across all sampled accounts per question
@@ -86,8 +86,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | SMPL-02     | Phase 29: Sampling Engine        | Complete |
 | SMPL-03     | Phase 29: Sampling Engine        | Complete |
 | SMPL-04     | Phase 29: Sampling Engine        | Complete |
-| AEXM-01     | Phase 30: Account Examination UI | Pending  |
-| AEXM-02     | Phase 30: Account Examination UI | Pending  |
+| AEXM-01     | Phase 30: Account Examination UI | Complete |
+| AEXM-02     | Phase 30: Account Examination UI | Complete |
 | AEXM-03     | Phase 30: Account Examination UI | Complete |
 | AEXM-04     | Phase 30: Account Examination UI | Complete |
 | AEXM-05     | Phase 30: Account Examination UI | Complete |

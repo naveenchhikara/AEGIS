@@ -152,5 +152,5 @@ Plans:
 | 27. Schema and Data Models | 2/2            | Complete    | 2026-02-28 |
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
 | 29. Sampling Engine        | 3/3            | Complete    | 2026-02-28 |
-| 30. Account Examination UI | 3/3 | Complete   | 2026-02-28 |
+| 30. Account Examination UI | 3/3            | Complete    | 2026-02-28 |
 | 31. Instance-Based Scoring | 0/TBD          | Not started | -          |

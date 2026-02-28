@@ -5,19 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Paperclip,
-  Upload,
-} from "@/lib/icons";
+import { ChevronDown, ChevronUp, CheckCircle2 } from "@/lib/icons";
 import type { BmResponseActionPointData } from "@/data-access/rbia-bm-response";
+import { BmEvidenceUploadPanel } from "@/components/rbia/bm-evidence-upload-panel";
 
 interface BmResponseApCardProps {
   actionPoint: BmResponseActionPointData;
   responseText: string;
   onResponseChange: (apId: string, text: string) => void;
+  engagementId: string;
 }
 
 // ---- Severity badge helper ----
@@ -73,6 +69,7 @@ export function BmResponseApCard({
   actionPoint,
   responseText,
   onResponseChange,
+  engagementId,
 }: BmResponseApCardProps) {
   const [expanded, setExpanded] = useState(
     // Auto-expand if not yet responded
@@ -160,31 +157,11 @@ export function BmResponseApCard({
             />
 
             {/* Evidence upload zone */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                disabled
-                title="Evidence upload: select files to attach as supporting documents"
-              >
-                <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-                Attach Evidence
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                disabled
-                title="Upload from device"
-              >
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                Upload
-              </Button>
-              <span className="text-muted-foreground text-xs">
-                PDF, JPEG, PNG, DOCX, XLSX (max 10 MB)
-              </span>
-            </div>
+            <BmEvidenceUploadPanel
+              actionPointId={actionPoint.id}
+              engagementId={engagementId}
+              disabled={isResponded}
+            />
           </div>
         )}
       </CardContent>

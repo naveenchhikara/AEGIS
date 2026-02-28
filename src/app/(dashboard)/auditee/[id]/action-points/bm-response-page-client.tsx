@@ -127,6 +127,7 @@ export function BmResponsePageClient({
             actionPoint={ap}
             responseText={responses[ap.id] ?? ""}
             onResponseChange={handleResponseChange}
+            engagementId={engagementId}
           />
         ))}
       </div>

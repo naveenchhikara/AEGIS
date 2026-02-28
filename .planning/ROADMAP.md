@@ -86,7 +86,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 3. After HIA saves sampling criteria, clicking "Generate Sample" auto-selects accounts from the uploaded portfolio according to the configured criteria, and the selected accounts are visible in a sample list
 4. If a criteria bucket requests more accounts than exist in that segment (e.g., 5 newly sanctioned requested but only 3 exist), the system fills from the next-largest bucket and displays a warning — no error or crash occurs
 
-**Plans:** 3 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 
@@ -112,7 +112,13 @@ Plans:
 6. HIA can add a new custom question to a credit module, and it immediately appears in the question list for future examinations — existing AccountExamResponse records for completed accounts are not affected
 7. HIA can deactivate an existing question — it no longer appears in new examinations but historical response data for that question remains intact
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 30-01-PLAN.md — DAL + server actions for account examination responses and question management
+- [ ] 30-02-PLAN.md — Account examination UI: sidebar, question cards, progress bar, RBIA tab integration
+- [ ] 30-03-PLAN.md — Question management UI: tabbed module view, question table, add/edit dialogs
 
 ### Phase 31: Instance-Based Scoring
 
@@ -129,7 +135,13 @@ Plans:
 3. Module-level and composite RBIA scores update when instance-based responses are saved — the existing scoring engine consumes compliance % inputs without requiring a new scoring code path
 4. The existing score gauge, module breakdown bars, rating band badge, and drill-down views render correctly when scores are sourced from instance-based computation — no visual regressions on the score page
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 31-01-PLAN.md — TDD: Pure compliance % computation + ScoreLabel mapping (instance-scoring.ts)
+- [ ] 31-02-PLAN.md — DAL wiring + freeze action integration for instance-based scores
+- [ ] 31-03-PLAN.md — ComplianceSummary UI component + module page integration + visual regression verification
 
 ## Progress
 
@@ -137,7 +149,7 @@ Plans:
 
 | Phase                      | Plans Complete | Status      | Completed |
 | -------------------------- | -------------- | ----------- | --------- |
-| 27. Schema and Data Models | 0/TBD          | Not started | -         |
+| 27. Schema and Data Models | 1/2 | In Progress|  |
 | 28. Loan Data Upload       | 0/TBD          | Not started | -         |
 | 29. Sampling Engine        | 0/TBD          | Not started | -         |
 | 30. Account Examination UI | 0/TBD          | Not started | -         |

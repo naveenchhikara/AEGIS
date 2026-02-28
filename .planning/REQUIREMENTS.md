@@ -33,7 +33,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **QMGT-01**: System ships with expanded default question set per credit module (including account-level checks like PSL classification)
 - [ ] **QMGT-02**: HIA can add custom questions to any credit module
 - [ ] **QMGT-03**: HIA can edit or deactivate existing questions (without deleting historical data)
-- [ ] **QMGT-04**: Each question has fields: text, RBI reference (optional), best practice tip (optional), weight, isCritical flag
+- [x] **QMGT-04**: Each question has fields: text, RBI reference (optional), best practice tip (optional), weight, isCritical flag
 
 ### Compliance Scoring
 
@@ -44,8 +44,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Cross-Module
 
-- [ ] **XMOD-01**: Architecture supports all credit modules (Housing Loans, Gold Loans, Vehicle Loans, etc.) with same sample-based workflow
-- [ ] **XMOD-02**: Each credit module can have its own loan data field schema while sharing the sampling/examination framework
+- [x] **XMOD-01**: Architecture supports all credit modules (Housing Loans, Gold Loans, Vehicle Loans, etc.) with same sample-based workflow
+- [x] **XMOD-02**: Each credit module can have its own loan data field schema while sharing the sampling/examination framework
 
 ## v8.0 Requirements
 
@@ -76,9 +76,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | Requirement | Phase                            | Status  |
 | ----------- | -------------------------------- | ------- |
 | QMGT-01     | Phase 27: Schema and Data Models | Pending |
-| QMGT-04     | Phase 27: Schema and Data Models | Pending |
-| XMOD-01     | Phase 27: Schema and Data Models | Pending |
-| XMOD-02     | Phase 27: Schema and Data Models | Pending |
+| QMGT-04     | Phase 27: Schema and Data Models | Complete |
+| XMOD-01     | Phase 27: Schema and Data Models | Complete |
+| XMOD-02     | Phase 27: Schema and Data Models | Complete |
 | DATA-01     | Phase 28: Loan Data Upload       | Pending |
 | DATA-02     | Phase 28: Loan Data Upload       | Pending |
 | DATA-03     | Phase 28: Loan Data Upload       | Pending |

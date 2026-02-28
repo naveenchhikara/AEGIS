@@ -4,7 +4,7 @@
 
 A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v5.0 complete (104/104 requirements, 18 modules). v6.0 RBIA Implementation in progress (41 new requirements, 6 phases). 536 source files, 71 DB models, 20 enums, 2,320-line schema, 473 commits.
+> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v6.0 RBIA complete (41/41 requirements). v7.0 Sample-Based Account Examination in progress (20 new requirements, 5 phases). 684 source files, 75 DB models, 21 enums, 2,500-line schema, 679 commits.
 
 ## Key Features
 
@@ -19,7 +19,7 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - **Multi-language** — English, Hindi, Marathi, Gujarati (next-intl)
 - **RBAC** — 17 roles, 60+ permissions, multi-role support with maker-checker enforcement
 
-### v6.0 RBIA Features (In Development)
+### v6.0 RBIA (Shipped)
 
 - **Hierarchical Examination Tree** — Variable depth (0-5) with materialized path, replacing flat 2-level structure
 - **4-Point Scoring** — FULLY/LARGELY/PARTIALLY/NON_COMPLIANT with weighted roll-up and critical-item cap
@@ -27,6 +27,13 @@ A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to mana
 - **Dual Findings** — ActionPoints (operational, ~15-40/audit) + Observations (formal 5C, ~3-10/audit)
 - **Branch RBIA Scoring** — Frozen immutable snapshots with DB-level trigger protection
 - **Branch Manager Response** — Batch response workflow with 15-day deadline tracking
+
+### v7.0 Sample-Based Account Examination (In Development)
+
+- **Loan Data Upload** — CSV/Excel upload with fuzzy column mapping, validation, and per-branch storage
+- **Sampling Engine** — HIA-controlled sampling criteria with locked % share allocations and auto-selection
+- **Account Examination** — Per-account question workflow with RBI references, instance tracking, notes/evidence
+- **Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration
 
 ## Quick Start
 
@@ -109,19 +116,19 @@ pnpm test:e2e:ui             # E2E tests with Playwright UI
 
 ```
 src/
-  actions/              # Server actions (81 files, 15 domains)
-  app/                  # App Router (52 pages)
+  actions/              # Server actions (96 files, 16 domains)
+  app/                  # App Router (62 pages)
     (auth)/             # Login, accept-invite
     (dashboard)/        # All authenticated screens
     (onboarding)/       # 5-step tenant setup wizard
     api/                # REST endpoints (auth, health, exports, cron, reports)
-  components/           # 213 components across 30 directories
+  components/           # 242 components across 30 directories
     ui/                 # shadcn/ui primitives
     dashboard/          # KPI widgets, charts, panels
     compliance/         # Compliance tables, filters, charts
     findings/           # Observation lifecycle, timeline
     pdf-report/         # React-PDF report components
-  data-access/          # Data Access Layer (39 files, tenant-isolated queries)
+  data-access/          # Data Access Layer (48 files, tenant-isolated queries)
   emails/               # React Email templates (assignment, escalation, digest)
   hooks/                # Custom React hooks
   jobs/                 # pg-boss background jobs
@@ -130,7 +137,7 @@ src/
   stores/               # Zustand stores
   types/                # TypeScript definitions
 prisma/
-  schema.prisma         # 71 models, 20 enums, 2,320 lines
+  schema.prisma         # 75 models, 21 enums, 2,500 lines
   seed.ts               # Database seeder (10 users, 2 tenants)
 tests/
   e2e/                  # Playwright E2E specs
@@ -140,14 +147,15 @@ infra/                  # AWS CDK infrastructure
 deploy/                 # Deployment configs (Nginx, systemd)
 ```
 
-## Routes (52 pages)
+## Routes (62 pages)
 
 | Group           | Routes                                                                                                       | Purpose                                |
 | --------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
 | Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login, invitations, tenant setup       |
 | Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | KPI widgets, analytics, audit log      |
-| RAM & Planning  | `/ram/[id]`, `/audit-plans`                                                                                  | 19-parameter risk scoring, annual plan |
-| Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report}`                                                 | Field audit with 568 items             |
+| RAM & Planning  | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                          | 19-parameter risk scoring, annual plan |
+| Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report,bh-certificate}`                                  | Field audit with 568 items             |
+| RBIA            | `/audit-execution/[id]/rbia`, `/rbia/{module,findings,meetings,score}`                                       | RBIA examination, scoring, findings    |
 | Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                               | Observation lifecycle with timeline    |
 | Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                     | Compliance tracking, branch responses  |
 | GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk register, controls, issues        |
@@ -262,7 +270,7 @@ After a fresh deployment with a new database:
 
 ## Roadmap
 
-### Shipped (v1.0–v5.0)
+### Shipped (v1.0–v6.0)
 
 | Milestone | Focus               | Phases | Status   |
 | --------- | ------------------- | ------ | -------- |
@@ -271,17 +279,17 @@ After a fresh deployment with a new database:
 | v3.0      | RBIAS Full Platform | 15-17  | Complete |
 | v4.0      | Platform Hardening  | —      | Complete |
 | v5.0      | Pilot Readiness     | —      | Complete |
+| v6.0      | RBIA Implementation | 18-26  | Complete |
 
-### v6.0 RBIA Implementation (In Progress)
+### v7.0 Sample-Based Account Examination (In Progress)
 
-| Phase | Focus                                                             | Requirements | Status  |
-| ----- | ----------------------------------------------------------------- | ------------ | ------- |
-| 18    | Foundation (scoring engine, state machine, DB guards, encryption) | 12           | Planned |
-| 19    | Data Access Layer (tree queries, module selection, findings DAL)  | 4            | Pending |
-| 20    | Server Actions (score freeze, meetings, findings mutations)       | 11           | Pending |
-| 21    | Examination UI (tree view, score picker, progress, filters)       | 4            | Pending |
-| 22    | Findings & Meetings (dual tabs, meeting forms, lifecycle UI)      | 6            | Pending |
-| 23    | BM Response & Reporting (batch response, score display, RBIA PDF) | 4            | Pending |
+| Phase | Focus                                                                   | Requirements | Status   |
+| ----- | ----------------------------------------------------------------------- | ------------ | -------- |
+| 27    | Schema and Data Models (loan accounts, sampling config, exam questions) | 4            | Complete |
+| 28    | Loan Data Upload (CSV/Excel parsing, fuzzy mapping, import UI)          | 3            | Complete |
+| 29    | Sampling Engine (HIA criteria, locked allocations, auto-selection)      | 4            | Planned  |
+| 30    | Account Examination UI (per-account questions, RBI references, notes)   | 7            | Planned  |
+| 31    | Instance-Based Scoring (compliance %, 4-point mapping, roll-up)         | 4            | Planned  |
 
 See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for detailed phase breakdowns.
 

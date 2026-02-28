@@ -53,7 +53,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **REPT-01**: System displays composite RBIA score with module breakdown, rating band color coding (Poor=red through Very Good=dark green)
 - [ ] **REPT-02**: System shows historical RBIA score trend across engagements for each branch
-- [ ] **REPT-03**: Score drill-down from composite → module → sub-module → leaf item level
+- [x] **REPT-03**: Score drill-down from composite → module → sub-module → leaf item level
 - [ ] **REPT-04**: RBIA audit report PDF generated with dual sections: score summary + findings (8-section format)
 - [ ] **REPT-05**: Board analytics includes RadarChart for module scores and branch rating distribution chart
 
@@ -137,7 +137,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BMRP-05     | Phase 23 | Pending  |
 | REPT-01     | Phase 22 | Pending  |
 | REPT-02     | Phase 23 | Pending  |
-| REPT-03     | Phase 24 | Pending  |
+| REPT-03     | Phase 24 | Complete |
 | REPT-04     | Phase 23 | Pending  |
 | REPT-05     | Phase 23 | Pending  |
 | DSEC-01     | Phase 18 | Complete |

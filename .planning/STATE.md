@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Individual audit observations flow upward through a structured lifecycle to form the complete risk and compliance picture — from a single branch finding to the board report.
-**Current focus:** Phase 19 — Data Access Layer (RBIA tree, scoring, findings, meetings, gateway)
+**Current focus:** Phase 24 complete — Score Freeze & Score Page Fixes (gap closure)
 
 ## Current Position
 
-Phase: 19 of 23 (Data Access Layer)
-Plan: 5 of 5 planned (ready for execution)
-Status: Planned — all 5 plans created, verified, and ready for execution
-Last activity: 2026-02-23 — Phase 19 planning complete (5 plans, all Wave 1)
+Phase: 24 of 26 (Score Freeze & Score Page Fixes)
+Plan: 2 of 2 complete
+Status: Phase 24 complete — all plans executed
+Last activity: 2026-02-28 — Phase 24 complete (24-02 score drilldown fix + orphan cleanup)
 
-Progress: [██░░░░░░░░] 18% (5/28 plans complete)
+Progress: [█████████░] 97% (28/29 plans complete)
 
 ## Phase 19 Plans
 
@@ -55,6 +55,8 @@ _Updated after each plan completion_
 | Phase 19 P05 | 8 | 2 tasks | 3 files |
 | Phase 19 P03 | 8 | 1 tasks | 1 files |
 | Phase 19 P04 | 5 | 1 tasks | 1 files |
+| Phase 24 P02 | 3 | 2 tasks | 4 files |
+| Phase 24 P01 | 4 | 2 tasks | 2 files |
 
 ## Milestone History
 
@@ -96,6 +98,10 @@ Recent decisions affecting current work:
 - [Phase 19]: Two typed arrays (actionPoints[] + observations[]) for RBIA findings — maps to Phase 22 separate tabs
 - [Phase 19]: Carry-forward: ISSUED + BM_RESPONSE_DUE + BM_RESPONDED (mapped from OPEN + PARTIALLY_RESOLVED per CONTEXT.md)
 - [Phase 19]: Import MeetingType from @/generated/prisma/enums (no barrel index.ts in generated folder)
+- [Phase 24]: scoringTreeSnapshot is ScoredNodeSnapshot[] (array of module nodes), not a single root node — matches freezeRbiaScore output format
+- [Phase 24]: name field carried via (n as any).name cast in serializeNode since ScoredNode type lacks name property
+- [Phase 24-01]: canFreeze computed server-side via hasPermission and passed as boolean prop -- avoids client-side permission logic
+- [Phase 24-01]: Button visibility gated by canFreeze AND !isFrozen; enable state gated by allModulesScored -- separate concerns
 
 ### Pending Todos
 
@@ -108,6 +114,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 19-02-PLAN.md (rbia-scoring DAL)
-Resume with: `/gsd:execute-phase 19`
+Last session: 2026-02-28
+Stopped at: Completed 24-01-PLAN.md (freeze button wiring) -- Phase 24 fully complete
+Resume with: `/gsd:execute-phase 25`

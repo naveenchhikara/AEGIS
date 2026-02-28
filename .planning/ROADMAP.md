@@ -209,7 +209,7 @@ Plans:
 | 21. Examination UI            | 4/4       | Complete       | 2026-02-25 | -         |
 | 22. Findings and Meetings     | 5/5       | Complete       | 2026-02-25 | -         |
 | 23. BM Response and Reporting | 5/5       | Complete       | 2026-02-25 | -         |
-| 24. Score Freeze & Score Page | -         | Planned        | -          | -         |
+| 24. Score Freeze & Score Page | 2/2       | Complete       | 2026-02-28 | -         |
 | 25. Module Selection UI       | -         | Planned        | -          | -         |
 | 26. Evidence Upload           | -         | Planned        | -          | -         |
 

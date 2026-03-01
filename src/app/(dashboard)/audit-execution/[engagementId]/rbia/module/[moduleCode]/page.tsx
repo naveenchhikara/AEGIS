@@ -6,7 +6,12 @@ import {
   type ExaminationTreeNode,
 } from "@/data-access/rbia-examination";
 import { getEngagementModuleScores } from "@/data-access/rbia-scoring";
+import {
+  getViolationSummary,
+  getExaminationProgress,
+} from "@/data-access/account-examination";
 import { RbiaExaminationTree } from "@/components/rbia/rbia-examination-tree";
+import { ComplianceSummary } from "@/components/rbia/compliance-summary";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "@/lib/icons";
 import { Card } from "@/components/ui/card";
@@ -89,10 +94,11 @@ export default async function ModuleExaminationPage({
   const { expanded: initialExpanded = "" } = await searchParams;
   const session = await getRequiredSession();
 
-  // Fetch full tree and module scores in parallel
-  const [tree, moduleScores] = await Promise.all([
+  // Fetch full tree, module scores, and examination progress in parallel
+  const [tree, moduleScores, examProgress] = await Promise.all([
     getExaminationTree(session, engagementId),
     getEngagementModuleScores(session, engagementId),
+    getExaminationProgress(session, engagementId, moduleCode),
   ]);
 
   // Find the module node by code (depth-1 nodes are modules)
@@ -111,6 +117,23 @@ export default async function ModuleExaminationPage({
     totalLeafCount: moduleScoreRow?.totalLeafCount ?? 0,
     weightedScore: null as number | null,
   };
+
+  // Conditionally fetch violation summary for credit modules with sampled data
+  const hasInstanceData = examProgress.totalAccounts > 0;
+  const complianceSummaryData = hasInstanceData
+    ? await getViolationSummary(session, engagementId, moduleCode).then(
+        (violationSummary) => ({
+          questions: violationSummary.map((v) => ({
+            questionId: v.questionId,
+            questionText: v.questionText,
+            totalAccounts: v.totalAccounts,
+            compliantCount: v.complianceCount,
+            violationCount: v.violationCount,
+          })),
+          totalSampledAccounts: examProgress.totalAccounts,
+        }),
+      )
+    : null;
 
   const basePath = `/audit-execution/${engagementId}/rbia`;
 
@@ -137,6 +160,14 @@ export default async function ModuleExaminationPage({
           />
         </Suspense>
       </Card>
+
+      {/* Compliance Summary — only shown for credit modules with sampled data */}
+      {complianceSummaryData && (
+        <ComplianceSummary
+          questions={complianceSummaryData.questions}
+          totalSampledAccounts={complianceSummaryData.totalSampledAccounts}
+        />
+      )}
     </div>
   );
 }

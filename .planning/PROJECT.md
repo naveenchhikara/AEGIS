@@ -12,26 +12,10 @@ v1.0 shipped as a clickable prototype. v2.0 added real PostgreSQL backend, Bette
 
 If nothing else works, the platform must let auditors record observations, track them to closure, and let management see the consolidated picture without manual aggregation.
 
-## Current Milestone: v7.0 Sample-Based Account Examination
-
-**Goal:** Transform RBIA credit module examination from static checklists to account-level sample-based auditing — loan data upload, HIA-controlled sampling, per-account question workflow with RBI guidance, and instance-based compliance scoring.
-
-**Target features:**
-
-- Manual loan data upload (CSV/Excel) with standardized fields per credit module
-- HIA-controlled sampling criteria (% by newly sanctioned, amount, age, DPD, prior observations) — not modifiable by auditors
-- System-driven sample selection from uploaded branch loan portfolio based on configured criteria
-- Account-level question workflow — questions load one-by-one per sampled account with randomized order
-- Expanded question set with bank-customizable questions (add/edit by HIA)
-- RBI guideline references and best practice tips embedded per question
-- Instance-based violation tracking — violations per account per question noted as instances
-- Compliance % scoring — violation rate across sampled accounts maps to FC/LC/PC/NC
-- Architecture applies to all credit modules (Housing Loans, Gold Loans, Vehicle Loans, etc.)
-
 ## Current State
 
-**Shipped:** v6.0 RBIA Implementation (2026-02-28) — 9 phases, 34 plans, 41 requirements
-**Status:** v7.0 milestone starting — defining requirements
+**Shipped:** v7.0 Sample-Based Account Examination (2026-03-01) — 5 phases, 13 plans, 20 requirements
+**Status:** v7.0 complete. No active milestone.
 **Tech Stack:** Next.js 16 (App Router), TypeScript 5.9, shadcn/ui, Tailwind CSS v4, PostgreSQL 16, Better Auth, Prisma 7, AWS S3, AWS SES, React-PDF, ExcelJS, pg-boss, pino
 **Codebase:** 639 source files, 2,320-line Prisma schema (71 models, 20 enums)
 **Deployment:** VPS (Docker) with Nginx reverse proxy, SSL via Let's Encrypt, PostgreSQL 16
@@ -168,11 +152,11 @@ If nothing else works, the platform must let auditors record observations, track
 
 ---
 
-| **Sample-based account examination** | Static checklists don't reflect actual loan portfolio quality; sampling provides evidence-based compliance scoring | — Pending |
-| **Manual loan data upload (CSV/Excel)** | CBS integration deferred; manual upload gives immediate value without vendor cooperation | — Pending |
-| **HIA-controlled sampling criteria** | Audit quality requires consistent sampling methodology controlled by HIA, not individual auditors | — Pending |
-| **Instance-based compliance scoring** | Violation % across sampled accounts is more objective than subjective checklist scoring | — Pending |
+| **Sample-based account examination** | Static checklists don't reflect actual loan portfolio quality; sampling provides evidence-based compliance scoring | ✓ Good |
+| **Manual loan data upload (CSV/Excel)** | CBS integration deferred; manual upload gives immediate value without vendor cooperation | ✓ Good |
+| **HIA-controlled sampling criteria** | Audit quality requires consistent sampling methodology controlled by HIA, not individual auditors | ✓ Good |
+| **Instance-based compliance scoring** | Violation % across sampled accounts is more objective than subjective checklist scoring | ✓ Good |
 
 ---
 
-_Last updated: 2026-02-28 after v7.0 milestone started_
+_Last updated: 2026-03-01 after v7.0 milestone complete_

@@ -1,5 +1,28 @@
 # Project Milestones: AEGIS
 
+## v7.0 Sample-Based Account Examination (Shipped: 2026-03-01)
+
+**Phases completed:** 5 phases, 13 plans, 4 tasks
+
+**Key accomplishments:**
+
+- 4 new Prisma models (LoanAccount, SamplingConfig, AccountExamResponse, ExaminationQuestion) with 25 seeded Housing Loans questions across 7 RBI audit categories
+- CSV/Excel dual parser with fuzzy column matching (Levenshtein distance), drag-drop upload UI, and atomic portfolio replacement with exam response protection
+- Pure deterministic sampling engine with 5-bucket allocation (newly sanctioned, amount, age, DPD, prior observations), overflow redistribution, and 25 unit tests
+- Account-centric examination workflow with deterministic question randomization, RBI guideline collapsible panels, optimistic compliance marking, and debounced auto-save notes
+- HIA question management with full CRUD, soft-delete preserving historical responses, and permission-gated module tabs
+- Instance-based compliance scoring: violation % maps to FC/LC/PC/NC 4-point scale, weighted roll-up into existing scoring engine, freeze action integration with pre-transaction sync
+
+**Stats:**
+
+- 5 phases, 13 plans, 20 requirements satisfied
+- 21 feat commits, 73+ tests passing
+- 311K lines TypeScript (total codebase)
+- Timeline: 2026-02-28 → 2026-03-01 (2 days)
+- Git range: `cc0a042e` (feat(27-01)) → `0c93a6eb` (feat(31-02))
+
+---
+
 ## v1.0 Clickable Prototype (Shipped: 2026-02-08)
 
 **Delivered:** Fully navigable UCB audit and compliance prototype with 7 screens, multi-language support (EN/HI/MR/GU), and AWS deployment using Apex Sahakari Bank demo data.

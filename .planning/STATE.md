@@ -5,7 +5,7 @@ milestone_name: Sample-Based Account Examination
 current_phase: 31-instance-based-scoring
 current_plan: 31-03 (complete)
 status: completed
-last_updated: "2026-03-01T15:36:47.526Z"
+last_updated: "2026-03-01T16:07:50.761Z"
 progress:
   total_phases: 5
   completed_phases: 5
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 31-instance-based-scoring
 **Current plan:** 31-03 (complete)
-**Status:** Milestone complete
+**Status:** v7.0 milestone complete
 
 ## Decisions
 

@@ -158,6 +158,13 @@ export async function getEngagementBranchScore(
  * Tenant isolation for responses: enforced via Q2 scoping — only leaf nodeIds
  * belonging to this tenant are in the join set.
  *
+ * Instance-based scoring (v7.0): Credit module leaf nodes scored via
+ * computeAndApplyInstanceScores will have ExaminationResponse records
+ * with compliance-derived ScoreLabels. These are counted in scoredCount
+ * alongside manually-scored nodes — no special handling needed. The
+ * syncAllInstanceScores call in freezeRbiaScore ensures instance-scored
+ * modules appear here with non-null score values before the freeze snapshot.
+ *
  * @param session - Authenticated session (tenantId source)
  * @param engagementId - Engagement UUID
  */

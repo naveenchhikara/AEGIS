@@ -18,6 +18,7 @@ import {
   type FreezeRbiaScoreInput,
   type ActionResult,
 } from "./schemas";
+import { syncAllInstanceScores } from "@/data-access/instance-scoring";
 
 // ─── freezeRbiaScore (EXAM-10, FIND-02, BMRP-01) ───────────────────────────
 
@@ -83,10 +84,22 @@ export async function freezeRbiaScore(
   // 4. Prisma client
   const db = prismaForTenant(tenantId);
 
-  // 5. Transaction with step tracking
-  let currentStep = "initializing";
+  // 5. Pre-transaction: sync instance-based scores for credit modules
+  //
+  // This ensures ExaminationResponse records reflect the latest compliance data
+  // BEFORE the transaction reads them to build the scoring tree snapshot.
+  // syncAllInstanceScores computes compliance % from AccountExamResponse data
+  // and upserts ExaminationResponse records on credit module leaf nodes.
+  //
+  // Must run OUTSIDE the transaction because it uses the same prismaForTenant
+  // singleton client — running inside $transaction would create a nested
+  // transaction conflict.
+  let currentStep = "syncing_instance_scores";
 
   try {
+    await syncAllInstanceScores(session, validated.engagementId);
+
+    // 6. Transaction with step tracking
     const result = await db.$transaction(async (tx: any) => {
       await setAuditContext(tx, {
         actionType: "rbia_score.frozen",
@@ -95,8 +108,10 @@ export async function freezeRbiaScore(
         sessionId: session.session.id,
       });
 
-      // ── Step 0: Load engagement + validate state ──
+      // Reset step tracker for transaction steps
       currentStep = "loading_engagement";
+
+      // ── Step 0: Load engagement + validate state ──
       const engagement = await tx.auditEngagement.findFirst({
         where: { id: validated.engagementId, tenantId },
         select: {
@@ -314,6 +329,8 @@ export async function freezeRbiaScore(
     // Step-specific error messages (per locked decision: "specific step that failed")
     const stepMessages: Record<string, string> = {
       initializing: "Failed to initialize freeze",
+      syncing_instance_scores:
+        "Failed to sync instance-based scores for credit modules",
       loading_engagement: "Engagement not found or inaccessible",
       loading_responses: "Failed to load examination responses",
       building_tree: "Failed to build examination tree",

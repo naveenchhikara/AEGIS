@@ -65,6 +65,9 @@ See: .planning/PROJECT.md
 - 2026-03-01 [31-02]: Pre-transaction sync: syncAllInstanceScores runs OUTSIDE the Prisma $transaction to avoid nested transaction conflict with singleton client
 - 2026-03-01 [31-02]: Module-level aggregation: weighted average of per-question ScoreLabels mapped to single ScoreLabel, distributed to all ExaminationNode leaf nodes under the credit module
 - 2026-03-01 [31-02]: getCreditModuleCodes uses LoanAccount.isSampled=true — more efficient than querying AccountExamResponse; only sampled modules need instance scoring
+- 2026-03-01 [31-03]: ComplianceSummary uses native div for progress bars (not Radix Progress) — server-renderable component requires no client directive
+- 2026-03-01 [31-03]: Compliance % computed inline in component from ViolationSummary data — keeps DAL thin, reuses existing getViolationSummary without additional query
+- 2026-03-01 [31-03]: CSCR-04: Existing score components (score-gauge, rbia-module-breakdown, score-drilldown, rbia-score-panel) unchanged — instance-based scores produce same ScoreLabel values through standard data pipeline
 
 ## Session Log
 
@@ -80,4 +83,5 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 30 Plan 02 complete — Account examination UI: examination/[moduleCode]/page.tsx server component with deterministic shuffle, AccountSidebar (colored dots), QuestionCard (compliance buttons, collapsible RBI/best practice panels, debounced notes), ExaminationProgressBar (violation badge, completion banner), Account Exam tab in RBIA layout (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05)
 - 2026-02-28: Phase 30 Plan 03 complete — Question management UI: questions/page.tsx with HIA-only guard, QuestionTable with sortable columns and deactivation warnings, AddQuestionDialog, EditQuestionDialog, conditional Questions tab in RBIA layout (QMGT-02, QMGT-03)
 - 2026-03-01: Phase 31 Plan 01 complete — Pure instance-based compliance scoring: computeCompliancePercentage, mapComplianceToScoreLabel, computeModuleComplianceScores with 33 vitest tests (CSCR-01, CSCR-02)
+- 2026-03-01: Phase 31 Plan 03 complete — ComplianceSummary component (per-question FC/LC/PC/NC badges + progress bars), wired into module examination page with conditional rendering when sampled data exists (CSCR-01, CSCR-04)
 - 2026-03-01: Phase 31 Plan 02 complete — Instance-scoring DAL (getQuestionResponseTallies, computeAndApplyInstanceScores, getCreditModuleCodes, syncAllInstanceScores), freeze action wired with pre-transaction sync, rbia-scoring DAL documented (CSCR-03)

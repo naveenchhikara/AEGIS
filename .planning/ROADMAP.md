@@ -33,7 +33,7 @@ Phases 1-26 completed across v1.0 through v6.0 milestones. See `.planning/milest
 - [x] **Phase 28: Loan Data Upload** — CSV/Excel upload UI, field validation, import summary, and per-branch storage (DATA-01, DATA-02, DATA-03) (completed 2026-02-28)
 - [x] **Phase 29: Sampling Engine** — HIA sampling criteria configuration, locked auditor view, auto-selection algorithm (SMPL-01, SMPL-02, SMPL-03, SMPL-04) (completed 2026-02-28)
 - [x] **Phase 30: Account Examination UI** — Per-account question workflow, RBI references, instance tracking, notes/evidence (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03) (completed 2026-02-28)
-- [ ] **Phase 31: Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration, visualization (CSCR-01, CSCR-02, CSCR-03, CSCR-04)
+- [x] **Phase 31: Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration, visualization (CSCR-01, CSCR-02, CSCR-03, CSCR-04) (completed 2026-03-01)
 
 ## Phase Details
 
@@ -135,7 +135,7 @@ Plans:
 3. Module-level and composite RBIA scores update when instance-based responses are saved — the existing scoring engine consumes compliance % inputs without requiring a new scoring code path
 4. The existing score gauge, module breakdown bars, rating band badge, and drill-down views render correctly when scores are sourced from instance-based computation — no visual regressions on the score page
 
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 
@@ -153,4 +153,4 @@ Plans:
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
 | 29. Sampling Engine        | 3/3            | Complete    | 2026-02-28 |
 | 30. Account Examination UI | 3/3            | Complete    | 2026-02-28 |
-| 31. Instance-Based Scoring | 1/3 | In Progress|  |
+| 31. Instance-Based Scoring | 3/3 | Complete   | 2026-03-01 |

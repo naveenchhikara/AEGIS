@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
 current_phase: 31-instance-based-scoring
-current_plan: 31-01 (complete)
+current_plan: 31-03 (complete)
 status: in_progress
-last_updated: "2026-03-01T20:52:00.000Z"
+last_updated: "2026-03-01T15:29:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 13
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v7.0 Sample-Based Account Examination
 **Current phase:** 31-instance-based-scoring
-**Current plan:** 31-01 (complete)
+**Current plan:** 31-03 (complete)
 **Status:** In progress
 
 ## Decisions
@@ -62,6 +62,9 @@ See: .planning/PROJECT.md
 - 2026-03-01 [31-01]: mapComplianceToScoreLabel: 75% inclusive for LARGELY_COMPLIANT (75-99%), 50% inclusive for PARTIALLY_COMPLIANT (50-74%) — consistent with RBIA Policy 2020
 - 2026-03-01 [31-01]: computeCompliancePercentage returns null (not 0) for zero responses — distinguishes Not Examined from 0% compliance; mirrors unscored leaf node exclusion in rbia-scoring-engine.ts
 - 2026-03-01 [31-01]: QuestionComplianceResult includes raw compliantCount, violationCount, totalResponses for UI display transparency
+- 2026-03-01 [31-02]: Pre-transaction sync: syncAllInstanceScores runs OUTSIDE the Prisma $transaction to avoid nested transaction conflict with singleton client
+- 2026-03-01 [31-02]: Module-level aggregation: weighted average of per-question ScoreLabels mapped to single ScoreLabel, distributed to all ExaminationNode leaf nodes under the credit module
+- 2026-03-01 [31-02]: getCreditModuleCodes uses LoanAccount.isSampled=true — more efficient than querying AccountExamResponse; only sampled modules need instance scoring
 
 ## Session Log
 
@@ -77,3 +80,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 30 Plan 02 complete — Account examination UI: examination/[moduleCode]/page.tsx server component with deterministic shuffle, AccountSidebar (colored dots), QuestionCard (compliance buttons, collapsible RBI/best practice panels, debounced notes), ExaminationProgressBar (violation badge, completion banner), Account Exam tab in RBIA layout (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05)
 - 2026-02-28: Phase 30 Plan 03 complete — Question management UI: questions/page.tsx with HIA-only guard, QuestionTable with sortable columns and deactivation warnings, AddQuestionDialog, EditQuestionDialog, conditional Questions tab in RBIA layout (QMGT-02, QMGT-03)
 - 2026-03-01: Phase 31 Plan 01 complete — Pure instance-based compliance scoring: computeCompliancePercentage, mapComplianceToScoreLabel, computeModuleComplianceScores with 33 vitest tests (CSCR-01, CSCR-02)
+- 2026-03-01: Phase 31 Plan 02 complete — Instance-scoring DAL (getQuestionResponseTallies, computeAndApplyInstanceScores, getCreditModuleCodes, syncAllInstanceScores), freeze action wired with pre-transaction sync, rbia-scoring DAL documented (CSCR-03)

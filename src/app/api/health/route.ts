@@ -67,14 +67,18 @@ async function checkJobQueue(dbHealthy: boolean): Promise<SubsystemCheck> {
 
 function checkMemory(): SubsystemCheck {
   const mem = process.memoryUsage();
+  const v8 = require("v8").getHeapStatistics();
   const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
+  const heapLimitMB = Math.round(v8.heap_size_limit / 1024 / 1024);
   const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
-  const usagePercent = Math.round((mem.heapUsed / mem.heapTotal) * 1000) / 10;
+  // Compare against V8 heap size limit (--max-old-space-size), not current allocation
+  const usagePercent = Math.round((mem.heapUsed / v8.heap_size_limit) * 1000) / 10;
 
   return {
-    status: usagePercent >= 90 ? "warning" : "ok",
+    status: usagePercent >= 85 ? "warning" : "ok",
     heapUsedMB,
     heapTotalMB,
+    heapLimitMB,
     usagePercent,
   };
 }

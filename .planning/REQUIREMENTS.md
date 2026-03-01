@@ -37,8 +37,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Compliance Scoring
 
-- [ ] **CSCR-01**: System computes compliance % per question as (compliant instances / total sampled accounts)
-- [ ] **CSCR-02**: Compliance % maps to FC/LC/PC/NC using existing 4-point scale thresholds
+- [x] **CSCR-01**: System computes compliance % per question as (compliant instances / total sampled accounts)
+- [x] **CSCR-02**: Compliance % maps to FC/LC/PC/NC using existing 4-point scale thresholds
 - [ ] **CSCR-03**: Module-level and composite scores roll up from instance-based compliance percentages using existing weighted scoring engine
 - [ ] **CSCR-04**: All existing score visualization (gauge, module breakdown, rating bands) works with instance-based scores
 
@@ -93,8 +93,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | AEXM-05     | Phase 30: Account Examination UI | Complete |
 | QMGT-02     | Phase 30: Account Examination UI | Complete |
 | QMGT-03     | Phase 30: Account Examination UI | Complete |
-| CSCR-01     | Phase 31: Instance-Based Scoring | Pending  |
-| CSCR-02     | Phase 31: Instance-Based Scoring | Pending  |
+| CSCR-01     | Phase 31: Instance-Based Scoring | Complete |
+| CSCR-02     | Phase 31: Instance-Based Scoring | Complete |
 | CSCR-03     | Phase 31: Instance-Based Scoring | Pending  |
 | CSCR-04     | Phase 31: Instance-Based Scoring | Pending  |
 

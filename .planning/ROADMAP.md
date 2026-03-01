@@ -135,7 +135,7 @@ Plans:
 3. Module-level and composite RBIA scores update when instance-based responses are saved — the existing scoring engine consumes compliance % inputs without requiring a new scoring code path
 4. The existing score gauge, module breakdown bars, rating band badge, and drill-down views render correctly when scores are sourced from instance-based computation — no visual regressions on the score page
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 
@@ -153,4 +153,4 @@ Plans:
 | 28. Loan Data Upload       | 2/2            | Complete    | 2026-02-28 |
 | 29. Sampling Engine        | 3/3            | Complete    | 2026-02-28 |
 | 30. Account Examination UI | 3/3            | Complete    | 2026-02-28 |
-| 31. Instance-Based Scoring | 0/TBD          | Not started | -          |
+| 31. Instance-Based Scoring | 1/3 | In Progress|  |

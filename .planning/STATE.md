@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Sample-Based Account Examination
-current_phase: 30-account-examination-ui
-current_plan: 30-03 (complete)
-status: planning
-last_updated: "2026-02-28T17:28:53.259Z"
+current_phase: 31-instance-based-scoring
+current_plan: 31-01 (complete)
+status: in_progress
+last_updated: "2026-03-01T20:52:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Session State
@@ -22,9 +22,9 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v7.0 Sample-Based Account Examination
-**Current phase:** 30-account-examination-ui
-**Current plan:** 30-03 (complete)
-**Status:** Ready to plan
+**Current phase:** 31-instance-based-scoring
+**Current plan:** 31-01 (complete)
+**Status:** In progress
 
 ## Decisions
 
@@ -59,6 +59,9 @@ See: .planning/PROJECT.md
 - 2026-02-28 [30-02]: Date fields (respondedAt) serialized to ISO strings at page boundary — client components receive strings, avoids React serialization errors
 - 2026-02-28 [30-02]: Optimistic status update on compliance button click reverts on server action failure to maintain UI consistency
 - 2026-02-28 [30-02]: Evidence section shows placeholder text — full S3 upload integration deferred to Phase 26; responseId preserved for future wiring
+- 2026-03-01 [31-01]: mapComplianceToScoreLabel: 75% inclusive for LARGELY_COMPLIANT (75-99%), 50% inclusive for PARTIALLY_COMPLIANT (50-74%) — consistent with RBIA Policy 2020
+- 2026-03-01 [31-01]: computeCompliancePercentage returns null (not 0) for zero responses — distinguishes Not Examined from 0% compliance; mirrors unscored leaf node exclusion in rbia-scoring-engine.ts
+- 2026-03-01 [31-01]: QuestionComplianceResult includes raw compliantCount, violationCount, totalResponses for UI display transparency
 
 ## Session Log
 
@@ -73,3 +76,4 @@ See: .planning/PROJECT.md
 - 2026-02-28: Phase 30 Plan 01 complete — Account examination DAL (getAccountsWithProgress, getQuestionsForAccount, getViolationSummary) and server actions (saveAccountExamResponse, addQuestion, updateQuestion, deactivateQuestion, reactivateQuestion) (AEXM-03, AEXM-04, AEXM-05, QMGT-02, QMGT-03)
 - 2026-02-28: Phase 30 Plan 02 complete — Account examination UI: examination/[moduleCode]/page.tsx server component with deterministic shuffle, AccountSidebar (colored dots), QuestionCard (compliance buttons, collapsible RBI/best practice panels, debounced notes), ExaminationProgressBar (violation badge, completion banner), Account Exam tab in RBIA layout (AEXM-01, AEXM-02, AEXM-03, AEXM-04, AEXM-05)
 - 2026-02-28: Phase 30 Plan 03 complete — Question management UI: questions/page.tsx with HIA-only guard, QuestionTable with sortable columns and deactivation warnings, AddQuestionDialog, EditQuestionDialog, conditional Questions tab in RBIA layout (QMGT-02, QMGT-03)
+- 2026-03-01: Phase 31 Plan 01 complete — Pure instance-based compliance scoring: computeCompliancePercentage, mapComplianceToScoreLabel, computeModuleComplianceScores with 33 vitest tests (CSCR-01, CSCR-02)

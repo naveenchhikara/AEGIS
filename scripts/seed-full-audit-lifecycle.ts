@@ -11,11 +11,14 @@
  */
 
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { createHash } from "crypto";
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────────── */
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL!;
+const adapter = new PrismaPg({ connectionString, max: 25 });
+const prisma = new PrismaClient({ adapter } as any);
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
@@ -722,6 +725,7 @@ async function main() {
   await prisma.branch.update({
     where: { id: kothrudId },
     data: { ramScore: 3.8, auditFrequency: 12 },
+    select: { id: true },
   });
 
   console.log("  ✓ RAM assessment created (composite 3.80 → HIGH)\n");
@@ -1210,6 +1214,7 @@ async function main() {
   await prisma.branch.update({
     where: { id: kothrudId },
     data: { lastAuditDate: d("2025-12-22"), lastAuditRating: "GOOD" },
+    select: { id: true },
   });
 
   console.log("  ✓ Score frozen (0.78 → GOOD), BM batch created\n");
@@ -1833,6 +1838,7 @@ async function main() {
   await prisma.observation.update({
     where: { id: ID.obs[5] },
     data: { status: "CLOSED", statusUpdatedAt: d("2026-02-28T10:00:00Z") },
+    select: { id: true },
   });
 
   console.log("  Phase 6 complete.\n");

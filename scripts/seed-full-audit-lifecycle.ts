@@ -12,13 +12,12 @@
 
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
 import { createHash } from "crypto";
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────────── */
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL! });
-const adapter = new PrismaPg(pool);
+const connectionString = process.env.DATABASE_URL!;
+const adapter = new PrismaPg({ connectionString, max: 25 });
 const prisma = new PrismaClient({ adapter } as any);
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */

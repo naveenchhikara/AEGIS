@@ -1,242 +1,381 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-25
+**Analysis Date:** 2026-03-02
 
 ## Test Framework
 
-**Unit Test Runner:**
+**Runner:**
 
-- Vitest — config at `vitest.config.ts`
-- Environment: `node` (not happy-dom/jsdom)
-- Coverage provider: v8
+- Vitest 4.0.18
+- Config: `vitest.config.ts`
+- Environment: node (not jsdom)
+- Include pattern: `src/**/__tests__/**/*.test.ts`
 
-**E2E Test Runner:**
+**Assertion Library:**
 
-- Playwright — config at `playwright.config.ts`
-- Auth setup: `tests/auth.setup.ts`
+- Vitest built-in `expect()` from `vitest` package
 
 **Run Commands:**
 
 ```bash
-pnpm test:e2e           # Run all Playwright E2E tests
-pnpm test:e2e:ui        # Run E2E tests with Playwright UI
-# Vitest (unit):
-pnpm exec vitest        # Run unit tests
-pnpm exec vitest --coverage  # Run with coverage report
+pnpm test:unit              # Run all tests
+pnpm test:coverage          # Run with coverage report
+pnpm test:e2e              # Run Playwright E2E tests
+pnpm test:e2e:ui           # Run E2E with Playwright UI
 ```
 
 ## Test File Organization
 
-**Unit Tests:**
+**Location:**
 
-- Location: co-located under `src/**/__tests__/` directories
-- Pattern: `src/lib/__tests__/*.test.ts`, `src/services/**/__tests__/*.test.ts`
-- Vitest `include` glob: `src/**/__tests__/**/*.test.ts`
+- **Unit/Integration tests:** Co-located in `__tests__` subdirectory parallel to source
+  - `src/lib/__tests__/rbia-scoring-engine.test.ts` tests `src/lib/rbia-scoring-engine.ts`
+  - `src/services/risk-rating/__tests__/compute.test.ts` tests `src/services/risk-rating/compute.ts`
+  - `src/data-access/__tests__/tenant-isolation.test.ts` tests DAL patterns
 
-**E2E Tests:**
+- **E2E tests:** Separate directory
+  - `tests/e2e/observation-lifecycle.spec.ts`
+  - `tests/e2e/permission-guards.spec.ts`
+  - Auth setup: `tests/auth.setup.ts`
 
-- Location: `tests/e2e/` directory
-- Auth setup: `tests/auth.setup.ts` — runs before all E2E specs
-- Playwright report output: `playwright-report/` (git-ignored, excluded from ESLint)
+**Naming:**
 
-**Structure:**
-
-```
-src/
-├── lib/
-│   └── __tests__/         # Unit tests for lib utilities
-└── services/
-    └── **/__tests__/      # Unit tests for service logic
-tests/
-├── e2e/                   # Playwright E2E specs
-└── auth.setup.ts          # Shared auth state for E2E
-```
-
-## Coverage Scope
-
-**What is covered by unit tests:**
-
-- `src/lib/**/*.ts` — utility functions, auth helpers, permission engine, scoring logic
-- `src/services/**/*.ts` — business logic (risk-rating computation)
-
-**Excluded from coverage:**
-
-- `src/lib/__tests__/**` — test files themselves
-- `src/services/**/__tests__/**` — test files themselves
-
-**Coverage reporters:** `text` (terminal) and `text-summary`
-
-**Requirements:** No enforced threshold — coverage is informational only.
-
-**View Coverage:**
-
-```bash
-pnpm exec vitest --coverage
-```
+- Unit/integration: `.test.ts` suffix
+- E2E: `.spec.ts` suffix
+- Setup files: `*.setup.ts`
 
 ## Test Structure
 
-**Suite Organization (Vitest unit tests):**
+**Suite Organization:**
 
 ```typescript
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
-describe("FunctionName", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+// ─── Helper functions / fixtures ──────────────────────────────────────────
+function leaf(
+  id: string,
+  scoreLabel: ScoredNode["scoreLabel"],
+  weight = 1,
+  isCritical = false,
+): ScoredNode {
+  return {
+    nodeId: id,
+    code: id,
+    weight,
+    isCritical,
+    isLeaf: true,
+    scoreLabel,
+    children: [],
+  };
+}
+
+// ─── Test suites ──────────────────────────────────────────────────────────
+describe("SCORE_VALUES", () => {
+  it("FULLY_COMPLIANT = 1.0", () => {
+    expect(SCORE_VALUES.FULLY_COMPLIANT).toBe(1.0);
   });
 
-  it("should [expected behavior]", () => {
-    // arrange
-    const input = { ... };
-    // act
-    const result = functionName(input);
-    // assert
-    expect(result).toBe(expectedValue);
+  it("LARGELY_COMPLIANT = 0.75", () => {
+    expect(SCORE_VALUES.LARGELY_COMPLIANT).toBe(0.75);
+  });
+});
+
+describe("computeNodeScore", () => {
+  it("1. Single leaf FULLY_COMPLIANT returns score 1.0", () => {
+    const node = leaf("n1", "FULLY_COMPLIANT");
+    expect(computeNodeScore(node)).toEqual({
+      score: 1.0,
+      hasCriticalNonCompliant: false,
+    });
   });
 
-  it("should handle [edge case]", () => {
-    expect(() => functionName(null)).toThrow("Expected error message");
+  it("2. Single leaf NON_COMPLIANT returns score 0.0", () => {
+    const node = leaf("n2", "NON_COMPLIANT");
+    expect(computeNodeScore(node)).toEqual({
+      score: 0.0,
+      hasCriticalNonCompliant: false,
+    });
   });
 });
 ```
 
-**E2E Suite Organization (Playwright):**
+**Patterns:**
 
-```typescript
-import { test, expect } from "@playwright/test";
-
-test.describe("Feature Area", () => {
-  test.use({ storageState: "playwright/.auth/user.json" });
-
-  test("should [behavior]", async ({ page }) => {
-    await page.goto("/dashboard");
-    await expect(page.getByRole("heading")).toBeVisible();
-  });
-});
-```
+- **Setup fixtures** at top of file (functions that create test data)
+- **Nested `describe()` blocks** to group related tests
+- **Numbered test descriptions** for sequential/related tests (e.g., "1. Single leaf...", "2. Array of...", "3. Critical item...")
+- **Explicit assertions** — test one thing per test, but use `.toEqual()` for objects
+- **No hooks** — avoid `beforeEach`, `afterEach` for unit tests (use fixtures instead)
 
 ## Mocking
 
-**Framework:** Vitest built-in (`vi`)
+**Framework:** None explicitly configured; use Jest-compatible mocks
 
 **Patterns:**
 
 ```typescript
-// Module mock
-vi.mock("@/lib/auth", () => ({
-  getRequiredSession: vi.fn().mockResolvedValue({
-    user: { id: "user-1", tenantId: "tenant-1", roles: ["AUDITOR"] },
-  }),
-}));
+// No mocking in most unit tests — test pure functions directly
+// Example: RBIA scoring engine tests don't mock, just pass data
 
-// Spy on function
-const spy = vi.spyOn(module, "functionName").mockReturnValue(value);
+// For file I/O (tenant isolation test):
+import { readFileSync, readdirSync } from "fs";
+const content = readFileSync(join(DAL_DIR, filename), "utf-8");
 
-// Reset between tests
-beforeEach(() => vi.clearAllMocks());
-afterAll(() => vi.restoreAllMocks());
+// For static analysis (tenant isolation test):
+function hasDbQuery(content: string): boolean {
+  return /\.(findMany|findFirst|findUnique|count|aggregate)\b/.test(content);
+}
 ```
 
 **What to Mock:**
 
-- Database calls (Prisma client) — unit tests must not touch real DB
-- `getRequiredSession()` — inject test session with appropriate tenantId and roles
-- External services (AWS S3, SES, pg-boss)
-- `Date.now()` / `new Date()` for time-sensitive tests
+- External APIs (AWS S3, SES) — **not in current unit tests**
+- File system calls in some security tests — use real file I/O for integration tests
+- Time-dependent operations — use fixed dates instead
 
 **What NOT to Mock:**
 
-- Pure utility functions (test them directly)
-- Zod schemas (test validation directly with `.parse()` / `.safeParse()`)
-- Business logic in `src/services/` — test actual scoring computations
+- Pure business logic functions (RBIA scoring, permission checks)
+- Zod validation (use real schema)
+- Helper functions (test real behavior)
+- Prisma schema structure (test against schema, not mock DB)
 
-## Fixtures and Test Data
+## Fixtures and Factories
 
-**Test Users (E2E / seed):**
+**Test Data:**
 
-- `rajesh.deshmukh@apexbank.example` — CEO role, password `TestPassword123!`
-- 10 seed users across 2 tenants — defined in `prisma/seed.ts`
+```typescript
+// Fixture factory pattern (from rbia-scoring-engine.test.ts)
+function leaf(
+  id: string,
+  scoreLabel: ScoredNode["scoreLabel"],
+  weight = 1,
+  isCritical = false,
+): ScoredNode {
+  return {
+    nodeId: id,
+    code: id,
+    weight,
+    isCritical,
+    isLeaf: true,
+    scoreLabel,
+    children: [],
+  };
+}
 
-**Auth State (E2E):**
+function parent(id: string, children: ScoredNode[], weight = 1): ScoredNode {
+  return {
+    nodeId: id,
+    code: id,
+    weight,
+    isCritical: false,
+    isLeaf: false,
+    scoreLabel: null,
+    children,
+  };
+}
 
-- `tests/auth.setup.ts` logs in and saves session cookie state to `playwright/.auth/`
-- E2E tests reuse saved auth state: `test.use({ storageState: "playwright/.auth/user.json" })`
+// Usage
+const node = parent("root", [
+  leaf("n1", "FULLY_COMPLIANT"),
+  leaf("n2", "NON_COMPLIANT"),
+]);
+```
 
-**Seed Data:**
+**Location:**
 
-- `prisma/seed.ts` — 1,690-line seeder, 10 users, 2 tenants, 39 exam areas, 568 exam items
-- Run via `pnpm db:seed`
+- Fixtures defined **at top of test file** (after imports, before describe blocks)
+- Helpers for **logical grouping** (parent/leaf builders for tree structures)
+- **Domain-specific factories** in test file itself (not separate factory files)
 
-**Unit Test Data:**
+## Coverage
 
-- Inline test data in `describe`/`it` blocks — no shared fixtures directory
-- Prisma types used directly for typed test objects
+**Requirements:** No hard coverage threshold enforced
+
+**View Coverage:**
+
+```bash
+pnpm test:coverage
+```
+
+**Coverage config** (vitest.config.ts):
+
+```typescript
+coverage: {
+  provider: "v8",
+  include: ["src/lib/**/*.ts", "src/services/**/*.ts"],
+  exclude: ["src/lib/__tests__/**", "src/services/**/__tests__/**"],
+  reporter: ["text", "text-summary"],
+}
+```
+
+**Target areas:**
+
+- Business logic engines: `src/lib/rbia-scoring-engine.ts`, `src/lib/permissions.ts`
+- Services: `src/services/risk-rating/compute.ts`
+- Skip: UI components, API routes, pages
 
 ## Test Types
 
-**Unit Tests (Vitest):**
+**Unit Tests:**
 
-- Scope: Pure functions in `src/lib/` and `src/services/`
-- Focus: Scoring computations, permission checks, utility functions, Zod schema validation
-- No DB or network — all external dependencies mocked
-
-**E2E Tests (Playwright):**
-
-- Scope: Full user workflows via browser automation
-- Focus: Auth flows, page navigation, form submissions, data display
-- Requires running app + seeded database
-- Auth state shared across tests via `storageState`
+- **Scope:** Pure functions with no side effects
+- **Examples:**
+  - `src/lib/__tests__/rbia-scoring-engine.test.ts` — RBIA 4-point scoring logic
+  - `src/lib/__tests__/permissions.test.ts` — RBAC permission checks
+  - `src/lib/__tests__/state-machine.test.ts` — State machine transitions
+  - `src/lib/__tests__/instance-scoring.test.ts` — Examination item scoring
+  - `src/services/risk-rating/__tests__/compute.test.ts` — Risk rating computation
+- **Approach:** Pass input, assert output; no mocking, no DB
 
 **Integration Tests:**
 
-- Not formalized — covered implicitly by E2E tests
-- No dedicated integration test layer
+- **Scope:** DAL functions with static analysis (no running DB)
+- **Examples:**
+  - `src/data-access/__tests__/tenant-isolation.test.ts` — Scans DAL files for tenant isolation patterns
+- **Approach:** File I/O, regex analysis of source code
+
+**E2E Tests:**
+
+- **Framework:** Playwright 1.58.2
+- **Scope:** Full user workflows (login, navigate, submit forms, verify UI)
+- **Examples:**
+  - `tests/e2e/observation-lifecycle.spec.ts` — Create, edit, close observations
+  - `tests/e2e/permission-guards.spec.ts` — Permission-based access control
+- **Setup:** `tests/auth.setup.ts` — Pre-authenticates 5 test users, saves storageState
+- **Run:** `pnpm test:e2e` (headless) or `pnpm test:e2e:ui` (Playwright UI)
+
+## E2E Test Setup
+
+**Authentication Setup** (`tests/auth.setup.ts`):
+
+```typescript
+import { test as setup } from "@playwright/test";
+
+const TEST_PASSWORD = "TestPassword123!";
+
+const users = [
+  {
+    role: "auditor",
+    email: "suresh.patil@apexbank.example",
+    password: TEST_PASSWORD,
+    file: "playwright/.auth/auditor.json",
+  },
+  {
+    role: "manager",
+    email: "priya.sharma@apexbank.example",
+    password: TEST_PASSWORD,
+    file: "playwright/.auth/manager.json",
+  },
+  // ... more roles
+];
+
+for (const user of users) {
+  setup(`authenticate as ${user.role}`, async ({ page }) => {
+    await page.goto("/login");
+    await page.waitForSelector("input#email", { timeout: 15000 });
+    await page.fill("input#email", user.email);
+    await page.fill("input#password", user.password);
+    await page.click('button[type="submit"]');
+    await page.waitForURL("**/dashboard**", { timeout: 15000 });
+    await page.context().storageState({ path: user.file });
+    console.log(`✓ ${user.role} (${user.email})`);
+  });
+}
+```
+
+**Key points:**
+
+- Test users pre-seeded in DB via `prisma/seed.ts` — emails and password must match exactly
+- StorageState (cookies + localStorage) saved to `playwright/.auth/{role}.json`
+- E2E tests use `@auth/{role}` in `@playwright/test` config to load storageState
+- Wait for form hydration: `await page.waitForSelector("input#email", { timeout: 15000 })`
+- Fill by ID (reliable): `await page.fill("input#email", email)` not by label
 
 ## Common Patterns
 
-**Async Testing (Vitest):**
+**Async Testing:**
 
 ```typescript
-it("should resolve async operation", async () => {
-  const result = await asyncFunction(input);
-  expect(result).toEqual(expectedValue);
+// For async DAL functions in integration tests
+it("getEngagements returns all tenant engagements", async () => {
+  const session = {
+    user: { tenantId: "test-tenant-1", roles: [Role.AUDITOR] },
+  };
+  const result = await getEngagements(session);
+  expect(result).toHaveLength(3);
 });
 ```
 
-**Error Testing (Vitest):**
+**Error Testing:**
 
 ```typescript
-it("should throw on invalid input", async () => {
-  await expect(asyncFunction(invalidInput)).rejects.toThrow("Error message");
+// Test permission denials
+it("AUDITOR does NOT have observation:approve", () => {
+  expect(hasPermission([Role.AUDITOR], "observation:approve")).toBe(false);
 });
 
-// Zod validation errors:
-it("should reject invalid schema", () => {
-  const result = MySchema.safeParse(invalidData);
+// Test validation errors
+it("updateRolesSchema rejects invalid UUID", () => {
+  const result = updateRolesSchema.safeParse({
+    userId: "not-a-uuid",
+    roles: [Role.AUDITOR],
+    justification: "test reason",
+  });
   expect(result.success).toBe(false);
 });
 ```
 
-**Permission Testing:**
+**Tree/Hierarchy Testing:**
 
 ```typescript
-// Mock session with specific role
-vi.mocked(getRequiredSession).mockResolvedValue({
-  user: { tenantId: "t1", roles: ["AUDITOR"], permissions: [...] },
+// Test scoring with parent-child nodes
+it("parent with two children scores correctly", () => {
+  const node = parent("root", [
+    leaf("n1", "FULLY_COMPLIANT"),
+    leaf("n2", "PARTIALLY_COMPLIANT"),
+  ]);
+  const { score } = computeNodeScore(node);
+  expect(score).toBe(0.875); // (1.0 + 0.5) / 2
 });
 ```
 
-## Preflight Requirements for E2E
+**Static Analysis Testing:**
 
-Before running E2E tests, verify:
+```typescript
+// Tenant isolation test — scans files, no running DB
+describe("DAL file with queries includes tenantId filter", () => {
+  for (const file of dalFiles) {
+    const content = getFileContent(file);
+    if (!hasDbQuery(content)) continue;
 
-1. Dev server running on `http://localhost:3000`
-2. Database seeded (`pnpm db:seed`)
-3. No locked accounts in `FailedLoginAttempt` table
-4. `BETTER_AUTH_URL` matches running server port
-5. `DATABASE_URL` has no special characters (`/`, `@`, `#`, `%`)
+    it(`${file} — queries reference tenantId`, () => {
+      expect(content).toContain("tenantId");
+    });
+  }
+});
+```
+
+## Test Data / Seed
+
+**Database Seed:**
+
+- `prisma/seed.ts` — 10 users, 2 tenants, 39 examination areas, 568 examination items, RAM parameters
+- **Passwords:** Generated via `better-auth/crypto` `hashPassword()` to match Better Auth expectations
+- **Default test password:** `TestPassword123!` (hashed in seed)
+- **Test users:**
+  - `rajesh.deshmukh@apexbank.example` (CEO)
+  - `suresh.patil@apexbank.example` (AUDITOR)
+  - `priya.sharma@apexbank.example` (CAE + AUDIT_MANAGER)
+  - `amit.joshi@apexbank.example` (CCO)
+  - `vikram.kulkarni@apexbank.example` (AUDITEE + AUDITOR)
+
+**Seed triggers during test:**
+
+- Run seeding before E2E tests: `pnpm db:seed`
+- Disable triggers when seeding: `DISABLE TRIGGER USER` (SQL applied manually)
+- Verify bcrypt hashes: `SELECT LENGTH(password) FROM "Account"` (should be ~60 chars)
 
 ---
 
-_Testing analysis: 2026-02-25_
+_Testing analysis: 2026-03-02_

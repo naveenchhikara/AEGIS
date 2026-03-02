@@ -1,278 +1,451 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-02-25
+**Analysis Date:** 2026-03-02
 
 ## Tech Debt
 
-**Dual Examination Model (v5 + v6 Coexistence):**
+### Deprecated Demo Data Still Exported
 
-- Issue: Two parallel examination model trees coexist — legacy `ExaminationArea`/`ExaminationItem`/`AuditExaminationResponse` alongside new `ExaminationNode`/`ExaminationResponse`. Both are live in the schema and in active use.
-- Files: `src/data-access/rbia-examination.ts`, `src/data-access/audit-execution.ts`, `prisma/schema.prisma`
-- Impact: Cognitive overhead on every audit-execution query; risk of writing to the wrong model; duplicated query logic. Schema complexity inflated by ~20 models that will be removed.
-- Fix approach: Phase 23 cleanup — remove legacy `ExaminationArea`, `ExaminationItem`, `AuditExaminationResponse`, `AuditSectionInstance` models and migrate any remaining data references.
+- **Issue:** JSON demo data (bank-profile, staff, branches, findings, etc.) is exported from `src/data/index.ts` with DEPRECATED comments, but prototype views still depend on it
+- **Files:** `src/data/index.ts` (lines 16-24), `src/data/seed/` directory
+- **Impact:** Blocks cleanup of seed directory; creates dual-source truth (JSON + DB); confuses new developers about data source
+- **Fix approach:**
+  1. Audit which pages still import from `src/data` (likely demo/prototype pages)
+  2. Migrate remaining pages to database-backed DAL functions
+  3. Remove JSON exports from barrel export and mark directory for deletion
+  4. Add Phase for "Retire demo data exports"
 
-**Deprecated Seed JSON Still Exported:**
+### Schema Gap: sourceActionPointId Missing
 
-- Issue: `src/data/index.ts` still exports seed JSON arrays with a TODO comment: `// TODO: Remove these exports when all pages use database queries`. Some static data flows may still use these instead of querying the DB.
-- Files: `src/data/index.ts`, `src/data/seed/` (directory)
-- Impact: Data drift — static JSON can diverge from DB contents. Pages using static data bypass tenant isolation.
-- Fix approach: Audit all importers of `src/data/index.ts`, migrate to DAL queries, delete the exports.
+- **Issue:** Observation model lacks `sourceActionPointId` field to link promoted findings back to originating ActionPoints
+- **Files:** `src/data-access/rbia-findings.ts` (line 77 TODO comment), `prisma/schema.prisma`
+- **Impact:** Promote-to-observation workflow cannot track source ActionPoint; breaks traceability requirement
+- **Fix approach:**
+  1. Add `sourceActionPointId String?` field to Observation model in schema
+  2. Update Prisma migration and apply with `prisma db push`
+  3. Update DAL query to populate this field when promoting ActionPoints
+  4. Verify in Phase 20+ once schema gap is closed
 
-**Missing Schema Link: ActionPoint → Observation Promotion:**
+### Hardcoded BM Response Deadline (15 Days)
 
-- Issue: `src/data-access/rbia-findings.ts` line 77 has `// TODO Phase 20: Add sourceActionPointId to Observation schema for promote-to-observation link`. The foreign key for tracing promoted findings back to their action point origin is absent.
-- Files: `src/data-access/rbia-findings.ts`, `prisma/schema.prisma`
-- Impact: Audit trail for finding escalation is broken; can't trace an Observation back to its originating ActionPoint.
-- Fix approach: Add `sourceActionPointId` field to `Observation` model in Phase 20, with migration.
+- **Issue:** BM response deadline is hardcoded to 15 days in `src/actions/rbia/freeze.ts` line 300
+- **Files:** `src/actions/rbia/freeze.ts` (TODO Phase 23), schema missing `tenant.settings.bmResponseDeadlineDays`
+- **Impact:** Tenants cannot customize response deadline; RBI policy may require bank-specific timelines
+- **Fix approach:**
+  1. Add `bmResponseDeadlineDays Int` field to TenantSettings model (or create settings extension)
+  2. Create Phase 23 settings UI to configure deadline
+  3. Replace hardcoded `15` with `await getTenantSettings(tenantId).bmResponseDeadlineDays`
+  4. Validate deadline is between 7-30 days
 
-**Onboarding Store Not Scoped to Tenant:**
+### Period Selector Not Wired in RBIA Analytics
 
-- Issue: `src/stores/onboarding-store.ts` line 31: `// TODO: Scope by authenticated user/tenant ID when auth is implemented (Phase 11)`. The Zustand store uses a flat key without tenant scoping.
-- Files: `src/stores/onboarding-store.ts`
-- Impact: In multi-tenant environments, onboarding state from one session could bleed into another if two tenants onboard on the same browser.
-- Fix approach: Key the store by `tenantId` obtained from session.
+- **Issue:** RBIA Analytics page uses TODO placeholder for period filtering; DAL function `getRbiaAnalyticsByPeriod()` exists but UI is not wired
+- **Files:** `src/app/(dashboard)/analytics/page.tsx` (line 122 TODO), `scoreImprovement={null}` hardcoded at line 132
+- **Impact:** Users cannot filter analytics by date range; score improvement metrics not computed
+- **Fix approach:**
+  1. Add state for period selection (startDate, endDate) to analytics page
+  2. Wire Select dropdown to pass dates to `getRbiaAnalyticsByPeriod()`
+  3. Implement `scoreImprovement` computation from consecutive period comparison
+  4. Add to Phase 23 or 24 TODO list
 
-**Unimplemented ATR Submit:**
+### Manual Deposit Data Input (Not DB-Sourced)
 
-- Issue: `src/components/regulatory/atr-form.tsx` line 33 has `// TODO: Implement submit ATR action`. The Action Taken Report submission is a UI stub with no server action wired.
-- Files: `src/components/regulatory/atr-form.tsx`, `src/actions/regulatory/submit-atr.ts`
-- Impact: Regulatory ATR workflow is non-functional; users cannot submit ATRs from the form.
-- Fix approach: Implement and wire `submitAtrAction` server action.
+- **Issue:** `src/lib/investment-compliance.ts` line 111 TODO — integrates with HousekeepingMetric but missing direct deposit data source
+- **Files:** `src/lib/investment-compliance.ts` (line 111), housekeeping MIS fallback
+- **Impact:** Deposit compliance checks may use stale or manual data; not real-time from core banking
+- **Fix approach:**
+  1. Determine deposit data source: CBS export, core banking API, or HousekeepingMetric table
+  2. Create dedicated `depositData` table or use existing `InvestmentRecord` schema
+  3. Replace fallback logic with direct source query
+  4. Add to future phase (likely bank data integration phase)
 
-**Deposit Data Source Not Integrated:**
+### Fiscal Year Hardcoded (April-March)
 
-- Issue: `src/lib/investment-compliance.ts` line 111: `// TODO: Integrate with deposit data source`. Investment compliance calculations fall back to placeholder values where deposit data is needed.
-- Files: `src/lib/investment-compliance.ts`
-- Impact: Investment compliance metrics may be inaccurate.
-- Fix approach: Define the deposit data source (DB model or external feed) and integrate the query.
-
-**Analytics Period Selector Missing:**
-
-- Issue: `src/app/(dashboard)/analytics/page.tsx` line 122: `{/* TODO: Period selector using getRbiaAnalyticsByPeriod */}`. The analytics page lacks a period filter UI.
-- Files: `src/app/(dashboard)/analytics/page.tsx`, `src/data-access/rbia-analytics.ts`
-- Impact: Users can only view default period analytics; no historical comparison.
-- Fix approach: Add period selector component wired to `getRbiaAnalyticsByPeriod`.
-
-**BM Response Deadline Hard-Coded:**
-
-- Issue: `src/actions/rbia/freeze.ts` line 279: `const deadlineDays = 15; // TODO Phase 23: read from tenant.settings.bmResponseDeadlineDays`. Deadline is hard-coded instead of per-tenant configurable.
-- Files: `src/actions/rbia/freeze.ts`
-- Impact: All tenants share the same 15-day deadline regardless of their operational requirements.
-- Fix approach: Add `bmResponseDeadlineDays` to `Tenant.settings` JSONB and read from there in Phase 23.
+- **Issue:** `src/actions/settings.ts` notes that Fiscal Year is hardcoded to April-March (Indian FY), not configurable
+- **Files:** `src/actions/settings.ts` comment, `enum Quarter` in schema (Q1_APR_JUN, Q2_JUL_SEP, etc.)
+- **Impact:** Non-Indian banks or banks with different fiscal years cannot be supported; schema tightly coupled to India
+- **Fix approach:**
+  1. If multi-country support planned: add `fiscalYearStartMonth` to TenantSettings
+  2. Create fiscal year utility functions parametrized by tenant FY
+  3. Refactor Quarter enum to use months (MONTH_01, etc.) or timestamp-based approach
+  4. Migrate all FY logic to use `getTenantFiscalYear(tenantId)`
+  5. Priority: LOW (v1 is India-only per CLAUDE.md)
 
 ## Known Bugs
 
-**Dashboard PostgreSQL Views Not in Migrations:**
+### Stale Turbopack Cache Causing Page Rendering Issues
 
-- Symptoms: After a fresh deploy or `db:push`, the four dashboard views (`v_compliance_summary`, `v_observation_severity`, `v_audit_coverage_branch`, `fn_dashboard_health_score`) are missing, causing 500 errors on `/dashboard` and `/analytics`.
-- Files: `prisma/migrations/`, `prisma/*.sql`
-- Trigger: Any fresh database provisioning — new VPS, Docker rebuild, CI test database.
-- Workaround: Manually apply the view SQL files from `prisma/*.sql` after deploy. Not automated.
+- **Symptoms:** Dashboard pages show old component content; CSS changes don't reflect
+- **Files:** Next.js `.next/` build cache (dev server only)
+- **Trigger:** Prolonged Turbopack build sessions; cache corruption after hot reload failures
+- **Workaround:** Delete `.next/` directory and restart `pnpm dev`
+- **Prevention:** Consider pre-commit hook to clean Turbopack cache before commits
 
-**AWS SDK v3 Type Mismatch in S3:**
+### PostgreSQL Views Not Applied After Fresh Deploy
 
-- Symptoms: `getSignedUrl` in `src/lib/s3.ts` requires `as any` casts (lines 106, 121) to work around a type incompatibility between `@aws-sdk/s3-request-presigner` and `@aws-sdk/client-s3`.
-- Files: `src/lib/s3.ts`
-- Trigger: Present at compile time; suppressed with `eslint-disable` comments.
-- Workaround: Cast `S3Client` instance to `any`. Needs AWS SDK version alignment.
+- **Symptoms:** Dashboard KPIs show NaN or missing data; SQL errors on `v_compliance_summary`, `v_observation_severity`
+- **Files:** `prisma/migrations/20260209_dashboard_views.sql` (not tracked in Prisma migrations)
+- **Trigger:** Fresh database setup; `prisma db push` does not apply standalone SQL files
+- **Workaround:** Manually run SQL from migration files in order after `prisma db push`:
+  ```bash
+  psql -d aegis_db < prisma/migrations/add_rls_policies.sql
+  psql -d aegis_db < prisma/migrations/20260209_dashboard_views.sql
+  ```
+- **Fix approach:**
+  1. Create Prisma managed migrations for all views (migration.sql + metadata.json)
+  2. Or document post-deploy SQL scripts in deployment checklist
+  3. Add healthcheck query to verify views exist before app starts
+  4. Priority: HIGH (blocks production deployment automation)
 
-**SES Sandbox — Email Only to Verified Addresses:**
+### SES Sandbox Mode Restricts Email Delivery
 
-- Symptoms: Transactional emails (assignment, escalation, digest) fail silently for unverified recipient addresses.
-- Files: `src/lib/ses.ts`, `src/emails/`, `src/jobs/`
-- Trigger: Any email sent to a non-verified address in AWS SES sandbox mode.
-- Workaround: Add recipient addresses to SES verified list manually. Production SES access pending AWS approval.
+- **Symptoms:** Emails sent to unverified recipients fail silently; compliance notifications not delivered
+- **Files:** `src/lib/ses.ts`, environment configuration, AWS SES settings
+- **Trigger:** Production SES account not yet granted production access
+- **Current Mitigation:** Email sending made optional in `src/env.ts`; staging/demo uses console logs
+- **Fix approach:**
+  1. AWS SES production access request → requires AWS support ticket
+  2. Once granted, remove email sender restrictions from env validation
+  3. Implement email queue retry logic (pg-boss job) for transient failures
+  4. Add monitoring/alerting for bounces and complaints
+  5. Priority: MEDIUM (blocking production email notifications)
+
+### Seed Data Mismatch: Local vs Production
+
+- **Symptoms:** Local dev database has comprehensive seed (10 users, 2 tenants, 39 exam areas); production may have minimal seed
+- **Files:** `prisma/seed.ts` (1,690 lines), production seed script
+- **Impact:** Development features may not work in production with minimal seed data
+- **Fix approach:**
+  1. Document expected seed state for production (minimal vs comprehensive)
+  2. Create separate seed scripts: `seed-minimal.ts`, `seed-comprehensive.ts`
+  3. Add seed verification query (e.g., "At least 20 ExaminationItems should exist")
+  4. Add to deployment runbook
 
 ## Security Considerations
 
-**Application-Level Tenant Isolation Only:**
+### Type Assertions Bypass TypeScript Safety
 
-- Risk: There are no PostgreSQL Row Level Security (RLS) policies. Tenant isolation is enforced entirely by `WHERE tenantId = ?` clauses in DAL functions. Any DAL function that omits the clause exposes cross-tenant data.
-- Files: `src/data-access/prisma.ts`, all `src/data-access/*.ts` files
-- Current mitigation: `prismaForTenant(tenantId)` returns the singleton client; DAL functions manually append `tenantId`. Unit test in `src/data-access/__tests__/tenant-isolation.test.ts` spot-checks isolation.
-- Recommendations: Add PostgreSQL RLS as a defense-in-depth layer. Audit all 39 DAL files to confirm every query has a `tenantId` filter.
+- **Risk:** 184+ occurrences of `as any`, `as any]`, `@ts-ignore` scattered across codebase
+- **Files:** `src/actions/rbia/freeze.ts`, `src/components/examination-questions/`, `src/data-access/loan-account.ts`, etc.
+- **Current Mitigation:** Code review and testing catch most logical errors
+- **Recommendations:**
+  1. Audit each `as any` to understand why type safety was bypassed
+  2. For legitimate cases (e.g., Zod resolver), extract to typed helper function
+  3. For unfinished types, complete the type definition instead of asserting
+  4. Add pre-commit hook to flag `as any` (fail-soft, warn only)
+  5. Priority: MEDIUM (prevents future regressions; addresses code quality)
 
-**`tenantId` Must Never Come from URL/Body:**
+### Tenant Isolation is Application-Level, Not Database-Level
 
-- Risk: If any server action or API route reads `tenantId` from request body or URL params instead of the session, a malicious user could submit another tenant's ID.
-- Files: `src/actions/` (81 files), `src/app/api/` routes
-- Current mitigation: CLAUDE.md mandates `getRequiredSession()` always; code review enforces this.
-- Recommendations: Add a static analysis rule (ESLint custom rule) that forbids reading `tenantId` from `params` or `body` in server actions.
+- **Risk:** No PostgreSQL Row-Level Security (RLS) policies enforce tenant boundaries at DB layer
+- **Files:** `src/data-access/` (47 files), ALL query functions depend on WHERE clauses
+- **Current Mitigation:**
+  - DAL functions use `prismaForTenant(tenantId)` singleton + WHERE clauses
+  - `getRequiredSession()` ensures tenantId comes from authenticated session only
+  - Unit test `src/data-access/__tests__/tenant-isolation.test.ts` verifies patterns
+- **Risks:**
+  1. Bug in single DAL function WHERE clause exposes all tenant data
+  2. No database-level protection if application layer bypassed (e.g., raw SQL)
+  3. Session hijacking leads to immediate cross-tenant access
+- **Recommendations:**
+  1. Implement PostgreSQL RLS policies on 10 tenant-scoped tables (already prepared in migrations)
+  2. After RLS: Test that direct DB access (psql, Prisma raw queries) enforces isolation
+  3. Add `POLICY` assertions to schema: `@db.Policy("tenant_isolation")`
+  4. Document: "RLS is defense-in-depth; application isolation is primary control"
+  5. Priority: MEDIUM (high-value security improvement for production)
 
-**Rate Limiting is In-Memory:**
+### NEXT_PUBLIC Environment Variables Inlined at Build Time
 
-- Risk: The 10-login-attempts-per-IP / 15-minute rate limiter in Better Auth is process-local. Under PM2 cluster mode or multi-container Docker, each process has independent counters, making brute-force attacks possible across processes.
-- Files: `src/lib/auth.ts`
-- Current mitigation: `FailedLoginAttempt` table in DB provides persistent lockout after 5 attempts per user (not per IP).
-- Recommendations: Move IP-level rate limiting to Redis or a DB-backed counter, or enforce at Nginx level.
+- **Risk:** `NEXT_PUBLIC_APP_URL` and any other `NEXT_PUBLIC_*` vars are hardcoded into the build artifact at Docker build time
+- **Files:** `Dockerfile` (lines 28-31), `src/env.ts`, any file importing `process.env.NEXT_PUBLIC_*`
+- **Current Mitigation:** Dockerfile uses `ARG NEXT_PUBLIC_APP_URL` with production default; deploy scripts pass correct URL
+- **Risks:**
+  1. If Docker image built with staging URL but deployed to production, app will still call staging
+  2. Runtime env vars (e.g., Docker `--env-file`) have NO effect on `NEXT_PUBLIC_*` values
+  3. Developers may assume runtime env injection works (it doesn't for NEXT_PUBLIC)
+- **Recommendations:**
+  1. Document in CLAUDE.md: "NEXT*PUBLIC*\* are build-time only; change Dockerfile ARG or rebuild"
+  2. For multi-environment deployments: Use separate Docker images per environment (recommended)
+  3. Or: Use non-public vars + client-side config API for runtime settings
+  4. Add healthcheck to verify `NEXT_PUBLIC_APP_URL` matches actual deployment URL
+  5. Priority: MEDIUM (has already caused confusion; add clear docs)
 
-**NEXT_PUBLIC vars Inlined at Build Time:**
+### Type Casting in Authentication Routes
 
-- Risk: `NEXT_PUBLIC_*` environment variables are baked into the client bundle at build time. If a secret is accidentally prefixed with `NEXT_PUBLIC_`, it becomes publicly visible.
-- Files: `src/env.ts`, `Dockerfile`
-- Current mitigation: Only non-secret values (app URL, region) are `NEXT_PUBLIC_`. Documented in MEMORY.md.
-- Recommendations: Periodic audit of `NEXT_PUBLIC_` variable list to ensure no secrets are included.
+- **Risk:** Session user properties accessed unsafely (e.g., `(session.user as any).tenantName`, `tenantId not in session`)
+- **Files:** Multiple app routes, data-access functions
+- **Current Mitigation:** `getRequiredSession()` enforces session existence; `tenantId` always from session
+- **Recommendations:**
+  1. Extend session type to include `tenantId`, `tenantName`, `roles` (already in session)
+  2. Use typed session object instead of `as any` casts
+  3. Add session validation at page level (already done in dashboard layout)
 
 ## Performance Bottlenecks
 
-**`src/data-access/dashboard.ts` — 1,160 Lines, Multiple Heavy Queries:**
+### Large Components Missing Pagination
 
-- Problem: Dashboard data access layer aggregates 10+ complex queries (compliance summary, observation severity, coverage, health score) in a single file. The dashboard API route at `src/app/api/dashboard/route.ts` runs these sequentially or in batches.
-- Files: `src/data-access/dashboard.ts`, `src/app/api/dashboard/route.ts`
-- Cause: Dashboard views (`v_compliance_summary` etc.) are PostgreSQL views without indexes. With growing data, full-table scans degrade.
-- Improvement path: Materialized views with scheduled refresh; add `DashboardSnapshot` model (already exists in schema) for caching aggregated results.
+- **Problem:** Table components render all rows without pagination; can cause performance issues with 100+ items
+- **Files:**
+  - `src/app/(dashboard)/findings/page.tsx` (line 106 TODO: Add pagination)
+  - `src/app/(dashboard)/audit-execution/page.tsx` (line 92 TODO: Add pagination)
+  - `src/components/rbia/findings-list.tsx` (681 lines, may load all findings)
+  - `src/components/governance/committee-panel.tsx` (987 lines, large component)
+- **Impact:** Slow page loads with 200+ findings; browser memory exhaustion; poor UX
+- **Improvement path:**
+  1. Add pagination UI (Page size: 20, 50, 100)
+  2. Refactor components to accept `page`, `pageSize` props
+  3. Update DAL to support `skip/take` parameters
+  4. Add React Query caching for paginated results
+  5. Priority: MEDIUM (affects UX at scale; 100+ findings per engagement)
 
-**`src/components/pdf-report/rbia-report-document.tsx` — 1,366 Lines:**
+### Dashboard Query Parallelism at Limit
 
-- Problem: Single React PDF component handles the entire RBIA report layout. PDF generation is synchronous and CPU-bound via `@react-pdf/renderer`, running in the main process.
-- Files: `src/components/pdf-report/rbia-report-document.tsx`, `src/actions/reports/generate-pdf.ts`
-- Cause: `@react-pdf/renderer` is externalized (`serverExternalPackages`) but still blocks the Node.js event loop during render.
-- Improvement path: Move PDF generation to a pg-boss background job; return a signed S3 URL when done.
+- **Problem:** Dashboard SSR fires 10-15 parallel DB queries (confirmed in code comment); pool max is 25
+- **Files:** `src/lib/prisma.ts`, `src/data-access/dashboard.ts` (1,160 lines)
+- **Cause:** Dashboard aggregates data from 10+ tables (observations, compliance items, audit trails, etc.)
+- **Impact:** With 4+ concurrent users, pool exhaustion may cause query timeouts
+- **Improvement path:**
+  1. Measure actual query count via pg_stat_statements
+  2. Consider GraphQL data loader or query batching middleware
+  3. Add materialized view for dashboard metrics (daily refresh)
+  4. Implement query result caching (Redis or in-memory with TTL)
+  5. Monitor connection pool usage in production
+  6. Priority: MEDIUM (scales with user count; risk increases at 10+ concurrent users)
 
-**Large XLSX Export Queries:**
+### Concurrent Audit Template Query Loads 2,000 Records
 
-- Problem: `src/data-access/exports.ts` and `src/data-access/reports.ts` (29 result references) pull full datasets for XLSX generation with no pagination or streaming.
-- Files: `src/data-access/exports.ts`, `src/data-access/reports.ts`, `src/actions/reports/generate-xlsx.ts`
-- Cause: ExcelJS builds the workbook in memory; large datasets (1000+ rows) can exhaust heap.
-- Improvement path: Stream rows using Prisma cursor-based pagination into ExcelJS streaming writer.
+- **Problem:** `src/data-access/concurrent-audit.ts` has `take: 2000` without filtering for actual engagement
+- **Files:** `src/data-access/concurrent-audit.ts` (line ~147)
+- **Impact:** Memory spike when comparing to RBIA observations; full scan on every audit comparison
+- **Fix approach:**
+  1. Refactor to load per-engagement observations, not all observations
+  2. Add engagement-level WHERE clause before `take: 2000`
+  3. Implement lazy loading for comparison UI
+  4. Priority: MEDIUM-HIGH (direct performance impact)
 
-**`src/components/rbia/rbia-examination-tree.tsx` — 1,179 Lines:**
+### Large Generated Type Files Not Optimized
 
-- Problem: Single component renders the full examination tree with all interactions. Large trees (depth 0-5, potentially hundreds of nodes) re-render the entire tree on any state change.
-- Files: `src/components/rbia/rbia-examination-tree.tsx`
-- Cause: No virtualization; React re-renders the full node list on score updates.
-- Improvement path: Use `react-virtual` or `@tanstack/react-virtual` for tree virtualization; memoize leaf nodes.
+- **Problem:** Prisma-generated client files are massive: 26K lines for Tenant model alone
+- **Files:** `src/generated/prisma/` (all model files)
+- **Impact:** Slower TypeScript compilation; larger bundle size (though only server-side)
+- **Fix approach:** No action needed (Prisma generates these automatically); acceptable trade-off
 
 ## Fragile Areas
 
-**DB Triggers Applied Outside Prisma Migrations:**
+### RBIA Examination Tree Component (1,156 lines)
 
-- Files: `prisma/migrations/`, `prisma/*.sql`
-- Why fragile: Audit triggers and the `BranchRbiaScore` immutability trigger are applied via standalone SQL files, not tracked in Prisma migrations. They can be lost after `db:push` or a fresh deploy.
-- Safe modification: Always apply trigger SQL manually after any schema reset. Document in deploy runbook.
-- Test coverage: No automated test verifies trigger presence post-deploy.
+- **Files:** `src/components/rbia/rbia-examination-tree.tsx`
+- **Why Fragile:**
+  - Large monolithic component combining tree rendering, state management, and event handling
+  - Deep nesting of conditional logic for collapsed/expanded states
+  - Multiple responsibilities: scoring computation, UI rendering, form state
+  - Likely uses `as any` type casts for complex node structures
+- **Safe Modification:**
+  1. Extract node rendering logic to separate `ExaminationNodeRow` component
+  2. Move scoring logic to separate hook (`useExaminationScoring`)
+  3. Add unit tests for score computation before refactoring
+  4. Test coverage: Expand/collapse, score updates, drill-down navigation
+- **Test Coverage Gaps:** Unknown (no test file found)
 
-**`src/lib/engagement-state-machine.ts` — State Transitions:**
+### PDF Report Generation (1,366 lines)
 
-- Files: `src/lib/engagement-state-machine.ts`, `src/lib/state-machine.ts`
-- Why fragile: The 8-state engagement lifecycle (`PLANNED → TEAM_ASSIGNED → ... → COMPLETED`) relies on the state machine enforcing valid transitions. The `as any` cast in `engagement-state-machine.ts` bypasses type safety on transition payloads.
-- Safe modification: Always run the full E2E flow test after changing transition logic. Do not bypass `transitionEngagement()` with direct DB updates.
-- Test coverage: No dedicated unit tests for state machine transition guards.
+- **Files:** `src/components/pdf-report/rbia-report-document.tsx`
+- **Why Fragile:**
+  - Long component with heavy JSX/React PDF rendering
+  - Likely has hardcoded page breaks, fonts, widths
+  - Changes to observation data schema require manual PDF layout updates
+  - No e2e tests for PDF generation
+- **Safe Modification:**
+  1. Extract report sections into separate components (ReportHeader, FindingSection, etc.)
+  2. Define report layout constants (margins, font sizes, widths) at module level
+  3. Add visual regression tests (Percy or similar) for PDF output
+- **Test Coverage Gaps:** No PDF generation tests found
 
-**`src/jobs/` — pg-boss Job Registration via Instrumentation Hook:**
+### Audit Execution Engagement Form (601 lines)
 
-- Files: `src/instrumentation.ts`, `src/jobs/overdue-escalation.ts`, `src/jobs/weekly-digest.ts`, `src/jobs/rbia-overdue-escalation.ts`, `src/jobs/deadline-reminder.ts`
-- Why fragile: Jobs are registered in `src/instrumentation.ts` which runs once on server startup. If the instrumentation hook fails silently, all background jobs stop without error logging to users.
-- Safe modification: Wrap job registration in try/catch with explicit pino error logging. Add a health endpoint that checks pg-boss queue status.
-- Test coverage: No automated tests for job scheduling or execution.
+- **Files:** `src/app/(onboarding)/onboarding/_components/step-4-org-structure.tsx`
+- **Why Fragile:**
+  - Complex form state with multi-step validation
+  - Form may submit partial data if validation logic has gaps
+  - Org structure tree manipulation prone to race conditions
+- **Safe Modification:**
+  1. Add form validation tests before making changes
+  2. Test edge cases: empty org, circular references (if possible)
+  3. Verify state resets properly between steps
+- **Test Coverage Gaps:** No unit tests; likely E2E tested only
 
-**Onboarding Multi-Step Wizard State:**
+### Investment Compliance Logic (111+ lines in library)
 
-- Files: `src/app/(onboarding)/onboarding/_components/onboarding-wizard.tsx`, `src/stores/onboarding-store.ts`
-- Why fragile: Wizard state persists in Zustand (localStorage-backed). If schema evolves (new required step), persisted state from an old onboarding attempt can cause the wizard to skip required steps or crash.
-- Safe modification: Add a schema version key to the store; clear and reset if version mismatches.
-- Test coverage: No E2E test covers the full 5-step onboarding flow end-to-end.
+- **Files:** `src/lib/investment-compliance.ts`
+- **Why Fragile:**
+  - TODO comment indicates incomplete integration with deposit data source
+  - Fallback to HousekeepingMetric may use stale data
+  - Compliance threshold calculations may differ from RBI circular spec
+- **Safe Modification:**
+  1. Add unit tests for compliance threshold calculations
+  2. Test with HousekeepingMetric fallback vs. actual deposit source
+  3. Verify against RBI Investment Regulations circular
+- **Test Coverage Gaps:** No tests found; compliance calculation not verified
 
-**`eslint-disable-line react-hooks/exhaustive-deps` in Onboarding:**
+### Escalation Engine (Multiple files, 335+ lines)
 
-- Files: `src/app/(onboarding)/onboarding/_components/onboarding-wizard.tsx:85`, `src/app/(onboarding)/onboarding/_components/step-3-rbi-directions.tsx:131`, `src/app/(onboarding)/onboarding/_components/step-4-org-structure.tsx:153`, `src/app/(onboarding)/onboarding/_components/step-5-user-invites.tsx:131`
-- Why fragile: Suppressed exhaustive-deps warnings mask potential stale closure bugs. Effects that depend on functions or values not in the deps array may not re-run when those values change.
-- Safe modification: Audit each suppressed effect and add proper deps or use `useCallback` stabilization.
+- **Files:** `src/actions/compliance/run-escalation-job.ts`, `src/lib/escalation-engine.ts`
+- **Why Fragile:**
+  - Hardcoded escalation levels (L0: 0-15 days, L1: 15+ days)
+  - Email template generation tightly coupled to escalation logic
+  - Job execution may fire duplicate escalations if pg-boss job retries
+- **Safe Modification:**
+  1. Add idempotency key to escalation records (tenantId + itemId + escalationLevel)
+  2. Test retry behavior with duplicate job execution
+  3. Add unit tests for escalation level calculation
+- **Test Coverage Gaps:** No escalation logic tests found
 
 ## Scaling Limits
 
-**PostgreSQL Connection Pool — Max 25:**
+### Pagination Not Enforced in Most DAL Functions
 
-- Current capacity: `pg.Pool` configured with `max: 25` connections.
-- Limit: Under high concurrency (many simultaneous dashboard loads, exports, or job runs), the pool exhausts and requests queue or time out.
-- Scaling path: Introduce PgBouncer connection pooler in front of PostgreSQL; increase pool size with caution (VPS has 16GB RAM).
+- **Current Capacity:** Reliably handles <100 items per result set; 500-2000 for analytical queries
+- **Limit:** Without pagination, pages with 200+ observations/findings will slow down; browsers with 300+ records in memory risk OOM
+- **Scaling Path:**
+  1. Implement pagination at DAL layer (add `skip/take` to all `findMany` calls)
+  2. Update components to request data in 20-50 item chunks
+  3. Implement cursor-based pagination for large result sets
+  4. Cache aggregate results (e.g., "total finding count") separately from paginated data
+  5. Target: Support 500+ findings per engagement without memory issues
 
-**Single-Process pg-boss Job Queue:**
+### Database Pool at Practical Limit
 
-- Current capacity: pg-boss runs in-process within the Next.js server. All background jobs compete with HTTP request handling for CPU and memory.
-- Limit: Under heavy audit periods (many concurrent XLSX/PDF exports + escalation jobs), the Node.js event loop can stall HTTP responses.
-- Scaling path: Extract pg-boss workers to a separate worker process/container with its own `instrumentation.ts` entry point.
+- **Current Capacity:** 25 connection max; serves 4-5 concurrent dashboard users comfortably
+- **Limit:** 10+ concurrent users may see query timeouts; horizontal scaling requires read replicas
+- **Scaling Path:**
+  1. Monitor actual pool exhaustion: `SELECT count(*) FROM pg_stat_activity WHERE datname='aegis'`
+  2. Increase pool max to 50 if under-utilized
+  3. Implement connection pooling middleware (pgBouncer) for 100+ connections
+  4. Consider read replicas for reporting queries (analytics, exports)
+  5. Target: Support 20+ concurrent users
 
-**In-Memory Rate Limiting (Login):**
+### Dashboard Metrics Recomputed on Every Page Load
 
-- Current capacity: Per-process counters reset on restart.
-- Limit: Multi-container deployments (Docker Swarm / multiple PM2 workers) each maintain independent counters.
-- Scaling path: Replace with Redis-backed rate limiter or Nginx `limit_req` module.
+- **Current Capacity:** Instant for <100 observations; 2-3 second load time with 500+ observations
+- **Limit:** Dashboard becomes sluggish at 1000+ observations per tenant
+- **Scaling Path:**
+  1. Implement database view materialization (refresh hourly)
+  2. Cache KPI values with 1-hour TTL
+  3. Move trend computation to nightly batch job
+  4. Provide "Refresh" button for on-demand updates
+  5. Target: Dashboard loads in <1 second regardless of audit volume
+
+### Audit Report Generation (Excel/PDF)
+
+- **Current Capacity:** Reliable for <500 findings; 5-10MB PDF
+- **Limit:** Reports with 1000+ findings may timeout (15-minute server timeout) or exceed file size limits
+- **Scaling Path:**
+  1. Implement streaming PDF generation (instead of building full document in memory)
+  2. For large reports, generate Excel only (XLSX is smaller than PDF)
+  3. Add report generation job queue (pg-boss) with progress tracking
+  4. Implement background job report delivery (email + download link)
+  5. Target: Support 2000+ findings per report without timeout
 
 ## Dependencies at Risk
 
-**`@prisma/adapter-pg` + Prisma 7 (Early Adopter):**
+### Prisma Adapter Strategy (PostgreSQL Adapter)
 
-- Risk: Prisma 7 with the `pg` adapter (instead of the default `pg-native` or connection URL) is a relatively new pattern. Breaking changes in minor Prisma releases could break the adapter integration.
-- Impact: All database queries would fail.
-- Migration plan: Pin Prisma version in `package.json`; monitor Prisma changelog before upgrading.
+- **Risk:** Using `@prisma/adapter-pg` instead of native Prisma client; potential compatibility issues with future Prisma versions
+- **Files:** `src/lib/prisma.ts`, `package.json` (adapter-pg dependency)
+- **Impact:** Custom connection pooling required; need to verify migrations work with adapter version
+- **Migration Plan:**
+  1. Monitor Prisma release notes for adapter stability
+  2. If adapter deprecated, migrate to native Prisma client + PgBouncer
+  3. Test migration on staging before production
+  4. Priority: LOW (adapter is actively maintained; no imminent risk)
 
-**`@react-pdf/renderer` — Externalized, No Streaming:**
+### React Query Caching Strategy
 
-- Risk: The library has known memory issues with large documents. It's pinned via `serverExternalPackages` but any version bump can change rendering behavior.
-- Impact: PDF generation for large RBIA reports could fail with OOM errors.
-- Migration plan: Consider `pdf-lib` or server-side Puppeteer rendering as fallback for large reports.
+- **Risk:** Client-side cache invalidation may get out of sync with server mutations
+- **Files:** `src/hooks/`, component query usage
+- **Impact:** Users may see stale data after creating/editing findings
+- **Recommendations:**
+  1. Use mutation callbacks to invalidate query keys on update
+  2. Implement server push (WebSocket) for real-time cache invalidation
+  3. Add cache busting headers (Pragma: no-cache) for critical pages
+  4. Priority: MEDIUM (low probability; high impact if occurs)
 
-**`better-auth` — Auth Layer:**
+### Date Handling Library Dependency
 
-- Risk: `better-auth` is a relatively young library (not established like NextAuth/Auth.js). API surface is still evolving; minor version bumps have introduced breaking changes historically.
-- Impact: Session invalidation, login failures, or RBAC breakage.
-- Migration plan: Pin version; test auth flows after any upgrade. Keep migration path to Auth.js documented.
+- **Risk:** formatDate() in `src/lib/utils.ts` uses Indian locale (en-IN); may break for multi-country deployments
+- **Files:** `src/lib/utils.ts`, all components using formatDate()
+- **Impact:** Date display won't match user's locale if supporting non-Indian users
+- **Migration Plan:**
+  1. If multi-country support planned: Add locale to session/tenant context
+  2. Update formatDate() to accept locale parameter
+  3. Pass locale from page context to components
+  4. Priority: LOW (v1 is India-only)
 
 ## Missing Critical Features
 
-**No PostgreSQL RLS:**
+### Evidence Upload with S3 Presigned URLs
 
-- Problem: Tenant isolation relies solely on application-level WHERE clauses. A single missed `tenantId` filter in any of the 39 DAL files exposes cross-tenant data.
-- Blocks: SOC2/ISO27001 compliance; enterprise sales to security-conscious banks.
+- **Problem:** Phase 26 feature not yet implemented; evidence upload may be broken or falling back to synchronous upload
+- **Files:** `src/actions/audit-execution/upload-examination-evidence.ts` (295 lines, Phase 25 state)
+- **Blocks:** Auditees cannot reliably upload large evidence files (>5MB)
+- **Fix timeline:** Phase 26 (estimated 1-2 weeks)
 
-**No Automated DB View / Trigger Deployment:**
+### Manual Module Selection UI
 
-- Problem: Dashboard views and audit triggers are applied manually via SQL files after every fresh deploy. There is no migration tracking for these objects.
-- Blocks: Reliable CI/CD; automated staging environment provisioning.
+- **Problem:** Phase 25 feature for manually selecting RBIA modules not fully wired; may default to all modules
+- **Files:** `src/components/rbia/add-module-dialog.tsx` (260 lines)
+- **Blocks:** CAEs cannot customize audit scope by RBIA module
+- **Fix timeline:** Phase 25 (estimated 1 week)
 
-**No Background Job Health Endpoint:**
+### Concurrent Audit Deep Dive Analysis
 
-- Problem: There is no `/api/health/jobs` or similar endpoint to verify that pg-boss workers are registered and running.
-- Blocks: Operational monitoring; alerts when escalation or digest jobs silently stop.
+- **Problem:** Concurrent audit comparison logic exists but full drill-down analysis not implemented
+- **Files:** `src/data-access/concurrent-audit.ts`, related components
+- **Blocks:** Auditors cannot perform detailed concurrent audit analysis
+- **Fix timeline:** Future phase (dependent on Phase 24 completion)
 
 ## Test Coverage Gaps
 
-**State Machine Transitions:**
+### DAL Functions Not Unit Tested
 
-- What's not tested: Valid and invalid `EngagementStatus` transitions in `src/lib/engagement-state-machine.ts`.
-- Files: `src/lib/engagement-state-machine.ts`, `src/lib/state-machine.ts`
-- Risk: Regression silently allows invalid status transitions (e.g., `PLANNED → COMPLETED` skipping required steps).
-- Priority: High
+- **What's Not Tested:** Query logic in 47 DAL files (data-access/); only tenant isolation verified statically
+- **Files:** `src/data-access/*.ts` (except tenant-isolation.test.ts)
+- **Risk:** Schema changes may break queries without detection; null/error cases untested
+- **Priority:** HIGH — Add unit tests for critical DAL functions:
+  - `getRbiaAnalyticsByPeriod()` (analytics reliability)
+  - `getEngagementFindings()` (findings retrieval)
+  - `computeEscalationRequired()` (escalation accuracy)
+  - Recommend: Vitest with in-memory SQLite or test DB
 
-**Background Jobs:**
+### Server Actions Not Systematically Tested
 
-- What's not tested: pg-boss job handlers in `src/jobs/overdue-escalation.ts`, `src/jobs/weekly-digest.ts`, `src/jobs/rbia-overdue-escalation.ts`, `src/jobs/deadline-reminder.ts`.
-- Files: `src/jobs/`
-- Risk: Escalation logic bugs, notification failures, or job crashes go undetected until production users report missing alerts.
-- Priority: High
+- **What's Not Tested:** 91 server action files; mostly E2E tested only
+- **Files:** `src/actions/` (all domains)
+- **Risk:** Logic errors in critical workflows (freeze, submit, escalate) caught late in E2E
+- **Priority:** MEDIUM — Add unit tests for:
+  - `freezeRbiaScore()` (score computation)
+  - `submitBmResponse()` (response validation)
+  - `runEscalationJob()` (escalation logic)
 
-**RBIA Scoring / Roll-up Engine:**
+### E2E Tests Limited Scope
 
-- What's not tested: The weighted score roll-up, critical-item cap, and rating band assignment in `src/data-access/rbia-scoring.ts` and `src/services/`.
-- Files: `src/data-access/rbia-scoring.ts`, `src/services/`
-- Risk: Wrong RBIA scores silently produced; regulatory compliance scores reported incorrectly to RBI.
-- Priority: High
+- **What's Not Tested:** Full audit lifecycle; edge cases like concurrent user conflicts; offline behavior
+- **Files:** `tests/e2e/` (3 test files only)
+- **Risk:** Regressions in workflow critical paths go undetected until production
+- **Priority:** MEDIUM — Expand E2E coverage:
+  - Audit creation → execution → findings → reporting workflow
+  - Permission denial scenarios
+  - Concurrent session behavior
 
-**Server Actions Authorization:**
+### Component Rendering Tests Missing
 
-- What's not tested: Permission checks in the 81 server actions under `src/actions/`. Only tenant isolation is spot-checked in `src/data-access/__tests__/tenant-isolation.test.ts`.
-- Files: `src/actions/` (81 files)
-- Risk: A role without a required permission could invoke a server action if the permission check is miscoded.
-- Priority: Medium
-
-**Onboarding Wizard Full Flow:**
-
-- What's not tested: The 5-step onboarding wizard (`step-1` through `step-5`) has no E2E test covering the complete flow.
-- Files: `src/app/(onboarding)/onboarding/_components/`
-- Risk: A step regression blocks all new tenant registration.
-- Priority: Medium
+- **What's Not Tested:** 239 component files; no visual regression tests
+- **Risk:** CSS/layout changes break UX without detection; accessibility issues undetected
+- **Priority:** LOW-MEDIUM — Consider adding:
+  - Playwright component tests for critical UI (forms, tables)
+  - Percy or similar for visual regression
+  - axe-core integration tests for accessibility
 
 ---
 
-_Concerns audit: 2026-02-25_
+_Concerns audit: 2026-03-02_

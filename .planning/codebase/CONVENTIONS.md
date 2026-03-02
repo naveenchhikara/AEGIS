@@ -1,198 +1,393 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-02-25
+**Analysis Date:** 2026-03-02
 
 ## Naming Patterns
 
 **Files:**
 
-- React components: PascalCase (`ObservationCard.tsx`, `AuditPlanTable.tsx`)
-- Server actions: kebab-case, domain-prefixed (`src/actions/observations.ts`, `src/actions/audit-engagement.ts`)
-- DAL files: kebab-case, domain-prefixed (`src/data-access/observations.ts`, `src/data-access/session.ts`)
-- Hooks: `use` prefix, camelCase (`src/hooks/usePermissions.ts`)
-- Utility libs: kebab-case (`src/lib/utils.ts`, `src/lib/icons.ts`, `src/lib/permissions.ts`)
-- Config/env: camelCase for variables, SCREAMING_SNAKE_CASE for env var names
+- **Data Access (DAL):** Snake case, domain-scoped — `src/data-access/audit-execution.ts`, `src/data-access/observations.ts`, `src/data-access/rbia-scoring.ts`
+- **Server Actions:** Snake case, domain-scoped — `src/actions/users.ts`, `src/actions/compliance-management.ts`, `src/actions/user-invitations.ts`
+- **Libraries/Utilities:** Snake case, descriptive — `src/lib/rbia-scoring-engine.ts`, `src/lib/escalation-engine.ts`, `src/lib/auth-lockout-plugin.ts`, `src/lib/permissions.ts`
+- **Services (Business Logic):** Snake case, domain-scoped — `src/services/risk-rating/compute.ts`
+- **Components:** PascalCase, domain-scoped — `src/components/auth/login-form.tsx`, `src/components/dashboard/kpi-card.tsx`
+- **Types:** PascalCase — `src/types/audit.ts` (re-exported from Prisma schema where possible)
+- **Test Files:** Use `.test.ts` suffix in `__tests__` directory — `src/lib/__tests__/rbia-scoring-engine.test.ts`, `src/services/risk-rating/__tests__/compute.test.ts`
 
 **Functions:**
 
-- Server actions: verb-noun camelCase (`createObservation`, `updateAuditEngagement`, `deleteUser`)
-- DAL functions: `get`/`list`/`create`/`update`/`delete` prefix + domain noun (`getObservationById`, `listAuditEngagements`)
-- React components: PascalCase function declarations
-- Hooks: `use` prefix + PascalCase noun (`useAuditStore`, `usePermissions`)
-- Event handlers: `handle` prefix (`handleSubmit`, `handleStatusChange`)
+- **camelCase for all function names** — `computeNodeScore()`, `getEngagements()`, `updateUserRoles()`, `hasPermission()`, `getRatingBand()`
+- **Async functions use async/await pattern** — `async function getEngagements(session: Session) { ... }`
+- **Helper functions prefixed with get/set/compute/is/has** — `getCurrentTenantId()`, `getSessionRoles()`, `hasPermission()`, `isLeaf()`
+- **Event handlers prefixed with handle** — `handleLogin()`, `handleSubmit()`
 
 **Variables:**
 
-- camelCase for all local variables and function parameters
-- Boolean variables: `is`/`has`/`can` prefix (`isLoading`, `hasPermission`, `canEdit`)
-- Destructured props: camelCase matching the prop name
+- **camelCase for all variables** — `const tenantId = session.user.tenantId`, `let isLoading = false`
+- **Constants in UPPER_SNAKE_CASE** — `const MAX_ATTEMPTS = 5`, `const SCORE_VALUES = { ... }`, `const CRITICAL_ITEM_CAP = 0.5`
+- **Type variables (generics) in PascalCase** — `function call<T extends Record>(...)`, `type Maybe<T> = T | null`
+- **Destructured session prefixed with session** — `const session = await getRequiredSession(); const { tenantId } = session.user`
+- **Boolean variables/props prefixed with is/has/can** — `isLoading`, `hasPermission()`, `canApproveObservation()`
 
 **Types:**
 
-- Interfaces: PascalCase, no `I` prefix (`ObservationFormData`, `AuditEngagementWithRelations`)
-- Type aliases: PascalCase (`SessionUser`, `TenantId`)
-- Zod schemas: PascalCase + `Schema` suffix (`CreateObservationSchema`, `UpdateUserSchema`)
-- Prisma-inferred types: imported from `@/generated/prisma` and used directly
-- Enums: SCREAMING_SNAKE_CASE values, PascalCase name (matches Prisma: `ObservationStatus.OPEN`)
+- **Interfaces in PascalCase** — `interface AuthSession`, `interface Permission`
+- **Union types prefixed with capitalized domain** — `type Role`, `type ObservationStatus`
+- **Enums use PascalCase values** — Prisma enums: `Role.AUDITOR`, `ObservationStatus.DRAFT`
+- **Type imports use `type` keyword** — `import type { AuthSession } from "@/lib/auth"`
 
 ## Code Style
 
 **Formatting:**
 
-- Tool: Prettier (`.prettierrc`)
-- Double quotes for strings (`"singleQuote": false`)
-- Semicolons required (`"semi": true`)
-- Tailwind class sorting via `prettier-plugin-tailwindcss`
+- **Prettier configured** with settings: `semi: true`, `singleQuote: false`, `plugins: ["prettier-plugin-tailwindcss"]`
+- **Line length:** No hard limit (Prettier default ~80 wraps, but context-aware)
+- **Trailing semicolons:** Required (Prettier enforces)
+- **Quotes:** Double quotes for strings (`"string"`, not `'string'`)
+- **Tailwind CSS:** Applied via Prettier plugin — automatically ordered, separated after other Tailwind utilities
+- **Indentation:** 2 spaces
 
 **Linting:**
 
-- Tool: ESLint with `eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`
-- Config: `eslint.config.mjs`
-- `@typescript-eslint/no-explicit-any` is a **warn** (not error) — `any` used extensively with Prisma types, use `zodResolver(Schema as any)` for react-hook-form
-- Unused vars with `_` prefix are ignored: `_unused`, `_req`
-- `react-hooks/rules-of-hooks` is the only **error**-level rule; most others are warnings
-- Ignored dirs: `.claude/`, `infra/`, `.next/`, `playwright-report/`
+- **ESLint:** Configuration in `eslint.config.mjs` using Next.js config (core-web-vitals + typescript)
+- **Key rules:**
+  - `@typescript-eslint/no-explicit-any`: **warn** (codebase uses `any` extensively with Prisma types — fix incrementally)
+  - `@typescript-eslint/no-unused-vars`: **warn** with pattern `argsIgnorePattern: "^_"` (prefix unused params with `_`)
+  - `@typescript-eslint/no-empty-object-type`: **warn**
+  - `@typescript-eslint/no-require-imports`: **warn**
+  - `react/no-unescaped-entities`: **warn**
+  - `prefer-const`: **warn**
+  - `@next/next/no-html-link-for-pages`: **warn**
+  - `react-hooks/*`: Error for rules-of-hooks, warn for purity/set-state-in-effect/refs (React 19 compiler gradual adoption)
+- **Ignored directories:** `.claude/`, `infra/`, `.next/`, `playwright-report/`
+
+**TypeScript:**
+
+- **Strict mode:** Enabled (`"strict": true` in tsconfig.json)
+- **Target:** ES2017
+- **Module resolution:** bundler
+- **JSX:** react-jsx (React 19)
+- **Path aliases:** `@/*` maps to `./src/*` — **always use for imports** (never `../../../`)
+- **Type narrowing:** Use type guards and exhaustive checks
+  ```typescript
+  if (error instanceof Error) {
+    /* ... */
+  }
+  if (result.success) {
+    const data = result.data; /* ... */
+  }
+  ```
 
 ## Import Organization
 
-**Order (by convention):**
+**Order:**
 
-1. React and Next.js framework imports (`"react"`, `"next/*"`)
-2. Third-party packages (`"zod"`, `"@tanstack/react-query"`)
-3. Internal path aliases (`"@/lib/..."`, `"@/components/..."`, `"@/actions/..."`)
-4. Relative imports (`"./MyComponent"`, `"../utils"`)
+1. **External libraries** — React, Next.js, third-party packages
+
+   ```typescript
+   import { useState } from "react";
+   import { useRouter } from "next/navigation";
+   import { useTranslations } from "next-intl";
+   import { betterAuth } from "better-auth";
+   ```
+
+2. **Server-only markers** (when required)
+
+   ```typescript
+   import "server-only";
+   ```
+
+3. **Aliased imports from `@/`** — organized by layer
+
+   ```typescript
+   import { auth } from "@/lib/auth";
+   import { getRequiredSession } from "@/data-access/session";
+   import { hasPermission } from "@/lib/permissions";
+   import { Button } from "@/components/ui/button";
+   ```
+
+4. **Type imports** — at end with `type` keyword
+   ```typescript
+   import type { AuthSession } from "@/lib/auth";
+   import type { Role } from "@/generated/prisma/enums";
+   ```
 
 **Path Aliases:**
 
-- `@/*` maps to `./src/*` (configured in `tsconfig.json` and `vitest.config.ts`)
-- Always use `@/` for internal imports — no `../../` chains
-
-**Critical import rule:**
-
-- Icons: always import from `@/lib/icons` (barrel export), NEVER directly from `lucide-react`
+- **Always use `@/`** for imports — no relative paths (`../../../`, `./..`)
+- **Layer imports:** Prefer explicit paths (`@/lib/auth`, `@/data-access/session`) over barrel imports for clarity
+- **Icons:** Always import from `@/lib/icons` (barrel export), not directly from `lucide-react`
+  ```typescript
+  import { Lock, Mail, Shield } from "@/lib/icons";
+  ```
 
 ## Error Handling
 
-**Server Actions pattern:**
+**Patterns:**
 
-```typescript
-// src/actions/observations.ts — standard pattern
-export async function createObservation(data: CreateObservationInput) {
-  const session = await getRequiredSession(); // throws redirect on missing auth
-  if (!hasPermission(session.user, "observations:create")) {
-    throw new Error("Unauthorized");
+- **Server actions use try-catch with error type narrowing:**
+
+  ```typescript
+  try {
+    const result = updateRolesSchema.safeParse(input);
+    if (!result.success) throw new Error(result.error.issues[0].message);
+    await updateUserRolesDAL(userId, roles, justification, session);
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Failed to update roles. Please try again.");
   }
-  // ... business logic
-}
-```
+  ```
 
-**DAL functions:** Pure DB queries, no auth checks. Auth is enforced at the server action layer.
+- **Zod validation with safeParse, then check success:**
 
-**Form errors:** react-hook-form captures field errors via Zod resolver; server errors returned as thrown exceptions and caught in `onSubmit` handlers with `toast.error(...)`.
+  ```typescript
+  const result = updateRolesSchema.safeParse(input);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
+  }
+  const { userId, roles } = result.data;
+  ```
 
-**API routes:** Return JSON `{ error: string }` with appropriate HTTP status codes on failure.
+- **API responses use result/error pattern (Better Auth):**
 
-**No global error boundary pattern** — errors surface per-page via Next.js error boundaries (`error.tsx` files).
+  ```typescript
+  const response = await signIn.email({ email, password });
+  if (response.error) {
+    const errorCode = response.error.code || response.error.message;
+    switch (errorCode) {
+      case "INVALID_EMAIL_OR_PASSWORD":
+        setError(t("invalidCredentials"));
+        break;
+      case "TOO_MANY_ATTEMPTS":
+        setError(t("rateLimited"));
+        break;
+      case "ACCOUNT_LOCKED":
+        setError(t("accountLocked"));
+        break;
+      default:
+        setError(t("loginFailed"));
+    }
+  } else if (response.data) {
+    /* success */
+  }
+  ```
+
+- **Permission checks before DB operations:**
+
+  ```typescript
+  const session = await getRequiredSession();
+  if (!hasPermission(session.user.roles, "admin:manage_roles")) {
+    throw new Error("You do not have permission to manage roles.");
+  }
+  ```
+
+- **Tenant isolation always enforced in DAL:**
+
+  ```typescript
+  export async function getEngagements(session: Session) {
+    const tenantId = session.user.tenantId;
+    const db = prismaForTenant(tenantId);
+    return db.auditEngagement.findMany({
+      where: { tenantId }, // CRITICAL: always filter by tenantId
+      // ...
+    });
+  }
+  ```
+
+- **Error messages are user-facing, use translations:**
+  ```typescript
+  const t = useTranslations("Login");
+  setError(t("invalidCredentials")); // Not "Invalid email or password"
+  ```
 
 ## Logging
 
-**Framework:** pino + pino-pretty
+**Framework:** pino with pino-pretty for development
 
 **Patterns:**
 
-- Server-side structured logging via pino (`src/lib/logger.ts` or similar)
-- Console.log acceptable in development; pino used in production code paths
-- Background jobs (pg-boss) log via pino
+```typescript
+import { logger, createRequestLogger } from "@/lib/logger";
+
+// Basic logging
+logger.info({ userId: "123" }, "user logged in");
+
+// Request-scoped logging with context
+const reqLogger = createRequestLogger({
+  userId: session.user.id,
+  tenantId: session.user.tenantId,
+  requestId: "req-123",
+  method: "POST",
+  path: "/api/findings",
+});
+reqLogger.info({ findingId }, "finding created");
+```
+
+**Features:**
+
+- Production: JSON logs to stdout (CloudWatch-compatible)
+- Development: Colorized, human-readable via pino-pretty
+- Automatic redaction of sensitive fields: password, token, authorization, cookie
+- Base metadata: `{ service: "aegis" }`
+- ISO 8601 timestamps
+- Severity level formatting for CloudWatch Logs Insights
+
+**When to log:**
+
+- Auth events: login, logout, session create/destroy
+- Permission checks: denied access attempts
+- Data mutations: create, update, delete operations (with IDs, not sensitive data)
+- Errors: exceptions with context
+- Never log passwords, API keys, or sensitive user data
 
 ## Comments
 
 **When to Comment:**
 
-- Complex business logic (RBI calculations, RBIA scoring formulas)
-- Non-obvious workarounds (e.g., `suppressHydrationWarning` on `<html>` — Radix UI issue)
-- TODO/FIXME for known gaps (searched via `grep -rn "TODO\|FIXME"`)
+- Document **why**, not what (code shows what)
+- Public/exported functions: JSDoc comments required
+- Non-obvious business logic: explain intent
+- Workarounds/temporary fixes: mark with `// FIXME:` or `// TODO:`
+- Complex algorithms: step-by-step explanation
 
-**TSDoc/JSDoc:**
+**JSDoc/TSDoc:**
 
-- Not used systematically; inline comments preferred for complex logic
-- Zod schemas are self-documenting via field names and `.describe()` calls
+- Used consistently on server actions and DAL functions
+- Format:
+  ```typescript
+  /**
+   * Update a user's roles.
+   *
+   * This action:
+   * - Validates the current user has admin:manage_roles permission
+   * - Prevents self-role-change (security)
+   * - Requires justification text for audit trail
+   * - Updates the user's roles in the database
+   *
+   * @param input - User ID, new roles array, and justification
+   * @throws Error if permission check fails or validation errors
+   */
+  export async function updateUserRoles(input: UpdateRolesInput) { ... }
+  ```
+
+**Comment markers:**
+
+- `// CRITICAL:` — Security-critical comment (tenant isolation, auth checks)
+- `// FIXME:` — Known issue that needs fixing
+- `// TODO:` — Future enhancement
+- `// NOTE:` — Important note for future readers
+- `// HACK:` — Workaround (avoid when possible)
+- `// XXX:` — Something questionable (review needed)
+
+**Visual separators for complex sections:**
+
+```typescript
+// ─── Test Fixtures ───────────────────────────────────────────────────────────
+// ─── SCORE_VALUES constant ───────────────────────────────────────────────────
+```
 
 ## Function Design
 
-**Size:** Server actions and DAL functions kept focused (single responsibility)
+**Size:** Keep under 50 lines (split if longer)
 
 **Parameters:**
 
-- Server actions accept typed input objects matching Zod schema inferred types
-- DAL functions accept `tenantId: string` as first or explicit parameter for isolation
-- Components receive typed props interfaces defined above the component
+- **Session always first parameter in DAL functions:** `function getEngagements(session: Session, ...otherParams)`
+- **Input objects for multiple parameters:** Avoid >3 positional params
+
+  ```typescript
+  // Good
+  export async function updateUserRoles(input: UpdateRolesInput) { ... }
+
+  // Avoid
+  export async function updateUserRoles(userId, roles, justification, session) { ... }
+  ```
 
 **Return Values:**
 
-- DAL functions return Prisma model types or `null` (not throwing on not-found)
-- Server actions return data directly or throw
-- Components return JSX
+- **Include type annotations** — always explicit
+  ```typescript
+  async function getEngagements(session: Session): Promise<AuditEngagement[]> { ... }
+  ```
+- **Use `Promise<T>` for async functions** (not implicit)
+- **Void return only when side-effect-only** — prefer returning result object
 
 ## Module Design
 
 **Exports:**
 
-- Server actions: named exports per action function
-- Components: default export for the component, named exports for sub-components/types
-- DAL: named exports per function
-- `src/lib/icons.ts`: barrel export re-exporting all used lucide-react icons — always use this
+- **Default exports: Only for page/layout components** (Next.js convention)
+- **Named exports for all utilities, hooks, components** — enables tree-shaking
+  ```typescript
+  export function cn(...inputs: ClassValue[]) { ... }
+  export { Button };
+  export type { ButtonProps };
+  ```
 
 **Barrel Files:**
 
-- `src/lib/icons.ts` — icon barrel (mandatory)
-- `src/generated/prisma/` — Prisma client barrel (auto-generated)
-- Domain-level barrel files not used systematically
+- **Use only for UI components** (`src/components/ui/index.ts`)
+- **Avoid for business logic** — prefer explicit imports for clarity
+- **`src/lib/icons.ts` is a barrel export** — all lucide icons imported here and re-exported
 
-## Component Patterns
+**Organization:**
 
-**UI Library:** shadcn/ui "new-york" style variant (`components.json`)
+- **Co-locate related code:** DAL functions grouped by domain, tests in `__tests__` subdirectory
+- **Single responsibility:** Each file has one primary export (or related group in case of utils)
+- **Directories:** Organized by feature/domain, not by file type
+  ```
+  src/
+  ├── actions/         # Server actions by domain
+  ├── data-access/     # DAL queries by domain
+  ├── components/      # Components by domain + ui/
+  ├── lib/             # Shared utilities and engines
+  └── services/        # Business logic engines
+  ```
 
-**Forms:**
+## Validation
+
+**Library:** Zod v4
+
+**Pattern:**
 
 ```typescript
-// Standard form pattern
-const form = useForm<z.infer<typeof MySchema>>({
-  resolver: zodResolver(MySchema as any), // `as any` required for Zod v4 + react-hook-form
-  defaultValues: { ... },
+import { z } from "zod";
+
+export const updateRolesSchema = z.object({
+  userId: z.string().uuid("Invalid user ID"),
+  roles: z.array(z.enum(getAssignableRoles() as [Role, ...Role[]])),
+  justification: z
+    .string()
+    .min(10, "Justification must be at least 10 characters"),
+});
+
+export type UpdateRolesInput = z.infer<typeof updateRolesSchema>;
+```
+
+**Usage in forms:**
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const form = useForm({
+  resolver: zodResolver(updateRolesSchema),
+  defaultValues: { userId: "", roles: [], justification: "" },
 });
 ```
 
-**Server Components vs Client Components:**
-
-- Pages are server components by default (data fetching at top level)
-- Interactive components: `"use client"` directive at top of file
-- Data flows down: server component fetches → passes to client component as props
-
-**Tenant Isolation (critical):**
+**Usage in server actions:**
 
 ```typescript
-// Always get tenantId from session — NEVER from URL/body
-const session = await getRequiredSession();
-const data = await listObservations(session.user.tenantId);
+const result = updateRolesSchema.safeParse(input);
+if (!result.success) {
+  throw new Error(result.error.issues[0].message);
+}
+const { userId, roles, justification } = result.data;
 ```
-
-**State Management:**
-
-- Server state: React Query (`@tanstack/react-query`) for client-side data fetching
-- UI state: Zustand stores in `src/stores/`
-- Form state: react-hook-form
-
-**Date Formatting:**
-
-- Use `formatDate()` from `src/lib/utils.ts` — formats in Indian locale (en-IN)
-- Never use raw ISO strings or `toLocaleDateString()` directly
-
-**Tailwind CSS v4:**
-
-- Use `w-[var(--sidebar-width)]` NOT `w-[--sidebar-width]` (v4 change)
-- `@theme inline` block required to register CSS variable colors
-- `@custom-variant dark (&:is(.dark *));` for dark mode
 
 ---
 
-_Convention analysis: 2026-02-25_
+_Convention analysis: 2026-03-02_

@@ -721,12 +721,8 @@ async function main() {
     },
   });
 
-  // Update branch RAM score
-  await prisma.branch.update({
-    where: { id: kothrudId },
-    data: { ramScore: 3.8, auditFrequency: 12 },
-    select: { id: true },
-  });
+  // Update branch RAM score (use $executeRaw to avoid adapter-pg column casing bug)
+  await prisma.$executeRaw`UPDATE "Branch" SET "ramScore" = 3.8, "auditFrequency" = 12, "updatedAt" = NOW() WHERE "id" = ${kothrudId}::uuid`;
 
   console.log("  ✓ RAM assessment created (composite 3.80 → HIGH)\n");
 
@@ -1210,12 +1206,8 @@ async function main() {
     },
   });
 
-  // Update branch
-  await prisma.branch.update({
-    where: { id: kothrudId },
-    data: { lastAuditDate: d("2025-12-22"), lastAuditRating: "GOOD" },
-    select: { id: true },
-  });
+  // Update branch (use $executeRaw to avoid adapter-pg column casing bug)
+  await prisma.$executeRaw`UPDATE "Branch" SET "lastAuditDate" = '2025-12-22'::timestamp, "lastAuditRating" = 'GOOD', "updatedAt" = NOW() WHERE "id" = ${kothrudId}::uuid`;
 
   console.log("  ✓ Score frozen (0.78 → GOOD), BM batch created\n");
 
@@ -1834,12 +1826,8 @@ async function main() {
       .join(", ")})`,
   );
 
-  // Update observation statuses to reflect compliance stage
-  await prisma.observation.update({
-    where: { id: ID.obs[5] },
-    data: { status: "CLOSED", statusUpdatedAt: d("2026-02-28T10:00:00Z") },
-    select: { id: true },
-  });
+  // Update observation statuses to reflect compliance stage (use $executeRaw to avoid adapter-pg column casing bug)
+  await prisma.$executeRaw`UPDATE "Observation" SET "status" = 'CLOSED', "statusUpdatedAt" = '2026-02-28T10:00:00Z'::timestamp, "updatedAt" = NOW() WHERE "id" = ${ID.obs[5]}::uuid`;
 
   console.log("  Phase 6 complete.\n");
 

@@ -11,14 +11,11 @@
  */
 
 import { PrismaClient } from "../src/generated/prisma/client.js";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { createHash } from "crypto";
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────────── */
 
-const connectionString = process.env.DATABASE_URL!;
-const adapter = new PrismaPg({ connectionString, max: 25 });
-const prisma = new PrismaClient({ adapter } as any);
+const prisma = new PrismaClient();
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
@@ -2476,5 +2473,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

@@ -1,6 +1,6 @@
 # AEGIS / RBIAS — Project Status
 
-> **Date:** 2026-02-28 (auto-updated after sync)
+> **Date:** 2026-03-02 (auto-updated after sync)
 > **Repo:** github.com/naveenchhikara/AEGIS (private)
 > **Live:** https://aegis.nexlyadvisory.com
 > **Stack:** Next.js 16 · TypeScript 5.9 · PostgreSQL 16 · Prisma 7 · Better Auth · AWS S3/SES
@@ -103,14 +103,21 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 
 ---
 
-### v7.0 — Sample-Based Account Examination (IN PROGRESS 🟡)
+### v7.0 — Sample-Based Account Examination (COMPLETE ✅)
 
-**Status (from `.planning/STATE.md`):**
-- Milestone: **v7.0 Sample-Based Account Examination**
-- Current phase: **30-account-examination-ui**
-- Plans: **10/13 complete**
-- Phases: **4/5 complete**
-- Next: complete remaining Phase 30 plans + final phase (reporting/closure) to satisfy remaining requirements.
+**All phases complete. Full audit lifecycle seeded on production VPS.**
+
+Key v7.0 features:
+
+- Sample-based account examination with configurable sampling criteria
+- Instance-based scoring with weighted roll-up per examination node
+- Loan account sampling (20% rate, 4 criteria buckets, lockable config)
+- Account exam responses (per-question scoring across sampled accounts)
+- Full lifecycle seed script covering 9 phases: RAM → Engagement → Execution → Score Freeze → Observations → Compliance → Board Report → Supporting Data → GRC
+
+**Production data:** 50 loan accounts, 250 account exam responses, 12 action points, 6 SMA/NPA entries, 6 formal observations, 6 compliance items, 1 board report, 4 dashboard snapshots, GRC linkages.
+
+**Process manual:** `docs/SEED-PROCESS-MANUAL.md`
 
 ---
 
@@ -138,4 +145,5 @@ All 18 modules delivered. All 18 gaps closed via 3-wave parallel implementation.
 
 1. **SES Sandbox Mode** — AWS SES in sandbox, can only send to verified addresses. Production access pending.
 2. **DB Views Not in Migrations** — 4 PostgreSQL views/functions created via standalone SQL, not tracked in Prisma migrations. Requires manual SQL application on fresh deploy.
-3. **Seed Data Mismatch** — Production DB has older seed vs local comprehensive seed (10 users, 2 tenants, 39 exam areas, 568 items).
+3. **Seed Data Mismatch** — ~~Production DB has older seed vs local comprehensive seed~~ **RESOLVED** (2026-03-02): Full lifecycle seed deployed to VPS. See `docs/SEED-PROCESS-MANUAL.md`.
+4. **Audit Trigger Column Casing** — `audit_trigger_function()` on VPS was fixed to use quoted `"createdAt"`. If DB is recreated, re-apply the fix (see process manual).

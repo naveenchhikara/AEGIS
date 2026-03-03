@@ -40,7 +40,6 @@ export interface TierSelectionData {
   tier: UcbTier;
   depositAmount?: number;
   multiStateLicense: boolean;
-  lastDakshScore?: number;
   pcaStatus: PcaStatus;
   lastRbiInspectionDate?: string;
 }

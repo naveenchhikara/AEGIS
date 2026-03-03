@@ -93,8 +93,6 @@ export const tierSelectionSchema = z.object({
     .positive("Deposit amount must be positive")
     .optional(),
   multiStateLicense: z.boolean(),
-    .number()
-    .optional(),
   pcaStatus: pcaStatusEnum,
   lastRbiInspectionDate: z
     .string()

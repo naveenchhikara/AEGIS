@@ -722,7 +722,7 @@
     "itemCode": "MD-PSL-005",
     "masterDirectionId": "MD-PSL",
     "title": "PSL Non-Achievement Penalty — RIDF Deposit",
-    "description": "In case of PSL shortfall, deposit required amount with NABARD under RIDF or other designated funds.",
+    "description": "In case of PSL shortfall, deposit required amount under RIDF or other RBI-designated funds.",
     "category": "Lending",
     "tierApplicability": ["TIER_1", "TIER_2", "TIER_3", "TIER_4"],
     "tierEnhancements": null,
@@ -730,7 +730,7 @@
     "evidenceRequired": [
       "PSL shortfall calculation",
       "RIDF deposit receipt",
-      "Correspondence with NABARD"
+      "RBI PSL shortfall correspondence"
     ],
     "priority": "high",
     "rbiCircularRef": "FIDD.CO.Plan.BC.5/04.09.01/2023-24"

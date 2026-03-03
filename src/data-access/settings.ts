@@ -56,10 +56,7 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
       website: true,
       incorporationDate: true,
       scheduledBankStatus: true,
-      nabardRegistrationNo: true,
       multiStateLicense: true,
-      dakshScore: true,
-      dakshScoreDate: true,
       pcaStatus: true,
       pcaEffectiveDate: true,
       lastRbiInspectionDate: true,
@@ -88,14 +85,14 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
  * READ-ONLY fields NOT updatable (DE11):
  * - name (legal bank name), rbiLicenseNo, state, tier
  *
- * EDITABLE fields: shortName, city, nabardRegistrationNo
+ * EDITABLE fields: shortName, city
  *
  * @param data - Validated editable fields only
  */
 export async function updateTenantSettingsDAL(
   data: Pick<
     Prisma.TenantUpdateInput,
-    "shortName" | "city" | "nabardRegistrationNo" | "settings"
+    "shortName" | "city" | "settings"
   >,
 ) {
   // Step 1: Get authenticated session

@@ -43,9 +43,6 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
   const [phone, setPhone] = useState(settings.phone ?? "");
   const [email, setEmail] = useState(settings.email ?? "");
   const [website, setWebsite] = useState(settings.website ?? "");
-  const [nabardRegistrationNo, setNabardRegistrationNo] = useState(
-    settings.nabardRegistrationNo ?? "",
-  );
 
   // Determine current quarter
   const currentMonth = new Date().getMonth(); // 0-indexed
@@ -69,7 +66,6 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
         phone: phone || null,
         email: email || null,
         website: website || null,
-        nabardRegistrationNo: nabardRegistrationNo || null,
       });
       if (result.success) {
         toast.success("Bank profile has been updated successfully.");
@@ -78,11 +74,6 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
       }
     });
   }
-
-  // Format DAKSH score for display
-  const dakshDisplay = settings.dakshScore
-    ? `${settings.dakshScore}`
-    : "Not yet assessed";
 
   // Format PCA status
   const pcaDisplay =
@@ -247,18 +238,6 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
                 placeholder="https://www.bank.com"
               />
             </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="nabardRegistrationNo">
-                NABARD Registration No.
-              </Label>
-              <Input
-                id="nabardRegistrationNo"
-                value={nabardRegistrationNo}
-                onChange={(e) => setNabardRegistrationNo(e.target.value)}
-                placeholder="Enter NABARD registration number"
-                maxLength={50}
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -279,13 +258,10 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1">
-              <p className="text-muted-foreground text-sm">DAKSH Score</p>
-              <p className="text-base font-medium">{dakshDisplay}</p>
-              {settings.dakshScoreDate && (
-                <p className="text-muted-foreground text-xs">
-                  as of {formatDateDisplay(settings.dakshScoreDate)}
-                </p>
-              )}
+              <p className="text-muted-foreground text-sm">RBI Supervisory Rating</p>
+              <p className="text-base font-medium">
+                {settings.rbiRiskRating ?? "Not yet assessed"}
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground text-sm">PCA Status</p>
@@ -319,12 +295,6 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-muted-foreground text-sm">RBI Risk Rating</p>
-              <p className="text-base">
-                {settings.rbiRiskRating ?? "Not available"}
-              </p>
-            </div>
-            <div className="space-y-1">
               <p className="text-muted-foreground text-sm">
                 Multi-State License
               </p>
@@ -337,8 +307,7 @@ export function BankProfileForm({ settings }: BankProfileFormProps) {
           </div>
           <p className="text-muted-foreground mt-3 flex items-center gap-1 text-xs">
             <Info className="h-3 w-3" />
-            Regulatory fields are updated by RBI inspection results and DAKSH
-            assessments.
+            Regulatory fields are updated following RBI inspection results.
           </p>
         </CardContent>
       </Card>

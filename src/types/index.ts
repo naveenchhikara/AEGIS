@@ -21,10 +21,7 @@ export interface TenantSettings {
   website: string | null;
   incorporationDate: Date | null;
   scheduledBankStatus: boolean;
-  nabardRegistrationNo: string | null;
   multiStateLicense: boolean;
-  dakshScore: unknown | null; // Prisma Decimal
-  dakshScoreDate: Date | null;
   pcaStatus: string;
   pcaEffectiveDate: Date | null;
   lastRbiInspectionDate: Date | null;

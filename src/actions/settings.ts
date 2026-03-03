@@ -21,7 +21,7 @@ import { logger } from "@/lib/logger";
  * - Fiscal Year — hardcoded April-March (DE7), not configurable
  *
  * EDITABLE fields:
- * - shortName, address, city, pincode, phone, email, website, nabardRegistrationNo
+ * - shortName, address, city, pincode, phone, email, website
  */
 const settingsSchema = z.object({
   shortName: z.string().min(1).max(50).optional(),
@@ -31,7 +31,6 @@ const settingsSchema = z.object({
   phone: z.string().max(20).optional().nullable(),
   email: z.string().email().optional().nullable(),
   website: z.string().url().optional().nullable(),
-  nabardRegistrationNo: z.string().max(50).optional().nullable(),
 });
 
 export type SettingsInput = z.infer<typeof settingsSchema>;

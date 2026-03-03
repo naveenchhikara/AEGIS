@@ -19,14 +19,14 @@
     "description": "CRAR at 8.2% (as on Sep 30, 2025) is below regulatory minimum of 9%. Capital plan approved by Board but execution delayed.",
     "severity": "CRITICAL",
     "atrStatus": "DRAFT",
-    "atrText": "Draft ATR: Board has approved emergency capital infusion of ₹50 lakhs through share issuance. First tranche of ₹30 lakhs infused in December 2025, bringing CRAR to 10.2%. Remaining ₹20 lakhs to be infused by March 2026. Monthly CRAR monitoring implemented. Capital raising strategy under review for FY 2026-27.",
+    "atrText": "Draft ATR: Board has approved emergency capital infusion of \u20b950 lakhs through share issuance. First tranche of \u20b930 lakhs infused in December 2025, bringing CRAR to 10.2%. Remaining \u20b920 lakhs to be infused by March 2026. Monthly CRAR monitoring implemented. Capital raising strategy under review for FY 2026-27.",
     "submittedAt": null,
     "issueId": "b0000000-0000-0000-0000-000000000081"
   },
   {
     "id": "b0000000-0000-0000-0000-000000000113",
-    "source": "NABARD",
-    "referenceNo": "NABARD/INSP/2025/APEX/15",
+    "source": "RBI_INSPECTION",
+    "referenceNo": "RBI/INSP/2025/APEX/15",
     "paraNo": "2.3",
     "description": "NPA classification delays observed. 12 accounts were classified as NPA with a delay of 15-30 days beyond the 90-day overdue mark, indicating gaps in monitoring and MIS.",
     "severity": "MEDIUM",

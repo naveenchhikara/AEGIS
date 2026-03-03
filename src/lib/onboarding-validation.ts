@@ -92,12 +92,8 @@ export const tierSelectionSchema = z.object({
     .number()
     .positive("Deposit amount must be positive")
     .optional(),
-  nabardRegistration: z.string().optional().or(z.literal("")),
   multiStateLicense: z.boolean(),
-  lastDakshScore: z
     .number()
-    .min(0, "DAKSH score cannot be negative")
-    .max(100, "DAKSH score cannot exceed 100")
     .optional(),
   pcaStatus: pcaStatusEnum,
   lastRbiInspectionDate: z

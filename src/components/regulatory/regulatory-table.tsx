@@ -76,7 +76,6 @@ interface RegulatoryTableProps {
 
 const SOURCE_LABELS: Record<string, string> = {
   RBI_INSPECTION: "RBI",
-  NABARD: "NABARD",
   STATUTORY_AUDITOR: "Statutory",
   EXTERNAL: "External",
 };
@@ -224,9 +223,7 @@ export function RegulatoryTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sources</SelectItem>
-            <SelectItem value="RBI_INSPECTION">RBI</SelectItem>
-            <SelectItem value="NABARD">NABARD</SelectItem>
-            <SelectItem value="STATUTORY_AUDITOR">Statutory</SelectItem>
+            <SelectItem value="RBI_INSPECTION">RBI</SelectItem>            <SelectItem value="STATUTORY_AUDITOR">Statutory</SelectItem>
             <SelectItem value="EXTERNAL">External</SelectItem>
           </SelectContent>
         </Select>
@@ -270,7 +267,7 @@ export function RegulatoryTable({
               <DialogHeader>
                 <DialogTitle>Add Regulatory Observation</DialogTitle>
                 <DialogDescription>
-                  Create a new regulatory observation from RBI, NABARD, or other
+                  Create a new regulatory observation from RBI or other
                   sources.
                 </DialogDescription>
               </DialogHeader>
@@ -290,9 +287,7 @@ export function RegulatoryTable({
                       <SelectContent>
                         <SelectItem value="RBI_INSPECTION">
                           RBI Inspection
-                        </SelectItem>
-                        <SelectItem value="NABARD">NABARD</SelectItem>
-                        <SelectItem value="STATUTORY_AUDITOR">
+                        </SelectItem>                        <SelectItem value="STATUTORY_AUDITOR">
                           Statutory Auditor
                         </SelectItem>
                         <SelectItem value="EXTERNAL">External</SelectItem>
@@ -546,9 +541,7 @@ export function RegulatoryTable({
                     <SelectContent>
                       <SelectItem value="RBI_INSPECTION">
                         RBI Inspection
-                      </SelectItem>
-                      <SelectItem value="NABARD">NABARD</SelectItem>
-                      <SelectItem value="STATUTORY_AUDITOR">
+                      </SelectItem>                      <SelectItem value="STATUTORY_AUDITOR">
                         Statutory Auditor
                       </SelectItem>
                       <SelectItem value="EXTERNAL">External</SelectItem>

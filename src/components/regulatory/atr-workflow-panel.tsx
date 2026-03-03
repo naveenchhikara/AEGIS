@@ -55,7 +55,6 @@ interface AtrWorkflowPanelProps {
 
 const SOURCE_LABELS: Record<string, string> = {
   RBI_INSPECTION: "RBI",
-  NABARD: "NABARD",
   STATUTORY_AUDITOR: "Statutory",
   EXTERNAL: "External",
 };

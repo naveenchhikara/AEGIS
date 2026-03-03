@@ -13,7 +13,7 @@ import { logger } from "@/lib/logger";
  */
 const ManageRegulatoryObservationSchema = z.object({
   observationId: z.string().uuid().optional(),
-  source: z.enum(["RBI_INSPECTION", "NABARD", "STATUTORY_AUDITOR", "EXTERNAL"]),
+  source: z.enum(["RBI_INSPECTION", "STATUTORY_AUDITOR", "EXTERNAL"]),
   referenceNo: z.string().min(1),
   paraNo: z.string().optional(),
   description: z.string().min(10),

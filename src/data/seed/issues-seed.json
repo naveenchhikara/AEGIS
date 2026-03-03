@@ -89,8 +89,8 @@
   },
   {
     "id": "b0000000-0000-0000-0000-000000000084",
-    "title": "NABARD Inspection - NPA Classification Delays",
-    "description": "NABARD inspection identified 12 accounts where NPA classification was delayed by 15-30 days beyond 90-day overdue mark.",
+    "title": "RBI Inspection - NPA Classification Delays",
+    "description": "RBI inspection identified 12 accounts where NPA classification was delayed by 15-30 days beyond 90-day overdue mark.",
     "source": "REGULATORY",
     "issueType": "FINDING",
     "severity": "MEDIUM",

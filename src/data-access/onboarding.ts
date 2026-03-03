@@ -36,7 +36,6 @@ export interface OnboardingCompletionData {
   tierSelection: {
     tier: string;
     depositAmount?: number;
-    nabardRegistration?: string;
     multiStateLicense: boolean;
     lastDakshScore?: number;
     pcaStatus: string;
@@ -136,11 +135,7 @@ export async function completeOnboardingTransaction(
         pan: data.bankRegistration.pan,
         cin: data.bankRegistration.cin || undefined,
         tier: data.tierSelection.tier as any,
-        nabardRegistrationNo:
-          data.tierSelection.nabardRegistration || undefined,
         multiStateLicense: data.tierSelection.multiStateLicense,
-        dakshScore: data.tierSelection.lastDakshScore
-          ? new Prisma.Decimal(data.tierSelection.lastDakshScore)
           : undefined,
         pcaStatus: data.tierSelection.pcaStatus as any,
         lastRbiInspectionDate: data.tierSelection.lastRbiInspectionDate

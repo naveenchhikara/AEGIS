@@ -39,7 +39,6 @@ export interface BankRegistrationData {
 export interface TierSelectionData {
   tier: UcbTier;
   depositAmount?: number;
-  nabardRegistration?: string;
   multiStateLicense: boolean;
   lastDakshScore?: number;
   pcaStatus: PcaStatus;

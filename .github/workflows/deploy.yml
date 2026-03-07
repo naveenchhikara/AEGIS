@@ -88,3 +88,38 @@ jobs:
             chmod +x /tmp/aegis-deploy-${{ github.run_id }}/server/*.sh
             sudo bash /tmp/aegis-deploy-${{ github.run_id }}/server/bootstrap-prod.sh /tmp/aegis-deploy-${{ github.run_id }}/aegis.bundle /opt/aegis
             sudo bash /tmp/aegis-deploy-${{ github.run_id }}/server/deploy-prod.sh ${{ github.ref_name }} /tmp/aegis-deploy-${{ github.run_id }}/aegis.bundle /opt/aegis
+
+      - name: Post-deploy health check
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            echo "--- Container status ---"
+            docker ps --filter name=aegis --format 'table {{.Names}}\t{{.Status}}'
+            echo ""
+            echo "--- Health endpoint ---"
+            HEALTH=$(curl -fsS http://127.0.0.1:3000/api/health)
+            echo "$HEALTH" | python3 -m json.tool
+            STATUS=$(echo "$HEALTH" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
+            if [ "$STATUS" != "ok" ]; then
+              echo "FATAL: health status is $STATUS"
+              exit 1
+            fi
+            echo ""
+            echo "--- Current release ---"
+            cat /opt/aegis/shared/current-release
+
+      - name: Cleanup deploy temp files
+        if: always()
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            sudo rm -rf /tmp/aegis-deploy-${{ github.run_id }}

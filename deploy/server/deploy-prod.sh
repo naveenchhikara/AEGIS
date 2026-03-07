@@ -19,10 +19,10 @@ if [[ ! -f "${ENV_FILE}" ]]; then
 fi
 
 if [[ -f "${SOURCE}" ]]; then
-  git -C "${REPO_DIR}" fetch "${SOURCE}" --tags
+  git -C "${REPO_DIR}" fetch "${SOURCE}" --tags --force
 else
   git -C "${REPO_DIR}" remote set-url origin "${SOURCE}"
-  git -C "${REPO_DIR}" fetch --tags origin
+  git -C "${REPO_DIR}" fetch --tags --force origin
 fi
 
 git -C "${REPO_DIR}" checkout --force "${TAG}"

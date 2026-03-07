@@ -22,6 +22,7 @@ git -C "${REPO_DIR}" rev-parse --verify "${TAG}" >/dev/null
 git -C "${REPO_DIR}" checkout --force "${TAG}"
 
 docker compose \
+  -p aegis \
   --env-file "${ENV_FILE}" \
   -f "${REPO_DIR}/docker-compose.prod.yml" \
   up -d --build

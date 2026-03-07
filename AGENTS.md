@@ -1,8 +1,9 @@
 # AGENTS.md - AEGIS Platform Development Guide
 
-**Last Updated:** February 7, 2026
+**Last Updated:** March 8, 2026
 
-Guidelines for agentic coding agents on the AEGIS UCB Audit & Compliance Platform.
+Guidelines for agentic coding agents working on the AEGIS UCB audit and
+compliance platform.
 
 ---
 
@@ -20,15 +21,16 @@ pnpm start            # Start production server
 
 ```bash
 pnpm lint             # Run ESLint
-prettier --write .    # Format all files
+prettier --write .    # Format files
 ```
 
 ### Testing
 
-**Note:** No test framework configured yet. When adding tests, use Jest or Vitest:
-
-- Run single test: `pnpm test -- path/to/test.test.ts`
-- Run all tests: `pnpm test`
+```bash
+pnpm test:unit        # Run Vitest unit tests
+pnpm test:e2e         # Run Playwright E2E tests
+pnpm test:e2e:ui      # Run Playwright with UI
+```
 
 ---
 
@@ -37,7 +39,7 @@ prettier --write .    # Format all files
 ### Imports
 
 - Use `@/*` path aliases (`@/*` → `./src/*`)
-- Group: React → Third-party → Internal → Types
+- Group imports as React → third-party → internal → types
 - Re-export icons from `@/lib/icons`
 
 ```typescript
@@ -47,107 +49,106 @@ import { cn } from "@/lib/utils";
 import type { ButtonProps } from "@/components/ui/button";
 ```
 
-### Formatting (Prettier)
+### Formatting
 
-- **Semicolons:** Enabled | **Quotes:** Double quotes
-- **Plugin:** `prettier-plugin-tailwindcss` (auto-sorts Tailwind classes)
-- **Max line length:** 80-100 characters preferred
+- Semicolons enabled
+- Double quotes
+- `prettier-plugin-tailwindcss` sorts Tailwind classes
+- Prefer lines in the 80-100 character range
 
 ### TypeScript
 
-- **Strict mode:** Enabled | **Target:** ES2017 | **Module:** ESNext
-- Export all types from `src/types/index.ts`
-- Use `type` keyword for type-only exports: `export type { MyType }`
-- Prefer `interface` for extensible objects, `type` for unions/primitives
+- Strict mode enabled
+- Export shared types from `src/types/index.ts`
+- Use `type` for type-only exports
+- Prefer `interface` for extensible object shapes and `type` for unions
 
-### Naming Conventions
+### Naming
 
-- **Components:** PascalCase | **Functions:** camelCase | **Constants:** UPPER_SNAKE_CASE
-- **Files:** kebab-case | **Enums/Tuples:** PascalCase | **Booleans:** `is/has/should` prefix
+- Components: PascalCase
+- Functions: camelCase
+- Constants: UPPER_SNAKE_CASE
+- Files: kebab-case
+- Booleans: `is`, `has`, or `should` prefixes
 
-### Date Format
+### Dates
 
-- **Use ISO 8601 strings** (not Date objects): `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss.sssZ`
-
-### Component Patterns
-
-```typescript
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
-    return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button" // Required for DevTools
-```
-
-### Class Names
-
-- Always use `cn()` utility from `@/lib/utils`
-- Combines `clsx` and `tailwind-merge`; Tailwind classes auto-sorted by Prettier
-- `className={cn("base classes", isActive && "conditional", customClassName)}`
-
-### Error Handling
-
-- For prototype/demo phase, minimal error handling acceptable
-- When adding: Use try/catch for async, provide user-friendly messages, log to console
-
-### File Organization
-
-```
-src/
-├── app/                 # Next.js App Router pages (auth, dashboard)
-├── components/
-│   ├── ui/             # shadcn/ui components
-│   ├── layout/         # Layout components
-│   └── auth/           # Auth components
-├── data/
-│   ├── demo/           # Demo data JSON files
-│   └── rbi-regulations/ # RBI knowledge base
-├── lib/                # Utilities, helpers
-├── hooks/              # React hooks
-└── types/              # TypeScript types
-```
+- Use ISO 8601 strings, not `Date` objects, for persisted values
 
 ### React Patterns
 
-- Use Server Components by default (no `use client` unless needed)
-- Use Client Components for interactivity (state, events, browser APIs)
-- Keep components under 150 lines; extract logic to custom hooks
-- Add JSDoc for complex functions; section headers for major blocks
+- Default to server components
+- Use client components only for interactivity or browser APIs
+- Keep components focused; extract reusable logic into hooks or services
+- Set `displayName` on forwarded refs
 
-### Tailwind CSS v4
+### Class Names
 
-- Native CSS variables for theming (`app/globals.css`)
-- Access via CSS variables: `hsl(var(--primary))`
-- Dark mode support via `.dark` class
+- Always use `cn()` from `@/lib/utils`
+- Let Prettier handle Tailwind class ordering
+
+### Error Handling
+
+- Return clear user-facing messages for failed actions
+- Log enough detail for debugging without exposing secrets
+
+---
+
+## File Organization
+
+```text
+src/
+├── actions/          # Server actions by domain
+├── app/              # App Router pages, layouts, and API routes
+├── components/       # UI primitives and feature components
+├── data/             # RBI reference data and seed assets
+├── data-access/      # Tenant-aware queries
+├── emails/           # React Email templates
+├── hooks/            # Shared hooks
+├── jobs/             # pg-boss workers and schedulers
+├── lib/              # Utilities, auth, uploads, exports
+├── providers/        # React providers
+├── services/         # Domain services and engines
+├── stores/           # Zustand stores
+└── types/            # Shared TypeScript types
+tests/
+├── e2e/              # Playwright specs
+└── auth.setup.ts     # E2E auth bootstrap
+deploy/               # VPS deploy, backup, restore, systemd assets
+docs/ops/             # Release and recovery docs
+```
 
 ---
 
 ## Project-Specific Notes
 
-### Demo Data
+### Data and Seed Content
 
-- Store in `src/data/demo/*.json`, export from `src/data/index.ts`
-- Use realistic UCB context (Tier 2 Maharashtra bank)
-- Findings based on common RBI observations (CRAR, ALM, cyber issues)
+- Runtime pages should query the database through `src/data-access/`
+- Seed and reference content belongs in `src/data/seed/`,
+  `src/data/rbi-regulations/`, and `src/data/rbi-master-directions/`
+- Avoid adding new runtime dependencies on static JSON when the data
+  should live in PostgreSQL
 
-### RBI Regulations
+### Tenant Safety
 
-- Knowledge base in `src/data/rbi-regulations/`
-- Tag requirements by UCB tier (Tier 1, 2, 3/4, All)
-- Map all requirements to specific RBI circular references
+- Tenant ID must come from the authenticated session
+- Server actions should use `getRequiredSession()`
+- DAL queries must scope by tenant explicitly
 
-### Multi-Language Support (Phase 4)
+### Multi-Language Support
 
-- Target: English, Hindi, Marathi, Gujarati
-- Banking terminology must be verified by domain expert
+- Supported locales: English, Hindi, Marathi, Gujarati
+- Banking terminology changes should stay domain-accurate across all
+  locales
+
+### Production Deployment
+
+- Production runs from `/opt/aegis/repo/docker-compose.prod.yml`
+- Secrets live in `/opt/aegis/shared/.env.production`
+- Deploy only from annotated git tags after green CI
+- Do not document or reintroduce copied-workspace deploys, PM2, or
+  Dockge paths
 
 ---
 
@@ -158,9 +159,9 @@ src/
 ```typescript
 @/components/ui/*     // shadcn/ui components
 @/components/layout/* // Layout components
-@/lib/*              // Utilities (cn, icons, helpers)
-@/types/*            // Type definitions
-@/data/*             // Demo data and regulations
+@/lib/*               // Utilities and helpers
+@/types/*             // Type definitions
+@/data/*              // Reference and seed content
 ```
 
 ### Common Imports
@@ -176,12 +177,13 @@ import type { BankProfile } from "@/types";
 
 ## Before Committing
 
-1. Run `pnpm lint` to check for ESLint errors
-2. Run `pnpm build` to verify production build works
-3. Test your changes in browser (`pnpm dev`)
-4. Verify demo data loads correctly
-5. Ensure no console errors
+1. Run `pnpm lint`
+2. Run `pnpm build` for changes that affect runtime behavior
+3. Run the relevant tests for the code you touched
+4. Check the browser for obvious regressions when UI flows changed
+5. Ensure no secrets or local-only artifacts are staged
 
 ---
 
-_This guide is maintained for agentic coding assistants. Update as project evolves._
+_Keep this guide aligned with the live product and the documented
+production process._

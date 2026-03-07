@@ -2,67 +2,60 @@
 
 **Audit, Enterprise Governance & Internal Systems**
 
-A multi-tenant SaaS platform for Urban Cooperative Banks (UCBs) in India to manage the full internal audit lifecycle — from risk assessment and audit planning through execution, reporting, compliance tracking, and board governance — in compliance with RBI regulations.
+AEGIS is a multi-tenant audit and compliance platform for Urban
+Cooperative Banks (UCBs) in India. It supports the full internal audit
+lifecycle, from risk assessment and planning through field execution,
+observation tracking, compliance follow-up, reporting, and board
+governance.
 
-> **Status:** Production deployed at [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). v6.0 RBIA complete (41/41 requirements). v7.0 Sample-Based Account Examination — 4/5 phases complete (16/20 requirements satisfied). 706 source files, 75 DB models, 21 enums, 2,500-line schema, 702 commits.
+> **Status:** Live at
+> [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com). Production
+> deploys are tag-driven GitHub Actions releases into a repo-backed
+> Docker Compose stack on the VPS. Latest verified production release:
+> `v2026.03.07.3`. Backups run daily via `aegis-backup.timer`, write to
+> `/backups`, and upload to S3.
 
-## Key Features
+## Product Scope
 
-- **Risk Assessment Model (RAM)** — 19-parameter risk scoring per RBI RBIA policy
-- **Audit Planning** — Annual plan simulation with branch-wise scheduling and surprise audits
-- **Audit Execution** — Field audits with 568 examination items across sections (cash, loans, SMA-NPA)
-- **Observation Lifecycle** — State-machine-driven workflow from draft to closure with role-based transitions
-- **Compliance Tracking** — 4-level escalation engine (L1-L4) with ACE/ACB committee oversight
-- **GRC Module** — Risk register, control library, issue management, QA assessment, work programs
-- **Regulatory** — Concurrent audit, governance committees, investments, IS audit, housekeeping
-- **Reports** — XLSX multi-tab and PDF generation for board reporting
-- **Multi-language** — English, Hindi, Marathi, Gujarati (next-intl)
-- **RBAC** — 17 roles, 60+ permissions, multi-role support with maker-checker enforcement
+- **Risk Assessment Model (RAM)** for branch-level RBI-aligned risk
+  scoring
+- **Audit planning** for annual schedules, branch prioritization, and
+  surprise audits
+- **Audit execution** for branch, cash, loan, SMA/NPA, and RBIA reviews
+- **Observation lifecycle** with role-based state transitions and maker
+  checker controls
+- **Compliance tracking** with ACE and ACB oversight
+- **GRC workflows** for risks, controls, issues, QA, and work programs
+- **Regulatory modules** for concurrent audit, governance, investments,
+  IS audit, and housekeeping
+- **Reports and exports** in XLSX and PDF
+- **Multi-language UI** with English, Hindi, Marathi, and Gujarati
 
-### v6.0 RBIA (Shipped)
+## Current Delivery State
 
-- **Hierarchical Examination Tree** — Variable depth (0-5) with materialized path, replacing flat 2-level structure
-- **4-Point Scoring** — FULLY/LARGELY/PARTIALLY/NON_COMPLIANT with weighted roll-up and critical-item cap
-- **8-State Engagement Lifecycle** — PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING → REPORT_DRAFT → COMPLETED
-- **Dual Findings** — ActionPoints (operational, ~15-40/audit) + Observations (formal 5C, ~3-10/audit)
-- **Branch RBIA Scoring** — Frozen immutable snapshots with DB-level trigger protection
-- **Branch Manager Response** — Batch response workflow with 15-day deadline tracking
-
-### v7.0 Sample-Based Account Examination (In Development)
-
-- **Loan Data Upload** — CSV/Excel upload with fuzzy column mapping, validation, and per-branch storage
-- **Sampling Engine** — HIA-controlled sampling criteria with locked % share allocations and auto-selection
-- **Account Examination** — Per-account question workflow with RBI references, instance tracking, notes/evidence
-- **Instance-Based Scoring** — Compliance % computation, 4-point scale mapping, score roll-up integration
+- **v6 RBIA** is shipped, including hierarchical examination trees,
+  weighted scoring, frozen branch score snapshots, and dual findings
+  workflows
+- **v7 Sample-Based Account Examination** is the active workstream,
+  covering loan data import, sampling, account examination, and scoring
+  integration
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 16 (with `pgcrypto` and `pg_trgm` extensions)
-- pnpm 9+
+- PostgreSQL 16 with `pgcrypto` and `pg_trgm`
+- pnpm
 
-### Setup
+### Local Setup
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Configure environment
 cp .env.example .env
-# Edit .env with your database credentials, auth secret, and AWS keys
-
-# Generate Prisma client
 pnpm db:generate
-
-# Push schema to database
 pnpm db:push
-
-# Seed demo data (Apex Sahakari Bank — 10 users, 2 tenants)
 pnpm db:seed
-
-# Start dev server
 pnpm dev
 ```
 
@@ -70,228 +63,201 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Tech Stack
 
-| Layer           | Technology                                                |
-| --------------- | --------------------------------------------------------- |
-| Framework       | Next.js 16 (App Router + Turbopack)                       |
-| UI              | shadcn/ui (new-york) + Radix UI + Tailwind CSS v4         |
-| Language        | TypeScript 5.9 (strict)                                   |
-| Database        | PostgreSQL 16 + Prisma 7 ORM                              |
-| Auth            | Better Auth (bcrypt, session cookies, RBAC)               |
-| State           | React Query (server) + Zustand (client) + react-hook-form |
-| Tables          | TanStack Table v8                                         |
-| Charts          | Recharts 3                                                |
-| Storage         | AWS S3 (Mumbai, ap-south-1)                               |
-| Email           | React Email + AWS SES v2 (DKIM verified)                  |
-| Reports         | ExcelJS (XLSX) + @react-pdf/renderer (PDF)                |
-| Jobs            | pg-boss (PostgreSQL-backed)                               |
-| i18n            | next-intl (en, hi, mr, gu)                                |
-| Icons           | Lucide React (via `@/lib/icons` barrel)                   |
-| Testing         | Playwright (E2E) + Vitest (unit)                          |
-| Package Manager | pnpm                                                      |
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js 16 App Router |
+| Language | TypeScript 5.9 |
+| UI | shadcn/ui, Radix UI, Tailwind CSS v4 |
+| Database | PostgreSQL 16 with Prisma 7 |
+| Auth | Better Auth |
+| Jobs | pg-boss |
+| Storage | AWS S3 |
+| Email | AWS SES v2 + React Email |
+| Reports | ExcelJS + `@react-pdf/renderer` |
+| i18n | next-intl |
+| Testing | Vitest + Playwright |
+| Package manager | pnpm |
 
-## Scripts
+## Common Scripts
 
 ```bash
 # Development
-pnpm dev                     # Dev server with Turbopack
-pnpm build                   # Production build
-pnpm start                   # Start production server
-pnpm lint                    # Run ESLint
+pnpm dev
+pnpm build
+pnpm start
+pnpm lint
 
 # Database
-pnpm db:generate             # Generate Prisma client
-pnpm db:push                 # Push schema to DB (no migration)
-pnpm db:migrate              # Run Prisma migrations
-pnpm db:seed                 # Seed database
-pnpm db:studio               # Open Prisma Studio
-pnpm seed:master-directions  # Seed RBI master directions
+pnpm db:generate
+pnpm db:push
+pnpm db:migrate
+pnpm db:seed
+pnpm db:studio
+pnpm seed:master-directions
 
 # Testing
-pnpm test:unit               # Run unit tests (Vitest)
-pnpm test:e2e                # Run E2E tests (Playwright)
-pnpm test:e2e:ui             # E2E tests with Playwright UI
+pnpm test:unit
+pnpm test:e2e
+pnpm test:e2e:ui
 ```
 
-## Project Structure
+## Repository Layout
 
-```
+```text
 src/
-  actions/              # Server actions (103 files, 18 domains)
-  app/                  # App Router (65 pages)
-    (auth)/             # Login, accept-invite
-    (dashboard)/        # All authenticated screens
-    (onboarding)/       # 5-step tenant setup wizard
-    api/                # REST endpoints (auth, health, exports, cron, reports)
-  components/           # 250 components across 33 directories
-    ui/                 # shadcn/ui primitives
-    dashboard/          # KPI widgets, charts, panels
-    compliance/         # Compliance tables, filters, charts
-    findings/           # Observation lifecycle, timeline
-    pdf-report/         # React-PDF report components
-  data-access/          # Data Access Layer (51 files, tenant-isolated queries)
-  emails/               # React Email templates (assignment, escalation, digest)
-  hooks/                # Custom React hooks
-  jobs/                 # pg-boss background jobs
-  lib/                  # Core utilities (auth, permissions, S3, SES, state-machine)
-  services/             # Business logic (risk-rating engine)
-  stores/               # Zustand stores
-  types/                # TypeScript definitions
+  actions/         # Server actions by domain
+  app/             # App Router pages, layouts, and API routes
+  components/      # UI primitives and domain components
+  data/            # RBI reference data and seed assets
+  data-access/     # Tenant-aware database queries
+  emails/          # React Email templates
+  hooks/           # Shared React hooks
+  jobs/            # pg-boss workers and schedulers
+  lib/             # Auth, permissions, exports, uploads, utilities
+  providers/       # React providers
+  services/        # Domain services and engines
+  stores/          # Zustand stores
+  types/           # Shared TypeScript types
 prisma/
-  schema.prisma         # 75 models, 21 enums, 2,500 lines
-  seed.ts               # Database seeder (10 users, 2 tenants)
+  schema.prisma    # Production schema
+  migrations/      # Prisma and SQL migrations
 tests/
-  e2e/                  # Playwright E2E specs
-  auth.setup.ts         # Auth state setup for 5 roles
-messages/               # i18n (en.json, hi.json, mr.json, gu.json)
-infra/                  # AWS CDK infrastructure
-deploy/                 # Deployment configs (Nginx, systemd)
+  e2e/             # Playwright specs
+messages/          # next-intl dictionaries
+deploy/            # VPS deploy, backup, restore, and systemd assets
+docs/ops/          # Release, deploy, rollback, and hygiene docs
+infra/             # AWS CDK infrastructure definitions
 ```
 
-## Routes (65 pages)
+## Route Groups
 
-| Group           | Routes                                                                                                       | Purpose                                |
-| --------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login, invitations, tenant setup       |
-| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | KPI widgets, analytics, audit log      |
-| RAM & Planning  | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                          | 19-parameter risk scoring, annual plan |
-| Audit Execution | `/audit-execution/[id]/{sections,cash,loans,sma-npa,report,bh-certificate}`                                  | Field audit with 568 items             |
-| RBIA            | `/audit-execution/[id]/rbia/{examination,loan-portfolio,sampling,findings,meetings,score,questions}`         | RBIA examination, sampling, scoring    |
-| Findings        | `/findings`, `/findings/[id]`, `/findings/new`                                                               | Observation lifecycle with timeline    |
-| Compliance      | `/compliance/{ace,acb}`, `/auditee/[id]`                                                                     | Compliance tracking, branch responses  |
-| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk register, controls, issues        |
-| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | UCB regulatory modules                 |
-| Reports         | `/reports`                                                                                                   | XLSX + PDF generation                  |
-| Admin           | `/admin/{users,branches,zones,templates,ram-config}`, `/settings`                                            | User/branch management, config         |
+| Group | Routes | Purpose |
+| --- | --- | --- |
+| Auth | `/login`, `/accept-invite`, `/onboarding` | Login, invitations, onboarding |
+| Dashboard | `/dashboard`, `/analytics`, `/audit-trail` | KPI views and audit activity |
+| RAM and Planning | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling` | Risk scoring and planning |
+| Audit Execution | `/audit-execution/[id]/...` | Branch audits and working papers |
+| RBIA | `/audit-execution/[id]/rbia/...` | RBIA examination, sampling, scoring |
+| Findings | `/findings`, `/findings/[id]` | Observation workflow |
+| Compliance | `/compliance/...`, `/auditee/[id]` | Response tracking and escalation |
+| GRC | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment` | Risk and control management |
+| Regulatory | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | RBI-specific modules |
+| Reports | `/reports` | XLSX and PDF outputs |
+| Admin | `/admin/...`, `/settings` | Tenant configuration and user admin |
 
-## Architecture
+## Architecture Notes
 
-### Multi-Tenancy
+### Tenant Isolation
 
-Tenant isolation is enforced at the application level:
+Tenant isolation is enforced in the application layer:
 
-1. **Session-only tenantId** — Tenant ID extracted exclusively from authenticated sessions, never from URLs or request bodies
-2. **DAL enforcement** — Every query in `src/data-access/` includes `WHERE tenantId = ?`
-3. **`prismaForTenant(tenantId)`** — Returns singleton Prisma client; DAL functions enforce isolation via explicit WHERE clauses
-4. **Runtime assertions** — Query results verified against expected tenantId
+1. Tenant ID comes from the authenticated session only
+2. Queries in `src/data-access/` explicitly scope by tenant
+3. `prismaForTenant(tenantId)` is the required entry point for tenant
+   aware reads and writes
+4. Runtime assertions validate tenant ownership of critical records
 
-### Authentication & Authorization
+### Authentication and Authorization
 
-- **Better Auth** — Email/password with session cookies (httpOnly, secure, sameSite=lax)
-- **Rate limiting** — 10 login attempts per 15 minutes per IP
-- **Account lockout** — 5 failed attempts triggers 30-minute lockout
-- **Concurrent sessions** — Max 2 per user
-- **17 roles:** AUDITOR, AUDIT_MANAGER, CAE, CCO, CEO, AUDITEE, BOARD_OBSERVER, LEAD_AUDITOR, FIELD_AUDITOR, BRANCH_HEAD, ZONAL_AUDITOR, ACE_OFFICER, CONCURRENT_AUDITOR, IS_AUDITOR, RISK_HEAD, ACB_MEMBER, SYSTEM_ADMIN
-- **Multi-role** — Users can hold multiple roles; permissions are the union of all role grants
-- **Maker-checker** — Creator cannot approve own observations
+- Better Auth with database-backed sessions
+- 17 roles with union-based multi-role permissions
+- Login rate limiting and account lockout controls
+- Maker checker enforcement on approval workflows
 
 ### Background Jobs
 
-pg-boss processes scheduled jobs:
-
-| Job                     | Schedule         | Purpose                              |
-| ----------------------- | ---------------- | ------------------------------------ |
-| `process-notifications` | On demand        | Dequeue and send email notifications |
-| `deadline-check`        | Daily 06:00 IST  | 7/3/1 day advance reminders          |
-| `send-weekly-digest`    | Monday 10:00 IST | Aggregated weekly email digest       |
+pg-boss runs notification and reminder workloads from the PostgreSQL
+database.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and configure. Key variables:
+Copy `.env.example` to `.env` for local development. Key variables:
 
-| Variable                                      | Purpose                      |
-| --------------------------------------------- | ---------------------------- |
-| `DATABASE_URL`                                | PostgreSQL connection string |
-| `BETTER_AUTH_SECRET`                          | Auth secret (min 32 chars)   |
-| `BETTER_AUTH_URL`                             | Auth base URL                |
-| `AWS_REGION`                                  | AWS region (ap-south-1)      |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS credentials              |
-| `S3_BUCKET_NAME`                              | Evidence storage bucket      |
-| `SES_FROM_EMAIL`                              | Email sender address         |
-| `NEXT_PUBLIC_APP_URL`                         | Client-side app URL          |
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `BETTER_AUTH_SECRET` | Better Auth secret |
+| `BETTER_AUTH_URL` | Auth base URL |
+| `NEXT_PUBLIC_APP_URL` | Browser-facing app URL |
+| `AWS_REGION` | AWS region |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | AWS credentials |
+| `S3_BUCKET_NAME` | Evidence and backup bucket |
+| `AWS_SES_REGION` / `SES_FROM_EMAIL` | Email delivery |
 
-## Deployment
+## Production Deployment
 
-Production runs on a VPS managed via [Dockge](https://github.com/louislam/dockge) with Docker containers.
+Production runs from the repo-backed compose file at
+`/opt/aegis/repo/docker-compose.prod.yml`.
 
-| Component         | Details                                                                 |
-| ----------------- | ----------------------------------------------------------------------- |
-| **VPS**           | 4 vCPU, 16GB RAM, Ubuntu (145.223.19.8)                                 |
-| **App Container** | `aegis-app` — Multi-stage Docker build, Next.js standalone on port 3000 |
-| **Database**      | PostgreSQL 16 in Docker (`postgres-postgres-1` on port 5432)            |
-| **Reverse Proxy** | Nginx Proxy Manager with Let's Encrypt SSL (auto-renewal)               |
-| **Domain**        | `aegis.nexlyadvisory.com` — HTTPS with HSTS, HTTP/2                     |
-| **CI/CD**         | GitHub Actions (build + test, Claude Code review)                       |
+| Component | Current State |
+| --- | --- |
+| App root | `/opt/aegis` |
+| Git checkout | `/opt/aegis/repo` |
+| Shared secrets | `/opt/aegis/shared/.env.production` |
+| Legacy env path | `/opt/aegis/.env.production` symlinked to shared env |
+| App container | `aegis-app` bound to `127.0.0.1:3000` |
+| Database | `aegis-postgres` on the internal Compose network only |
+| Reverse proxy | Nginx serves `https://aegis.nexlyadvisory.com` |
+| Backups | `aegis-backup.timer` runs daily at 02:00 and uploads to S3 |
+| Release tracking | `/opt/aegis/shared/current-release` |
+| Legacy compose | Archived as `/opt/aegis/docker-compose.yml.archived-20260307` |
 
-### Docker Deployment
+### Release Flow
+
+1. Merge to `main`
+2. Wait for `ci.yml` to go green
+3. Create an annotated tag in the `vYYYY.MM.DD.N` format
+4. Push the tag
+5. GitHub Actions verifies, bundles, deploys, and health-checks the
+   tagged commit on the VPS
+
+### Health Verification
 
 ```bash
-# Build image (NEXT_PUBLIC_APP_URL is inlined at build time)
-docker build -t aegis:latest .
-
-# Stack managed by Dockge at /docker/aegis/
-# .env contains DB_PASSWORD and BETTER_AUTH_SECRET
-docker compose up -d
+curl -fsS http://127.0.0.1:3000/api/health | jq
+docker compose -p aegis \
+  --env-file /opt/aegis/shared/.env.production \
+  -f /opt/aegis/repo/docker-compose.prod.yml ps
+systemctl status aegis-backup.timer --no-pager
 ```
 
-### Post-Deploy Steps
+For bootstrap, deploy, rollback, backup, and restore procedures, use
+[deploy/README.md](deploy/README.md) and
+[docs/ops/runbook.md](docs/ops/runbook.md).
 
-After a fresh deployment with a new database:
+## Demo Accounts
 
-1. Push schema: `prisma db push`
-2. Disable audit triggers: `ALTER TABLE "Tenant" DISABLE TRIGGER USER;` (repeat for all tables)
-3. Seed data: `npx tsx prisma/seed.ts`
-4. Re-enable triggers: `ALTER TABLE "Tenant" ENABLE TRIGGER USER;`
-5. Apply dashboard views: `psql < prisma/migrations/20260209_dashboard_views.sql`
+The seed script provisions sample users for local/demo environments:
 
-### Demo Accounts
-
-| Role    | Email                              | Password           |
-| ------- | ---------------------------------- | ------------------ |
-| CEO     | `rajesh.deshmukh@apexbank.example` | `TestPassword123!` |
-| CAE     | `priya.sharma@apexbank.example`    | `TestPassword123!` |
-| Auditor | `amit.joshi@apexbank.example`      | `TestPassword123!` |
-| CCO     | `suresh.patil@apexbank.example`    | `TestPassword123!` |
+| Role | Email | Password |
+| --- | --- | --- |
+| CEO | `rajesh.deshmukh@apexbank.example` | `TestPassword123!` |
+| HIA | `priya.sharma@apexbank.example` | `TestPassword123!` |
+| Auditor | `amit.joshi@apexbank.example` | `TestPassword123!` |
+| CCO | `suresh.patil@apexbank.example` | `TestPassword123!` |
 | Auditee | `vikram.kulkarni@apexbank.example` | `TestPassword123!` |
-| Admin   | `admin@testbank.example`           | `TestPassword123!` |
+| Admin | `admin@testbank.example` | `TestPassword123!` |
 
 ## Domain Context
 
-**Target users:** Urban Cooperative Banks (Tier III/IV) under RBI supervision.
+AEGIS is built for Urban Cooperative Banks operating under RBI
+supervision.
 
-| Term         | Description                                                    |
-| ------------ | -------------------------------------------------------------- |
-| **RBIA**     | Risk Based Internal Audit — RBI's mandated audit methodology   |
-| **RAM**      | Risk Assessment Model — 19-parameter scoring for branch risk   |
-| **CRAR**     | Capital to Risk-weighted Assets Ratio (min 9% for UCBs)        |
-| **DAKSH**    | RBI's supervisory scoring system for UCBs                      |
-| **PCA**      | Prompt Corrective Action framework for weak banks              |
-| **NPA**      | Non-Performing Assets classification and provisioning          |
-| **UCB Tier** | Classification by deposit size (Tier 1-4), affects regulations |
+| Term | Description |
+| --- | --- |
+| RBIA | Risk Based Internal Audit |
+| RAM | Risk Assessment Model used for branch prioritization |
+| CRAR | Capital to Risk-weighted Assets Ratio |
+| PCA | Prompt Corrective Action framework |
+| NPA | Non-Performing Assets classification and provisioning |
+| UCB Tier | RBI tiering of cooperative banks by deposit size |
 
-## Roadmap
+## Operations Documentation
 
-### Shipped (v1.0–v6.0)
-
-| Milestone | Focus               | Phases | Status   |
-| --------- | ------------------- | ------ | -------- |
-| v1.0      | Clickable Prototype | 1-4    | Complete |
-| v2.0      | Working Core MVP    | 5-14   | Complete |
-| v3.0      | RBIAS Full Platform | 15-17  | Complete |
-| v4.0      | Platform Hardening  | —      | Complete |
-| v5.0      | Pilot Readiness     | —      | Complete |
-| v6.0      | RBIA Implementation | 18-26  | Complete |
-
-### v7.0 Sample-Based Account Examination (In Progress)
-
-| Phase | Focus                                                                   | Requirements | Status   |
-| ----- | ----------------------------------------------------------------------- | ------------ | -------- |
-| 27    | Schema and Data Models (loan accounts, sampling config, exam questions) | 4            | Complete |
-| 28    | Loan Data Upload (CSV/Excel parsing, fuzzy mapping, import UI)          | 3            | Complete |
-| 29    | Sampling Engine (HIA criteria, locked allocations, auto-selection)      | 4            | Complete |
-| 30    | Account Examination UI (per-account questions, RBI references, notes)   | 7            | Complete |
-| 31    | Instance-Based Scoring (compliance %, 4-point mapping, roll-up)         | 4            | Planned  |
-
-See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for detailed phase breakdowns.
+- [deploy/README.md](deploy/README.md)
+- [docs/ops/runbook.md](docs/ops/runbook.md)
+- [docs/ops/release-checklist.md](docs/ops/release-checklist.md)
+- [docs/ops/repository-hygiene.md](docs/ops/repository-hygiene.md)
 
 ## License
 

@@ -33,6 +33,7 @@ elif [[ -n "${SOURCE}" ]]; then
   fi
 fi
 
+ln -sfn "${ENV_FILE}" "${APP_ROOT}/.env.production"
 ln -sfn "${ENV_FILE}" "${REPO_DIR}/.env.production"
 
 install -D -m 0644 "${SYSTEMD_DIR}/aegis-backup.service" /etc/systemd/system/aegis-backup.service

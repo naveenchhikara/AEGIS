@@ -1,6 +1,7 @@
 {
   "name": "aegis",
   "version": "0.1.0",
+  "description": "Audit, Enterprise Governance & Internal Systems platform for Urban Cooperative Banks",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

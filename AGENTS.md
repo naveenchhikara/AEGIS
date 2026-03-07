@@ -24,12 +24,37 @@ pnpm lint             # Run ESLint
 prettier --write .    # Format files
 ```
 
+### Database
+
+```bash
+pnpm db:generate      # Generate Prisma client
+pnpm db:push          # Sync schema to local database
+pnpm db:migrate       # Create/apply local Prisma migration
+pnpm db:seed          # Seed database via prisma/seed.ts
+pnpm db:studio        # Open Prisma Studio
+```
+
 ### Testing
 
 ```bash
 pnpm test:unit        # Run Vitest unit tests
+pnpm test:coverage    # Run unit tests with coverage
 pnpm test:e2e         # Run Playwright E2E tests
 pnpm test:e2e:ui      # Run Playwright with UI
+```
+
+### Seed Utilities
+
+```bash
+pnpm seed:master-directions # Seed RBI master directions dataset
+pnpm seed:exam-questions    # Seed exam question bank
+pnpm seed:lifecycle         # Seed full audit lifecycle demo data
+```
+
+### Build Utilities
+
+```bash
+pnpm build:analyze    # Build with webpack bundle analysis
 ```
 
 ---

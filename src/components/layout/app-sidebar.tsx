@@ -59,7 +59,7 @@ function SidebarLogo() {
             AEGIS
           </span>
           <span className="text-sidebar-foreground/60 text-[10px] tracking-wider">
-            SAPIEX TECHNOLOGY
+            SAPIEX TECHNOLOGIES
           </span>
         </div>
       )}

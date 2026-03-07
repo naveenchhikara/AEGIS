@@ -72,7 +72,8 @@ function checkMemory(): SubsystemCheck {
   const heapLimitMB = Math.round(v8.heap_size_limit / 1024 / 1024);
   const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
   // Compare against V8 heap size limit (--max-old-space-size), not current allocation
-  const usagePercent = Math.round((mem.heapUsed / v8.heap_size_limit) * 1000) / 10;
+  const usagePercent =
+    Math.round((mem.heapUsed / v8.heap_size_limit) * 1000) / 10;
 
   return {
     status: usagePercent >= 85 ? "warning" : "ok",

@@ -9,7 +9,8 @@ set -euo pipefail
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="${PROJECT_DIR}/.env.production"
+SHARED_DIR="${AEGIS_SHARED_DIR:-${PROJECT_DIR}}"
+ENV_FILE="${ENV_FILE:-${SHARED_DIR}/.env.production}"
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
 CONTAINER_NAME="${CONTAINER_NAME:-aegis-postgres}"
 

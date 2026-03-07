@@ -1,11 +1,17 @@
 import coreWebVitals from "eslint-config-next/core-web-vitals";
 import typescript from "eslint-config-next/typescript";
+import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 const eslintConfig = [
   { ignores: [".claude/", "infra/", ".next/", "playwright-report/"] },
   ...coreWebVitals,
   ...typescript,
   {
+    plugins: {
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
+    },
     rules: {
       // Downgrade to warn — codebase uses `any` extensively with Prisma types
       "@typescript-eslint/no-explicit-any": "warn",

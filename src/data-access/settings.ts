@@ -90,10 +90,7 @@ export async function getTenantSettings(): Promise<TenantSettings | null> {
  * @param data - Validated editable fields only
  */
 export async function updateTenantSettingsDAL(
-  data: Pick<
-    Prisma.TenantUpdateInput,
-    "shortName" | "city" | "settings"
-  >,
+  data: Pick<Prisma.TenantUpdateInput, "shortName" | "city" | "settings">,
 ) {
   // Step 1: Get authenticated session
   const session = await getRequiredSession();

@@ -223,7 +223,8 @@ export function RegulatoryTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sources</SelectItem>
-            <SelectItem value="RBI_INSPECTION">RBI</SelectItem>            <SelectItem value="STATUTORY_AUDITOR">Statutory</SelectItem>
+            <SelectItem value="RBI_INSPECTION">RBI</SelectItem>{" "}
+            <SelectItem value="STATUTORY_AUDITOR">Statutory</SelectItem>
             <SelectItem value="EXTERNAL">External</SelectItem>
           </SelectContent>
         </Select>
@@ -267,8 +268,7 @@ export function RegulatoryTable({
               <DialogHeader>
                 <DialogTitle>Add Regulatory Observation</DialogTitle>
                 <DialogDescription>
-                  Create a new regulatory observation from RBI or other
-                  sources.
+                  Create a new regulatory observation from RBI or other sources.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -287,7 +287,8 @@ export function RegulatoryTable({
                       <SelectContent>
                         <SelectItem value="RBI_INSPECTION">
                           RBI Inspection
-                        </SelectItem>                        <SelectItem value="STATUTORY_AUDITOR">
+                        </SelectItem>{" "}
+                        <SelectItem value="STATUTORY_AUDITOR">
                           Statutory Auditor
                         </SelectItem>
                         <SelectItem value="EXTERNAL">External</SelectItem>
@@ -541,7 +542,8 @@ export function RegulatoryTable({
                     <SelectContent>
                       <SelectItem value="RBI_INSPECTION">
                         RBI Inspection
-                      </SelectItem>                      <SelectItem value="STATUTORY_AUDITOR">
+                      </SelectItem>{" "}
+                      <SelectItem value="STATUTORY_AUDITOR">
                         Statutory Auditor
                       </SelectItem>
                       <SelectItem value="EXTERNAL">External</SelectItem>

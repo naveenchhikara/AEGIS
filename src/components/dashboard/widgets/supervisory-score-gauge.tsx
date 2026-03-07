@@ -10,9 +10,9 @@ import { Shield } from "@/lib/icons";
 
 function getRatingColor(score: number): string {
   if (score >= 4) return "hsl(142 71% 45%)"; // 4-5: Good (green)
-  if (score >= 3) return "hsl(84 60% 45%)";  // 3-4: Satisfactory (yellow-green)
-  if (score >= 2) return "hsl(43 96% 56%)";  // 2-3: Fair (amber)
-  return "hsl(0 84% 60%)";                    // 1-2: Unsatisfactory (red)
+  if (score >= 3) return "hsl(84 60% 45%)"; // 3-4: Satisfactory (yellow-green)
+  if (score >= 2) return "hsl(43 96% 56%)"; // 2-3: Fair (amber)
+  return "hsl(0 84% 60%)"; // 1-2: Unsatisfactory (red)
 }
 
 function getRatingLabel(score: number): string {

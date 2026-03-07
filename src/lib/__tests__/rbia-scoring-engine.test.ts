@@ -176,37 +176,37 @@ describe("computeNodeScore", () => {
 describe("computeModuleScore", () => {
   it("12. Module without critical items returns raw score (no cap)", () => {
     // raw score = 0.9 — no critical items, so no cap
-    const module = parent("m1", [
+    const moduleNode = parent("m1", [
       leaf("i1", "FULLY_COMPLIANT", 9),
       leaf("i2", "NON_COMPLIANT", 1),
     ]);
-    const score = computeModuleScore(module);
+    const score = computeModuleScore(moduleNode);
     expect(score).toBeCloseTo(0.9);
   });
 
   it("13. Module with critical NON_COMPLIANT and raw score > 0.5 returns 0.5 (capped)", () => {
     // 9 FULLY + 1 critical NON_COMPLIANT → raw = 0.9, but capped at 0.5
-    const module = parent("m2", [
+    const moduleNode = parent("m2", [
       leaf("i3", "FULLY_COMPLIANT", 9),
       leaf("i4", "NON_COMPLIANT", 1, true), // critical
     ]);
-    const score = computeModuleScore(module);
+    const score = computeModuleScore(moduleNode);
     expect(score).toBe(0.5);
   });
 
   it("14. Module with critical NON_COMPLIANT and raw score <= 0.5 returns raw score (cap is ceiling, not floor)", () => {
     // 1 FULLY + 9 critical NON_COMPLIANT → raw = 0.1, cap=0.5 doesn't apply (0.1 < 0.5)
-    const module = parent("m3", [
+    const moduleNode = parent("m3", [
       leaf("i5", "FULLY_COMPLIANT", 1),
       leaf("i6", "NON_COMPLIANT", 9, true), // critical
     ]);
-    const score = computeModuleScore(module);
+    const score = computeModuleScore(moduleNode);
     expect(score).toBeCloseTo(0.1);
   });
 
   it("15. Module where all items are null returns null", () => {
-    const module = parent("m4", [leaf("i7", null), leaf("i8", null)]);
-    const score = computeModuleScore(module);
+    const moduleNode = parent("m4", [leaf("i7", null), leaf("i8", null)]);
+    const score = computeModuleScore(moduleNode);
     expect(score).toBeNull();
   });
 });
@@ -324,8 +324,8 @@ describe("floating-point edge case", () => {
     const items = Array.from({ length: 14 }, (_, i) =>
       leaf(`fp${i}`, "FULLY_COMPLIANT", 1),
     );
-    const module = parent("fp-module", items);
-    const score = computeModuleScore(module);
+    const moduleNode = parent("fp-module", items);
+    const score = computeModuleScore(moduleNode);
     expect(score).not.toBeNull();
     expect(toPercentage(score!)).toBe(100);
   });

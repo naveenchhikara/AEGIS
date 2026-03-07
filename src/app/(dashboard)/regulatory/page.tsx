@@ -35,8 +35,8 @@ export default async function RegulatoryPage() {
           Regulatory Observations
         </h1>
         <p className="text-muted-foreground">
-          RBI/Statutory observations tracking and Action Taken Report
-          (ATR) management
+          RBI/Statutory observations tracking and Action Taken Report (ATR)
+          management
         </p>
       </div>
 

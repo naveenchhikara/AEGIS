@@ -1,0 +1,10 @@
+[Unit]
+Description=Run AEGIS PostgreSQL backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+Unit=aegis-backup.service
+
+[Install]
+WantedBy=timers.target

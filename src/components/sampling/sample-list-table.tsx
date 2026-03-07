@@ -79,6 +79,22 @@ interface SampleListTableProps {
   engagementId: string;
 }
 
+function renderSortIcon(
+  activeSortKey: SortKey,
+  activeSortDir: SortDir,
+  column: SortKey,
+) {
+  if (activeSortKey !== column) {
+    return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
+  }
+
+  return activeSortDir === "asc" ? (
+    <ArrowUp className="ml-1 inline h-3 w-3" />
+  ) : (
+    <ArrowDown className="ml-1 inline h-3 w-3" />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
@@ -104,16 +120,6 @@ export function SampleListTable({
       setSortKey(key);
       setSortDir("asc");
     }
-  }
-
-  function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col)
-      return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
-    return sortDir === "asc" ? (
-      <ArrowUp className="ml-1 inline h-3 w-3" />
-    ) : (
-      <ArrowDown className="ml-1 inline h-3 w-3" />
-    );
   }
 
   // ─── Filter + Sort ─────────────────────────────────────────────────────────
@@ -180,35 +186,35 @@ export function SampleListTable({
                 onClick={() => handleSort("accountNo")}
               >
                 Account No
-                <SortIcon col="accountNo" />
+                {renderSortIcon(sortKey, sortDir, "accountNo")}
               </TableHead>
               <TableHead
                 className="cursor-pointer select-none"
                 onClick={() => handleSort("borrowerName")}
               >
                 Borrower Name
-                <SortIcon col="borrowerName" />
+                {renderSortIcon(sortKey, sortDir, "borrowerName")}
               </TableHead>
               <TableHead
                 className="cursor-pointer text-right select-none"
                 onClick={() => handleSort("sanctionAmount")}
               >
                 Sanction Amount
-                <SortIcon col="sanctionAmount" />
+                {renderSortIcon(sortKey, sortDir, "sanctionAmount")}
               </TableHead>
               <TableHead
                 className="cursor-pointer text-right select-none"
                 onClick={() => handleSort("outstandingAmount")}
               >
                 Outstanding
-                <SortIcon col="outstandingAmount" />
+                {renderSortIcon(sortKey, sortDir, "outstandingAmount")}
               </TableHead>
               <TableHead
                 className="cursor-pointer text-right select-none"
                 onClick={() => handleSort("dpd")}
               >
                 DPD
-                <SortIcon col="dpd" />
+                {renderSortIcon(sortKey, sortDir, "dpd")}
               </TableHead>
               <TableHead>Asset Class</TableHead>
               <TableHead>Criteria Bucket</TableHead>

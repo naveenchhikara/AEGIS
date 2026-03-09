@@ -77,7 +77,7 @@ jobs:
           strip_components: 1
 
       - name: Deploy tagged release
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -90,7 +90,7 @@ jobs:
             sudo bash /tmp/aegis-deploy-${{ github.run_id }}/server/deploy-prod.sh ${{ github.ref_name }} /tmp/aegis-deploy-${{ github.run_id }}/aegis.bundle /opt/aegis
 
       - name: Post-deploy health check
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: Cleanup deploy temp files
         if: always()
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}

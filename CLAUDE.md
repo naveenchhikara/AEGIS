@@ -8,9 +8,10 @@ observations, compliance tracking, reporting, and governance in line
 with RBI operating requirements.
 
 **Live:** https://aegis.nexlyadvisory.com
+**GitHub:** [nc-sapiex/AEGIS](https://github.com/nc-sapiex/AEGIS) (private)
 **Production state:** Tag-driven GitHub Actions deploys into the
 repo-backed Docker Compose stack at `/opt/aegis/repo`.
-**Latest verified production release:** `v2026.03.07.3`
+**Deploy:** `git tag -a vYYYY.MM.DD.N -m "message" && git push origin <tag>`
 
 ## Working Style
 
@@ -139,8 +140,8 @@ Production does **not** use Dockge, PM2, or a copied workspace.
 2. Wait for `ci.yml` to pass
 3. Create an annotated tag in the `vYYYY.MM.DD.N` format
 4. Push the tag
-5. `deploy.yml` verifies the tag, creates a git bundle, copies deploy
-   helpers to the VPS, runs bootstrap/deploy scripts, and waits for
+5. `deploy.yml` creates a git bundle, copies deploy helpers to the VPS,
+   runs bootstrap/deploy scripts, and waits for
    `http://127.0.0.1:3000/api/health`
 
 ### Operational Commands

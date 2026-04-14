@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   generateSample,
   type SamplingInput,
@@ -60,6 +60,15 @@ function makePortfolio(n: number): LoanAccountForSampling[] {
 // ─── Test Suite ───────────────────────────────────────────────────────────────
 
 describe("generateSample", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   // ── Test 1: Basic sampling with even bucket allocation ──────────────────────
   describe("basic sampling", () => {
     it("selects correct total count: 10% of 100 accounts = 10", () => {

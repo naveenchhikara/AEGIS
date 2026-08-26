@@ -11,7 +11,7 @@ import { multiSessionClient } from "better-auth/client/plugins";
  */
 export const authClient = createAuthClient({
   // Base URL of the auth server (same domain, so optional)
-  baseURL: process.env.NEXT_PUBLIC_APP_URL,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   plugins: [multiSessionClient()],
 });
 

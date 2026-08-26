@@ -19,17 +19,5 @@ ON "ObservationTimeline" ("observationId", "createdAt");
 CREATE INDEX IF NOT EXISTS idx_observation_version
 ON "Observation" (id, version);
 
--- RLS policy for ObservationRbiCircular (new junction table)
-ALTER TABLE "ObservationRbiCircular" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "ObservationRbiCircular" FORCE ROW LEVEL SECURITY;
-
-CREATE POLICY tenant_isolation_obs_rbi ON "ObservationRbiCircular"
-USING (
-  "observationId" IN (
-    SELECT id FROM "Observation"
-    WHERE "tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid
-  )
-);
-
 -- Grant permissions to aegis_app role
 GRANT SELECT, INSERT, UPDATE, DELETE ON "ObservationRbiCircular" TO aegis_app;

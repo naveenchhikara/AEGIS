@@ -33,10 +33,24 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 # Generate Prisma client (only needs schema, not a live DB)
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm prisma generate
 
+# Build-time placeholders for the server-side auth vars.
+#
+# SKIP_ENV_VALIDATION=1 makes @t3-oss/env-nextjs skip validation and hand back
+# the raw environment — it does NOT supply defaults. So any module that reads a
+# property off `env` during the build sees `undefined`. `src/lib/auth.ts` calls
+# `env.BETTER_AUTH_URL.startsWith("https://")` at module load, which Next.js
+# evaluates while collecting page data, and `undefined.startsWith` throws.
+#
+# These are placeholders, not configuration: both are server-only, so nothing
+# here is inlined into the client bundle, and the container re-evaluates the
+# module against the real values injected at runtime. Only NEXT_PUBLIC_* is
+# baked in at build time, which is why that one is an ARG above.
+ENV BETTER_AUTH_SECRET=build-placeholder-secret-0123456789abcdef0123
+ENV BETTER_AUTH_URL=http://localhost:3000
+
 # Dummy DATABASE_URL for build — Next.js collects page data at build time
 # and the auth route imports Prisma. The proxy in prisma.ts defers connection,
 # but Prisma adapter validation still needs a parseable URL.
-# SKIP_ENV_VALIDATION=1 bypasses @t3-oss/env-nextjs validation at build time.
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" pnpm build
 
 # --- Stage 3: Runner (Production) ---

@@ -55,6 +55,22 @@ describe("authorizeDownloadKey", () => {
     });
   });
 
+  it("rejects keys with too few path segments", () => {
+    const key = `${TENANT_A}/evidence`;
+    expect(authorizeDownloadKey(key, TENANT_A)).toEqual({
+      ok: false,
+      code: "INVALID_FORMAT",
+    });
+  });
+
+  it("rejects keys with empty path segments", () => {
+    const key = `${TENANT_A}//obs-1/file.pdf`;
+    expect(authorizeDownloadKey(key, TENANT_A)).toEqual({
+      ok: false,
+      code: "INVALID_FORMAT",
+    });
+  });
+
   it("rejects malformed audit-reports tenant segment", () => {
     const key = "audit-reports/not-a-uuid/A-001_report.pdf";
     expect(authorizeDownloadKey(key, TENANT_A)).toEqual({

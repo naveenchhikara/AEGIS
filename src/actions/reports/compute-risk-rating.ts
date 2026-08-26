@@ -6,6 +6,10 @@ import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { RiskRatingService } from "@/services/risk-rating/compute";
 import type { ObservationInput } from "@/services/risk-rating/types";
+import {
+  withAuditedMutation,
+  userActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Compute risk rating for an audit engagement.
@@ -76,12 +80,17 @@ export async function computeRiskRating(engagementId: string) {
       ratingService.computeEngagementRating(observationInputs);
 
     // ─── Step 8: Update Engagement ─────────────────────────────
-    await db.auditEngagement.update({
-      where: { id: engagementId },
-      data: {
-        overallRiskRating: ratingResult.ratingBand,
-      },
-    });
+    await withAuditedMutation(
+      userActor(session),
+      "audit_engagement.risk_rating_computed",
+      (tx) =>
+        tx.auditEngagement.update({
+          where: { id: engagementId },
+          data: {
+            overallRiskRating: ratingResult.ratingBand,
+          },
+        }),
+    );
 
     logger.info(
       {

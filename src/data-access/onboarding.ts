@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { withAuditedMutation } from "./audited-mutation";
 
 /**
  * Onboarding Data Access Layer
@@ -116,7 +117,19 @@ export async function getOnboardingProgressFromDb(tenantId: string) {
 export async function completeOnboardingTransaction(
   data: OnboardingCompletionData,
 ): Promise<CompletionResult> {
-  const result = await prisma.$transaction(async (tx) => {
+  // Every table touched below carries audit_trigger, so the whole onboarding
+  // must run inside a session context — without it the first tenant.update
+  // aborts and no bank can be onboarded at all.
+  const result = await withAuditedMutation(
+    {
+      kind: "user",
+      userId: data.userId,
+      tenantId: data.tenantId,
+      ipAddress: data.ipAddress,
+      sessionId: data.sessionId,
+    },
+    "onboarding.completed",
+    async (tx) => {
     // 1. Update tenant record with bank registration + tier data
     await tx.tenant.update({
       where: { id: data.tenantId },
@@ -275,9 +288,10 @@ export async function completeOnboardingTransaction(
       complianceCount: complianceRecords.length,
       departmentCount: createdDepts.length,
       branchCount: createdBranches.length,
-      invitedUserCount: createdUsers.length,
-    };
-  });
+        invitedUserCount: createdUsers.length,
+      };
+    },
+  );
 
   return result;
 }

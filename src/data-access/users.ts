@@ -3,6 +3,7 @@ import { prisma, prismaForTenant } from "@/lib/prisma";
 import { getRequiredSession } from "./session";
 import type { Role } from "@/lib/permissions";
 import type { AuthSession } from "@/lib/auth";
+import { withAuditedMutation, userActor } from "./audited-mutation";
 
 /**
  * Get all users for the current tenant.
@@ -60,15 +61,21 @@ export async function updateUserRoles(
     );
   }
 
-  // Set audit context for role change
-  await prisma.$executeRaw`SELECT set_config('app.current_action', 'user.role_changed', TRUE)`;
-
-  const user = await prismaForTenant(tenantId).user.update({
-    where: { id: userId, tenantId },
-    data: {
-      roles: roles,
-    },
-  });
+  // The previous attempt at audit context here did nothing: set_config(..., TRUE)
+  // is transaction-scoped, and that call ran outside a transaction, so the
+  // setting was discarded before the update. It also never set the tenant.
+  const user = await withAuditedMutation(
+    userActor(s),
+    "user.role_changed",
+    (tx) =>
+      tx.user.update({
+        where: { id: userId, tenantId },
+        data: {
+          roles: roles,
+        },
+      }),
+    justification,
+  );
 
   return user;
 }

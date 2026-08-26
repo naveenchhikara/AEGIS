@@ -38,27 +38,10 @@ const MIGRATION_ALLOWLIST = new Set<string>(
 );
 
 /**
- * Pre-existing gaps this wrapper did NOT fix.
- *
- * These are NOT migrated — they are suspected broken. Each mutates an audited
- * table with its own client and no session context, so the trigger should be
- * inserting a NULL tenantId and aborting the write. They sit on user-facing
- * paths (tenant settings, user administration, compliance requirements) that
- * have no automated coverage, which is why nobody has noticed.
- *
- * Confirm against a database with the triggers attached, then fix and remove
- * from this list. It may only ever SHRINK.
+ * Paths still to migrate. EMPTY — every audited mutation now runs inside
+ * withAuditedMutation. It may only ever SHRINK; do not add to it.
  */
-const KNOWN_UNAUDITED = new Set<string>([
-  "src/actions/admin/manage-branch.ts",
-  "src/actions/repeat-findings/confirm.ts",
-  "src/actions/reports/compute-risk-rating.ts",
-  "src/actions/user-invitations.ts",
-  "src/data-access/compliance-management.ts",
-  "src/data-access/onboarding.ts",
-  "src/data-access/settings.ts",
-  "src/data-access/users.ts",
-]);
+const KNOWN_UNAUDITED = new Set<string>([]);
 
 function walk(dir: string): string[] {
   return readdirSync(join(process.cwd(), dir)).flatMap((entry) => {
@@ -110,9 +93,7 @@ Scheduled work uses systemActor(tenantId); one transaction carries one tenant.`)
   });
 
   it("keeps the known-gap list shrinking, never growing", () => {
-    // Every entry is a suspected-broken write path. Lower this as they are
-    // fixed; never raise it.
-    expect(KNOWN_UNAUDITED.size).toBeLessThanOrEqual(8);
+    expect(KNOWN_UNAUDITED.size).toBe(0);
   });
 
   it("keeps the allowlist shrinking, never growing", () => {

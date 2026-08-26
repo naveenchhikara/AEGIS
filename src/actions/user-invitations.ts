@@ -6,6 +6,10 @@ import { hasPermission, type Role } from "@/lib/permissions";
 import { headers } from "next/headers";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
+import {
+  withAuditedMutation,
+  userActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -43,84 +47,88 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
   }
 
   try {
-    const createdUsers = await prisma.$transaction(async (tx) => {
-      const results = [];
-      for (const invite of users) {
-        // Generate invite token (32 bytes hex)
-        const crypto = await import("crypto");
-        const rawToken = crypto.randomBytes(32).toString("hex");
+    const createdUsers = await withAuditedMutation(
+      userActor(session),
+      "user.invited",
+      async (tx) => {
+        const results = [];
+        for (const invite of users) {
+          // Generate invite token (32 bytes hex)
+          const crypto = await import("crypto");
+          const rawToken = crypto.randomBytes(32).toString("hex");
 
-        // Hash the token with bcrypt before storing (security best practice)
-        const tokenHash = await bcrypt.hash(rawToken, 12);
+          // Hash the token with bcrypt before storing (security best practice)
+          const tokenHash = await bcrypt.hash(rawToken, 12);
 
-        const user = await tx.user.create({
-          data: {
-            email: invite.email,
-            name: invite.name,
-            roles: invite.roles as any[],
-            tenantId,
-            status: "INVITED",
-            invitedAt: new Date(),
-            invitedBy: session.user.id,
-            inviteTokenHash: tokenHash,
-            inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          },
-        });
-
-        // Create branch assignments for AUDITEE users
-        if (
-          invite.roles.includes("AUDITEE") &&
-          invite.branchAssignments &&
-          invite.branchAssignments.length > 0
-        ) {
-          const branches = await tx.branch.findMany({
-            where: {
+          const user = await tx.user.create({
+            data: {
+              email: invite.email,
+              name: invite.name,
+              roles: invite.roles as any[],
               tenantId,
-              code: { in: invite.branchAssignments },
+              status: "INVITED",
+              invitedAt: new Date(),
+              invitedBy: session.user.id,
+              inviteTokenHash: tokenHash,
+              inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
           });
 
-          await Promise.all(
-            branches.map((branch) =>
-              tx.userBranchAssignment.create({
-                data: {
-                  userId: user.id,
-                  branchId: branch.id,
-                  tenantId,
-                },
-              }),
-            ),
+          // Create branch assignments for AUDITEE users
+          if (
+            invite.roles.includes("AUDITEE") &&
+            invite.branchAssignments &&
+            invite.branchAssignments.length > 0
+          ) {
+            const branches = await tx.branch.findMany({
+              where: {
+                tenantId,
+                code: { in: invite.branchAssignments },
+              },
+            });
+
+            await Promise.all(
+              branches.map((branch) =>
+                tx.userBranchAssignment.create({
+                  data: {
+                    userId: user.id,
+                    branchId: branch.id,
+                    tenantId,
+                  },
+                }),
+              ),
+            );
+          }
+
+          // Log invitation email (console fallback — SES integration in Phase 8)
+          console.log(
+            `[INVITATION] Email would be sent to ${invite.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(invite.email)}`,
           );
+
+          results.push({ id: user.id, email: user.email, name: user.name });
         }
 
-        // Log invitation email (console fallback — SES integration in Phase 8)
-        console.log(
-          `[INVITATION] Email would be sent to ${invite.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(invite.email)}`,
-        );
+        // Audit log
+        await tx.auditLog.create({
+          data: {
+            tenantId,
+            tableName: "User",
+            recordId: tenantId,
+            operation: "CREATE",
+            actionType: "users.invited",
+            newData: {
+              count: results.length,
+              emails: results.map((r) => r.email),
+            } as any,
+            userId: session.user.id,
+            sessionId: session.session.id,
+            ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
+          },
+        });
 
-        results.push({ id: user.id, email: user.email, name: user.name });
-      }
-
-      // Audit log
-      await tx.auditLog.create({
-        data: {
-          tenantId,
-          tableName: "User",
-          recordId: tenantId,
-          operation: "CREATE",
-          actionType: "users.invited",
-          newData: {
-            count: results.length,
-            emails: results.map((r) => r.email),
-          } as any,
-          userId: session.user.id,
-          sessionId: session.session.id,
-          ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-        },
-      });
-
-      return results;
-    });
+        return results;
+    },
+    );
 
     return { success: true, error: null, data: createdUsers };
   } catch (error) {
@@ -167,17 +175,31 @@ export async function acceptInvitation(
       };
     }
 
+    // An invited user always belongs to a tenant; fail cleanly rather than
+    // asserting, since AuditLog.tenantId is NOT NULL.
+    const tenantId = user.tenantId;
+    if (!tenantId) {
+      return { success: false, error: "Invitation is not linked to a bank." };
+    }
+
     // Activate user: clear token, update status
     // Note: Better Auth's signUp.email handles password hashing internally with bcrypt
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        status: "ACTIVE",
-        inviteTokenHash: null,
-        inviteExpiry: null,
-        emailVerified: true,
-      },
-    });
+    await withAuditedMutation(
+      // The invitee is not signed in; they are activating their own account,
+      // so they are the honest Actor for this change.
+      { kind: "user", userId: user.id, tenantId },
+      "user.invitation_accepted",
+      (tx) =>
+        tx.user.update({
+          where: { id: user.id },
+          data: {
+            status: "ACTIVE",
+            inviteTokenHash: null,
+            inviteExpiry: null,
+            emailVerified: true,
+          },
+        }),
+    );
 
     // Create audit log
     await prisma.auditLog.create({
@@ -229,13 +251,18 @@ export async function resendInvitation(userId: string) {
     const tokenHash = await bcrypt.hash(rawToken, 12);
 
     // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
-    await prisma.user.updateMany({
-      where: { id: userId, tenantId },
-      data: {
-        inviteTokenHash: tokenHash,
-        inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    });
+    await withAuditedMutation(
+      userActor(session),
+      "user.invitation_resent",
+      (tx) =>
+        tx.user.updateMany({
+          where: { id: userId, tenantId },
+          data: {
+            inviteTokenHash: tokenHash,
+            inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+        }),
+    );
 
     console.log(
       `[INVITATION RESEND] Email would be sent to ${user.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(user.email)}`,
@@ -273,7 +300,11 @@ export async function revokeInvitation(userId: string) {
     }
 
     // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
-    await prisma.user.deleteMany({ where: { id: userId, tenantId } });
+    await withAuditedMutation(
+      userActor(session),
+      "user.invitation_revoked",
+      (tx) => tx.user.deleteMany({ where: { id: userId, tenantId } }),
+    );
 
     // Audit log
     await prisma.auditLog.create({

@@ -33,7 +33,11 @@ assertSafeSeedTarget({
   allowDestructiveSeed: process.env.ALLOW_DESTRUCTIVE_SEED,
 });
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required for seeding");
+}
+const adapter = new PrismaPg({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
 // ─── Severity / status mappers ───────────────────────────────────────────────

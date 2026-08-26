@@ -2,11 +2,11 @@
 
 Source: security hygiene backlog items tracked outside wayfinder.
 
-- [ ] Guard `prisma/seed.ts` against production (`NODE_ENV`/database-name checks with explicit override)
-- [ ] Run git history secret scan
-- [ ] Remove auth-secret fallback and harden environment handling
-- [ ] Guard unguarded server action and improve cron logging hygiene
-- [ ] Cosmetic repository hygiene (baked-in URLs and leaked IP addresses)
+- [x] Guard `prisma/seed.ts` against production (`NODE_ENV`/database-name checks with explicit override)
+- [x] Run git history secret scan
+- [x] Remove auth-secret fallback and harden environment handling
+- [x] Guard unguarded server action and improve cron logging hygiene
+- [x] Cosmetic repository hygiene (baked-in URLs and leaked IP addresses)
 
 Notes:
 - This document is intentionally committed as a static reference.

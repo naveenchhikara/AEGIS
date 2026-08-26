@@ -110,4 +110,19 @@ describe("GET /api/download", () => {
     expect(response.status).toBe(403);
     expect(generateDownloadUrlMock).not.toHaveBeenCalled();
   });
+
+  it("returns 403 when tenant context is missing", async () => {
+    getOptionalSessionMock.mockResolvedValue({
+      user: { id: "user-1", tenantId: "  " },
+    });
+
+    const response = await GET(
+      new NextRequest(
+        "http://localhost/api/download?key=tenant-a/evidence/file.pdf",
+      ),
+    );
+
+    expect(response.status).toBe(403);
+    expect(generateDownloadUrlMock).not.toHaveBeenCalled();
+  });
 });

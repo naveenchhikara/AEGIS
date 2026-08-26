@@ -54,7 +54,15 @@ export async function GET(request: NextRequest) {
   }
 
   // Restrict downloads to the authenticated tenant namespace
-  const tenantId = session.user.tenantId;
+  const tenantId = session.user.tenantId?.trim();
+  if (!tenantId) {
+    logger.warn(
+      { key: key.slice(0, 100), userId: session.user.id },
+      "Download rejected: missing tenant context",
+    );
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const isTenantScopedKey =
     key.startsWith(`${tenantId}/`) ||
     key.startsWith(`audit-reports/${tenantId}/`);

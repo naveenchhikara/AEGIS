@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/data-access/session";
+import { authorizeDownloadKey } from "@/lib/authorize-download";
 import { generateDownloadUrl } from "@/lib/s3";
 import { logger } from "@/lib/logger";
 
@@ -47,6 +48,31 @@ export async function GET(request: NextRequest) {
       { key: key.slice(0, 100), userId: session.user.id },
       "Download rejected: invalid S3 key format",
     );
+    return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
+  }
+
+  const authz = authorizeDownloadKey(key, session.user.tenantId);
+  if (!authz.ok) {
+    if (authz.code === "TENANT_MISMATCH") {
+      logger.warn(
+        { key: key.slice(0, 100), userId: session.user.id },
+        "Download rejected: tenant mismatch",
+      );
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    logger.warn(
+      { key: key.slice(0, 100), userId: session.user.id, reason: authz.code },
+      "Download rejected: authorization failed",
+    );
+
+    if (authz.code === "MISSING_TENANT") {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
     return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
   }
 

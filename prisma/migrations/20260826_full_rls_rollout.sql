@@ -1127,13 +1127,15 @@ BEGIN
       AND policyname = 'tenant_isolation_policy'
   ) THEN
     CREATE POLICY tenant_isolation_policy ON "ObservationRbiCircular"
-      USING ("observationId" IN (
-      SELECT "id" FROM "Observation"
-      WHERE "tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid
+      USING (EXISTS (
+      SELECT 1 FROM "Observation"
+      WHERE "Observation"."id" = "ObservationRbiCircular"."observationId"
+        AND "Observation"."tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid
     ))
-      WITH CHECK ("observationId" IN (
-      SELECT "id" FROM "Observation"
-      WHERE "tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid
+      WITH CHECK (EXISTS (
+      SELECT 1 FROM "Observation"
+      WHERE "Observation"."id" = "ObservationRbiCircular"."observationId"
+        AND "Observation"."tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid
     ));
   END IF;
 END

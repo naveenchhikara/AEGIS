@@ -10,16 +10,38 @@ const RLS_MIGRATION_PATH = join(
 
 function getTenantScopedTablesFromSchema(): string[] {
   const schema = readFileSync(SCHEMA_PATH, "utf-8");
-  const modelMatches = schema.matchAll(/model\s+(\w+)\s*\{([\s\S]*?)\n\}/g);
-
   const tables = ["Tenant"];
+  const lines = schema.split("\n");
+  let currentModelName: string | null = null;
+  let braceDepth = 0;
+  let currentModelBody: string[] = [];
 
-  for (const [, modelName, modelBody] of modelMatches) {
-    if (/\btenantId\s+String\b/.test(modelBody)) {
-      tables.push(modelName);
+  for (const line of lines) {
+    if (!currentModelName) {
+      const modelStart = line.match(/^model\s+(\w+)\s*\{/);
+      if (modelStart) {
+        currentModelName = modelStart[1];
+        braceDepth = 1;
+        currentModelBody = [];
+      }
+      continue;
+    }
+
+    braceDepth += (line.match(/\{/g) || []).length;
+    braceDepth -= (line.match(/\}/g) || []).length;
+    currentModelBody.push(line);
+
+    if (braceDepth === 0) {
+      if (/\btenantId\s+String\b/.test(currentModelBody.join("\n"))) {
+        tables.push(currentModelName);
+      }
+      currentModelName = null;
+      currentModelBody = [];
     }
   }
 
+  // ObservationRbiCircular has no tenantId column; it is tenant-scoped
+  // through Observation.observationId -> Observation.tenantId.
   tables.push("ObservationRbiCircular");
 
   return [...new Set(tables)];

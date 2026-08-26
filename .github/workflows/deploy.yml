@@ -1,9 +1,26 @@
 name: Deploy Production
 
+# DEAD PIPELINE — deliberately unreachable. Do not restore the tag trigger.
+#
+# This workflow deploys to the pre-2026-08-23 VPS layout: it ships a git bundle
+# over scp and runs deploy-prod.sh, which bootstraps its own Docker Compose
+# stack into /opt/aegis. That machine was reprovisioned and no longer exists in
+# that form. The box now runs Coolify, whose `coolify-proxy` holds ports 80 and
+# 443 for every site on it, so a run that got far enough to bind those ports
+# would contend with the proxy serving aegis.nexlyadvisory.com,
+# nexlyadvisory.com and sapiex.tech.
+#
+# AEGIS deploys by merging to `main`; Coolify builds and releases automatically.
+# There is no tag step.
+#
+# The trigger is removed here rather than only disabling the workflow in the
+# Actions UI, because that toggle is repository state, not repository content:
+# it survives no fork or restore, anyone with write access can flip it back,
+# and it was flipped back at least once (2026-08-26). workflow_dispatch keeps
+# the file runnable on purpose, by a human who has read this comment, if the
+# old pipeline is ever needed for reference.
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 jobs:
   verify:

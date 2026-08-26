@@ -105,9 +105,15 @@ export async function processNotifications(): Promise<void> {
       );
       for (const id of ids) claimed.add(id);
     } catch (error) {
-      console.error(
-        `[notification-processor] Claim failed for tenant ${tenantId}; ${ids.length} left PENDING for the next run`,
-        error,
+      logger.error(
+        {
+          action: "notification_claim_failed",
+          tenantId,
+          stranded: ids.length,
+          message:
+            error instanceof Error ? error.message : "Unknown claim error",
+        },
+        "Failed to claim notifications; left PENDING for the next run",
       );
     }
   }

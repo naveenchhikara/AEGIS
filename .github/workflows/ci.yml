@@ -172,8 +172,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # A hard gate: a high or critical advisory against a production
+      # dependency fails CI. This was advisory-only while the backlog was
+      # non-empty; #59 cleared every high/critical, so the gate now reflects a
+      # standard the codebase actually meets. Restoring continue-on-error to
+      # get a red build green again would silently reopen that backlog — fix
+      # or override the advisory instead.
       - name: Run security audit
-        continue-on-error: true
         run: pnpm audit --prod --audit-level=high
 
   # E2E tests — only run on PRs to main (not on every push)

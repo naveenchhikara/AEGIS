@@ -60,7 +60,7 @@ export async function startWorkers(): Promise<void> {
   await queue.start();
   started = true;
 
-  console.log("[pg-boss] Started successfully");
+  logger.info({ action: "pg_boss_started" }, "pg-boss started successfully");
 
   // Create queues with retry configuration
   await queue.createQueue(JOB_NAMES.PROCESS_NOTIFICATIONS, QUEUE_OPTIONS);
@@ -91,5 +91,5 @@ export async function stopWorkers(): Promise<void> {
   started = false;
   boss = null;
 
-  console.log("[pg-boss] Stopped gracefully");
+  logger.info({ action: "pg_boss_stopped" }, "pg-boss stopped gracefully");
 }

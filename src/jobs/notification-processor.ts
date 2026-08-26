@@ -9,6 +9,7 @@ import {
   markNotificationSent,
   markNotificationFailed,
 } from "@/data-access/notifications";
+import { logger } from "@/lib/logger";
 
 /**
  * Notification processor job handler.
@@ -67,8 +68,12 @@ export async function processNotifications(): Promise<void> {
 
   if (notifications.length === 0) return;
 
-  console.log(
-    `[notification-processor] Processing ${notifications.length} notifications`,
+  logger.info(
+    {
+      action: "notification_processor_start",
+      notifications: notifications.length,
+    },
+    "Processing notifications",
   );
 
   // Mark all as PROCESSING to prevent double-pickup. The queue is read across
@@ -164,9 +169,13 @@ async function processOneNotification(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown processing error";
-    console.error(
-      `[notification-processor] Failed to process ${notification.id}:`,
-      message,
+    logger.error(
+      {
+        action: "notification_process_failed",
+        notificationId: notification.id,
+        message,
+      },
+      "Failed to process notification",
     );
     await markNotificationFailed(notification.id, message);
   }
@@ -220,9 +229,13 @@ async function processBatchedNotifications(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown batch processing error";
-    console.error(
-      `[notification-processor] Batch ${_batchKey} failed:`,
-      message,
+    logger.error(
+      {
+        action: "notification_batch_failed",
+        batchKey: _batchKey,
+        message,
+      },
+      "Failed to process notification batch",
     );
     for (const n of notifications) {
       await markNotificationFailed(n.id, message);

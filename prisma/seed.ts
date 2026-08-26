@@ -25,6 +25,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 import { randomUUID } from "crypto";
 import { withTriggersDetached } from "../src/lib/audit-triggers";
+import { assertSafeSeedTarget } from "../src/lib/seed-guard";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -92,6 +93,11 @@ function fiscalYear(dateStr: string): number {
 }
 
 async function main() {
+  assertSafeSeedTarget({
+    nodeEnv: process.env.NODE_ENV,
+    databaseUrl: process.env.DATABASE_URL,
+    allowDestructiveSeed: process.env.ALLOW_DESTRUCTIVE_SEED,
+  });
   console.log("🌱 Seeding AEGIS database...\n");
 
   // ─── 1. Clean existing data ──────────────────────────────────────────

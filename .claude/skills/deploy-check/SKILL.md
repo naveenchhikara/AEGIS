@@ -10,7 +10,8 @@ Verify the production deployment on the AEGIS VPS. Run all checks and report pas
 
 ## VPS Connection
 
-- **SSH:** `ssh vps` (alias configured in `~/.ssh/config` — host `145.223.19.8`, user `root`, key `~/.ssh/vps_key`)
+- **SSH:** `ssh vps` (alias configured in `~/.ssh/config`; host/user/key
+  are managed outside this repository)
 - **Project dir:** `/root/.openclaw/workspace/projects/aegis/repo`
 - If SSH times out after 5 seconds, report FAIL and stop — do not retry endlessly
 

@@ -19,6 +19,9 @@ import { generateOrgStructureTemplate } from "@/lib/excel-templates/org-structur
 import { parseOrgStructureExcel } from "@/lib/excel-parsers/org-structure-parser";
 import type { BranchEntry, DepartmentEntry } from "@/types/onboarding";
 import { logger } from "@/lib/logger";
+import { getRequiredSession } from "@/data-access/session";
+import { hasPermission } from "@/lib/permissions";
+import type { Role } from "@/generated/prisma/enums";
 
 type DownloadResult =
   | {
@@ -42,12 +45,25 @@ type UploadResult =
       error: string;
     };
 
+async function requireOnboardingPermission() {
+  const session = await getRequiredSession();
+  if (
+    !hasPermission(
+      (session.user.roles as Role[] | undefined) ?? [],
+      "admin:manage_settings",
+    )
+  ) {
+    throw new Error("Unauthorized: admin:manage_settings permission required");
+  }
+}
+
 /**
  * Generate and return Excel template as base64 string.
- * No auth check needed - template is generic, no tenant data.
+ * Requires onboarding admin permission.
  */
 export async function downloadOrgStructureTemplate(): Promise<DownloadResult> {
   try {
+    await requireOnboardingPermission();
     const buffer = await generateOrgStructureTemplate();
     const base64 = buffer.toString("base64");
 
@@ -79,6 +95,7 @@ export async function uploadOrgStructureExcel(
   formData: FormData,
 ): Promise<UploadResult> {
   try {
+    await requireOnboardingPermission();
     // Extract file from FormData
     const file = formData.get("file") as File | null;
 

@@ -56,7 +56,8 @@ export async function renderEmailTemplate(
   const appUrl =
     (p.appUrl as string) ??
     process.env.NEXT_PUBLIC_APP_URL ??
-    "https://app.aegis.in";
+    process.env.BETTER_AUTH_URL ??
+    "http://localhost:3000";
 
   let element: React.ReactElement;
   let subject: string;

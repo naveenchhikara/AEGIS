@@ -10,4 +10,6 @@ Source: security hygiene backlog items tracked outside wayfinder.
 
 Notes:
 - This document is intentionally committed as a static reference.
+- The checklist above is preserved from the original backlog wording; the
+  linked issue implementation tracks completion status.
 - Tenant purge runbook work remains out of scope for this backlog file.

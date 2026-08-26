@@ -10,12 +10,12 @@ function getDatabaseName(databaseUrl: string): string {
 }
 
 export function assertSafeSeedTarget(input: SeedGuardInput) {
-  if (input.allowDestructiveSeed === "true") {
-    return;
-  }
-
   if (!input.databaseUrl) {
     throw new Error("DATABASE_URL is required for seeding");
+  }
+
+  if (input.allowDestructiveSeed === "true") {
+    return;
   }
 
   const nodeEnv = input.nodeEnv ?? "development";

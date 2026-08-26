@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { assertSafeSeedTarget } from "@/lib/seed-guard";
 
 describe("assertSafeSeedTarget", () => {
+  it("throws when database URL is missing", () => {
+    expect(() =>
+      assertSafeSeedTarget({
+        nodeEnv: "development",
+      }),
+    ).toThrow(/DATABASE_URL is required for seeding/);
+  });
+
   it("throws in production", () => {
     expect(() =>
       assertSafeSeedTarget({

@@ -7,8 +7,8 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Intern
 ## Live Instance
 
 - **URL:** https://aegis.nexlyadvisory.com
-- **Users:** 4 accounts (CEO, Auditor, CAE, CCO) with role-based access
-- **Infrastructure:** VPS (4 vCPU, 16GB RAM) · PostgreSQL 16 · Nginx + SSL · systemd
+- **Hosting:** Coolify (self-hosted PaaS) · managed PostgreSQL 16 · Traefik + Let's Encrypt TLS
+- **Demo tenants:** Apex Sahakari Bank (5 users, 12 branches, 35 observations) + a second isolation-test tenant, reseeded fresh 2026-08-26
 
 ## Tech Stack
 
@@ -21,11 +21,11 @@ AEGIS (Audit, Enterprise Governance & Internal Systems) is a **Risk-Based Intern
 | Auth         | Better Auth (bcrypt, RBAC, session cookies)   |
 | i18n         | next-intl (English, Hindi, Marathi, Gujarati) |
 | File Storage | AWS S3 (Mumbai region)                        |
-| Email        | AWS SES (DKIM verified)                       |
+| Email        | AWS SES (optional; disabled when unconfigured)|
 | Reports      | ExcelJS (XLSX) + @react-pdf/renderer (PDF)    |
 | Jobs         | pg-boss                                       |
 | Testing      | Playwright (E2E) + Vitest (unit)              |
-| Deployment   | Docker Compose, Nginx, Certbot SSL, systemd   |
+| Deployment   | Coolify (Dockerfile build) + Traefik          |
 | IaC          | AWS CDK (in `infra/`)                         |
 | CI/CD        | GitHub Actions                                |
 

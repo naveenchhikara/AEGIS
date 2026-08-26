@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
   }
 
   if (objectType === "EVIDENCE") {
+    const isBmEvidenceKey = key.startsWith(`${tenantId}/bm-evidence/`);
+
     if (!canAccessEvidenceByRole(session.user.roles)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
@@ -126,14 +128,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
+    if (isBmEvidenceKey && !evidence.actionPoint) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
     if (requiresBranchScopeForEvidence(session.user.roles)) {
       const evidenceBranchId =
-        evidence.observation?.branchId ??
-        evidence.actionPoint?.branchId ??
-        evidence.examinationResponse?.engagement.branchId ??
-        evidence.newExaminationResponse?.engagement.branchId ??
-        evidence.accountExamResponse?.engagement.branchId ??
-        null;
+        isBmEvidenceKey
+          ? evidence.actionPoint?.branchId ?? null
+          : evidence.observation?.branchId ??
+            evidence.examinationResponse?.engagement.branchId ??
+            evidence.newExaminationResponse?.engagement.branchId ??
+            evidence.accountExamResponse?.engagement.branchId ??
+            evidence.actionPoint?.branchId ??
+            null;
 
       if (!evidenceBranchId) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 });

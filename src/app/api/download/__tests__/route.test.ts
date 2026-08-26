@@ -80,4 +80,34 @@ describe("GET /api/download", () => {
       "audit-reports/tenant-a/report.pdf",
     );
   });
+
+  it("returns 403 for cross-tenant report keys", async () => {
+    getOptionalSessionMock.mockResolvedValue({
+      user: { id: "user-1", tenantId: "tenant-a" },
+    });
+
+    const response = await GET(
+      new NextRequest(
+        "http://localhost/api/download?key=audit-reports/tenant-b/report.pdf",
+      ),
+    );
+
+    expect(response.status).toBe(403);
+    expect(generateDownloadUrlMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when tenant id is only a prefix match", async () => {
+    getOptionalSessionMock.mockResolvedValue({
+      user: { id: "user-1", tenantId: "tenant-a" },
+    });
+
+    const response = await GET(
+      new NextRequest(
+        "http://localhost/api/download?key=audit-reports/tenant-abc/report.pdf",
+      ),
+    );
+
+    expect(response.status).toBe(403);
+    expect(generateDownloadUrlMock).not.toHaveBeenCalled();
+  });
 });

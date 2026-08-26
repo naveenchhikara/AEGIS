@@ -11,6 +11,8 @@ on:
       - "tsconfig*.json"
       - "next.config.*"
       - "playwright.config.*"
+      - "Dockerfile"
+      - ".dockerignore"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
@@ -22,6 +24,8 @@ on:
       - "tsconfig*.json"
       - "next.config.*"
       - "playwright.config.*"
+      - "Dockerfile"
+      - ".dockerignore"
       - ".github/workflows/ci.yml"
 
 # Prevent concurrent deployments on main, cancel stale PR runs
@@ -123,6 +127,33 @@ jobs:
           BETTER_AUTH_SECRET: "ci-build-secret-0123456789abcdef0123456789abcdef"
           BETTER_AUTH_URL: "http://localhost:3000"
           NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+  # Builds the actual production image, the way Coolify does on every merge.
+  #
+  # The `build` job above is NOT a substitute: it runs `pnpm build` with the env
+  # vars supplied inline, so it stays green even when the Dockerfile does not
+  # define them. That is exactly how a broken image reached production — CI was
+  # green, the deploy failed, and the site sat on the previous release.
+  #
+  # Deliberately passes NO build args, so the image is built purely from the
+  # Dockerfile's own defaults. If a change makes the build depend on a value the
+  # Dockerfile does not provide, this job fails here rather than at deploy time.
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   unit-test:
     runs-on: ubuntu-latest

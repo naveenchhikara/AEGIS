@@ -29,10 +29,13 @@ export const prisma = new Proxy(
   {} as ReturnType<typeof prismaClientSingleton>,
   {
     get(_target, prop) {
+      // Cache unconditionally. The previous dev-only cache meant that in
+      // production (`next start`) every property access constructed a new
+      // PrismaClient with its own pg pool (max 25) — an unbounded connection
+      // leak that exhausted Postgres ("sorry, too many clients already")
+      // under parallel load in e2e, and leaked pools on the live deployment.
       const instance = globalThis.prismaGlobal ?? prismaClientSingleton();
-      if (process.env.NODE_ENV !== "production") {
-        globalThis.prismaGlobal = instance;
-      }
+      globalThis.prismaGlobal = instance;
       return Reflect.get(instance, prop);
     },
   },

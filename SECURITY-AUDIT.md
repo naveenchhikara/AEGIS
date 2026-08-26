@@ -66,7 +66,8 @@ aws s3api get-bucket-policy --bucket $S3_BUCKET_NAME --region ap-south-1
 - [ ] Production implementation completed and verified
 - [ ] Evidence captured in runbook checks
 
-**Decision:** Use **route 2** from investigation DSEC-04:
+**Decision:** Use the **encrypted secondary volume** option from
+investigation issue #56:
 
 1. Attach a dedicated block device for Docker data
 2. Encrypt it with LUKS (AES-256)
@@ -81,8 +82,8 @@ aws s3api get-bucket-policy --bucket $S3_BUCKET_NAME --region ap-south-1
 
 **Explicitly Rejected / Deferred:**
 
-- Route 3 (provider-level encryption only): rejected as insufficient for RBI-facing assurance
-- Route 1 (full-disk reprovision): deferred until a restore drill is completed and scheduled
+- Provider-level encryption only: rejected as insufficient for RBI-facing assurance
+- Full-disk reprovision and restore: deferred until a restore drill is completed and scheduled
 
 **Verification Commands (run via SSH to VPS after implementation):**
 

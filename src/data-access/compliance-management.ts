@@ -2,6 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { prismaForTenant } from "./prisma";
+import { withAuditedMutation } from "./audited-mutation";
+import type { Actor } from "@/lib/session-context";
 
 /**
  * Compliance Management Data Access Layer
@@ -25,30 +27,33 @@ export interface CreateCustomRequirementInput {
 }
 
 export async function createCustomRequirement(
+  actor: Actor,
   input: CreateCustomRequirementInput,
 ) {
-  const db = prismaForTenant(input.tenantId);
-  return db.complianceRequirement.create({
-    data: {
-      tenantId: input.tenantId,
-      requirement: input.requirement,
-      category: input.category,
-      status: "PENDING",
-      title: input.title,
-      description: input.description,
-      priority: input.priority,
-      frequency: input.frequency,
-      isCustom: true,
-      rbiCircularId: input.rbiCircularId || undefined,
-      ownerId: input.ownerId || undefined,
-      nextReviewDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    },
-  });
+  return withAuditedMutation(actor, "compliance.requirement_created", (tx) =>
+    tx.complianceRequirement.create({
+      data: {
+        tenantId: input.tenantId,
+        requirement: input.requirement,
+        category: input.category,
+        status: "PENDING",
+        title: input.title,
+        description: input.description,
+        priority: input.priority,
+        frequency: input.frequency,
+        isCustom: true,
+        rbiCircularId: input.rbiCircularId || undefined,
+        ownerId: input.ownerId || undefined,
+        nextReviewDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      },
+    }),
+  );
 }
 
 // ─── N/A Marking (CMPL-03) ──────────────────────────────────────────────────
 
 export async function markRequirementNotApplicable(
+  actor: Actor,
   tenantId: string,
   requirementId: string,
   reason: string,
@@ -64,13 +69,20 @@ export async function markRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return db.complianceRequirement.update({
-    where: { id: requirementId, tenantId },
-    data: { notApplicableReason: reason },
-  });
+  return withAuditedMutation(
+    actor,
+    "compliance.marked_na",
+    (tx) =>
+      tx.complianceRequirement.update({
+        where: { id: requirementId, tenantId },
+        data: { notApplicableReason: reason },
+      }),
+    reason,
+  );
 }
 
 export async function revertRequirementNotApplicable(
+  actor: Actor,
   tenantId: string,
   requirementId: string,
 ) {
@@ -84,13 +96,15 @@ export async function revertRequirementNotApplicable(
     throw new Error("Requirement not found");
   }
 
-  return db.complianceRequirement.update({
-    where: { id: requirementId, tenantId },
-    data: {
-      notApplicableReason: null,
-      status: "PENDING",
-    },
-  });
+  return withAuditedMutation(actor, "compliance.na_reverted", (tx) =>
+    tx.complianceRequirement.update({
+      where: { id: requirementId, tenantId },
+      data: {
+        notApplicableReason: null,
+        status: "PENDING",
+      },
+    }),
+  );
 }
 
 // ─── Master Directions (Read-Only) ──────────────────────────────────────────

@@ -1,5 +1,10 @@
 import "server-only";
 import { prismaForTenant } from "./prisma";
+import {
+  withAuditedMutation,
+  systemActor,
+  userActor,
+} from "./audited-mutation";
 import type { AuthSession as Session } from "@/lib/auth";
 
 /**
@@ -39,22 +44,26 @@ export async function createNotification(
   },
 ) {
   const tenantId = extractTenantId(session);
-  const db = prismaForTenant(tenantId);
 
   const sendAfter = params.batchKey
     ? new Date(Date.now() + BATCH_WINDOW_MS)
     : new Date();
 
-  return db.notificationQueue.create({
-    data: {
-      tenantId,
-      recipientId: params.recipientId,
-      type: params.type as any,
-      payload: params.payload as object,
-      batchKey: params.batchKey ?? null,
-      sendAfter,
-    },
-  });
+  return withAuditedMutation(
+    userActor(session),
+    "notification.queued",
+    (tx) =>
+      tx.notificationQueue.create({
+        data: {
+          tenantId,
+          recipientId: params.recipientId,
+          type: params.type as any,
+          payload: params.payload as object,
+          batchKey: params.batchKey ?? null,
+          sendAfter,
+        },
+      }),
+  );
 }
 
 // ─── getNotificationPreferences ────────────────────────────────────────────
@@ -181,29 +190,31 @@ export async function markNotificationSent(
     tenantId: string;
   },
 ) {
-  const { prisma } = await import("@/lib/prisma");
-
-  await prisma.$transaction([
-    prisma.notificationQueue.update({
-      where: { id: notificationId },
-      data: {
-        status: "SENT",
-        processedAt: new Date(),
-      },
-    }),
-    prisma.emailLog.create({
-      data: {
-        tenantId: params.tenantId,
-        recipientEmail: params.recipientEmail,
-        recipientName: params.recipientName,
-        subject: params.subject,
-        templateName: params.templateName,
-        sesMessageId: params.sesMessageId,
-        status: "SENT",
-        notificationIds: [notificationId],
-      },
-    }),
-  ]);
+  await withAuditedMutation(
+    systemActor(params.tenantId),
+    "notification.sent",
+    async (tx) => {
+      await tx.notificationQueue.update({
+        where: { id: notificationId },
+        data: {
+          status: "SENT",
+          processedAt: new Date(),
+        },
+      });
+      await tx.emailLog.create({
+        data: {
+          tenantId: params.tenantId,
+          recipientEmail: params.recipientEmail,
+          recipientName: params.recipientName,
+          subject: params.subject,
+          templateName: params.templateName,
+          sesMessageId: params.sesMessageId,
+          status: "SENT",
+          notificationIds: [notificationId],
+        },
+      });
+    },
+  );
 }
 
 // ─── markNotificationFailed ────────────────────────────────────────────────
@@ -225,27 +236,29 @@ export async function markNotificationFailed(
 
   const newRetryCount = notification.retryCount + 1;
   const maxRetries = 3;
+  const willRetry = newRetryCount < maxRetries;
 
-  if (newRetryCount < maxRetries) {
-    const backoffMs = Math.pow(2, newRetryCount) * 60 * 1000;
-    await prisma.notificationQueue.update({
-      where: { id: notificationId },
-      data: {
-        status: "PENDING",
-        retryCount: newRetryCount,
-        lastError: error,
-        sendAfter: new Date(Date.now() + backoffMs),
-      },
-    });
-  } else {
-    await prisma.notificationQueue.update({
-      where: { id: notificationId },
-      data: {
-        status: "FAILED",
-        retryCount: newRetryCount,
-        lastError: error,
-        processedAt: new Date(),
-      },
-    });
-  }
+  await withAuditedMutation(
+    systemActor(notification.tenantId),
+    willRetry ? "notification.retry_scheduled" : "notification.failed",
+    (tx) =>
+      tx.notificationQueue.update({
+        where: { id: notificationId },
+        data: willRetry
+          ? {
+              status: "PENDING",
+              retryCount: newRetryCount,
+              lastError: error,
+              sendAfter: new Date(
+                Date.now() + Math.pow(2, newRetryCount) * 60 * 1000,
+              ),
+            }
+          : {
+              status: "FAILED",
+              retryCount: newRetryCount,
+              lastError: error,
+              processedAt: new Date(),
+            },
+      }),
+  );
 }

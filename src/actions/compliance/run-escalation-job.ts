@@ -21,6 +21,10 @@ import {
   getEscalationRecipients,
 } from "@/data-access/compliance-items";
 import { logger } from "@/lib/logger";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 
 const ESCALATION_CHUNK_SIZE = 100;
 
@@ -310,10 +314,15 @@ export async function runEscalationJobInternal(tenantId: string) {
 
     // Step 2: Batch-create notifications (after state is safely written)
     if (notificationsToCreate.length > 0) {
-      await db.notificationQueue.createMany({
-        data: notificationsToCreate,
-        skipDuplicates: true,
-      });
+      await withAuditedMutation(
+        systemActor(tenantId),
+        "notification.escalation_queued",
+        (tx) =>
+          tx.notificationQueue.createMany({
+            data: notificationsToCreate,
+            skipDuplicates: true,
+          }),
+      );
     }
 
     const summary = {

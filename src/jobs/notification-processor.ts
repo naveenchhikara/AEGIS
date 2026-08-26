@@ -1,6 +1,9 @@
-import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/ses-client";
 import { renderEmailTemplate } from "@/emails/render";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 import {
   getPendingNotifications,
   markNotificationSent,
@@ -68,17 +71,52 @@ export async function processNotifications(): Promise<void> {
     `[notification-processor] Processing ${notifications.length} notifications`,
   );
 
-  // Mark all as PROCESSING to prevent double-pickup
-  await prisma.notificationQueue.updateMany({
-    where: { id: { in: notifications.map((n) => n.id) } },
-    data: { status: "PROCESSING" },
-  });
+  // Mark all as PROCESSING to prevent double-pickup. The queue is read across
+  // tenants, but a session context carries exactly one tenant, so claim them
+  // one tenant at a time.
+  const idsByTenant = new Map<string, string[]>();
+  for (const n of notifications) {
+    const ids = idsByTenant.get(n.tenantId) ?? [];
+    ids.push(n.id);
+    idsByTenant.set(n.tenantId, ids);
+  }
+
+  // A failed claim must not strand the tenants already claimed: later runs
+  // only select PENDING rows, so anything left PROCESSING but unsent would sit
+  // there for good. Isolate each tenant and carry on with the ones that
+  // succeeded; the rest stay PENDING and are retried next run.
+  const claimed = new Set<string>();
+
+  for (const [tenantId, ids] of idsByTenant) {
+    try {
+      await withAuditedMutation(
+        systemActor(tenantId),
+        "notification.claimed",
+        (tx) =>
+          tx.notificationQueue.updateMany({
+            where: { id: { in: ids } },
+            data: { status: "PROCESSING" },
+          }),
+      );
+      for (const id of ids) claimed.add(id);
+    } catch (error) {
+      console.error(
+        `[notification-processor] Claim failed for tenant ${tenantId}; ${ids.length} left PENDING for the next run`,
+        error,
+      );
+    }
+  }
+
+  if (claimed.size === 0) return;
+
+  // Only process what was actually claimed.
+  const claimedNotifications = notifications.filter((n) => claimed.has(n.id));
 
   // Separate batched vs individual
-  const individual = notifications.filter((n) => !n.batchKey);
+  const individual = claimedNotifications.filter((n) => !n.batchKey);
   const batched = new Map<string, typeof notifications>();
 
-  for (const n of notifications.filter((n) => n.batchKey)) {
+  for (const n of claimedNotifications.filter((n) => n.batchKey)) {
     const key = n.batchKey!;
     if (!batched.has(key)) batched.set(key, []);
     batched.get(key)!.push(n);

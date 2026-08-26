@@ -3,6 +3,10 @@ import { getRequiredSession } from "./session";
 import { prismaForTenant } from "./prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { TenantSettings } from "@/types";
+import {
+  withAuditedMutation,
+  userActor,
+} from "./audited-mutation";
 
 /**
  * DATA ACCESS LAYER PATTERN (canonical example for all DAL modules):
@@ -99,11 +103,17 @@ export async function updateTenantSettingsDAL(
   // Step 2: Get tenant-scoped Prisma client
   const db = prismaForTenant(tenantId);
 
-  // Step 3: Update with explicit WHERE tenantId
-  const updated = await db.tenant.update({
-    where: { id: tenantId },
-    data,
-  });
+  // Step 3: Update with explicit WHERE tenantId, inside a session context so
+  // the audit trigger can attribute the change.
+  const updated = await withAuditedMutation(
+    userActor(session),
+    "tenant.settings_updated",
+    (tx) =>
+      tx.tenant.update({
+        where: { id: tenantId },
+        data,
+      }),
+  );
 
   // Step 4: Runtime assertion
   if (updated.id !== tenantId) {

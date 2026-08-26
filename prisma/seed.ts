@@ -24,6 +24,7 @@ import {
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 import { randomUUID } from "crypto";
+import { withTriggersDetached } from "../src/lib/audit-triggers";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -1680,7 +1681,12 @@ async function main() {
   console.log(`\n  Global: ${circulars.length} RBI circulars\n`);
 }
 
-main()
+// Seeded rows carry no audit history by design: there is no Actor to
+// attribute them to, and fabricating a trail for demo data would be dishonest
+// in a product sold on audit integrity. Without this the trigger inserts a
+// NULL tenantId into AuditLog's NOT NULL column and the seed aborts — which is
+// what forced a manual DROP TRIGGER during the 2026-08 bootstrap.
+withTriggersDetached(prisma, main)
   .catch((e) => {
     console.error("❌ Seed failed:", e);
     process.exit(1);

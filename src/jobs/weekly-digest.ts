@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { prismaForTenant } from "@/data-access/prisma";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Weekly digest cron job (NOTF-05).
@@ -155,15 +159,20 @@ async function processDigestForTenant(
   // ─── Queue digest for each CAE/CCO ────────────────────────────────────────
 
   for (const user of regulatoryUsers) {
-    await prisma.notificationQueue.create({
-      data: {
-        tenantId,
-        recipientId: user.id,
-        type: "WEEKLY_DIGEST" as any,
-        status: "PENDING",
-        payload,
-      },
-    });
+    await withAuditedMutation(
+      systemActor(tenantId),
+      "notification.digest_queued",
+      (tx) =>
+        tx.notificationQueue.create({
+          data: {
+            tenantId,
+            recipientId: user.id,
+            type: "WEEKLY_DIGEST" as any,
+            status: "PENDING",
+            payload,
+          },
+        }),
+    );
   }
 
   return regulatoryUsers.length;

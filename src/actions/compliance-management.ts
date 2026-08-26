@@ -12,6 +12,7 @@ import {
   getCustomRequirements,
 } from "@/data-access/compliance-management";
 import { logger } from "@/lib/logger";
+import { userActor } from "@/data-access/audited-mutation";
 
 /**
  * Server Actions for Compliance Management (CMPL-03, CMPL-04)
@@ -45,7 +46,7 @@ export async function addCustomRequirement(input: AddCustomRequirementInput) {
   }
 
   try {
-    const result = await createCustomRequirement({
+    const result = await createCustomRequirement(userActor(session), {
       tenantId,
       ...input,
       ownerId: session.user.id,
@@ -76,7 +77,12 @@ export async function markAsNotApplicable(
   const tenantId = session.user.tenantId;
 
   try {
-    await markRequirementNotApplicable(tenantId, requirementId, reason);
+    await markRequirementNotApplicable(
+      userActor(session),
+      tenantId,
+      requirementId,
+      reason,
+    );
     return { success: true, error: null };
   } catch (error) {
     logger.error(
@@ -103,7 +109,11 @@ export async function revertNotApplicable(requirementId: string) {
   const tenantId = session.user.tenantId;
 
   try {
-    await revertRequirementNotApplicable(tenantId, requirementId);
+    await revertRequirementNotApplicable(
+      userActor(session),
+      tenantId,
+      requirementId,
+    );
     return { success: true, error: null };
   } catch (error) {
     logger.error(

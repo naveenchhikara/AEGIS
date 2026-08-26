@@ -5,6 +5,10 @@ import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/lib/prisma";
 import { escalateSeverity, type Severity } from "@/lib/state-machine";
 import {
+  withAuditedMutation,
+  userActor,
+} from "@/data-access/audited-mutation";
+import {
   ConfirmRepeatSchema,
   DismissRepeatSchema,
   type ConfirmRepeatInput,
@@ -101,7 +105,10 @@ export async function confirmRepeatFinding(
     const wasEscalated = escalatedSeverity !== originalSeverity;
 
     // Atomic transaction: update observation + create timeline entries
-    await db.$transaction(async (tx: any) => {
+    await withAuditedMutation(
+      userActor(session),
+      "observation.repeat_confirmed",
+      async (tx: any) => {
       // Update observation with optimistic lock
       const updated = await tx.observation.updateMany({
         where: { id: observationId, tenantId, version },
@@ -143,8 +150,9 @@ export async function confirmRepeatFinding(
             createdById: session.user.id,
           },
         });
-      }
-    });
+        }
+      },
+    );
 
     revalidatePath("/findings");
     revalidatePath(`/findings/${observationId}`);

@@ -135,6 +135,8 @@ export async function GET(request: NextRequest) {
     if (requiresBranchScopeForEvidence(session.user.roles)) {
       const evidenceBranchId =
         isBmEvidenceKey
+          // BM evidence must be linked to an ActionPoint branch.
+          // Missing branch mapping is treated as unauthorized.
           ? evidence.actionPoint?.branchId ?? null
           : evidence.observation?.branchId ??
             evidence.examinationResponse?.engagement.branchId ??
@@ -144,7 +146,7 @@ export async function GET(request: NextRequest) {
             null;
 
       if (!evidenceBranchId) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
       }
 
       const branchIds = await getUserBranches(session);

@@ -17,7 +17,7 @@ export function classifyDownloadObjectType(
     return "UNKNOWN";
   }
 
-  const [, category] = s3Key.split("/", 3);
+  const [, category] = s3Key.split("/");
 
   if (category === "evidence" || category === "bm-evidence") {
     return "EVIDENCE";

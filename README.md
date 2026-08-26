@@ -6,6 +6,30 @@ Multi-tenant audit and compliance platform for Urban Cooperative Banks (UCBs) in
 
 **Live:** [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com)
 
+## Recent Progress (August 2026)
+
+- **Infrastructure migrated to Coolify.** The production VPS was rebuilt on
+  2026-08-23; AEGIS now runs as a Coolify application with a managed PostgreSQL 16
+  and Let's Encrypt TLS via Traefik. The database was bootstrapped fresh and
+  reseeded; the app is live and healthy (`/api/health` reports database and
+  pg-boss job queue OK).
+- **Security remediation underway**, tracked as a shared map on the issue tracker
+  ([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). In review: a fix for a
+  cross-tenant IDOR in `/api/download` where any authenticated user could presign
+  another tenant's evidence keys ([#57](https://github.com/nc-sapiex/AEGIS/pull/57)),
+  and a dependency sweep clearing every high/critical production advisory —
+  including a Better Auth account-takeover and a Next.js middleware bypass —
+  ([#59](https://github.com/nc-sapiex/AEGIS/pull/59)).
+- **Production Prisma connection leak fixed.** The client singleton was cached
+  only outside production, so `next start` opened a fresh connection pool per
+  request; corrected in [#57](https://github.com/nc-sapiex/AEGIS/pull/57).
+- **E2E suite stabilised** — it had drifted to 45/145 failing on a
+  `continue-on-error` job (silently); now **140 passing**, verified against a real
+  PostgreSQL and a production build.
+- **A claims-vs-implementation audit** ([docs/claims-vs-implementation.md](docs/claims-vs-implementation.md))
+  records where marketing/spec claims diverge from the code; the milestone
+  completion figures below predate that verification and are being reconciled.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -18,8 +42,8 @@ Multi-tenant audit and compliance platform for Urban Cooperative Banks (UCBs) in
 | Jobs | pg-boss (notifications, reminders) |
 | i18n | next-intl (English, Hindi, Marathi, Gujarati) |
 | Export | ExcelJS (XLSX), @react-pdf/renderer (PDF) |
-| Testing | Playwright (E2E), Vitest (unit), 226 manual test cases |
-| Deploy | Docker Compose + Nginx + systemd on VPS |
+| Testing | Playwright (E2E, 140 automated), Vitest (368 unit) |
+| Deploy | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt |
 
 ## Features
 
@@ -33,7 +57,7 @@ Multi-tenant audit and compliance platform for Urban Cooperative Banks (UCBs) in
 
 ### Findings & Compliance (v5.0)
 - **Observation Lifecycle** — DRAFT > SUBMITTED > REVIEWED > ISSUED > RESPONSE > COMPLIANCE > CLOSED
-- **5C Framework** — Criteria, Cause, Consequence, Condition, Cure
+- **5C Framework** — Condition, Criteria, Cause, Effect, Recommendation
 - **Repeat Detection** — pg_trgm similarity matching with 1.5x risk uplift
 - **Escalation Engine** — L1 (+15d), L2 (+30d), L3 (+90d), L4 (+180d)
 - **Compliance Routing** — Branch Response > ZAC Review > ACE > ACB (30-day SLA)
@@ -120,18 +144,24 @@ E2E tests authenticate as 5 roles: Auditor, Manager, CAE, CCO, Auditee.
 
 ## Deployment
 
-Tag-driven deploys via GitHub Actions. Push a tag (`vYYYY.MM.DD.N`) to trigger:
+Deployed as a **Coolify** application (self-hosted PaaS). Coolify builds the
+`Dockerfile`, manages the container, and fronts it with Traefik terminating TLS
+via Let's Encrypt. A managed PostgreSQL runs alongside it on the same internal
+Docker network; only `BETTER_AUTH_SECRET` and `DATABASE_URL` are required at
+runtime. AWS S3/SES credentials are not required to boot, but evidence upload and
+email are non-functional until they are configured (they do not silently fall
+back to a working default).
 
-1. CI verifies (lint, typecheck, build, unit tests)
-2. Code bundled and SCP'd to VPS
-3. Docker Compose rebuilt and restarted
-4. Health check confirms readiness
+Pushing to the configured branch triggers a rebuild in Coolify. CI (lint,
+typecheck, unit tests, build, dependency audit, E2E) runs on every pull request.
 
-```bash
-git tag -a v2026.04.14.1 -m "release" && git push origin v2026.04.14.1
-```
+> The earlier tag-driven pipeline that deployed to a bespoke `/opt/aegis` Docker
+> Compose + Nginx + systemd stack has been **retired** — that VPS was rebuilt on
+> 2026-08-23 and the workflow is disabled. Do not push `v*` release tags.
 
-Daily database backups via systemd timer to `/backups`.
+Fresh-database bootstrap order (schema push, roles, non-Prisma SQL, seed with
+audit triggers detached) is non-obvious; see the project bootstrap notes before
+provisioning a new environment.
 
 ## Project Structure
 
@@ -146,7 +176,7 @@ Daily database backups via systemd timer to `/backups`.
 │   ├── jobs/           pg-boss background workers
 │   └── lib/            Utilities (auth, permissions, scoring engines, S3, export)
 ├── prisma/             Schema (75 models), migrations, seed scripts
-├── deploy/             VPS scripts, nginx config, systemd services
+├── deploy/             Legacy VPS scripts (retired — deployment is via Coolify)
 ├── tests/              E2E specs, auth setup, 226-case test plan
 ├── infra/              AWS CDK (TypeScript)
 └── messages/           i18n translations (en, hi, mr, gu)
@@ -154,10 +184,10 @@ Daily database backups via systemd timer to `/backups`.
 
 ## Scale
 
-- 536 source files, 2,500-line Prisma schema
+- ~627 source files (excl. generated), 2,500-line Prisma schema
 - 75 database models, 21 enums
-- 103 server actions, 252 components, 54 pages
-- 60+ RBAC permissions across 17 roles
+- 157 server actions, ~250 components, 66 pages
+- 78 RBAC permissions across 17 roles
 - 18 functional modules
 
 ## License

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalSession } from "@/data-access/session";
+import { authorizeDownloadKey } from "@/lib/authorize-download";
 import { generateDownloadUrl } from "@/lib/s3";
 import { logger } from "@/lib/logger";
 
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
  *
  * Security:
  * - Requires authenticated session (returns 401 if missing)
- * - Validates key format to prevent path traversal
+ * - Authorizes the key against the session's tenant (see authorize-download.ts)
  * - Presigned URL expires in 5 minutes (configured in src/lib/s3.ts)
  */
 export async function GET(request: NextRequest) {
@@ -26,36 +27,51 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // ── Validate key parameter ──────────────────────────────────────────────
+  // ── Authorize the key against the session tenant ────────────────────────
   const key = request.nextUrl.searchParams.get("key");
+  const authz = authorizeDownloadKey(key, session.user.tenantId);
 
-  if (!key || key.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Missing required query parameter: key" },
-      { status: 400 },
-    );
-  }
+  if (!authz.ok) {
+    if (authz.reason === "EMPTY_KEY") {
+      return NextResponse.json(
+        { error: "Missing required query parameter: key" },
+        { status: 400 },
+      );
+    }
 
-  // Reject keys with path traversal attempts or suspicious patterns
-  if (
-    key.includes("..") ||
-    key.startsWith("/") ||
-    key.includes("\0") ||
-    key.length > 1024
-  ) {
+    // A well-formed key belonging to another tenant is an authorization
+    // failure, not a malformed request. Log it loudly: it is the signature of
+    // a cross-tenant access attempt.
+    if (authz.reason === "TENANT_MISMATCH") {
+      logger.warn(
+        {
+          key: key?.slice(0, 100),
+          userId: session.user.id,
+          tenantId: session.user.tenantId,
+          reason: authz.reason,
+        },
+        "Download denied: key does not belong to the caller's tenant",
+      );
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     logger.warn(
-      { key: key.slice(0, 100), userId: session.user.id },
-      "Download rejected: invalid S3 key format",
+      {
+        key: key?.slice(0, 100),
+        userId: session.user.id,
+        reason: authz.reason,
+      },
+      "Download rejected: key failed authorization",
     );
     return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
   }
 
   // ── Generate presigned URL and redirect ─────────────────────────────────
   try {
-    const downloadUrl = await generateDownloadUrl(key);
+    const downloadUrl = await generateDownloadUrl(key as string);
 
     logger.info(
-      { key, userId: session.user.id },
+      { key, userId: session.user.id, namespace: authz.namespace },
       "Presigned download URL generated",
     );
 

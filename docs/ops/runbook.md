@@ -65,7 +65,7 @@ Post-change verification:
 > during `cryptsetup luksOpen`.
 
 ```bash
-lsblk -f | grep -i crypt
+lsblk --output NAME,FSTYPE,TYPE | grep -Ei 'luks|crypt'
 findmnt /var/lib/docker
 docker info --format '{{ .DockerRootDir }}'
 cryptsetup status /dev/mapper/aegis-docker-data

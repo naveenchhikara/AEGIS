@@ -90,7 +90,7 @@ aws s3api get-bucket-policy --bucket $S3_BUCKET_NAME --region ap-south-1
 > during `cryptsetup luksOpen`.
 
 ```bash
-lsblk -f | grep -i crypt
+lsblk --output NAME,FSTYPE,TYPE | grep -Ei 'luks|crypt'
 findmnt /var/lib/docker
 docker info --format '{{ .DockerRootDir }}'
 cryptsetup status /dev/mapper/aegis-docker-data

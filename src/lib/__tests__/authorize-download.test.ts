@@ -116,4 +116,15 @@ describe("malformed input", () => {
       authorizeDownloadKey(`${TENANT_A}/evidence/f.pdf`, "not-a-uuid"),
     ).toEqual({ ok: false, reason: "UNPARSEABLE_TENANT" });
   });
+
+  // getOptionalSession() types tenantId as nullable; a tenant-less session
+  // must be authorized for nothing.
+  it.each([null, undefined, ""])(
+    "denies when the session tenant is %p",
+    (tenant) => {
+      expect(
+        authorizeDownloadKey(`${TENANT_A}/evidence/f.pdf`, tenant),
+      ).toEqual({ ok: false, reason: "MISSING_TENANT" });
+    },
+  );
 });

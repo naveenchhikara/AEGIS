@@ -37,6 +37,7 @@ export type DownloadDenyReason =
   | "EMPTY_KEY"
   | "MALFORMED_KEY"
   | "UNPARSEABLE_TENANT"
+  | "MISSING_TENANT"
   | "TENANT_MISMATCH"
   | "UNKNOWN_NAMESPACE";
 
@@ -55,10 +56,16 @@ export type DownloadAuthorization =
  */
 export function authorizeDownloadKey(
   key: string | null | undefined,
-  sessionTenantId: string,
+  sessionTenantId: string | null | undefined,
 ): DownloadAuthorization {
   if (!key || key.trim().length === 0) {
     return { ok: false, reason: "EMPTY_KEY" };
+  }
+
+  // getOptionalSession() types tenantId as nullable. A caller with no tenant
+  // can be authorized for nothing; fail closed before any comparison.
+  if (!sessionTenantId) {
+    return { ok: false, reason: "MISSING_TENANT" };
   }
 
   // A session tenant that isn't a canonical UUID means the caller's identity is

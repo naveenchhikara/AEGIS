@@ -61,6 +61,9 @@ rest without waiting for full host reprovisioning.
 
 Post-change verification:
 
+> Replace `aegis-docker-data` below if a different mapper name was used
+> during `cryptsetup luksOpen`.
+
 ```bash
 lsblk -f | grep -i crypt
 findmnt /var/lib/docker

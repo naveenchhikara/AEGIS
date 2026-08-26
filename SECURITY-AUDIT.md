@@ -86,6 +86,9 @@ aws s3api get-bucket-policy --bucket $S3_BUCKET_NAME --region ap-south-1
 
 **Verification Commands (run via SSH to VPS after implementation):**
 
+> Replace `aegis-docker-data` below if a different mapper name was used
+> during `cryptsetup luksOpen`.
+
 ```bash
 lsblk -f | grep -i crypt
 findmnt /var/lib/docker

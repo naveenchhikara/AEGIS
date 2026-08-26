@@ -9,6 +9,10 @@ import { generateAuditReportXLSX } from "@/lib/excel-export/audit-report-generat
 import { prismaForTenant } from "@/data-access/prisma";
 import { uploadToS3 } from "@/lib/s3";
 import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
+import {
+  withAuditedMutation,
+  userActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Generate XLSX audit report and upload to S3.
@@ -106,17 +110,22 @@ export async function generateXlsxReport(input: GenerateReportInput) {
             ? "Q3_OCT_DEC"
             : "Q4_JAN_MAR";
     const quarterEnum = fiscalQuarter as any;
-    await db.boardReport.create({
-      data: {
-        tenantId,
-        year: now.getFullYear(),
-        quarter: quarterEnum,
-        title: `XLSX Audit Report — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
-        s3Key,
-        fileSize: buffer.length,
-        generatedById: session.user.id,
-      },
-    });
+    await withAuditedMutation(
+      userActor(session),
+      "board_report.generated",
+      (tx) =>
+        tx.boardReport.create({
+          data: {
+            tenantId,
+            year: now.getFullYear(),
+            quarter: quarterEnum,
+            title: `XLSX Audit Report — ${auditData.auditNumber || auditData.id}${isDraft ? " (DRAFT)" : ""}`,
+            s3Key,
+            fileSize: buffer.length,
+            generatedById: session.user.id,
+          },
+        }),
+    );
 
     revalidatePath(`/audit-plans/${parsed.data.engagementId}`);
     revalidatePath("/reports");

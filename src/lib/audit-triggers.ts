@@ -27,6 +27,10 @@ export const AUDITED_TABLES = [
   "Tenant",
   "User",
   "UserBranchAssignment",
+  // Attached only where add_notification_tables.sql has been applied, but
+  // included so the discipline test covers them everywhere.
+  "NotificationPreference",
+  "BoardReport",
 ] as const;
 
 export type AuditedTable = (typeof AUDITED_TABLES)[number];
@@ -50,8 +54,10 @@ async function attachedTables(db: UnsafeRawExecutor): Promise<string[]> {
        JOIN pg_class c ON c.oid = t.tgrelid
       WHERE t.tgname = 'audit_trigger' AND NOT t.tgisinternal`,
   );
-  const present = new Set(rows.map((r) => r.relname));
-  return AUDITED_TABLES.filter((t) => present.has(t));
+  // Deliberately NOT filtered through AUDITED_TABLES: databases initialised
+  // with add_notification_tables.sql also carry audit_trigger on
+  // NotificationPreference and BoardReport. Detach whatever is actually there.
+  return rows.map((r) => r.relname);
 }
 
 /**
@@ -74,19 +80,33 @@ export async function withTriggersDetached<T>(
 ): Promise<T> {
   const tables = await attachedTables(db);
 
-  for (const table of tables) {
-    await db.$executeRawUnsafe(
-      `ALTER TABLE "${table}" DISABLE TRIGGER audit_trigger`,
-    );
-  }
+  // Track what was actually detached, and cover the detach loop itself: a
+  // failure partway through (lock timeout, permissions) would otherwise leave
+  // the earlier tables silently unaudited for good.
+  const detached: string[] = [];
 
   try {
-    return await fn();
-  } finally {
     for (const table of tables) {
       await db.$executeRawUnsafe(
-        `ALTER TABLE "${table}" ENABLE TRIGGER audit_trigger`,
+        `ALTER TABLE "${table}" DISABLE TRIGGER audit_trigger`,
       );
+      detached.push(table);
     }
+
+    return await fn();
+  } finally {
+    let restoreError: unknown;
+    for (const table of detached) {
+      try {
+        await db.$executeRawUnsafe(
+          `ALTER TABLE "${table}" ENABLE TRIGGER audit_trigger`,
+        );
+      } catch (err) {
+        // Keep restoring the rest: a table left unaudited is worse than a
+        // lost error. Re-thrown once the loop finishes.
+        restoreError ??= err;
+      }
+    }
+    if (restoreError) throw restoreError;
   }
 }

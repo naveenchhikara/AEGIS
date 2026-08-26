@@ -3,6 +3,10 @@ import { prismaForTenant } from "./prisma";
 import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
 import type { AuthSession } from "@/lib/auth";
+import {
+  withAuditedMutation,
+  userActor,
+} from "./audited-mutation";
 
 function extractTenantId(session: AuthSession): string {
   return session.user.tenantId;
@@ -332,21 +336,25 @@ export async function createBoardReport(
   },
 ) {
   const tenantId = extractTenantId(session);
-  const db = prismaForTenant(tenantId);
 
-  return db.boardReport.create({
-    data: {
-      tenantId,
-      year: data.year,
-      quarter: data.quarter as any,
-      title: `Internal Audit Board Report - ${data.quarter.replace(/_/g, " ")} FY ${data.year}`,
-      executiveCommentary: data.executiveCommentary,
-      s3Key: data.s3Key,
-      fileSize: data.fileSize,
-      generatedById: session.user.id,
-      metricsSnapshot: data.metricsSnapshot as any,
-    },
-  });
+  return withAuditedMutation(
+    userActor(session),
+    "board_report.generated",
+    (tx) =>
+      tx.boardReport.create({
+        data: {
+          tenantId,
+          year: data.year,
+          quarter: data.quarter as any,
+          title: `Internal Audit Board Report - ${data.quarter.replace(/_/g, " ")} FY ${data.year}`,
+          executiveCommentary: data.executiveCommentary,
+          s3Key: data.s3Key,
+          fileSize: data.fileSize,
+          generatedById: session.user.id,
+          metricsSnapshot: data.metricsSnapshot as any,
+        },
+      }),
+  );
 }
 
 export async function getBoardReports(session: AuthSession) {

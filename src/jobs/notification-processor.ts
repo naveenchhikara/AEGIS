@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/ses-client";
 import { renderEmailTemplate } from "@/emails/render";
 import {
@@ -82,23 +81,42 @@ export async function processNotifications(): Promise<void> {
     idsByTenant.set(n.tenantId, ids);
   }
 
+  // A failed claim must not strand the tenants already claimed: later runs
+  // only select PENDING rows, so anything left PROCESSING but unsent would sit
+  // there for good. Isolate each tenant and carry on with the ones that
+  // succeeded; the rest stay PENDING and are retried next run.
+  const claimed = new Set<string>();
+
   for (const [tenantId, ids] of idsByTenant) {
-    await withAuditedMutation(
-      systemActor(tenantId),
-      "notification.claimed",
-      (tx) =>
-        tx.notificationQueue.updateMany({
-          where: { id: { in: ids } },
-          data: { status: "PROCESSING" },
-        }),
-    );
+    try {
+      await withAuditedMutation(
+        systemActor(tenantId),
+        "notification.claimed",
+        (tx) =>
+          tx.notificationQueue.updateMany({
+            where: { id: { in: ids } },
+            data: { status: "PROCESSING" },
+          }),
+      );
+      for (const id of ids) claimed.add(id);
+    } catch (error) {
+      console.error(
+        `[notification-processor] Claim failed for tenant ${tenantId}; ${ids.length} left PENDING for the next run`,
+        error,
+      );
+    }
   }
 
+  if (claimed.size === 0) return;
+
+  // Only process what was actually claimed.
+  const claimedNotifications = notifications.filter((n) => claimed.has(n.id));
+
   // Separate batched vs individual
-  const individual = notifications.filter((n) => !n.batchKey);
+  const individual = claimedNotifications.filter((n) => !n.batchKey);
   const batched = new Map<string, typeof notifications>();
 
-  for (const n of notifications.filter((n) => n.batchKey)) {
+  for (const n of claimedNotifications.filter((n) => n.batchKey)) {
     const key = n.batchKey!;
     if (!batched.has(key)) batched.set(key, []);
     batched.get(key)!.push(n);

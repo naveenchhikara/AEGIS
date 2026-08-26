@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
  *
  * Security:
  * - Requires authenticated session (returns 401 if missing)
+ * - Authorizes key to the authenticated tenant (returns 403 if mismatched)
  * - Validates key format to prevent path traversal
  * - Presigned URL expires in 5 minutes (configured in src/lib/s3.ts)
  */
@@ -27,14 +28,16 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Validate key parameter ──────────────────────────────────────────────
-  const key = request.nextUrl.searchParams.get("key");
+  const rawKey = request.nextUrl.searchParams.get("key");
 
-  if (!key || key.trim().length === 0) {
+  if (!rawKey || rawKey.trim().length === 0) {
     return NextResponse.json(
       { error: "Missing required query parameter: key" },
       { status: 400 },
     );
   }
+
+  const key = rawKey.trim();
 
   // Reject keys with path traversal attempts or suspicious patterns
   if (
@@ -48,6 +51,20 @@ export async function GET(request: NextRequest) {
       "Download rejected: invalid S3 key format",
     );
     return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
+  }
+
+  // Restrict downloads to the authenticated tenant namespace
+  const tenantId = session.user.tenantId;
+  const isTenantScopedKey =
+    key.startsWith(`${tenantId}/`) ||
+    key.startsWith(`audit-reports/${tenantId}/`);
+
+  if (!isTenantScopedKey) {
+    logger.warn(
+      { key: key.slice(0, 100), userId: session.user.id, tenantId },
+      "Download rejected: tenant mismatch",
+    );
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // ── Generate presigned URL and redirect ─────────────────────────────────

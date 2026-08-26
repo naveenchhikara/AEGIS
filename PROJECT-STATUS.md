@@ -1,9 +1,14 @@
 # AEGIS / RBIAS — Project Status
 
-> **Date:** 2026-03-02 (auto-updated after sync)
-> **Repo:** github.com/naveenchhikara/AEGIS (private)
-> **Live:** https://aegis.nexlyadvisory.com
-> **Stack:** Next.js 16 · TypeScript 5.9 · PostgreSQL 16 · Prisma 7 · Better Auth · AWS S3/SES
+> **Date:** 2026-08-26
+> **Repo:** github.com/nc-sapiex/AEGIS (private)
+> **Live:** https://aegis.nexlyadvisory.com (Coolify)
+> **Stack:** Next.js 16 · TypeScript 5.9 · PostgreSQL 16 · Prisma 7 · Better Auth · AWS S3/SES (optional)
+>
+> **Note (2026-08-26):** The milestone "COMPLETE" figures below predate an
+> independent verification pass; the requirement register they cite is not in
+> the repo, so treat them as claimed-not-verified. See the current-status update
+> immediately below and `docs/claims-vs-implementation.md`.
 
 ---
 
@@ -12,6 +17,32 @@
 AEGIS is a **Risk-Based Internal Audit System (RBIAS)** for Urban Cooperative Banks under RBI supervision. It covers the full audit lifecycle — from RAM-based risk assessment and audit planning through execution, reporting, compliance tracking, and board governance.
 
 **Scale:** 706 source files · 2,500-line Prisma schema · 75 DB models · 21 enums · 702 commits · v5.0 complete (104/104) + v6.0 complete (41/41) + v7.0 in progress (Sample-Based Account Examination)
+
+---
+
+## Current Status (2026-08-26)
+
+**Infrastructure.** The production VPS was rebuilt on 2026-08-23 (the old
+tag-driven `/opt/aegis` Docker Compose + Nginx + systemd stack did not survive).
+AEGIS now runs as a **Coolify** application with a managed PostgreSQL 16 on the
+same internal Docker network and Let's Encrypt TLS via Traefik. The database was
+bootstrapped from scratch and reseeded; `/api/health` reports database and
+pg-boss checks passing. The tag-driven deploy pipeline is disabled — do not push
+`v*` tags.
+
+**Security remediation** is tracked as a shared map on the issue tracker
+([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). In review: the cross-tenant
+IDOR in `/api/download` (#57) and a dependency sweep clearing all high/critical
+production advisories, including a Better Auth account-takeover and a Next.js
+middleware bypass (#59). A production Prisma connection-leak was fixed in #57.
+
+**Testing.** The Playwright E2E suite had drifted to 45/145 failing on a
+`continue-on-error` job; it is now 140 passing, verified against a real
+PostgreSQL and a production build. Unit tests: 368 passing.
+
+**Claims audit.** `docs/claims-vs-implementation.md` records where sales/spec
+claims diverge from the implementation (e.g. audit-log integrity, on-prem
+support, encryption-at-rest); those are being reconciled separately.
 
 ---
 
@@ -135,8 +166,8 @@ Key v7.0 features:
 - **Testing:** Playwright E2E + Vitest unit tests
 - **Jobs:** pg-boss (7 job files)
 - **Emails:** 11 email templates via react-email + AWS SES
-- **Infrastructure:** AWS CDK in `infra/`, Docker Compose, systemd service
-- **Deployment:** Docker Compose, Nginx reverse proxy, Certbot SSL auto-renewal
+- **Infrastructure:** Coolify (self-hosted PaaS) with managed PostgreSQL; AWS CDK in `infra/` is legacy/unused
+- **Deployment:** Coolify builds the Dockerfile; Traefik terminates TLS (Let's Encrypt). The former tag-driven VPS pipeline is retired.
 - **CI:** GitHub Actions
 
 ---
@@ -145,5 +176,5 @@ Key v7.0 features:
 
 1. **SES Sandbox Mode** — AWS SES in sandbox, can only send to verified addresses. Production access pending.
 2. **DB Views Not in Migrations** — 4 PostgreSQL views/functions created via standalone SQL, not tracked in Prisma migrations. Requires manual SQL application on fresh deploy.
-3. **Seed Data Mismatch** — ~~Production DB has older seed vs local comprehensive seed~~ **RESOLVED** (2026-03-02): Full lifecycle seed deployed to VPS. See `docs/SEED-PROCESS-MANUAL.md`.
-4. **Audit Trigger Column Casing** — `audit_trigger_function()` on VPS was fixed to use quoted `"createdAt"`. If DB is recreated, re-apply the fix (see process manual).
+3. **Seed Data / Bootstrap** — The 2026-03 resolution referenced a VPS that was destroyed on 2026-08-23. The current Coolify database was bootstrapped and seeded fresh on 2026-08-26 (`prisma db push` → roles → non-Prisma SQL → seed with audit triggers detached, then re-attached). `docs/SEED-PROCESS-MANUAL.md` predates this and is stale.
+4. **Audit Trigger Column Casing** — applied on the current Coolify database during the 2026-08-26 bootstrap. Re-apply on any fresh database (the fix is in the migration SQL).

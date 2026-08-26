@@ -53,6 +53,21 @@ AEGIS_SHARED_DIR=/opt/aegis/shared sudo /opt/aegis/repo/deploy/restore.sh --list
 AEGIS_SHARED_DIR=/opt/aegis/shared sudo /opt/aegis/repo/deploy/restore.sh <backup-file>
 ```
 
+## Encryption at Rest (DSEC-04)
+
+Decision: use a dedicated **LUKS-encrypted secondary volume** for Docker
+data (`/var/lib/docker`). This protects the PostgreSQL Docker volume at
+rest without waiting for full host reprovisioning.
+
+Post-change verification:
+
+```bash
+lsblk -f | grep -i crypt
+findmnt /var/lib/docker
+docker info --format '{{ .DockerRootDir }}'
+cryptsetup status /dev/mapper/aegis-docker-data
+```
+
 ## Health
 
 ```bash

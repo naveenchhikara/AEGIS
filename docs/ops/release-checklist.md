@@ -13,6 +13,7 @@
 
 - Production backup timer is healthy
 - Latest backup completed successfully
+- Docker data root (`/var/lib/docker`) is mounted from the LUKS mapper device
 - `.env.production` is present at `/opt/aegis/shared/.env.production`
 - `/opt/aegis/.env.production` resolves to the shared env file
 - Release tag points to the exact commit intended for production

@@ -60,18 +60,38 @@ aws s3api get-bucket-policy --bucket $S3_BUCKET_NAME --region ap-south-1
 
 ## DSEC-04: VPS Disk Encryption
 
-**Status: REQUIRES VPS VERIFICATION**
+**Status: DECIDED (IMPLEMENTATION PENDING)**
 
-- [ ] LUKS or equivalent disk encryption verified on VPS data partition
+- [x] Chosen route: Encrypted secondary volume (LUKS) and relocate `/var/lib/docker`
+- [ ] Production implementation completed and verified
+- [ ] Evidence captured in runbook checks
 
-**Verification Commands (run via SSH to VPS):**
+**Decision:** Use **route 2** from investigation DSEC-04:
+
+1. Attach a dedicated block device for Docker data
+2. Encrypt it with LUKS (AES-256)
+3. Mount it as Docker data root (`/var/lib/docker`)
+4. Migrate existing Docker data and restart services
+
+**Rationale:**
+
+- Delivers encryption at rest for tenant audit evidence (Postgres volume) with minimal downtime
+- Avoids waiting for a full host rebuild while still giving a stronger answer than provider-only claims
+- Keeps a path open to full-disk encryption on the next planned reprovision
+
+**Explicitly Rejected / Deferred:**
+
+- Route 3 (provider-level encryption only): rejected as insufficient for RBI-facing assurance
+- Route 1 (full-disk reprovision): deferred until a restore drill is completed and scheduled
+
+**Verification Commands (run via SSH to VPS after implementation):**
 
 ```bash
 lsblk -f | grep -i crypt
-cryptsetup status /dev/mapper/data 2>/dev/null || echo "Not encrypted"
+findmnt /var/lib/docker
+docker info --format '{{ .DockerRootDir }}'
+cryptsetup status /dev/mapper/aegis-docker-data
 ```
-
-**Action Required:** SSH to VPS (145.223.19.8) and verify disk encryption. Docker volumes inherit host disk encryption — if LUKS is enabled at host level, PostgreSQL data in Docker is covered.
 
 ---
 
@@ -115,5 +135,5 @@ WHERE schemaname = 'public'
 | DSEC-01     | VERIFIED             | None                           |
 | DSEC-02     | REQUIRES PROD CONFIG | Add sslmode=require to prod DB |
 | DSEC-03     | PARTIALLY VERIFIED   | Run AWS CLI verification       |
-| DSEC-04     | REQUIRES VPS CHECK   | SSH to VPS and verify LUKS     |
+| DSEC-04     | DECIDED (PENDING)    | Implement LUKS Docker data disk |
 | DSEC-05     | VERIFIED (app-level) | Run integration test in CI     |

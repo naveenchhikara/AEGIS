@@ -70,5 +70,6 @@ cat /opt/aegis/shared/current-release
 - `docker-compose.prod.yml` is the only production compose file
 - Shared secrets live outside git
 - Backups are systemd-timer driven, not cron driven
+- DSEC-04 route is an encrypted LUKS secondary volume for `/var/lib/docker`
 - PM2, Dockge, and copied-workspace deploys are not part of the current
   production path

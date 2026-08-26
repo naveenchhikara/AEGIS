@@ -10,40 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check AEGIS health
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            set -euo pipefail
+        run: |
+          set -euo pipefail
 
-            echo "=== AEGIS ==="
-            HEALTH=$(curl -fsS http://127.0.0.1:3000/api/health)
-            echo "$HEALTH" | python3 -m json.tool
-            STATUS=$(echo "$HEALTH" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
-            if [ "$STATUS" != "ok" ]; then
-              echo "AEGIS health: $STATUS"
-              exit 1
-            fi
+          echo "=== AEGIS ==="
+          HEALTH=$(curl -fsS https://aegis.nexlyadvisory.com/api/health)
+          echo "$HEALTH" | python3 -m json.tool
+          STATUS=$(echo "$HEALTH" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
+          if [ "$STATUS" != "ok" ]; then
+            echo "AEGIS health: $STATUS"
+            exit 1
+          fi
 
-            echo ""
-            echo "=== Containers ==="
-            docker ps --filter name=aegis --format 'table {{.Names}}\t{{.Status}}'
-
-            echo ""
-            echo "=== Nexly ==="
-            curl -fsS -o /dev/null -w "HTTP %{http_code} (%{time_total}s)\n" https://nexlyadvisory.com
-
-            echo ""
-            echo "=== Disk usage ==="
-            df -h / | tail -1
-
-            echo ""
-            echo "=== Backup status ==="
-            ls -lht /backups/ | head -5
-
-            echo ""
-            echo "=== Docker disk ==="
-            docker system df
+          echo ""
+          echo "=== Nexly ==="
+          curl -fsS -o /dev/null -w "HTTP %{http_code} (%{time_total}s)\n" https://nexlyadvisory.com

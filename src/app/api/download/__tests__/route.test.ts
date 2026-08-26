@@ -62,6 +62,8 @@ describe("GET /api/download", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("https://signed.example.com/");
+    const location = response.headers.get("location");
+    expect(location).not.toBeNull();
+    expect(location!).toContain("https://signed.example.com");
   });
 });

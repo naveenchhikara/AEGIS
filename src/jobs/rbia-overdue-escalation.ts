@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { prismaForTenant } from "@/data-access/prisma";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * RBIA overdue escalation cron job (BMRP-05).
@@ -88,7 +92,10 @@ async function processRbiaOverdueForTenant(tenantId: string): Promise<number> {
 
     // Atomic transaction: update status + create notifications
     // If notification creation fails, status rolls back to PENDING
-    await db.$transaction(async (tx) => {
+    await withAuditedMutation(
+      systemActor(tenantId),
+      "bm_batch.overdue_escalated",
+      async (tx) => {
       // Transition batch to OVERDUE
       await tx.bmResponseBatch.update({
         where: { id: batch.id },
@@ -111,8 +118,9 @@ async function processRbiaOverdueForTenant(tenantId: string): Promise<number> {
             } as object,
           },
         });
-      }
-    });
+        }
+      },
+    );
 
     batchesProcessed++;
   }

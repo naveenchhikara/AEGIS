@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/ses-client";
 import { renderEmailTemplate } from "@/emails/render";
 import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
+import {
   getPendingNotifications,
   markNotificationSent,
   markNotificationFailed,
@@ -68,11 +72,27 @@ export async function processNotifications(): Promise<void> {
     `[notification-processor] Processing ${notifications.length} notifications`,
   );
 
-  // Mark all as PROCESSING to prevent double-pickup
-  await prisma.notificationQueue.updateMany({
-    where: { id: { in: notifications.map((n) => n.id) } },
-    data: { status: "PROCESSING" },
-  });
+  // Mark all as PROCESSING to prevent double-pickup. The queue is read across
+  // tenants, but a session context carries exactly one tenant, so claim them
+  // one tenant at a time.
+  const idsByTenant = new Map<string, string[]>();
+  for (const n of notifications) {
+    const ids = idsByTenant.get(n.tenantId) ?? [];
+    ids.push(n.id);
+    idsByTenant.set(n.tenantId, ids);
+  }
+
+  for (const [tenantId, ids] of idsByTenant) {
+    await withAuditedMutation(
+      systemActor(tenantId),
+      "notification.claimed",
+      (tx) =>
+        tx.notificationQueue.updateMany({
+          where: { id: { in: ids } },
+          data: { status: "PROCESSING" },
+        }),
+    );
+  }
 
   // Separate batched vs individual
   const individual = notifications.filter((n) => !n.batchKey);

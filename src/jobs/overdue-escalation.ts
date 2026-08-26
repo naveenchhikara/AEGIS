@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { prismaForTenant } from "@/data-access/prisma";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Overdue escalation cron job (NOTF-04).
@@ -110,15 +114,20 @@ async function processOverdueForTenant(tenantId: string): Promise<number> {
 
     // Queue escalation for each recipient
     for (const recipientId of recipientIds) {
-      await prisma.notificationQueue.create({
-        data: {
-          tenantId,
-          recipientId,
-          type: "OVERDUE_ESCALATION" as any,
-          status: "PENDING",
-          payload,
-        },
-      });
+      await withAuditedMutation(
+        systemActor(tenantId),
+        "notification.escalation_queued",
+        (tx) =>
+          tx.notificationQueue.create({
+            data: {
+              tenantId,
+              recipientId,
+              type: "OVERDUE_ESCALATION" as any,
+              status: "PENDING",
+              payload,
+            },
+          }),
+      );
       escalationsQueued++;
     }
   }

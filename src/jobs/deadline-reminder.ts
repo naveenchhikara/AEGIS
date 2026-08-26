@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { prismaForTenant } from "@/data-access/prisma";
+import {
+  withAuditedMutation,
+  systemActor,
+} from "@/data-access/audited-mutation";
 
 /**
  * Deadline reminder cron job (NOTF-03).
@@ -102,24 +106,31 @@ async function processDeadlinesForTenant(tenantId: string): Promise<number> {
       );
       if (alreadySent) continue;
 
-      // Queue the notification
-      await prisma.notificationQueue.create({
-        data: {
-          tenantId,
-          recipientId: obs.assignedToId,
-          type: window.type as any,
-          status: "PENDING",
-          payload: {
-            observationId: obs.id,
-            observationTitle: obs.title,
-            severity: obs.severity,
-            dueDate: obs.dueDate?.toISOString(),
-            daysRemaining: window.days,
-            assigneeName: obs.assignedTo?.name,
-            branchName: obs.branch?.name,
-          } as object,
-        },
-      });
+      // Queue the notification. Hoisted: control-flow narrowing of
+      // obs.assignedToId does not carry into the callback closure.
+      const recipientId = obs.assignedToId;
+      await withAuditedMutation(
+        systemActor(tenantId),
+        "notification.deadline_reminder_queued",
+        (tx) =>
+          tx.notificationQueue.create({
+            data: {
+              tenantId,
+              recipientId,
+              type: window.type as any,
+              status: "PENDING",
+              payload: {
+                observationId: obs.id,
+                observationTitle: obs.title,
+                severity: obs.severity,
+                dueDate: obs.dueDate?.toISOString(),
+                daysRemaining: window.days,
+                assigneeName: obs.assignedTo?.name,
+                branchName: obs.branch?.name,
+              } as object,
+            },
+          }),
+      );
 
       remindersQueued++;
     }

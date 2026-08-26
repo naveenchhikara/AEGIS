@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prismaForTenant } from "@/data-access/prisma";
+import { getUserBranches } from "@/data-access/auditee";
 import { getOptionalSession } from "@/data-access/session";
 import { generateDownloadUrl } from "@/lib/s3";
 import { logger } from "@/lib/logger";
+import {
+  canAccessBoardReport,
+  canAccessCommitteeMinutes,
+  canAccessEvidenceByRole,
+  classifyDownloadObjectType,
+  requiresBranchScopeForEvidence,
+} from "@/lib/download-authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +57,93 @@ export async function GET(request: NextRequest) {
       "Download rejected: invalid S3 key format",
     );
     return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
+  }
+
+  const tenantId = session.user.tenantId;
+  const objectType = classifyDownloadObjectType(tenantId, key);
+  const db = prismaForTenant(tenantId);
+
+  // ── Object-level authorization ──────────────────────────────────────────
+  if (objectType === "UNKNOWN") {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
+  if (objectType === "BOARD_REPORT") {
+    if (!canAccessBoardReport(session.user.roles)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const report = await db.boardReport.findFirst({
+      where: { tenantId, s3Key: key },
+      select: { id: true },
+    });
+    if (!report) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+  }
+
+  if (objectType === "COMMITTEE_MINUTES") {
+    if (!canAccessCommitteeMinutes(session.user.roles)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const meeting = await db.committeeMeeting.findFirst({
+      where: { tenantId, minutesRef: key },
+      select: { id: true },
+    });
+    if (!meeting) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+  }
+
+  if (objectType === "EVIDENCE") {
+    if (!canAccessEvidenceByRole(session.user.roles)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const evidence = await db.evidence.findFirst({
+      where: {
+        tenantId,
+        s3Key: key,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        observation: { select: { branchId: true } },
+        examinationResponse: {
+          select: { engagement: { select: { branchId: true } } },
+        },
+        newExaminationResponse: {
+          select: { engagement: { select: { branchId: true } } },
+        },
+        actionPoint: { select: { branchId: true } },
+        accountExamResponse: {
+          select: { engagement: { select: { branchId: true } } },
+        },
+      },
+    });
+    if (!evidence) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    if (requiresBranchScopeForEvidence(session.user.roles)) {
+      const evidenceBranchId =
+        evidence.observation?.branchId ??
+        evidence.actionPoint?.branchId ??
+        evidence.examinationResponse?.engagement.branchId ??
+        evidence.newExaminationResponse?.engagement.branchId ??
+        evidence.accountExamResponse?.engagement.branchId ??
+        null;
+
+      if (!evidenceBranchId) {
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      }
+
+      const branchIds = await getUserBranches(session);
+      if (!branchIds.includes(evidenceBranchId)) {
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      }
+    }
   }
 
   // ── Generate presigned URL and redirect ─────────────────────────────────

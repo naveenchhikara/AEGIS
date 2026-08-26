@@ -9,6 +9,18 @@
 //   ${tenantId}/is-audit/${checklistId}/${controlId}/...      actions/investment
 //   ${tenantId}/minutes/${meetingId}/${uuid}.${ext}           actions/governance
 //
+// One legacy layout predates the tenant-first convention and is tenant-SECOND:
+//
+//   audit-reports/${tenantId}/${auditNumber}_...              actions/reports/generate-pdf.ts,
+//                                                             generate-xlsx.ts
+//
+// Those keys are stored on records and sent to /api/download by
+// GeneratedReportsList, so they must authorize too: for the literal
+// "audit-reports" first segment, the tenant id is the second segment and is
+// checked with the same exact-equality rule. Migrating the generators (and
+// stored keys) to tenant-first is tracked separately; until then this branch
+// must not be removed.
+//
 // S3 keys are flat strings with no symlinks or indirection, so a key whose
 // first segment is the caller's tenant id cannot address another tenant's
 // object. That makes an exact first-segment match a complete tenant-isolation
@@ -18,7 +30,7 @@
 // lets tenant `abc` match `abcdef/...`. Splitting on "/" and comparing the whole
 // first segment removes that class of bypass entirely.
 
-/** Second path segment of every key namespace this system issues. */
+/** Second path segment of every tenant-first key namespace this system issues. */
 const KEY_NAMESPACES = [
   "evidence",
   "bm-evidence",
@@ -26,6 +38,9 @@ const KEY_NAMESPACES = [
   "is-audit",
   "minutes",
 ] as const;
+
+/** Legacy tenant-second layout: audit-reports/<tenantId>/<file>. */
+const LEGACY_TENANT_SECOND_NAMESPACE = "audit-reports";
 
 /** Lowercase canonical UUID. Tenant ids are `@db.Uuid` and render lowercase. */
 const UUID_PATTERN =
@@ -89,6 +104,22 @@ export function authorizeDownloadKey(
   // tenant / namespace / at least one identifying segment.
   if (segments.length < 3 || segments.some((s) => s.length === 0)) {
     return { ok: false, reason: "MALFORMED_KEY" };
+  }
+
+  // Legacy tenant-second layout: audit-reports/<tenantId>/<file>.
+  if (segments[0] === LEGACY_TENANT_SECOND_NAMESPACE) {
+    const legacyTenantId = segments[1];
+    if (!UUID_PATTERN.test(legacyTenantId)) {
+      return { ok: false, reason: "UNPARSEABLE_TENANT" };
+    }
+    if (legacyTenantId !== sessionTenantId) {
+      return { ok: false, reason: "TENANT_MISMATCH" };
+    }
+    return {
+      ok: true,
+      tenantId: legacyTenantId,
+      namespace: LEGACY_TENANT_SECOND_NAMESPACE,
+    };
   }
 
   const [keyTenantId, namespace] = segments;

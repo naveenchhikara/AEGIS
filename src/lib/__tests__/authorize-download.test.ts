@@ -63,6 +63,35 @@ describe("namespaces", () => {
     expect(result).toMatchObject({ ok: true, namespace });
   });
 
+  // Legacy tenant-second layout: audit-reports/<tenantId>/<file>
+  // (generate-pdf.ts / generate-xlsx.ts store these; GeneratedReportsList
+  // sends them to /api/download).
+  it("allows the caller's own legacy audit-reports key", () => {
+    const result = authorizeDownloadKey(
+      `audit-reports/${TENANT_A}/BR-2026-001_final_report.pdf`,
+      TENANT_A,
+    );
+    expect(result).toEqual({
+      ok: true,
+      tenantId: TENANT_A,
+      namespace: "audit-reports",
+    });
+  });
+
+  it("denies another tenant's legacy audit-reports key", () => {
+    const result = authorizeDownloadKey(
+      `audit-reports/${TENANT_B}/BR-2026-001_final_report.pdf`,
+      TENANT_A,
+    );
+    expect(result).toEqual({ ok: false, reason: "TENANT_MISMATCH" });
+  });
+
+  it("denies a legacy audit-reports key with a non-uuid tenant segment", () => {
+    expect(
+      authorizeDownloadKey(`audit-reports/not-a-tenant/f.pdf`, TENANT_A),
+    ).toEqual({ ok: false, reason: "UNPARSEABLE_TENANT" });
+  });
+
   it("denies an unknown namespace under the caller's own tenant", () => {
     const result = authorizeDownloadKey(
       `${TENANT_A}/backups/dump.sql`,

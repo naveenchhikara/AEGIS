@@ -123,9 +123,10 @@ ALTER TABLE "OnboardingProgress"
 
 -- OnboardingProgress: tenant-scoped RLS
 ALTER TABLE "OnboardingProgress" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "OnboardingProgress" FORCE ROW LEVEL SECURITY;
 
 CREATE POLICY "tenant_isolation" ON "OnboardingProgress"
-  USING ("tenantId"::text = current_setting('app.current_tenant_id', true));
+  USING ("tenantId" = current_setting('app.current_tenant_id', TRUE)::uuid);
 
 -- No RLS on RbiMasterDirection and RbiChecklistItem — global shared data
 -- These tables are read-only for tenants, managed by system admin/seed scripts

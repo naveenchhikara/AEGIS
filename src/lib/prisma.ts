@@ -42,22 +42,16 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Tenant-scoped Prisma client — application-level isolation.
+ * Tenant-scoped Prisma client helper.
  *
- * ARCHITECTURE NOTE (2026-02-18):
- * Previously wrapped every query in a $transaction with SET LOCAL for
- * PostgreSQL RLS. But: (1) no RLS policies exist in the DB, so SET LOCAL
- * was a no-op, and (2) wrapping every query in a transaction caused P2028
- * errors under concurrent SSR load (10+ parallel queries competing for
- * pool connections → transaction timeouts → 500 errors).
+ * ARCHITECTURE NOTE:
+ * The DB rollout uses PostgreSQL RLS with FORCE ROW LEVEL SECURITY and
+ * policies keyed on app.current_tenant_id. This helper currently performs
+ * tenantId format validation and returns the shared Prisma client; DAL
+ * functions still include explicit tenantId filters for defense-in-depth.
  *
- * Tenant isolation is enforced at the APPLICATION level:
- * - Every DAL function adds WHERE tenantId = ? to its queries
- * - tenantId comes from authenticated session only
- * - This function validates the UUID format as a safety check
- *
- * If PostgreSQL RLS is added later, re-enable transaction wrapping with
- * per-connection (not per-query) tenant context via middleware.
+ * If query-level tenant GUC wiring is expanded beyond audit-context
+ * transactions, prefer connection-safe middleware over per-query wrappers.
  *
  * SECURITY:
  * - tenantId MUST come from authenticated session ONLY
@@ -67,7 +61,7 @@ export function prismaForTenant(tenantId: string) {
   if (!UUID_REGEX.test(tenantId)) {
     throw new Error(`Invalid tenantId format: ${tenantId}`);
   }
-  // Return the singleton client — tenant isolation is via WHERE clauses
-  // in every DAL function, not via PostgreSQL RLS (no policies exist).
+  // Return the singleton client. Tenant filtering is still required in DAL
+  // queries as defense-in-depth.
   return prisma;
 }

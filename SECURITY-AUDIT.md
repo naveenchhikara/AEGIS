@@ -77,10 +77,11 @@ cryptsetup status /dev/mapper/data 2>/dev/null || echo "Not encrypted"
 
 ## DSEC-05: Tenant Data Isolation
 
-**Status: VERIFIED (application-level)**
+**Status: VERIFIED (RLS + application defense-in-depth)**
 
 - [x] All DAL functions use `WHERE tenantId = ?` pattern (39 files verified)
-- [x] `prismaForTenant()` returns singleton client — isolation is at query level, not connection level
+- [x] RLS policies read `app.current_tenant_id` (same GUC used by audit trigger)
+- [x] All tenant-scoped RLS tables use `FORCE ROW LEVEL SECURITY` (owner cannot bypass)
 - [x] SQL audit script created for periodic verification
 - [x] Vitest integration test created: `src/data-access/__tests__/tenant-isolation.test.ts`
 - [ ] Integration test verified in CI pipeline
@@ -104,7 +105,9 @@ WHERE schemaname = 'public'
 -- (Manual review: grep all DAL files for findMany/findFirst without tenantId)
 ```
 
-**Note:** Tenant isolation is application-level (WHERE clauses in DAL functions), not PostgreSQL RLS. This is documented and accepted. The integration test verifies that DAL functions correctly filter by tenantId.
+**Note:** Enforcement model is RLS with `FORCE ROW LEVEL SECURITY` while keeping
+the owner connection. Application-level `tenantId` filters stay in place as
+defense-in-depth.
 
 ---
 

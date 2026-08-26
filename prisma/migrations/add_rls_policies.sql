@@ -8,12 +8,15 @@
 --   psql $DATABASE_URL < prisma/migrations/add_rls_policies.sql
 -- =============================================================================
 
--- ─── 1. Create dedicated application role (NOT superuser) ────────────────────
+-- ─── 1. Create dedicated application role (grant target only) ─────────────────
+-- RLS enforcement model: keep tables owned by `aegis` and FORCE RLS on each
+-- tenant-scoped table. `aegis_app` remains NOLOGIN and is used only as a
+-- stable grant target for least-privilege role handoff.
 
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'aegis_app') THEN
-    CREATE ROLE aegis_app LOGIN PASSWORD 'aegis_app_dev_password';
+    CREATE ROLE aegis_app NOLOGIN;
   END IF;
 END
 $$;

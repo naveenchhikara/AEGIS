@@ -22,6 +22,7 @@ import {
   BmBatchOverdueEmail,
   getBmBatchOverdueSubject,
 } from "./templates/bm-batch-overdue-email";
+import { env } from "@/env";
 
 /**
  * Render a React Email template to HTML and plain text.
@@ -53,10 +54,7 @@ export async function renderEmailTemplate(
 ): Promise<RenderedEmail> {
   const p = payload as any;
   const bankName = (p.bankName as string) ?? "AEGIS";
-  const appUrl =
-    (p.appUrl as string) ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "https://app.aegis.in";
+  const appUrl = (p.appUrl as string) ?? env.NEXT_PUBLIC_APP_URL;
 
   let element: React.ReactElement;
   let subject: string;

@@ -4,6 +4,7 @@ import { multiSession } from "better-auth/plugins";
 import { prisma } from "./prisma";
 import { randomUUID } from "crypto";
 import { accountLockout } from "./auth-lockout-plugin";
+import { env } from "@/env";
 
 /**
  * Better Auth server configuration
@@ -18,12 +19,11 @@ import { accountLockout } from "./auth-lockout-plugin";
  * - Cookie security (Phase 11 SC-4): httpOnly, secure, sameSite=lax
  */
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    env.NEXT_PUBLIC_APP_URL,
     "http://127.0.0.1:3000",
-    "https://aegis.nexlyadvisory.com",
   ].filter(Boolean),
 
   // Prisma adapter
@@ -90,12 +90,10 @@ export const auth = betterAuth({
     },
     // Explicit cookie security (Phase 11 SC-4)
     // Only use secure cookies when serving over HTTPS (detected from BETTER_AUTH_URL)
-    useSecureCookies: (process.env.BETTER_AUTH_URL || "").startsWith(
-      "https://",
-    ),
+    useSecureCookies: env.BETTER_AUTH_URL.startsWith("https://"),
     defaultCookieAttributes: {
       httpOnly: true, // Prevent JavaScript access to session cookies
-      secure: (process.env.BETTER_AUTH_URL || "").startsWith("https://"), // HTTPS only when URL is https
+      secure: env.BETTER_AUTH_URL.startsWith("https://"), // HTTPS only when URL is https
       sameSite: "lax" as const, // CSRF protection while allowing top-level navigations
     },
   },

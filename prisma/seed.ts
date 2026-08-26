@@ -25,8 +25,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 import { randomUUID } from "crypto";
 import { withTriggersDetached } from "../src/lib/audit-triggers";
+import { assertSafeSeedTarget } from "../src/lib/seed-guard";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+assertSafeSeedTarget({
+  nodeEnv: process.env.NODE_ENV,
+  databaseUrl: process.env.DATABASE_URL,
+  allowDestructiveSeed: process.env.ALLOW_DESTRUCTIVE_SEED,
+});
+
+const databaseUrl = process.env.DATABASE_URL as string;
+const adapter = new PrismaPg({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
 // ─── Severity / status mappers ───────────────────────────────────────────────

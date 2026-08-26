@@ -1,6 +1,6 @@
 # AEGIS — Comprehensive Test Plan
 
-> Quick functional verification for all 18 modules, 52 pages, 79 server actions, and 11 API endpoints.
+> Quick functional verification for all 18 modules, 65 pages, 103 server action files, and 12 API endpoints.
 > **Scope:** Smoke tests + critical path validation. Not exhaustive regression.
 > **Test Users:** CEO (rajesh.deshmukh), CAE (priya.sharma), Auditor (amit.joshi), CCO (suresh.patil), Auditee (vikram.kulkarni), Admin (admin@testbank.example) — all password `TestPassword123!`
 

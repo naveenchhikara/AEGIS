@@ -5,6 +5,7 @@ import { processOverdueEscalation } from "./overdue-escalation";
 import { processRbiaOverdueEscalation } from "./rbia-overdue-escalation";
 import { processWeeklyDigest } from "./weekly-digest";
 import { captureMetricsSnapshot } from "./snapshot-metrics";
+import { logger } from "@/lib/logger";
 
 // Job names (duplicated from job-queue.ts to avoid server-only import)
 const JOBS = {
@@ -30,7 +31,7 @@ const JOBS = {
  * (same daily schedule, different processing step).
  */
 export async function registerJobs(boss: PgBoss): Promise<void> {
-  console.log("[jobs] Registering job handlers");
+  logger.info({ action: "register_jobs_start" }, "Registering job handlers");
 
   // Continuous notification processor (every minute)
   await boss.work(JOBS.PROCESS_NOTIFICATIONS, { batchSize: 50 }, async () => {
@@ -52,7 +53,10 @@ export async function registerJobs(boss: PgBoss): Promise<void> {
   // Board report generation handler (triggered on demand, not cron)
   await boss.work(JOBS.GENERATE_BOARD_REPORT, async (jobs) => {
     for (const job of jobs) {
-      console.log("[jobs] Board report generation requested", job.data);
+      logger.info(
+        { action: "board_report_generation_requested", jobId: job.id },
+        "Board report generation requested",
+      );
     }
     // Implementation in 08-04 (PDF Board Report)
   });
@@ -62,5 +66,8 @@ export async function registerJobs(boss: PgBoss): Promise<void> {
     await captureMetricsSnapshot();
   });
 
-  console.log("[jobs] All job handlers registered");
+  logger.info(
+    { action: "register_jobs_complete" },
+    "All job handlers registered",
+  );
 }

@@ -9,9 +9,12 @@ with RBI operating requirements.
 
 **Live:** https://aegis.nexlyadvisory.com
 **GitHub:** [nc-sapiex/AEGIS](https://github.com/nc-sapiex/AEGIS) (private)
-**Production state:** Tag-driven GitHub Actions deploys into the
-repo-backed Docker Compose stack at `/opt/aegis/repo`.
-**Deploy:** `git tag -a vYYYY.MM.DD.N -m "message" && git push origin <tag>`
+**Production state:** Runs as a Coolify application on the shared VPS.
+**Deploy:** merge to `main` — Coolify auto-deploys. There is no tag step.
+
+> **Merging to `main` deploys to production.** Auto-deploy is on and `main`
+> has no branch protection, so nothing gates a merge. Confirm before merging
+> anything you would not deploy.
 
 ## Working Style
 
@@ -20,6 +23,25 @@ repo-backed Docker Compose stack at `/opt/aegis/repo`.
 - Prefer targeted, low-drift changes over speculative rewrites
 - Keep production and documentation aligned; do not leave parallel old
   and new deploy paths documented
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `nc-sapiex/AEGIS`, driven through the `gh` CLI. See
+`docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, each label string equal to its name
+(`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`,
+`wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` plus `docs/adr/` at the repo root. `CONTEXT.md`
+exists (added with the audited-mutation work); `docs/adr/` does not — it is
+created lazily when a decision needs recording. See `docs/agents/domain.md`.
 
 ## Quick Commands
 
@@ -35,9 +57,13 @@ pnpm db:migrate
 pnpm db:seed
 pnpm db:studio
 pnpm seed:master-directions
+pnpm seed:exam-questions
+pnpm seed:lifecycle
 pnpm test:unit
+pnpm test:coverage
 pnpm test:e2e
 pnpm test:e2e:ui
+pnpm build:analyze
 ```
 
 ## Repository Map
@@ -113,57 +139,64 @@ database. Health checks include queue status and database latency.
 
 ## Deployment
 
-Production does **not** use Dockge, PM2, or a copied workspace.
+**The VPS was reprovisioned on 2026-08-23 and the old layout is gone.** Anything
+describing `/opt/aegis`, `docker-compose.prod.yml`, a bespoke nginx, systemd
+timers, or a `v*` tag pipeline is stale — that host no longer exists. `Deploy
+Production` and `Health Check` are `disabled_manually` in Actions; do not
+re-enable them.
 
 ### Current Production Layout
 
-- App root: `/opt/aegis`
-- Git checkout: `/opt/aegis/repo`
-- Production compose file: `/opt/aegis/repo/docker-compose.prod.yml`
-- Shared env: `/opt/aegis/shared/.env.production`
-- Compatibility env symlink: `/opt/aegis/.env.production`
-- Active release file: `/opt/aegis/shared/current-release`
-- Backups: `/backups`
-- Legacy root compose archived as:
-  `/opt/aegis/docker-compose.yml.archived-20260307`
-
-### Runtime Topology
-
-- `aegis-app` listens on `127.0.0.1:3000`
-- `aegis-postgres` is internal to the Compose network only
-- Nginx terminates TLS for `aegis.nexlyadvisory.com`
-- Backups run through `aegis-backup.timer` at `02:00`
+AEGIS runs as **Coolify app id 6**, uuid `nil0nfvohfrgehgjxdv1g2xc`, `dockerfile`
+build pack, `ports_exposes=3000`, in project `10-sapiex-websites` on the
+`sapiex-websites` Docker network. Its database is a Coolify-managed Postgres
+(`postgres:16-alpine`, container `ii2dkkgiwrf76iesksuhv5iq`, user/db `aegis`) on
+the same network. `coolify-proxy` *is* Traefik and terminates TLS. Config and
+secrets live in Coolify, not in a file on disk.
 
 ### Release Flow
 
-1. Merge to `main`
-2. Wait for `ci.yml` to pass
-3. Create an annotated tag in the `vYYYY.MM.DD.N` format
-4. Push the tag
-5. `deploy.yml` creates a git bundle, copies deploy helpers to the VPS,
-   runs bootstrap/deploy scripts, and waits for
-   `http://127.0.0.1:3000/api/health`
+1. Open a PR; CI runs on the **merge ref**, so a check reflects branch + main at
+   that moment, not the branch alone.
+2. Merge to `main`.
+3. Coolify builds and releases automatically, within a minute or two.
+4. Verify `https://aegis.nexlyadvisory.com/api/health`.
+
+**SQL migrations do not ride along with a deploy.** The loose `.sql` files in
+`prisma/migrations/` are applied by hand. Merging code that depends on one does
+not apply it — apply it yourself, before or with the merge.
 
 ### Operational Commands
 
+The VPS is reached over **Tailscale** as host `vps` (public :22 is filtered).
+Tailscale SSH runs in check mode and needs periodic browser re-auth; **never pass
+`BatchMode=yes`** — it suppresses the auth URL and the connection hangs silently.
+The `nc` user has passwordless sudo but is not in the `docker` group, so Docker
+needs `sudo`.
+
 ```bash
-curl -fsS http://127.0.0.1:3000/api/health | jq
-docker compose -p aegis \
-  --env-file /opt/aegis/shared/.env.production \
-  -f /opt/aegis/repo/docker-compose.prod.yml ps
-systemctl status aegis-backup.timer --no-pager
-cat /opt/aegis/shared/current-release
+curl -fsS https://aegis.nexlyadvisory.com/api/health | jq
+ssh vps 'sudo docker ps --filter name=nil0nfvohfrgehgjxdv1g2xc'
+ssh vps 'sudo docker exec -it ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis'
 ```
+
+When reading container labels, do **not** truncate: Docker prints `com.docker.*`
+before `traefik.*`, so a `head -20` hides every Traefik label and makes a
+correctly-routed container look unlabelled.
 
 ## Environment Notes
 
 - `.env.example` is for local development only
-- Production secrets live outside git in
-  `/opt/aegis/shared/.env.production`
+- Production secrets live in Coolify, not in git or a file on the host
+- `src/env.ts` requires four vars — `DATABASE_URL`, `BETTER_AUTH_SECRET` (min 32),
+  `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`. AWS/S3/SES vars are `.optional()`, so
+  uploads and email degrade rather than block boot
 - `NEXT_PUBLIC_*` variables must exist at Docker build time
 - `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` must stay aligned with the
-  public domain
-- Health checks must use `127.0.0.1`, not `localhost`
+  public domain — both are `https://aegis.nexlyadvisory.com`
+- Use `npx -y pnpm@10` locally: the Dockerfile pins pnpm 9 and CI pins 10, while
+  pnpm 11 ignores the `pnpm.overrides` block in `package.json` and fails
+  `--frozen-lockfile`
 
 ## Domain Context
 
@@ -188,10 +221,19 @@ cat /opt/aegis/shared/current-release
 - Prefer server components unless client interactivity is required
 - Use `cn()` for class composition
 - Keep tenant scoping explicit in DAL functions and server actions
+- Route every audited write through `withAuditedMutation(actor, actionType, fn)`
+  from `src/data-access/audited-mutation.ts` — it opens the transaction and sets
+  the session context the audit trigger reads. A hand-rolled `prisma.$transaction`
+  that mutates an audited table writes a row with no attribution, and the
+  discipline test in `src/data-access/__tests__/` will fail the build
 
 ## Gotchas
 
 - Tenant isolation is enforced in application code, not PostgreSQL RLS
+- **Session GUCs read back as `''`, not NULL, on a pooled connection** that has
+  previously set them. `''::UUID` throws. Always wrap reads in
+  `NULLIF(current_setting(...), '')` — see
+  `prisma/migrations/20260826_audit_trigger_null_safe.sql`
 - Dashboard views still require SQL application on a fresh environment
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from
   the server bundle

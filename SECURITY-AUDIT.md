@@ -71,7 +71,9 @@ lsblk -f | grep -i crypt
 cryptsetup status /dev/mapper/data 2>/dev/null || echo "Not encrypted"
 ```
 
-**Action Required:** SSH to VPS (145.223.19.8) and verify disk encryption. Docker volumes inherit host disk encryption — if LUKS is enabled at host level, PostgreSQL data in Docker is covered.
+**Action Required:** SSH to the production VPS host and verify disk
+encryption. Docker volumes inherit host disk encryption — if LUKS is
+enabled at host level, PostgreSQL data in Docker is covered.
 
 ---
 

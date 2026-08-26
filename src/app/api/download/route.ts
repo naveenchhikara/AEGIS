@@ -26,6 +26,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const tenantId = session.user?.tenantId;
+  if (typeof tenantId !== "string" || tenantId.trim().length === 0) {
+    logger.warn(
+      { userId: session.user?.id },
+      "Download rejected: session missing tenant context",
+    );
+    return NextResponse.json({ error: "Invalid session context" }, { status: 403 });
+  }
+
   // ── Validate key parameter ──────────────────────────────────────────────
   const key = request.nextUrl.searchParams.get("key");
 
@@ -48,6 +57,15 @@ export async function GET(request: NextRequest) {
       "Download rejected: invalid S3 key format",
     );
     return NextResponse.json({ error: "Invalid key format" }, { status: 400 });
+  }
+
+  // Enforce object-level authorization: keys must belong to session tenant
+  if (!key.startsWith(`${tenantId}/`)) {
+    logger.warn(
+      { key: key.slice(0, 100), userId: session.user.id, tenantId },
+      "Download rejected: key outside tenant scope",
+    );
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // ── Generate presigned URL and redirect ─────────────────────────────────

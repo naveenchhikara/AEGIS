@@ -4,15 +4,15 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `2424f6f` (docs/reference-suite)
+> Source commit: `c6bc664` (chore/drop-dead-modules)
 
 AEGIS has two callable surfaces.
 
 **HTTP endpoints** (12) are conventional routes under `/api`, used
 for file downloads, streamed exports and health checks.
 
-**Server actions** (157 exported
-functions across 91 modules) are the primary surface. They are
+**Server actions** (151 exported
+functions across 86 modules) are the primary surface. They are
 invoked directly from React components rather than over HTTP, so they have no
 URL — the function signature is the contract. Every one runs on the server and
 derives the caller's tenant from the session.
@@ -142,7 +142,6 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 | `audit-execution/submit-examination-response.ts` | — | `submitExaminationResponse` | AuditEngagement, AuditExaminationResponse, ExaminationItem, Observation, ObservationTimeline |
 | `audit-execution/transition-engagement-status.ts` | — | `transitionEngagementStatus` | AuditEngagement |
 | `audit-execution/update-engagement-status.ts` | — | `updateEngagementStatus` | AuditEngagement |
-| `audit-execution/update-section-status.ts` | — | `updateSectionStatus` | AuditSectionInstance |
 | `audit-execution/upload-examination-evidence.ts` | — | `requestExaminationEvidenceUpload`, `confirmExaminationEvidenceUpload`, `getExaminationEvidenceDownloadUrl` | AuditEngagement, AuditExaminationResponse, Evidence |
 
 ### audit-plans
@@ -159,8 +158,6 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 |---|---|---|---|
 | `compliance/acb-reporting.ts` | — | `generateAcbReport` | BoardReport, ComplianceItem |
 | `compliance/ace-processing.ts` | — | `processAceQuarterly`, `reviewAceItem` | ComplianceItem |
-| `compliance/compute-escalation.ts` | — | `computeEscalationForAllItems` | ComplianceItem |
-| `compliance/create-compliance-items.ts` | — | `createComplianceItems` | ComplianceItem, Observation |
 | `compliance/run-escalation-job.ts` | yes | `runEscalationJob`, `runEscalationJobInternal` | ComplianceItem, NotificationQueue, User |
 | `compliance/submit-branch-response.ts` | — | `submitBranchResponse` | ComplianceItem |
 | `compliance/zac-review.ts` | — | `zacReviewCompliance` | ComplianceItem |
@@ -282,7 +279,6 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
-| `reports/compute-risk-rating.ts` | yes | `computeRiskRating` | AuditEngagement, Observation |
 | `reports/generate-pdf.ts` | yes | `generatePdfReport` | BoardReport, ReportTemplate |
 | `reports/generate-xlsx.ts` | yes | `generateXlsxReport` | BoardReport, ReportTemplate |
 | `reports/transition-report.ts` | — | `transitionReportStatus` | AuditEngagement |
@@ -291,7 +287,6 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
-| `risk-management/manage-entity.ts` | — | `manageAuditUniverseEntity`, `deleteAuditUniverseEntity` | AuditUniverseEntity |
 | `risk-management/manage-linkage.ts` | — | `manageRiskAuditLinkage` | RiskAuditLinkage |
 | `risk-management/manage-risk.ts` | — | `manageRisk`, `manageKRI` | KeyRiskIndicator, RiskRegister |
 

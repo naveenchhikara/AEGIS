@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `2424f6f` (docs/reference-suite)
+> Source commit: `c6bc664` (chore/drop-dead-modules)
 
 Which processes read and write which tables.
 
@@ -21,9 +21,9 @@ reachability graph.
 | `(root)` | 8 | `AuditLog`, `AuditeeResponse`, `Branch`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User`, `UserBranchAssignment` |
 | `account-examination` | 1 | `AccountExamResponse`, `AuditEngagement`, `LoanAccount` |
 | `admin` | 4 | `AuditCalendar`, `Branch`, `ReportTemplate`, `Zone` |
-| `audit-execution` | 13 | `AuditEngagement`, `AuditExaminationResponse`, `AuditSectionInstance`, `AuditTeamMember`, `CashCheck`, `Evidence`, `ExaminationArea`, `ExaminationItem`, `LoanReview`, `Observation`, `ObservationTimeline`, `SmaNpaEntry` |
+| `audit-execution` | 12 | `AuditEngagement`, `AuditExaminationResponse`, `AuditSectionInstance`, `AuditTeamMember`, `CashCheck`, `Evidence`, `ExaminationArea`, `ExaminationItem`, `LoanReview`, `Observation`, `ObservationTimeline`, `SmaNpaEntry` |
 | `audit-plans` | 3 | `AuditEngagement`, `AuditPlan`, `Branch` |
-| `compliance` | 7 | `BoardReport`, `ComplianceItem`, `NotificationQueue`, `Observation`, `User` |
+| `compliance` | 5 | `BoardReport`, `ComplianceItem`, `NotificationQueue`, `User` |
 | `concurrent-audit` | 4 | `ConcurrentAuditTemplate`, `NotificationQueue`, `Observation`, `ObservationTimeline`, `User` |
 | `control-library` | 2 | `ControlLibrary`, `TestProcedure` |
 | `examination-questions` | 1 | `ExaminationQuestion` |
@@ -38,8 +38,8 @@ reachability graph.
 | `rbia` | 5 | `ActionPoint`, `AuditEngagement`, `BmResponseBatch`, `BranchRbiaScore`, `EngagementMeeting`, `EngagementModuleSelection`, `Evidence`, `ExaminationNode`, `ExaminationResponse`, `Observation` |
 | `regulatory` | 2 | `RegulatoryObservation` |
 | `repeat-findings` | 2 | `Observation`, `ObservationTimeline` |
-| `reports` | 4 | `AuditEngagement`, `BoardReport`, `Observation`, `ReportTemplate` |
-| `risk-management` | 3 | `AuditUniverseEntity`, `KeyRiskIndicator`, `RiskAuditLinkage`, `RiskRegister` |
+| `reports` | 3 | `AuditEngagement`, `BoardReport`, `ReportTemplate` |
+| `risk-management` | 2 | `KeyRiskIndicator`, `RiskAuditLinkage`, `RiskRegister` |
 | `sampling` | 2 | `LoanAccount`, `SamplingConfig` |
 | `work-program` | 3 | `AuditEngagement`, `ControlLibrary`, `TestProcedure`, `WorkProgramItem` |
 
@@ -48,7 +48,6 @@ reachability graph.
 | Job | Audited | Tables touched directly |
 |---|---|---|
 | `deadline-reminder` | yes | `NotificationQueue`, `Observation`, `Tenant` |
-| `notification-batcher` | — | — |
 | `notification-processor` | yes | `NotificationQueue` |
 | `overdue-escalation` | yes | `NotificationQueue`, `Observation`, `Tenant`, `User` |
 | `rbia-overdue-escalation` | yes | `BmResponseBatch`, `NotificationQueue`, `Tenant`, `User` |
@@ -61,8 +60,8 @@ Tables reached from the greatest number of domains — the ones where a schema c
 
 | Table | Domains | Reached from |
 |---|---|---|
-| `Observation` | 10 | `(root)`, `audit-execution`, `compliance`, `concurrent-audit`, `governance`, `jobs`, `observations`, `rbia`, `repeat-findings`, `reports` |
 | `AuditEngagement` | 8 | `account-examination`, `audit-execution`, `audit-plans`, `governance`, `loan-portfolio`, `rbia`, `reports`, `work-program` |
+| `Observation` | 8 | `(root)`, `audit-execution`, `concurrent-audit`, `governance`, `jobs`, `observations`, `rbia`, `repeat-findings` |
 | `User` | 6 | `(root)`, `compliance`, `concurrent-audit`, `governance`, `investment`, `jobs` |
 | `Branch` | 5 | `(root)`, `admin`, `audit-plans`, `governance`, `ram` |
 | `ObservationTimeline` | 5 | `(root)`, `audit-execution`, `concurrent-audit`, `observations`, `repeat-findings` |

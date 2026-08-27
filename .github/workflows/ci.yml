@@ -13,6 +13,8 @@ on:
       - "playwright.config.*"
       - "Dockerfile"
       - ".dockerignore"
+      - "docs/**"
+      - "scripts/generate-reference-docs.mjs"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
@@ -26,6 +28,8 @@ on:
       - "playwright.config.*"
       - "Dockerfile"
       - ".dockerignore"
+      - "docs/**"
+      - "scripts/generate-reference-docs.mjs"
       - ".github/workflows/ci.yml"
 
 # Prevent concurrent deployments on main, cancel stale PR runs
@@ -56,6 +60,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm prisma generate
+
+      - name: Check generated reference docs are current
+        run: pnpm docs:check
 
       - name: Run ESLint
         run: pnpm lint

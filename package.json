@@ -20,7 +20,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "build:analyze": "ANALYZE=true next build --webpack",
-    "seed:lifecycle": "tsx scripts/seed-full-audit-lifecycle.ts"
+    "seed:lifecycle": "tsx scripts/seed-full-audit-lifecycle.ts",
+    "docs:reference": "node scripts/generate-reference-docs.mjs",
+    "docs:check": "node scripts/generate-reference-docs.mjs --check"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -30,19 +30,26 @@ Multi-tenant audit and compliance platform for Urban Cooperative Banks (UCBs) in
   records where marketing/spec claims diverge from the code; the milestone
   completion figures below predate that verification and are being reconciled.
 
+## Documentation
+
+Start with **[`docs/architecture.md`](docs/architecture.md)** — how the system is
+put together and the invariants that hold it together. [`docs/`](docs/README.md)
+indexes the rest: the generated schema/route/API reference, the requirements
+spec, and the operations runbooks.
+
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 16, TypeScript 5.9, React 19 |
 | Database | PostgreSQL 16, Prisma 7 (75 models, 21 enums) |
-| Auth | Better Auth (17 roles, 60+ permissions, maker-checker RBAC) |
+| Auth | Better Auth (17 roles, 78 permissions, maker-checker RBAC) |
 | UI | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts |
 | Cloud | AWS S3 (evidence storage), AWS SES (email) |
 | Jobs | pg-boss (notifications, reminders) |
 | i18n | next-intl (English, Hindi, Marathi, Gujarati) |
 | Export | ExcelJS (XLSX), @react-pdf/renderer (PDF) |
-| Testing | Playwright (E2E, 140 automated), Vitest (368 unit) |
+| Testing | Vitest (385 unit, 12 files), Playwright (27 E2E specs × 5 role projects) |
 | Deploy | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt |
 
 ## Features

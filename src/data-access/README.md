@@ -30,7 +30,11 @@ not fall back to a database guarantee, because there isn't one.
 
 ## The pattern
 
-Every DAL function follows these five steps:
+Every **new** DAL function must follow these five steps. Be honest about the
+existing stock: steps 0–3 are near-universal, but the step-4 assertion exists
+in only ~8 of the 51 modules today (and some of those return `null` instead of
+throwing) — so treat it as required going forward, not as a net that is already
+in place behind older code.
 
 ```typescript
 import "server-only"; // 0. cannot be imported client-side
@@ -81,8 +85,14 @@ if (mismatch) throw new Error("Data isolation violation detected");
 5. **Raw SQL passes `tenantId` explicitly** — `$queryRaw` / `$executeRaw` are
    invisible to steps 3 and 4, so they must carry the predicate themselves.
 
-`__tests__/tenant-isolation.test.ts` reads this directory statically and fails
-the build when a function skips the pattern.
+**None of invariants 3–5 are machine-checked.**
+`__tests__/tenant-isolation.test.ts` reads this directory statically, but it is
+advisory: it verifies each file contains the string `tenantId` somewhere, and
+its stricter checks (a `findMany` without a tenant filter, raw `prisma`
+imports) only `console.warn` — they cannot fail the build. It has no raw-SQL
+check at all and never reads `src/actions/`. A missing `WHERE tenantId` is
+caught by code review or nothing, so review every query in a diff for the
+tenant predicate.
 
 ---
 
@@ -144,7 +154,7 @@ code; migrating one while you are in the file is welcome.
 | `settings.ts`         | Tenant settings — the canonical example of the read pattern           |
 | `index.ts`            | Barrel export                                                         |
 
-The remaining 46 modules are per-domain query collections named after their
+The remaining 45 modules are per-domain query collections named after their
 domain (`observations.ts`, `rbia-scoring.ts`, `compliance.ts`, …).
 
 ---
@@ -153,5 +163,6 @@ domain (`observations.ts`, `rbia-scoring.ts`, `compliance.ts`, …).
 
 Most server actions call `prismaForTenant()` directly rather than routing
 through a function here, so this layer is a **shared-query library, not a strict
-gateway**. The tenant pattern is enforced by the discipline test either way. When
-a query is used by more than one caller, it belongs here.
+gateway** — and the tenant-isolation test never reads `src/actions/`, so those
+direct queries have no static check at all. Review them by hand. When a query is
+used by more than one caller, it belongs here.

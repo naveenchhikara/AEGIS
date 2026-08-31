@@ -49,7 +49,7 @@ spec, and the operations runbooks.
 | Jobs | pg-boss (notifications, reminders) |
 | i18n | next-intl (English, Hindi, Marathi, Gujarati) |
 | Export | ExcelJS (XLSX), @react-pdf/renderer (PDF) |
-| Testing | Vitest (385 unit, 12 files), Playwright (27 E2E specs × 5 role projects) |
+| Testing | Vitest (385 unit tests, 12 files), Playwright (2 E2E spec files, 30 cases × 5 role projects) |
 | Deploy | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt |
 
 ## Features
@@ -193,7 +193,7 @@ provisioning a new environment.
 
 - ~627 source files (excl. generated), 2,500-line Prisma schema
 - 75 database models, 21 enums
-- 157 server actions, ~250 components, 66 pages
+- 157 server actions, ~250 components, 65 pages
 - 78 RBAC permissions across 17 roles
 - 18 functional modules
 

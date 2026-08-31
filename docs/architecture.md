@@ -97,10 +97,15 @@ The rules, in order of how much damage breaking them does:
    plain data down as props; client components receive props and call server
    actions. There is no data fetching inside a client component.
 4. **Mutations go through server actions, not API routes.** The twelve HTTP
-   endpoints under `src/app/api/` exist for things that cannot be a server
-   action: Better Auth's handler, health, file downloads and streamed
-   XLSX/PDF exports, and an external cron trigger. Everything else is a server
-   action.
+   endpoints under `src/app/api/` exist for things that fit HTTP better than a
+   server action: Better Auth's handler, health, file downloads and streamed
+   XLSX/PDF exports, an external cron trigger, and two JSON data endpoints the
+   client fetches (`/api/dashboard`, `/api/is-audit/checklist` — both
+   authenticated and tenant-scoped, so include them when auditing the HTTP
+   surface). One exception to the rule itself:
+   `POST /api/reports/board-report` is a mutation performed through an API
+   route — it generates the PDF, writes it to S3 and records an audit entry —
+   so changes to report permissions must cover it, not just `src/actions/`.
 
 ## One request, end to end
 
@@ -173,11 +178,22 @@ What actually keeps tenants apart:
 
 1. `tenantId` comes from `getRequiredSession()` and **nowhere else** — never
    from a URL parameter, request body or query string.
-2. Every DAL query carries an explicit `where: { tenantId }`.
-3. Reads assert on the way out: if a returned row's `tenantId` does not match
-   the session's, the function throws rather than returning it.
-4. `src/data-access/__tests__/tenant-isolation.test.ts` reads the source
-   statically and fails the build when a DAL function skips the pattern.
+2. Every query carries an explicit `where: { tenantId }`. **This is the whole
+   control.** The two things that sound like backstops are much weaker than
+   they sound:
+   - The read-side assertion ("throw if a returned row's `tenantId` doesn't
+     match") exists in only ~8 of 51 DAL modules, and some of those return
+     `null` instead of throwing. It is a spot check, not a net.
+   - `src/data-access/__tests__/tenant-isolation.test.ts` is **advisory**: it
+     checks that each DAL file contains the string `tenantId` somewhere, and
+     its stricter checks (a `findMany` without a tenant filter, raw `prisma`
+     imports) only `console.warn` — they cannot fail the build. It also never
+     reads `src/actions/`, where most direct `prismaForTenant()` queries live.
+     Unlike the audited-mutation discipline test, this one has no teeth.
+
+So a dropped or forgotten `WHERE tenantId` is caught by **code review or
+nothing**. Review every query in a DAL or action diff for the tenant predicate;
+do not assume a test or assertion will flag it.
 
 The full pattern, with examples, is in
 [`src/data-access/README.md`](../src/data-access/README.md).
@@ -331,9 +347,14 @@ the machine encodes audit practice: a team must be assigned before fieldwork,
 meetings must be recorded before and after it, and the branch score must be
 frozen before an engagement can complete.
 
-Both machines are typed as `Record<Status, …>`, which means adding a status to
-the Prisma enum produces a TypeScript error until the transition map is updated.
-That is intentional — do not widen the type to silence it.
+Only the **engagement** machine is typed as `Record<EngagementStatus, …>`,
+which means adding a status to that Prisma enum produces a TypeScript error
+until the transition map is updated — do not widen the type to silence it. The
+**observation** machine's `TRANSITIONS` is a flat `TransitionDef[]` with no
+compile-time exhaustiveness: adding an `ObservationStatus` value builds
+cleanly, and observations entering the new state simply have no available
+transitions. When touching that enum, update the transition array by hand and
+extend `src/lib/__tests__/state-machine.test.ts` to cover the new state.
 
 ## Background jobs
 
@@ -348,13 +369,24 @@ UTC+05:30.
 | `send-weekly-digest`    | `30 4 * * 1`   | Mon 10:00 IST | Per-tenant digest to CAE/CCO (who cannot opt out — regulatory)                              |
 | `snapshot-metrics`      | `30 19 * * *`  | 01:00 IST     | Writes health score, compliance summary and severity breakdown into `DashboardSnapshot`     |
 
-Queues retry 3 times with backoff and delete after 30 days. Every job:
+Queues retry 3 times with backoff and delete after 30 days. Conventions vary
+more per job than you would hope:
 
-- iterates tenants and calls `withAuditedMutation(systemActor(tenantId), …)`
-  once per tenant, because one transaction carries one tenant;
-- guards against double-sending by checking `EmailLog` for an existing
-  notification of the same type for the same record and deadline;
-- batches tenants (typically 10 at a time) to avoid exhausting the pool.
+- Every job iterates tenants, because one audited transaction carries one
+  tenant. The deadline and escalation jobs wrap their writes in
+  `withAuditedMutation(systemActor(tenantId), …)` once per tenant;
+  `weekly-digest` wraps once per **recipient**; and `snapshot-metrics` uses no
+  wrapper at all — legitimately, because `DashboardSnapshot` is not an audited
+  table. Do not copy `snapshot-metrics` as a template for a job that writes an
+  audited table.
+- Reminder dedup checks `NotificationQueue` — not `EmailLog` — for a row of
+  the same type for the same observation **created since local midnight**
+  (`deadline-reminder.ts`). Purging old `NotificationQueue` rows re-arms the
+  guard; conversely, a queued row whose SES send later fails still suppresses
+  that day's retry.
+- Only `snapshot-metrics` batches tenants (10 at a time) to protect the pool;
+  the other jobs iterate tenants sequentially, so their runtime grows linearly
+  with tenant count.
 
 `/api/cron/escalation` exists as an external trigger for the same escalation
 work, for environments where the in-process scheduler is not trusted to run.
@@ -408,8 +440,9 @@ segment**: URLs are identical across languages. Dictionaries are
 - **Security headers** — CSP, HSTS, `X-Frame-Options: DENY`, `nosniff`,
   `Referrer-Policy` and a `Permissions-Policy` — are set for all routes in
   `next.config.ts`. The CSP allows `'unsafe-inline'` for scripts and styles and
-  `'unsafe-eval'` in development only; the S3 and Sentry origins are explicitly
-  listed in `img-src` and `connect-src`.
+  `'unsafe-eval'` in development only. The S3 origin is listed in both
+  `img-src` and `connect-src`; the Sentry ingest origin is in `connect-src`
+  only.
 - **Server action body limit** is 5 MB.
 - **Output** is `standalone` for Docker, but disabled under `CI` because
   `next start` is incompatible with standalone output in the E2E job.
@@ -420,18 +453,18 @@ segment**: URLs are identical across languages. Dictionaries are
 
 ## Testing strategy
 
-| Kind       | Tool                    | Where                                              | Roughly                                                                                                                           |
-| ---------- | ----------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Unit       | Vitest                  | `src/lib/__tests__/`, `src/services/**/__tests__/` | 385 cases in 12 files, concentrated on the pure engines and state machines                                                        |
-| Discipline | Vitest, static analysis | `src/data-access/__tests__/`                       | 2 suites that read source text, no database                                                                                       |
-| E2E        | Playwright              | `tests/e2e/`                                       | 27 specs across observation lifecycle and permission guards, replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
+| Kind       | Tool                    | Where                                              | Roughly                                                                                                                                        |
+| ---------- | ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit       | Vitest                  | `src/lib/__tests__/`, `src/services/**/__tests__/` | 284 cases in 10 files, concentrated on the pure engines and state machines                                                                     |
+| Discipline | Vitest, static analysis | `src/data-access/__tests__/`                       | 101 cases in 2 suites that read source text, no database (whole Vitest run: 385 cases, 12 files)                                               |
+| E2E        | Playwright              | `tests/e2e/`                                       | 2 spec files (observation lifecycle, permission guards) holding 30 cases, replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
 
-The two discipline suites deserve special mention: `tenant-isolation.test.ts`
-and `audited-mutation-discipline.test.ts` parse the source tree and fail the
-build when new code skips the tenant pattern or writes to an audited table
-outside `withAuditedMutation`. They are the mechanism that keeps invariants 1
-and 2 from eroding, and their allowlists are ratchets — the counts may only ever
-go down.
+The two discipline suites are not equals. `audited-mutation-discipline.test.ts`
+genuinely fails the build on an unwrapped write to an audited table, and its
+allowlist is a ratchet — the count may only ever go down.
+`tenant-isolation.test.ts` is **advisory** (see
+[Invariant 1](#invariant-1--tenant-isolation)): its strict checks only warn, so
+it keeps nothing from eroding on its own.
 
 CI runs lint, typecheck, build, docker-build, unit-test and security-audit on
 every pull request, **against the merge ref** — a green check reflects branch
@@ -458,10 +491,13 @@ Documented honestly so nobody rediscovers these the hard way.
 - **The DAL layer is not uniformly used by actions.** Most server actions call
   `prismaForTenant()` directly rather than going through a
   `src/data-access/` function, so the DAL is a shared-query library rather than
-  a strict gateway. The tenant pattern is enforced either way by the discipline
-  test.
-- **E2E coverage is two spec files.** Lifecycle and permission guards are
-  covered; most modules are not.
+  a strict gateway.
+- **No automated check enforces `WHERE tenantId`.** The tenant-isolation test
+  is advisory-only and never reads `src/actions/`, and the read-side assertion
+  exists in a handful of modules. The tenant predicate is held up by code
+  review alone — treat it as a mandatory review item on every query in a diff.
+- **E2E coverage is two spec files** (30 cases). Lifecycle and permission
+  guards are covered; most modules are not.
 - **Deprecated demo JSON still ships in the bundle source.** `src/data/index.ts`
   exports seed JSON (`findings`, `auditPlans`, `bankProfile`, …) marked
   DEPRECATED. Tracing every consumer shows the chain is **orphaned** — the

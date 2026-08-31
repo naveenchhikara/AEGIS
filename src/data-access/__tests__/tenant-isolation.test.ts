@@ -192,4 +192,80 @@ describe("Tenant Data Isolation (DSEC-05)", () => {
 
     expect(queryFilesWithoutTenant).toHaveLength(0);
   });
+
+  /**
+   * Extract the full argument text of each `.findMany(` call, brace-balanced.
+   * The warn-only heuristic above truncates at the first nested `}`, which made
+   * it blind to the most dangerous shape of all: a findMany with no `where` key
+   * whatsoever, which returns every tenant's rows. getUsers() shipped exactly
+   * that bug.
+   */
+  function findManyArgs(content: string): string[] {
+    const out: string[] = [];
+    const marker = ".findMany(";
+    let idx = 0;
+    while ((idx = content.indexOf(marker, idx)) !== -1) {
+      let depth = 0;
+      let j = idx + marker.length - 1; // the opening "("
+      for (; j < content.length; j++) {
+        const c = content[j];
+        if (c === "(" || c === "{" || c === "[") depth++;
+        else if (c === ")" || c === "}" || c === "]") {
+          depth--;
+          if (depth === 0) break;
+        }
+      }
+      out.push(content.slice(idx + marker.length, j));
+      idx = j;
+    }
+    return out;
+  }
+
+  it("every findMany names a where clause — ENFORCED, shrink-only allowlist", () => {
+    /**
+     * Files sanctioned to run findMany with no `where` at all. Only queries on
+     * global reference tables that carry no tenantId column belong here
+     * (compliance-management.ts reads RbiMasterDirection / RbiChecklistItem /
+     * RbiCircular). This list may only ever SHRINK — an unfiltered findMany on
+     * a tenant-scoped table returns every tenant's rows.
+     */
+    const NO_WHERE_ALLOWLIST = new Set<string>(["compliance-management.ts"]);
+
+    const offenders: string[] = [];
+    for (const file of dalFiles) {
+      if (NO_WHERE_ALLOWLIST.has(file)) continue;
+      const content = getFileContent(file);
+      for (const args of findManyArgs(content)) {
+        if (!/\bwhere\b/.test(args)) {
+          offenders.push(file);
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      `findMany with no where clause — returns every tenant's rows:
+${[...new Set(offenders)].join("\n")}
+
+Add where: { tenantId } (or, for a global reference table with no tenantId
+column, add the file to NO_WHERE_ALLOWLIST with a comment naming the table).`,
+    ).toEqual([]);
+
+    expect(NO_WHERE_ALLOWLIST.size).toBeLessThanOrEqual(1);
+  });
+
+  it("every DAL module imports server-only", () => {
+    const allModules = readdirSync(DAL_DIR).filter(
+      (f) => f.endsWith(".ts") && !f.startsWith("__"),
+    );
+    const missing = allModules.filter(
+      (f) => !getFileContent(f).includes(`import "server-only"`),
+    );
+    expect(
+      missing,
+      `DAL modules missing the server-only directive: ${missing.join(", ")}
+Without it, importing the module from a "use client" component bundles
+database access toward the client instead of failing the build.`,
+    ).toEqual([]);
+  });
 });

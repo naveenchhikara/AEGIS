@@ -1,3 +1,4 @@
+import "server-only";
 import { prismaForTenant } from "./prisma";
 import type { AuthSession as Session } from "@/lib/auth";
 import { logger } from "@/lib/logger";

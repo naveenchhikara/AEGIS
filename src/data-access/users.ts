@@ -14,6 +14,7 @@ export async function getUsers(session?: AuthSession) {
   const tenantId = s.user.tenantId;
 
   return prismaForTenant(tenantId).user.findMany({
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
     include: {
       _count: {

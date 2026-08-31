@@ -1,5 +1,11 @@
 # AEGIS documentation
 
+## Start here
+
+| Document | What it is |
+|---|---|
+| [`architecture.md`](architecture.md) | How the system is put together and the invariants that hold it together — layering, tenant isolation, audit attribution, authorization, the pure engines, jobs. Hand-written; read it before changing code. |
+
 ## Specification
 
 | Document | What it is |
@@ -33,6 +39,7 @@ they have drifted.
 ## Elsewhere in the repository
 
 - `CLAUDE.md` — how the project is built and deployed; the environment contract and known traps.
+- `src/data-access/README.md` — the tenant-scoped query pattern, in detail.
 - `CONTEXT.md` — glossary of domain terms.
 - `SECURITY-AUDIT.md` — security review, including items marked unverified.
 - `tests/TEST-PLAN.md` — manual verification script.

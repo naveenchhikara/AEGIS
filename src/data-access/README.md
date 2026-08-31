@@ -1,46 +1,55 @@
 # Data Access Layer (DAL)
 
-Server-only modules that enforce multi-tenant data isolation via a 5-step security pattern.
+Server-only modules holding the tenant-scoped queries. Tenant isolation is
+enforced **here, in application code** — see the warning below.
 
-## Table of Contents
-
-- [5-Step Security Pattern](#5-step-security-pattern)
-- [Security Invariants](#security-invariants)
-- [Common Mistakes to Avoid](#common-mistakes-to-avoid)
-- [Modules](#modules)
-- [Migration Checklist (JSON to PostgreSQL)](#migration-checklist-json-to-postgresql)
-- [Examples](#examples)
+For how this layer fits the rest of the system, see
+[`docs/architecture.md`](../../docs/architecture.md).
 
 ---
 
-## 5-Step Security Pattern
+## There is no row-level security
 
-Every DAL function MUST follow this pattern:
+`prismaForTenant(tenantId)` reads like an RLS helper. It is not one: it
+validates that the tenant id is a well-formed UUID and returns the shared
+singleton client, adding **no filtering**. No RLS policies are in effect.
+
+**Every `WHERE tenantId` in this directory is load-bearing.** Removing one does
+not fall back to a database guarantee, because there isn't one. The history
+(the removed `SET LOCAL` wrapping, the P2028 timeouts) and the verified
+production RLS state are in
+[`docs/architecture.md`](../../docs/architecture.md#invariant-1--tenant-isolation)
+and the architecture note in `src/lib/prisma.ts`.
+
+---
+
+## The 5-step pattern
+
+Every **new** DAL function must follow these five steps (source comments cite
+this as "the canonical DAL 5-step pattern"). Be honest about the existing
+stock: steps 0–3 are near-universal, but the step-4 runtime assertion exists in
+only ~8 of the 51 modules today (and some of those return `null` instead of
+throwing) — treat it as required going forward, not as a net already in place
+behind older code.
 
 ```typescript
-import "server-only"; // Step 0: Prevent client import
+import "server-only"; // 0. cannot be imported client-side
 import { getRequiredSession } from "./session";
 import { prismaForTenant } from "./prisma";
 
 export async function getSomething() {
-  // Step 1: Get session — tenantId from session ONLY (S2)
+  // 1. tenantId from the session, and nowhere else
   const session = await getRequiredSession();
-  const tenantId = (session.user as any).tenantId as string;
+  const tenantId = session.user.tenantId;
 
-  // Step 2: Tenant-scoped Prisma client — RLS isolation
+  // 2. tenant-scoped client (validates the UUID)
   const db = prismaForTenant(tenantId);
 
-  // Step 3: Explicit WHERE tenantId — belt-and-suspenders (S1)
-  const result = await db.someModel.findFirst({
-    where: { tenantId },
-  });
+  // 3. explicit WHERE — this is the actual isolation control
+  const result = await db.someModel.findFirst({ where: { tenantId } });
 
-  // Step 4: Runtime assertion — verify data matches
+  // 4. assert on the way out
   if (result && result.tenantId !== tenantId) {
-    console.error("CRITICAL: Tenant ID mismatch", {
-      expected: tenantId,
-      received: result.tenantId,
-    });
     throw new Error("Data isolation violation detected");
   }
 
@@ -48,203 +57,92 @@ export async function getSomething() {
 }
 ```
 
+For a list, assert across the batch:
+
+```typescript
+const mismatch = rows.find((r) => r.tenantId !== tenantId);
+if (mismatch) throw new Error("Data isolation violation detected");
+```
+
+`getRequiredSession()` performs the single boundary cast to `AuthSession`, so
+`session.user.tenantId` is typed `string` and `session.user.roles` is typed
+`Role[]`. Downstream code needs no casts — if you find yourself writing
+`as any`, something upstream is wrong.
+
+### Beyond the code block
+
+Two rules the pattern cannot show:
+
+- **Raw SQL passes `tenantId` explicitly** — `$queryRaw` / `$executeRaw` are
+  invisible to steps 3 and 4, so they must carry the predicate themselves.
+- **Know what is machine-checked.** `__tests__/tenant-isolation.test.ts`
+  fails the build on a `findMany` with no `where` clause at all (shrink-only
+  allowlist for the global RBI reference tables) and on a module missing
+  `server-only`. Everything else — a `where` that lacks `tenantId`,
+  `findFirst`/`count`/aggregates, raw SQL, and every query in `src/actions/` —
+  is caught by code review or nothing, so review each query in a diff for the
+  tenant predicate.
+
 ---
 
-## Security Invariants
+## Writes
 
-1. **server-only** — DAL modules cannot be imported in client components
-2. **tenantId from session ONLY** — NEVER accept tenantId from URL, query params, or request body
-3. **RLS via prismaForTenant()** — database-level row isolation per tenant
-4. **Explicit WHERE** — every query includes `WHERE tenantId` (belt-and-suspenders with RLS)
-5. **Runtime assertion** — verify returned data matches to expected tenantId
+Reads follow the pattern above. **Writes to an audited table must additionally
+run inside `withAuditedMutation`**, which opens the transaction and sets the
+PostgreSQL session context that the audit trigger reads:
+
+```typescript
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
+
+await withAuditedMutation(userActor(session), "observation.created", async (tx) => {
+  return tx.observation.create({ data: { tenantId, ... } });
+});
+```
+
+A hand-rolled `prisma.$transaction` that mutates an audited table writes an
+`AuditLog` row with no attribution. `__tests__/audited-mutation-discipline.test.ts`
+fails the build when one appears. The rest of the contract — the four
+justification-required actions, `systemActor` for scheduled work,
+one-transaction-one-tenant, and the legacy `setAuditContext` allowlist — lives
+under
+[Invariant 2 in the architecture guide](../../docs/architecture.md#invariant-2--audit-attribution).
 
 ---
 
-## Common Mistakes to Avoid
+## Common mistakes
 
-- Importing DAL in a `"use client"` component (use `import type` for types only)
-- Using `$queryRaw` / `$executeRaw` without explicit tenantId parameter
-- Accepting tenantId from function arguments instead of session
-- Forgetting to runtime assertion on returned data
-- Using `prisma` directly instead of `prismaForTenant(tenantId)`
+- Importing a DAL function into a `"use client"` component — use `import type`
+  for types only.
+- `$queryRaw` / `$executeRaw` without an explicit tenant predicate.
+- Taking `tenantId` as a function argument from a caller that got it from a URL.
+- Using `prisma` directly instead of `prismaForTenant(tenantId)`.
+- Skipping the runtime assertion because "the `WHERE` already covers it" — the
+  assertion is what catches a `WHERE` that was edited away.
+- Adding a `NODE_ENV`-conditional cache to the Prisma singleton. That was a
+  connection leak in production; see `src/lib/prisma.ts`.
 
 ---
 
 ## Modules
 
-| Module             | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| `session.ts`       | Session management, tenantId source of truth           |
-| `prisma.ts`        | Tenant-scoped Prisma client with RLS                   |
-| `settings.ts`      | Tenant settings (bank profile) — canonical DAL example |
-| `users.ts`         | User management (RBAC)                                 |
-| `audit-context.ts` | Audit trail context for database triggers              |
-| `index.ts`         | Barrel export for all DAL modules                      |
+| Module                | Role                                                                  |
+| --------------------- | --------------------------------------------------------------------- |
+| `session.ts`          | `getRequiredSession()` — the source of truth for `tenantId` and roles |
+| `prisma.ts`           | Re-exports the client and `prismaForTenant()` from `@/lib/prisma`     |
+| `audited-mutation.ts` | `withAuditedMutation()`, `userActor()`, `systemActor()`               |
+| `audit-context.ts`    | Legacy `setAuditContext()` — allowlisted call sites only              |
+| `settings.ts`         | Tenant settings — the canonical example of the read pattern           |
+| `index.ts`            | Barrel export                                                         |
+
+The remaining modules are per-domain query collections named after their
+domain (`observations.ts`, `rbia-scoring.ts`, `compliance.ts`, …).
 
 ---
 
-## Migration Checklist (JSON to PostgreSQL)
+## Note on scope
 
-For each page being migrated from demo JSON to database:
-
-### 1. Create or Update DAL Module
-
-- [ ] Follow 5-step pattern (server-only → session → prismaForTenant → WHERE → assertion)
-- [ ] Add `server-only` import at top
-- [ ] Use `getRequiredSession()` for tenantId
-- [ ] Use `prismaForTenant(tenantId)` for queries
-- [ ] Add explicit `WHERE tenantId` clause
-- [ ] Add runtime assertion after query
-
-### 2. Update Server Component
-
-- [ ] Import DAL function from `@/data-access`
-- [ ] Call DAL function in server component (no async in client)
-- [ ] Pass data as props to client component
-- [ ] Add permission check with `requirePermission()`
-
-### 3. Create or Update Client Component
-
-- [ ] `"use client"` directive
-- [ ] Receive data as props (no async fetch in client)
-- [ ] Handle form state with useState
-- [ ] Call server action for mutations
-- [ ] Show loading state during save
-- [ ] Show success/error toasts
-
-### 4. Create Server Action (if mutations needed)
-
-- [ ] `"use server"` directive
-- [ ] Import from DAL (session, prismaForTenant)
-- [ ] Add Zod validation schema
-- [ ] Check permissions with `hasPermission()`
-- [ ] Set audit context if applicable
-- [ ] Use transaction for atomic updates
-- [ ] Revalidate path after successful update
-
-### 5. Verification
-
-- [ ] Build passes (`pnpm build`)
-- [ ] No TypeScript errors
-- [ ] Page loads from PostgreSQL (not JSON)
-- [ ] Editable fields can be updated
-- [ ] Read-only fields are disabled
-- [ ] Non-admin users get redirected
-
-### 6. Update Barrel Export
-
-- [ ] Add new DAL exports to `src/data-access/index.ts`
-- [ ] Export types as needed
-
----
-
-## Examples
-
-### Example 1: Single Entity Query (settings.ts)
-
-```typescript
-import "server-only";
-import { getRequiredSession } from "./session";
-import { prismaForTenant } from "./prisma";
-
-export async function getTenantSettings() {
-  const session = await getRequiredSession();
-  const tenantId = session.user.tenantId as string;
-  const db = prismaForTenant(tenantId);
-
-  const tenant = await db.tenant.findFirst({
-    where: { id: tenantId }, // Explicit WHERE
-    select: {
-      id: true,
-      name: true,
-      // ... other fields
-    },
-  });
-
-  // Runtime assertion
-  if (tenant && tenant.id !== tenantId) {
-    console.error("CRITICAL: Tenant ID mismatch");
-    throw new Error("Data isolation violation detected");
-  }
-
-  return tenant;
-}
-```
-
-### Example 2: Multi-Entity Query (users.ts)
-
-```typescript
-export async function getUsers(filters?: { role?: string }) {
-  const session = await getRequiredSession();
-  const tenantId = session.user.tenantId as string;
-  const db = prismaForTenant(tenantId);
-
-  const users = await db.user.findMany({
-    where: {
-      tenantId,
-      ...(filters?.role && { roles: { has: filters.role } }),
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      roles: true,
-      // ... other fields
-    },
-  });
-
-  // Batch assertion
-  const mismatch = users.find((u) => u.tenantId !== tenantId);
-  if (mismatch) {
-    console.error("CRITICAL: Tenant ID mismatch");
-    throw new Error("Data isolation violation detected");
-  }
-
-  return users;
-}
-```
-
-### Example 3: Server Action for Mutation
-
-```typescript
-"use server";
-
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { z } from "zod";
-import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
-
-const schema = z.object({
-  name: z.string().min(1),
-  // ... other fields
-});
-
-export async function updateEntity(data: z.infer<typeof schema>) {
-  const session = await getRequiredSession();
-  const tenantId = session.user.tenantId as string;
-  const db = prismaForTenant(tenantId);
-
-  const validated = schema.parse(data);
-
-  await db.$transaction(async (tx) => {
-    // Set audit context
-    await setAuditContext(tx, {
-      actionType: "entity.updated",
-      userId: session.user.id,
-      tenantId,
-      ipAddress: (await headers()).get("x-forwarded-for") ?? "",
-      sessionId: session.session.id,
-    });
-
-    // Update with explicit WHERE
-    await tx.entity.update({
-      where: { id: data.id, tenantId },
-      data: validated,
-    });
-  });
-
-  revalidatePath("/path");
-}
-```
+Most server actions call `prismaForTenant()` directly rather than routing
+through a function here, so this layer is a **shared-query library, not a
+strict gateway** — and the tenant-isolation test never reads `src/actions/`,
+so those direct queries have no static check at all. Review them by hand. When
+a query is used by more than one caller, it belongs here.

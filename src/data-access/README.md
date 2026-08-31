@@ -10,31 +10,27 @@ For how this layer fits the rest of the system, see
 
 ## There is no row-level security
 
-`prismaForTenant(tenantId)` reads like an RLS helper. It is not one.
-
-- **No RLS policies are active in the database.**
-  `prisma/migrations/add_rls_policies.sql` exists in the repository but is not
-  applied.
-- `prismaForTenant()` validates that the tenant id is a well-formed UUID and
-  returns the shared singleton client. **It adds no filtering.**
-
-It once wrapped every query in a transaction with `SET LOCAL`. That was a no-op
-without policies, and it caused P2028 timeouts under parallel SSR load — a
-dashboard fires 10–15 queries at once and they competed for pool connections.
-The wrapping was removed; see the architecture note in `src/lib/prisma.ts`.
+`prismaForTenant(tenantId)` reads like an RLS helper. It is not one: it
+validates that the tenant id is a well-formed UUID and returns the shared
+singleton client, adding **no filtering**. No RLS policies are in effect.
 
 **Every `WHERE tenantId` in this directory is load-bearing.** Removing one does
-not fall back to a database guarantee, because there isn't one.
+not fall back to a database guarantee, because there isn't one. The history
+(the removed `SET LOCAL` wrapping, the P2028 timeouts) and the verified
+production RLS state are in
+[`docs/architecture.md`](../../docs/architecture.md#invariant-1--tenant-isolation)
+and the architecture note in `src/lib/prisma.ts`.
 
 ---
 
-## The pattern
+## The 5-step pattern
 
-Every **new** DAL function must follow these five steps. Be honest about the
-existing stock: steps 0–3 are near-universal, but the step-4 assertion exists
-in only ~8 of the 51 modules today (and some of those return `null` instead of
-throwing) — so treat it as required going forward, not as a net that is already
-in place behind older code.
+Every **new** DAL function must follow these five steps (source comments cite
+this as "the canonical DAL 5-step pattern"). Be honest about the existing
+stock: steps 0–3 are near-universal, but the step-4 runtime assertion exists in
+only ~8 of the 51 modules today (and some of those return `null` instead of
+throwing) — treat it as required going forward, not as a net already in place
+behind older code.
 
 ```typescript
 import "server-only"; // 0. cannot be imported client-side
@@ -73,26 +69,19 @@ if (mismatch) throw new Error("Data isolation violation detected");
 `Role[]`. Downstream code needs no casts — if you find yourself writing
 `as any`, something upstream is wrong.
 
----
+### Beyond the code block
 
-## Invariants
+Two rules the pattern cannot show:
 
-1. **`server-only`** — DAL modules cannot be imported from a client component.
-2. **`tenantId` from the session only** — never from a URL parameter, request
-   body or query string.
-3. **Explicit `WHERE tenantId` on every query** — the sole isolation control.
-4. **Runtime assertion** on returned data.
-5. **Raw SQL passes `tenantId` explicitly** — `$queryRaw` / `$executeRaw` are
-   invisible to steps 3 and 4, so they must carry the predicate themselves.
-
-**None of invariants 3–5 are machine-checked.**
-`__tests__/tenant-isolation.test.ts` reads this directory statically, but it is
-advisory: it verifies each file contains the string `tenantId` somewhere, and
-its stricter checks (a `findMany` without a tenant filter, raw `prisma`
-imports) only `console.warn` — they cannot fail the build. It has no raw-SQL
-check at all and never reads `src/actions/`. A missing `WHERE tenantId` is
-caught by code review or nothing, so review every query in a diff for the
-tenant predicate.
+- **Raw SQL passes `tenantId` explicitly** — `$queryRaw` / `$executeRaw` are
+  invisible to steps 3 and 4, so they must carry the predicate themselves.
+- **Know what is machine-checked.** `__tests__/tenant-isolation.test.ts`
+  fails the build on a `findMany` with no `where` clause at all (shrink-only
+  allowlist for the global RBI reference tables) and on a module missing
+  `server-only`. Everything else — a `where` that lacks `tenantId`,
+  `findFirst`/`count`/aggregates, raw SQL, and every query in `src/actions/` —
+  is caught by code review or nothing, so review each query in a diff for the
+  tenant predicate.
 
 ---
 
@@ -110,22 +99,13 @@ await withAuditedMutation(userActor(session), "observation.created", async (tx) 
 });
 ```
 
-- Four actions require a justification argument, enforced by the compiler:
-  `finding.closed`, `user.role_changed`, `compliance.marked_na`,
-  `observation.status_changed`.
-- Scheduled work uses `systemActor(tenantId)` — the platform acting under
-  policy, never attributed to a person who did not act.
-- One transaction carries one tenant. Cross-tenant work groups by tenant and
-  calls the wrapper once per group.
-
 A hand-rolled `prisma.$transaction` that mutates an audited table writes an
 `AuditLog` row with no attribution. `__tests__/audited-mutation-discipline.test.ts`
-fails the build when one appears.
-
-**Legacy:** ~63 files in `src/actions/` predate the wrapper and set the context
-by hand with `setAuditContext` from `audit-context.ts`. They work and are
-allowlisted with a ceiling that may only be lowered. Do not copy them into new
-code; migrating one while you are in the file is welcome.
+fails the build when one appears. The rest of the contract — the four
+justification-required actions, `systemActor` for scheduled work,
+one-transaction-one-tenant, and the legacy `setAuditContext` allowlist — lives
+under
+[Invariant 2 in the architecture guide](../../docs/architecture.md#invariant-2--audit-attribution).
 
 ---
 
@@ -154,7 +134,7 @@ code; migrating one while you are in the file is welcome.
 | `settings.ts`         | Tenant settings — the canonical example of the read pattern           |
 | `index.ts`            | Barrel export                                                         |
 
-The remaining 45 modules are per-domain query collections named after their
+The remaining modules are per-domain query collections named after their
 domain (`observations.ts`, `rbia-scoring.ts`, `compliance.ts`, …).
 
 ---
@@ -162,7 +142,7 @@ domain (`observations.ts`, `rbia-scoring.ts`, `compliance.ts`, …).
 ## Note on scope
 
 Most server actions call `prismaForTenant()` directly rather than routing
-through a function here, so this layer is a **shared-query library, not a strict
-gateway** — and the tenant-isolation test never reads `src/actions/`, so those
-direct queries have no static check at all. Review them by hand. When a query is
-used by more than one caller, it belongs here.
+through a function here, so this layer is a **shared-query library, not a
+strict gateway** — and the tenant-isolation test never reads `src/actions/`,
+so those direct queries have no static check at all. Review them by hand. When
+a query is used by more than one caller, it belongs here.

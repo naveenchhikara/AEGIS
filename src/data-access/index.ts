@@ -6,12 +6,15 @@
 // import { getTenantSettings } from "@/data-access";
 //
 // SECURITY NOTES:
-// - All DAL functions are server-only (import 'server-only' at file top)
+// - All DAL modules are server-only (import "server-only" at file top;
+//   enforced by __tests__/tenant-isolation.test.ts)
 // - DAL functions accept session object for tenantId (never from request input)
-// - All DAL functions use prismaForTenant() for RLS isolation
-// - All DAL functions add explicit WHERE tenantId (belt-and-suspenders)
-// - All DAL functions perform runtime assertions on returned data
+// - Every query adds an explicit WHERE tenantId — this is the ONLY isolation
+//   control. prismaForTenant() validates the UUID and returns the shared
+//   client; no RLS policies are in effect. See src/data-access/README.md.
 // ============================================================================
+
+import "server-only";
 
 // Settings module (canonical example for all DAL modules)
 export { getTenantSettings, updateTenantSettingsDAL } from "./settings";

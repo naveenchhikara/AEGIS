@@ -96,16 +96,15 @@ The rules, in order of how much damage breaking them does:
 3. **Components do not fetch.** Server components call DAL functions and pass
    plain data down as props; client components receive props and call server
    actions. There is no data fetching inside a client component.
-4. **Mutations go through server actions, not API routes.** The twelve HTTP
-   endpoints under `src/app/api/` exist for things that fit HTTP better than a
-   server action: Better Auth's handler, health, file downloads and streamed
-   XLSX/PDF exports, an external cron trigger, and two JSON data endpoints the
-   client fetches (`/api/dashboard`, `/api/is-audit/checklist` — both
-   authenticated and tenant-scoped, so include them when auditing the HTTP
-   surface). One exception to the rule itself:
-   `POST /api/reports/board-report` is a mutation performed through an API
-   route — it generates the PDF, writes it to S3 and records an audit entry —
-   so changes to report permissions must cover it, not just `src/actions/`.
+4. **Mutations go through server actions, not API routes.** The HTTP
+   endpoints under `src/app/api/` (inventoried in
+   [`reference/routes.md`](reference/routes.md)) exist for things that fit HTTP
+   better: Better Auth's handler, health, file downloads, streamed XLSX/PDF
+   exports, an external cron trigger, and two authenticated JSON endpoints the
+   client fetches (`/api/dashboard`, `/api/is-audit/checklist`). Exception:
+   `POST /api/reports/board-report` mutates through an API route (PDF → S3 →
+   audit row), so report-permission changes must cover it, not just
+   `src/actions/`.
 
 ## One request, end to end
 
@@ -179,21 +178,21 @@ What actually keeps tenants apart:
 1. `tenantId` comes from `getRequiredSession()` and **nowhere else** — never
    from a URL parameter, request body or query string.
 2. Every query carries an explicit `where: { tenantId }`. **This is the whole
-   control.** The two things that sound like backstops are much weaker than
-   they sound:
+   control.** Know exactly what backs it up:
+   - `src/data-access/__tests__/tenant-isolation.test.ts` **fails the build**
+     on two things: a DAL `findMany` with no `where` clause at all (the shape
+     `getUsers()` once shipped — a one-file, shrink-only allowlist covers the
+     global RBI reference tables), and a DAL module missing `server-only`. Its
+     older checks — a filtered `findMany` whose `where` lacks `tenantId`, raw
+     `prisma` imports — only `console.warn`, and nothing static covers
+     `findFirst`/`count`/aggregates or any query in `src/actions/`.
    - The read-side assertion ("throw if a returned row's `tenantId` doesn't
-     match") exists in only ~8 of 51 DAL modules, and some of those return
-     `null` instead of throwing. It is a spot check, not a net.
-   - `src/data-access/__tests__/tenant-isolation.test.ts` is **advisory**: it
-     checks that each DAL file contains the string `tenantId` somewhere, and
-     its stricter checks (a `findMany` without a tenant filter, raw `prisma`
-     imports) only `console.warn` — they cannot fail the build. It also never
-     reads `src/actions/`, where most direct `prismaForTenant()` queries live.
-     Unlike the audited-mutation discipline test, this one has no teeth.
+     match") exists in only ~8 of 51 DAL modules, some returning `null`
+     instead of throwing.
 
-So a dropped or forgotten `WHERE tenantId` is caught by **code review or
-nothing**. Review every query in a DAL or action diff for the tenant predicate;
-do not assume a test or assertion will flag it.
+Outside the two enforced checks, a dropped `WHERE tenantId` is caught by code
+review or nothing — review every query in a DAL or action diff for the tenant
+predicate.
 
 The full pattern, with examples, is in
 [`src/data-access/README.md`](../src/data-access/README.md).
@@ -215,16 +214,10 @@ leak that exhausted PostgreSQL under load. Do not reintroduce a
 
 Audited tables carry an `AFTER INSERT/UPDATE/DELETE` trigger that writes to
 `AuditLog`. The trigger reads _who_ and _why_ from transaction-scoped PostgreSQL
-session settings, so the mutation and its attribution must share a transaction:
-
-```mermaid
-flowchart LR
-    A["withAuditedMutation(actor, action)"] --> B["BEGIN"]
-    B --> C["set_config('app.current_*', …, TRUE)"]
-    C --> D["mutation"]
-    D --> E["trigger → INSERT AuditLog"]
-    E --> F["COMMIT"]
-```
+session settings, so the mutation and its attribution must share a transaction
+(the write path is diagrammed in
+[`reference/data-flows.md`](reference/data-flows.md), which regenerates with
+the code — this document does not duplicate it).
 
 `src/lib/session-context.ts` owns the contract — the six setting names, their
 ordering, and how an `Actor` maps onto them. `src/data-access/audited-mutation.ts`
@@ -260,10 +253,10 @@ historically did so in silence because callers wrap side effects in catch-alls.
 `src/data-access/__tests__/audited-mutation-discipline.test.ts` therefore scans
 the source and fails the build on any unwrapped write to an audited table.
 
-**Legacy call sites.** Sixty-odd action files predate the wrapper and set the
-context by hand via `setAuditContext` from `src/data-access/audit-context.ts`.
-They work, and the discipline test allowlists them with a ceiling that may only
-ever be lowered. New code must use `withAuditedMutation`; touching an
+**Legacy call sites.** 63 action files predate the wrapper and set the context
+by hand via `setAuditContext` from `src/data-access/audit-context.ts`. They
+work, and the discipline test allowlists them under a ceiling (67) that may
+only ever be lowered. New code must use `withAuditedMutation`; touching an
 allowlisted file is a good opportunity to migrate it and lower the ceiling.
 
 The list of audited tables lives in `src/lib/audit-triggers.ts` and must stay in
@@ -322,20 +315,11 @@ the database (pg_trgm title similarity above 0.5, plus explicitly linked
 Two lifecycles are modelled as explicit transition tables rather than status
 strings scattered through actions.
 
-**Observations** — `src/lib/state-machine.ts`, 7 states, 8 transitions
-(6 forward, 2 returning):
-
-```mermaid
-stateDiagram-v2
-    [*] --> DRAFT
-    DRAFT --> SUBMITTED
-    SUBMITTED --> REVIEWED
-    REVIEWED --> ISSUED
-    ISSUED --> RESPONSE
-    RESPONSE --> COMPLIANCE
-    COMPLIANCE --> CLOSED
-    CLOSED --> [*]
-```
+**Observations** — `src/lib/state-machine.ts`, 7 states
+(`DRAFT → SUBMITTED → REVIEWED → ISSUED → RESPONSE → COMPLIANCE → CLOSED`),
+8 transitions (6 forward, 2 returning). The state diagram lives in
+[`reference/data-flows.md`](reference/data-flows.md), which regenerates with
+the code.
 
 **Engagements** — `src/lib/engagement-state-machine.ts`, 8 states:
 `PLANNED → TEAM_ASSIGNED → OPENING_MEETING → IN_PROGRESS → EXIT_MEETING →
@@ -431,10 +415,10 @@ segment**: URLs are identical across languages. Dictionaries are
 ## Build and runtime configuration
 
 - **Environment** is a single Zod schema in `src/env.ts`, imported by
-  `next.config.ts` so validation runs at build time. Only four variables are
-  required — `DATABASE_URL`, `BETTER_AUTH_SECRET` (min 32 chars),
-  `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`. `SKIP_ENV_VALIDATION=1` bypasses
-  it for Docker builds where secrets are unavailable.
+  `next.config.ts` so validation runs at build time (`SKIP_ENV_VALIDATION=1`
+  bypasses it for Docker builds). The variable contract — which four are
+  required, what degrades without the rest — lives in
+  [`CLAUDE.md`](../CLAUDE.md#environment-notes), not here.
 - **`NEXT_PUBLIC_*` variables are baked at build time**, so changing one
   requires a rebuild, not a restart.
 - **Security headers** — CSP, HSTS, `X-Frame-Options: DENY`, `nosniff`,
@@ -453,59 +437,52 @@ segment**: URLs are identical across languages. Dictionaries are
 
 ## Testing strategy
 
-| Kind       | Tool                    | Where                                              | Roughly                                                                                                                                        |
-| ---------- | ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit       | Vitest                  | `src/lib/__tests__/`, `src/services/**/__tests__/` | 284 cases in 10 files, concentrated on the pure engines and state machines                                                                     |
-| Discipline | Vitest, static analysis | `src/data-access/__tests__/`                       | 101 cases in 2 suites that read source text, no database (whole Vitest run: 385 cases, 12 files)                                               |
-| E2E        | Playwright              | `tests/e2e/`                                       | 2 spec files (observation lifecycle, permission guards) holding 30 cases, replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
+| Kind       | Tool                    | Where                                              | Roughly                                                                                                                       |
+| ---------- | ----------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Unit       | Vitest                  | `src/lib/__tests__/`, `src/services/**/__tests__/` | Concentrated on the pure engines and state machines                                                                           |
+| Discipline | Vitest, static analysis | `src/data-access/__tests__/`                       | 2 suites that read source text, no database                                                                                   |
+| E2E        | Playwright              | `tests/e2e/`                                       | 2 spec files (observation lifecycle, permission guards), replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
 
-The two discipline suites are not equals. `audited-mutation-discipline.test.ts`
-genuinely fails the build on an unwrapped write to an audited table, and its
-allowlist is a ratchet — the count may only ever go down.
-`tenant-isolation.test.ts` is **advisory** (see
-[Invariant 1](#invariant-1--tenant-isolation)): its strict checks only warn, so
-it keeps nothing from eroding on its own.
+The discipline suites enforce different amounts.
+`audited-mutation-discipline.test.ts` fails the build on any unwrapped write to
+an audited table, with a shrink-only allowlist. `tenant-isolation.test.ts`
+fails the build on a DAL `findMany` with no `where` clause and on a DAL module
+missing `server-only`; its remaining checks only warn — the precise boundary is
+under [Invariant 1](#invariant-1--tenant-isolation).
 
 CI runs lint, typecheck, build, docker-build, unit-test and security-audit on
-every pull request, **against the merge ref** — a green check reflects branch
-plus `main` at that moment, not the branch alone.
+every pull request, against the merge ref (see
+[`CLAUDE.md`](../CLAUDE.md#release-flow)).
 
 ## Where the map is thin
 
-Documented honestly so nobody rediscovers these the hard way.
+Documented honestly so nobody rediscovers these the hard way. Each links to
+the section that owns the detail; the numbers live there, once.
 
-- **Permission guards cover 17 of 65 pages.** The remainder are protected by the
-  layout session check and by action-level and DAL-level enforcement. Nothing
-  unauthorized can be _performed_, but page-level coverage is not uniform.
-- **63 action files still hand-roll `setAuditContext`** rather than using
-  `withAuditedMutation`. They are correct but bypass the compiler's
-  justification requirement for the four DE6 actions. The allowlist ceiling is
-  67 and may only be lowered.
-- **`prisma db push` alone produces an incomplete database.** Audit triggers,
-  dashboard views, RBIA guards and notification tables come from loose `.sql`
-  files in `prisma/migrations/` that are applied by hand and **do not ride along
-  with a deploy**. Merging code that depends on one does not apply it.
-- **RLS is written but not enabled.** `add_rls_policies.sql` exists; no policies
-  are active. Treat any comment implying database-level isolation as
-  aspirational.
-- **The DAL layer is not uniformly used by actions.** Most server actions call
-  `prismaForTenant()` directly rather than going through a
-  `src/data-access/` function, so the DAL is a shared-query library rather than
-  a strict gateway.
-- **No automated check enforces `WHERE tenantId`.** The tenant-isolation test
-  is advisory-only and never reads `src/actions/`, and the read-side assertion
-  exists in a handful of modules. The tenant predicate is held up by code
-  review alone — treat it as a mandatory review item on every query in a diff.
-- **E2E coverage is two spec files** (30 cases). Lifecycle and permission
-  guards are covered; most modules are not.
-- **Deprecated demo JSON still ships in the bundle source.** `src/data/index.ts`
-  exports seed JSON (`findings`, `auditPlans`, `bankProfile`, …) marked
-  DEPRECATED. Tracing every consumer shows the chain is **orphaned** — the
-  dashboard and report components that read it have no importers, and the live
-  dashboard renders `components/dashboard/widgets/*` from database queries
-  instead. No page serves demo data; the exports and their consumers are simply
-  dead. Verify the import graph before assuming otherwise, and prefer deleting
-  over reviving.
+- **Permission-guard coverage is not uniform** — most pages rely on the layout
+  session check plus action- and DAL-level enforcement
+  → [Invariant 3](#invariant-3--authorization).
+- **Legacy audit writes** — 63 action files still hand-roll `setAuditContext`
+  under a shrink-only allowlist → [Invariant 2](#invariant-2--audit-attribution).
+- **`prisma db push` alone produces an incomplete database** — triggers, views
+  and guards come from loose `.sql` files applied by hand, and they do not ride
+  along with a deploy → [Invariant 2](#invariant-2--audit-attribution).
+- **RLS ships as dead code.** The deliberate policy files were never applied;
+  a bootstrap side effect enabled RLS on exactly one table
+  (`ObservationRbiCircular`), inert because the app connects as a `BYPASSRLS`
+  superuser. Verified against production in
+  [`claims-vs-implementation.md`](claims-vs-implementation.md#resolution-of-the-open-rls-question-added-2026-08-27).
+- **`WHERE tenantId` is only partially machine-checked** — the no-`where`
+  `findMany` shape is enforced; everything else is code review
+  → [Invariant 1](#invariant-1--tenant-isolation).
+- **The DAL is a shared-query library, not a strict gateway** — most actions
+  query directly → [`src/data-access/README.md`](../src/data-access/README.md).
+- **E2E coverage is two spec files** — lifecycle and permission guards; most
+  modules have none → [Testing strategy](#testing-strategy).
+- **Dead demo JSON.** `src/data/index.ts` still exports DEPRECATED seed JSON
+  (`findings`, `auditPlans`, `bankProfile`, …), but the chain is orphaned: its
+  consumers have no importers, and the live dashboard reads the database
+  through `components/dashboard/widgets/*`. Prefer deleting over reviving.
 
 ## Adding a feature
 
@@ -525,8 +502,8 @@ The path of least resistance, which is also the one the discipline tests expect:
    Return `{ success, data }` / `{ success, error }`; never throw.
    `revalidatePath()` afterwards.
 5. **Page** — a server component that calls `requirePermission()` and the DAL,
-   passing plain data to client components. Use `@/*` aliases, import icons from
-   `@/lib/icons`, compose classes with `cn()`.
+   passing plain data to client components. Style conventions (aliases, icons,
+   `cn()`) are in [`CLAUDE.md`](../CLAUDE.md#code-style).
 6. **Permission** — if you added one, extend the `Permission` union and the
    `ROLE_PERMISSIONS` map in `src/lib/permissions.ts`.
 7. **Verify** — `pnpm lint`, `pnpm test:unit` (the discipline tests run here),

@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `c6bc664` (chore/drop-dead-modules)
+> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
 
 Which processes read and write which tables.
 
@@ -75,6 +75,75 @@ Tables reached from the greatest number of domains — the ones where a schema c
 | `TestProcedure` | 2 | `control-library`, `work-program` |
 | `HousekeepingMetric` | 2 | `governance`, `housekeeping` |
 | `IsAuditChecklist` | 2 | `governance`, `investment` |
+
+### Domain access graph
+
+Domains that reach the most-shared tables. Edges mean direct Prisma access in that domain's modules; not every path a page can take.
+
+```mermaid
+flowchart LR
+    subgraph hubs [Shared tables]
+        T_AuditEngagement["AuditEngagement"]
+        T_Observation["Observation"]
+        T_User["User"]
+        T_Branch["Branch"]
+        T_ObservationTimeline["ObservationTimeline"]
+        T_LoanAccount["LoanAccount"]
+    end
+    D_account_examination["account-examination"]
+    D_account_examination --> T_AuditEngagement
+    D_audit_execution["audit-execution"]
+    D_audit_execution --> T_AuditEngagement
+    D_audit_plans["audit-plans"]
+    D_audit_plans --> T_AuditEngagement
+    D_governance["governance"]
+    D_governance --> T_AuditEngagement
+    D_loan_portfolio["loan-portfolio"]
+    D_loan_portfolio --> T_AuditEngagement
+    D_rbia["rbia"]
+    D_rbia --> T_AuditEngagement
+    D_reports["reports"]
+    D_reports --> T_AuditEngagement
+    D_work_program["work-program"]
+    D_work_program --> T_AuditEngagement
+    D__root_["(root)"]
+    D__root_ --> T_Observation
+    D_audit_execution --> T_Observation
+    D_concurrent_audit["concurrent-audit"]
+    D_concurrent_audit --> T_Observation
+    D_governance --> T_Observation
+    D_jobs["jobs"]
+    D_jobs --> T_Observation
+    D_observations["observations"]
+    D_observations --> T_Observation
+    D_rbia --> T_Observation
+    D_repeat_findings["repeat-findings"]
+    D_repeat_findings --> T_Observation
+    D__root_ --> T_User
+    D_compliance["compliance"]
+    D_compliance --> T_User
+    D_concurrent_audit --> T_User
+    D_governance --> T_User
+    D_investment["investment"]
+    D_investment --> T_User
+    D_jobs --> T_User
+    D__root_ --> T_Branch
+    D_admin["admin"]
+    D_admin --> T_Branch
+    D_audit_plans --> T_Branch
+    D_governance --> T_Branch
+    D_ram["ram"]
+    D_ram --> T_Branch
+    D__root_ --> T_ObservationTimeline
+    D_audit_execution --> T_ObservationTimeline
+    D_concurrent_audit --> T_ObservationTimeline
+    D_observations --> T_ObservationTimeline
+    D_repeat_findings --> T_ObservationTimeline
+    D_account_examination --> T_LoanAccount
+    D_loan_portfolio --> T_LoanAccount
+    D_sampling["sampling"]
+    D_sampling --> T_LoanAccount
+```
 
 ## The observation lifecycle
 

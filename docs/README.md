@@ -4,7 +4,7 @@
 
 | Document | What it is |
 |---|---|
-| [`architecture.md`](architecture.md) | How the system is put together and the invariants that hold it together — layering, tenant isolation, audit attribution, authorization, the pure engines, jobs. Hand-written; read it before changing code. |
+| [`architecture.md`](architecture.md) | How the system is put together and the invariants that hold it together — layering, audit lifecycle data flow, tenant isolation, audit attribution, authorization, the pure engines, jobs. Hand-written; read it before changing code. |
 
 ## Specification
 
@@ -24,7 +24,7 @@ they have drifted.
 | [`reference/data-dictionary.md`](reference/data-dictionary.md) | All 75 tables and 21 enumerations: columns, types, keys, defaults, tenant scoping. |
 | [`reference/routes.md`](reference/routes.md) | All 65 pages and 12 HTTP endpoints. |
 | [`reference/api-reference.md`](reference/api-reference.md) | HTTP endpoints and the server-action surface, with the tables each module touches. |
-| [`reference/data-flows.md`](reference/data-flows.md) | Which processes read and write which tables, plus the observation lifecycle and audited write path as diagrams. |
+| [`reference/data-flows.md`](reference/data-flows.md) | Which processes read and write which tables, a domain→hub access graph, plus the observation lifecycle and audited write path as diagrams. |
 
 ## Operations
 

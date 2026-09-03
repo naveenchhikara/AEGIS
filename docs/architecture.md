@@ -21,6 +21,7 @@ reference to find out _what_ exists.
 ## Table of contents
 
 - [The shape of the system](#the-shape-of-the-system)
+- [Audit lifecycle data flow](#audit-lifecycle-data-flow)
 - [Layers, and the rules between them](#layers-and-the-rules-between-them)
 - [One request, end to end](#one-request-end-to-end)
 - [Invariant 1 — tenant isolation](#invariant-1--tenant-isolation)
@@ -68,6 +69,62 @@ Two consequences worth internalising:
   simply non-functional until they are configured. They do not fall back to a
   working local default, so a missing variable shows up as a broken feature, not
   a failed deploy.
+
+## Audit lifecycle data flow
+
+How business data moves through the product — from branch risk scoring to board
+reporting. Tables named here are the durable records; the process→table map in
+[`reference/data-flows.md`](reference/data-flows.md) lists every module that
+touches them directly.
+
+```mermaid
+flowchart TD
+  subgraph plan [Planning]
+    Branch["Branch"] --> RAM["RamAssessment<br/>RamAssessmentScore"]
+    RAM --> Plan["AuditPlan"]
+    Plan --> Eng["AuditEngagement"]
+  end
+
+  subgraph exec [Execution]
+    Eng --> Team["AuditTeamMember<br/>EngagementMeeting"]
+    Eng --> RBIA["ExaminationNode<br/>ExaminationResponse<br/>ActionPoint"]
+    Eng --> Sample["LoanAccount<br/>AccountExamResponse"]
+    Eng --> Obs["Observation"]
+    Evidence["Evidence · S3 object"] --> Obs
+    Evidence --> RBIA
+  end
+
+  subgraph follow [Follow-up and governance]
+    Obs --> Timeline["ObservationTimeline"]
+    Obs --> Comp["ComplianceItem"]
+    Comp --> Queue["NotificationQueue"]
+    Queue --> SES["AWS SES email"]
+    Obs --> Board["BoardReport · PDF in S3"]
+    Eng --> Report["ReportTemplate exports"]
+  end
+
+  Obs -.severity findings feed next RAM.-> RAM
+  Jobs["pg-boss jobs<br/>reminders · escalations · digest · snapshots"] --> Queue
+  Jobs --> Snap["DashboardSnapshot"]
+```
+
+Reading left to right:
+
+1. **Planning** scores each branch (`RamAssessment`), builds the annual
+   `AuditPlan`, and opens an `AuditEngagement` per visit.
+2. **Execution** attaches the team and meetings, runs RBIA examination and
+   sample-based account work, and raises formal `Observation` records (plus
+   lighter `ActionPoint`s). Evidence lands in S3; the row points at the key.
+3. **Follow-up** appends an immutable `ObservationTimeline`, tracks remediation
+   on `ComplianceItem`, and escalates through `NotificationQueue` → SES. Board
+   packs and other exports read the same observations and engagements.
+4. **Closed-loop**: prior-year observations feed the next RAM cycle; scheduled
+   jobs write reminders, escalations, digests and dashboard snapshots without a
+   browser session.
+
+Every write to an audited table in this path must go through
+`withAuditedMutation` so the PostgreSQL trigger can attribute the change — see
+[Invariant 2](#invariant-2--audit-attribution).
 
 ## Layers, and the rules between them
 

@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `c6bc664` (chore/drop-dead-modules)
+> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
 
 Every addressable path in the application: **65 pages** and
 **12 HTTP endpoints**.

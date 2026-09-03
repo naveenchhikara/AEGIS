@@ -326,6 +326,32 @@ reachability graph.`);
   out += `| Table | Domains | Reached from |\n|---|---|---|\n`;
   for (const [t, ds] of ranked) out += `| \`${t}\` | ${ds.length} | ${ds.map((d) => `\`${d}\``).join(", ")} |\n`;
 
+  // Domain → hub table graph (top hubs only — full map is the table above)
+  const hubs = ranked.filter(([, ds]) => ds.length >= 3).slice(0, 6);
+  if (hubs.length > 0) {
+    out += `\n### Domain access graph\n\nDomains that reach the most-shared tables. Edges mean direct Prisma access in that domain's modules; not every path a page can take.\n\n`;
+    out += "```mermaid\nflowchart LR\n";
+    out += "    subgraph hubs [Shared tables]\n";
+    for (const [t] of hubs) {
+      const id = `T_${t.replace(/[^A-Za-z0-9]/g, "_")}`;
+      out += `        ${id}["${t}"]\n`;
+    }
+    out += "    end\n";
+    const seenDomain = new Set();
+    for (const [t, ds] of hubs) {
+      const tid = `T_${t.replace(/[^A-Za-z0-9]/g, "_")}`;
+      for (const d of ds) {
+        const did = `D_${d.replace(/[^A-Za-z0-9]/g, "_")}`;
+        if (!seenDomain.has(d)) {
+          out += `    ${did}["${d}"]\n`;
+          seenDomain.add(d);
+        }
+        out += `    ${did} --> ${tid}\n`;
+      }
+    }
+    out += "```\n";
+  }
+
   // Observation lifecycle diagram
   out += `\n## The observation lifecycle\n\nThe central workflow, and the tables each transition writes.\n\n`;
   out += "```mermaid\nstateDiagram-v2\n";

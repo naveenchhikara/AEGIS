@@ -61,6 +61,12 @@ describe("decideSessionAccess", () => {
     ).toEqual({ kind: "onboard" });
   });
 
+  it("sends a tenantless signup with no roles to onboarding", () => {
+    expect(
+      decideSessionAccess({ status: "ACTIVE", tenantId: null, roles: [] }),
+    ).toEqual({ kind: "onboard" });
+  });
+
   it("sends a user with a malformed tenant id to onboarding", () => {
     expect(
       decideSessionAccess({

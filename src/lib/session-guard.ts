@@ -38,12 +38,12 @@ export function decideSessionAccess(
     return { kind: "revoke", reason: user.status };
   }
 
-  if (user.roles.length === 0) {
-    return { kind: "revoke", reason: "NO_ROLES" };
-  }
-
   if (!user.tenantId || !UUID_REGEX.test(user.tenantId)) {
     return { kind: "onboard" };
+  }
+
+  if (user.roles.length === 0) {
+    return { kind: "revoke", reason: "NO_ROLES" };
   }
 
   return { kind: "ok", tenantId: user.tenantId, roles: user.roles };

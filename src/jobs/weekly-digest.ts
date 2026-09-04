@@ -14,6 +14,22 @@ import {
  */
 
 /**
+ * Start of the current ISO week (most recent Monday, 00:00 server-local).
+ * The digest dedup window is one week wide and aligned to this boundary, so a
+ * job-level retry or a duplicate schedule later in the same week does not
+ * re-queue a second digest, while next Monday opens a fresh window.
+ */
+function startOfIsoWeek(now: Date): Date {
+  const daysSinceMonday = (now.getDay() + 6) % 7; // getDay(): 0=Sun … 6=Sat
+  const monday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - daysSinceMonday,
+  );
+  return monday;
+}
+
+/**
  * Process weekly digest across all tenants.
  */
 export async function processWeeklyDigest(): Promise<void> {
@@ -156,9 +172,28 @@ async function processDigestForTenant(
     })),
   } as object;
 
-  // ─── Queue digest for each CAE/CCO ────────────────────────────────────────
+  // ─── Queue digest for each CAE/CCO (idempotent per ISO week) ──────────────
+
+  // CAE/CCO cannot opt out, so a duplicate digest reaches a regulator. Guard
+  // against a job-level retry (retryLimit 3) or a double schedule by skipping
+  // any recipient who already has a WEEKLY_DIGEST queued this week. Matches the
+  // check-before-insert dedup the deadline/escalation jobs use.
+  const weekStart = startOfIsoWeek(now);
+  let queued = 0;
 
   for (const user of regulatoryUsers) {
+    const alreadyQueued = await db.notificationQueue.findFirst({
+      where: {
+        tenantId,
+        recipientId: user.id,
+        type: "WEEKLY_DIGEST" as any,
+        createdAt: { gte: weekStart },
+      },
+      select: { id: true },
+    });
+
+    if (alreadyQueued) continue;
+
     await withAuditedMutation(
       systemActor(tenantId),
       "notification.digest_queued",
@@ -173,7 +208,8 @@ async function processDigestForTenant(
           },
         }),
     );
+    queued += 1;
   }
 
-  return regulatoryUsers.length;
+  return queued;
 }

@@ -50,6 +50,11 @@ export const logger = pino({
     },
   },
 
+  serializers: {
+    error: pino.stdSerializers.err,
+    err: pino.stdSerializers.err,
+  },
+
   // Redact sensitive fields automatically
   redact: {
     paths: [

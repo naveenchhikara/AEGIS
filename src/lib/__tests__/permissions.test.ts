@@ -235,3 +235,34 @@ describe("getRoleDisplayName", () => {
     expect(getRoleDisplayName(Role.BOARD_OBSERVER)).toBe("Board Observer");
   });
 });
+
+// ─── Onboarding gate (admin:manage_settings) ────────────────────────────────
+// The onboarding actions provision the tenant and mint users, so they gate on
+// admin:manage_settings. These assertions pin who may run onboarding; a change
+// here is a change to who can create a tenant's first admin accounts.
+
+describe("onboarding is gated to tenant admins", () => {
+  it("CAE may configure onboarding", () => {
+    expect(hasPermission([Role.CAE], "admin:manage_settings")).toBe(true);
+  });
+
+  it("SYSTEM_ADMIN may configure onboarding", () => {
+    expect(hasPermission([Role.SYSTEM_ADMIN], "admin:manage_settings")).toBe(
+      true,
+    );
+  });
+
+  it("AUDITEE may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDITEE], "admin:manage_settings")).toBe(false);
+  });
+
+  it("AUDITOR may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDITOR], "admin:manage_settings")).toBe(false);
+  });
+
+  it("AUDIT_MANAGER may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDIT_MANAGER], "admin:manage_settings")).toBe(
+      false,
+    );
+  });
+});

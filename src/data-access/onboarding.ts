@@ -130,6 +130,16 @@ export async function completeOnboardingTransaction(
     },
     "onboarding.completed",
     async (tx) => {
+    // 0. Refuse to replay onboarding. Completion mints users and overwrites the
+    // bank profile, so it must run at most once per tenant.
+    const existing = await tx.tenant.findUnique({
+      where: { id: data.tenantId },
+      select: { onboardingCompleted: true },
+    });
+    if (existing?.onboardingCompleted) {
+      throw new Error("Onboarding has already been completed for this tenant.");
+    }
+
     // 1. Update tenant record with bank registration + tier data
     await tx.tenant.update({
       where: { id: data.tenantId },

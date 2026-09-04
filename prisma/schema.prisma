@@ -1952,12 +1952,18 @@ model NotificationQueue {
   lastError   String?
   processedAt DateTime?
 
+  /// Identifies the worker pass that moved this row out of PENDING. Two
+  /// overlapping workers cannot share one, so the claimant can re-read exactly
+  /// the rows it won.
+  claimId String? @db.Uuid
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([status, sendAfter])
   @@index([batchKey, status])
+  @@index([claimId])
 }
 
 // ─── Email Log (audit trail for sent emails) ─────────────────────────────────

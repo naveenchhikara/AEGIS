@@ -1,3 +1,8 @@
+---
+name: preflight
+description: Use when starting the AEGIS dev server, running tests, or preparing to deploy, and when debugging login failures, locked accounts, database connection refused, port 3000 conflicts, pending Prisma migrations, missing seed password hashes, or BETTER_AUTH_URL / NEXT_PUBLIC_APP_URL port mismatches.
+---
+
 # Preflight Check
 
 Run a comprehensive environment validation before tests or deployments. Catches the configuration issues that cause cascading debugging spirals.

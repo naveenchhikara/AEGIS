@@ -4,7 +4,7 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 const eslintConfig = [
-  { ignores: [".claude/", "infra/", ".next/", "playwright-report/"] },
+  { ignores: [".claude/", ".next/", "playwright-report/"] },
   ...coreWebVitals,
   ...typescript,
   {

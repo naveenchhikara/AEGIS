@@ -47,7 +47,11 @@ function walk(dir: string): string[] {
   return readdirSync(join(process.cwd(), dir)).flatMap((entry) => {
     const rel = join(dir, entry);
     if (statSync(join(process.cwd(), rel)).isDirectory()) return walk(rel);
-    return rel.endsWith(".ts") && !rel.includes("__tests__") ? [rel] : [];
+    return rel.endsWith(".ts") &&
+      !rel.includes("__tests__") &&
+      !rel.includes("__integration__")
+      ? [rel]
+      : [];
   });
 }
 
@@ -85,11 +89,14 @@ describe("audited-mutation discipline", () => {
       }
     }
 
-    expect(offenders, `Mutations of audited tables without session context:
+    expect(
+      offenders,
+      `Mutations of audited tables without session context:
 ${offenders.join("\n")}
 
 Wrap them in withAuditedMutation(actor, actionType, (tx) => ...).
-Scheduled work uses systemActor(tenantId); one transaction carries one tenant.`).toEqual([]);
+Scheduled work uses systemActor(tenantId); one transaction carries one tenant.`,
+    ).toEqual([]);
   });
 
   it("keeps the known-gap list shrinking, never growing", () => {

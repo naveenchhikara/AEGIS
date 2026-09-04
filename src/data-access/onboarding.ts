@@ -130,9 +130,15 @@ export async function completeOnboardingTransaction(
     },
     "onboarding.completed",
     async (tx) => {
-    // 1. Update tenant record with bank registration + tier data
-    await tx.tenant.update({
-      where: { id: data.tenantId },
+    // 1. Update the tenant, and use the update itself as the atomic replay
+    // guard. Onboarding mints users and overwrites the bank profile, so it may
+    // run at most once. The `onboardingCompleted: false` predicate means a
+    // second concurrent completion matches zero rows; the count check below
+    // then aborts the whole transaction, rolling back its user creation,
+    // rather than both racers committing (a plain read-then-write would let
+    // both observe false and proceed).
+    const tenantUpdate = await tx.tenant.updateMany({
+      where: { id: data.tenantId, onboardingCompleted: false },
       data: {
         name: data.bankRegistration.bankName,
         shortName: data.bankRegistration.shortName,
@@ -160,6 +166,9 @@ export async function completeOnboardingTransaction(
         onboardingCompletedAt: new Date(),
       },
     });
+    if (tenantUpdate.count !== 1) {
+      throw new Error("Onboarding has already been completed for this tenant.");
+    }
 
     // 2. Create departments (as AuditArea records)
     // AuditArea schema has: name, description, riskCategory

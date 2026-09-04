@@ -7,7 +7,8 @@
 
 # --- Stage 1: Dependencies ---
 FROM node:22-alpine AS deps
-RUN corepack enable && corepack prepare pnpm@9 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
@@ -15,7 +16,8 @@ RUN pnpm install --frozen-lockfile --prod=false
 
 # --- Stage 2: Builder ---
 FROM node:22-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@9 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -25,9 +27,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=1
 
-# NEXT_PUBLIC_* vars are inlined at build time by Next.js.
-# Default to production URL; override with --build-arg for other environments.
-ARG NEXT_PUBLIC_APP_URL=https://aegis.nexlyadvisory.com
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time by
+# Next.js, so whatever this holds is baked into the image and cannot be
+# changed at runtime. AEGIS is not deployed, so there is no real origin to
+# default to; this matches BETTER_AUTH_URL below, which CLAUDE.md requires it
+# to stay aligned with. Pass --build-arg NEXT_PUBLIC_APP_URL=https://<host>
+# when building an image for somewhere that actually serves it — it feeds
+# Better Auth's trustedOrigins in src/lib/auth.ts, so a wrong value here is a
+# security setting, not a cosmetic one.
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
 # Generate Prisma client (only needs schema, not a live DB)

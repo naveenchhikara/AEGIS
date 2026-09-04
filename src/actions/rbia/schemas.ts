@@ -25,6 +25,7 @@ export type ActionErrorCode =
   | "CONFLICT"
   | "TRANSITION_BLOCKED"
   | "SCORE_FROZEN"
+  | "INCOMPLETE_EXAMINATION"
   | "INTERNAL_ERROR";
 
 export type ActionSuccess<T> = { success: true; data: T };
@@ -37,21 +38,80 @@ export type ActionResult<T> = ActionSuccess<T> | ActionError;
 
 // ─── SaveExaminationResponseSchema (EXAM-03, EXAM-04, EXAM-09) ───────────────
 
+/**
+ * A response is either scored or explicitly not applicable — never both, never
+ * neither.
+ *
+ * `ScoreLabel` has no N/A member on purpose: "does not apply to this branch" is
+ * not a compliance grade, and `computeNodeScore` would fold it into the
+ * denominator if it were. It is carried as a separate flag, and the freeze
+ * completeness gate (`findUnscoredLeaves`) accepts a leaf that has either.
+ *
+ * The reason is mandatory because the freeze is irreversible: an N/A with no
+ * stated basis is indistinguishable from a leaf someone skipped.
+ */
+export const NOT_APPLICABLE_REASON_MIN = 20;
+
 export const SaveExaminationResponseSchema = z
   .object({
     engagementId: z.string().uuid(),
     nodeId: z.string().uuid(),
-    scoreLabel: z.enum([
-      "FULLY_COMPLIANT",
-      "LARGELY_COMPLIANT",
-      "PARTIALLY_COMPLIANT",
-      "NON_COMPLIANT",
-    ]),
+    scoreLabel: z
+      .enum([
+        "FULLY_COMPLIANT",
+        "LARGELY_COMPLIANT",
+        "PARTIALLY_COMPLIANT",
+        "NON_COMPLIANT",
+      ])
+      .optional(),
+    isNotApplicable: z.boolean().default(false),
+    notApplicableReason: z.string().max(2000).optional(),
     workingNotes: z.string().max(2000).optional(),
     flagForObservation: z.boolean().default(false),
     flagForActionPoint: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
+    if (data.isNotApplicable) {
+      if (data.scoreLabel) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["scoreLabel"],
+          message: "A not-applicable item cannot also carry a score.",
+        });
+      }
+      if (
+        !data.notApplicableReason ||
+        data.notApplicableReason.trim().length < NOT_APPLICABLE_REASON_MIN
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["notApplicableReason"],
+          message: `A reason of at least ${NOT_APPLICABLE_REASON_MIN} characters is required to mark an item not applicable.`,
+        });
+      }
+      // Observations and action points are findings against an item that was
+      // examined. Neither is meaningful for one that does not apply.
+      if (data.flagForObservation || data.flagForActionPoint) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["isNotApplicable"],
+          message:
+            "A not-applicable item cannot be flagged for an observation or action point.",
+        });
+      }
+      return;
+    }
+
+    if (!data.scoreLabel) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["scoreLabel"],
+        message:
+          "A score is required unless the item is marked not applicable.",
+      });
+      return;
+    }
+
     const requiresNotes = ["PARTIALLY_COMPLIANT", "NON_COMPLIANT"].includes(
       data.scoreLabel,
     );

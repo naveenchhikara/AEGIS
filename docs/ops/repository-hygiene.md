@@ -1,29 +1,33 @@
 # Repository Hygiene
 
-AEGIS production baselines are preserved outside the repo so the shipping tree stays small and reproducible.
+What belongs in the repository, and what does not.
 
 ## What Stays In Git
 
-- Application source, configs, migrations, scripts, and CI workflows
+- Application source, configs, Prisma schema and SQL, scripts, CI workflows
 - Durable product and operations documentation
-- Deployment automation that is required to rebuild or recover production
+- Generated reference docs under `docs/reference/` — the `lint` job fails if the
+  committed output has drifted from the source (`pnpm docs:check`)
 
-## What Moves To Archive
+## What Does Not
 
-- Planning scratchpads and execution logs
-- Marketing collateral, pitch decks, and one-off sales material
-- Extracted research dumps, office exports, and temporary report files
-- Local assistant caches, worktrees, and generated browser/test artifacts
-
-## Archive Locations
-
-- VPS production freeze: `/Users/admin/Developer/_archive/VPS/modernization-baseline-20260307`
-- AEGIS repo cleanup archive: `/Users/admin/Developer/_archive/AEGIS/repo-cleanup-20260307`
-- AEGIS local drift snapshot: `/Users/admin/Developer/_archive/AEGIS/local-drift-2026-03-07-baseline`
+- Build output and caches: `.next/`, `tsconfig.tsbuildinfo`, `playwright-report/`,
+  `test-results/`, `node_modules/`, `.pnpm-store/` — all in `.gitignore`
+- Secrets of any kind. `.env` is ignored; `.env.example` is the only committed
+  environment file and carries placeholders, never real values
+- Planning scratchpads, execution logs, marketing collateral, research dumps,
+  office exports, and one-off report files
+- Local assistant caches and worktrees (`.claude/worktrees/`, `.worktrees/`)
+- Infrastructure for environments that do not exist. Assets for the retired VPS
+  and Coolify layouts were removed on 2026-09-05; git history holds them, and
+  [`CLAUDE.md`](../../CLAUDE.md#deployment) keeps a written record of the
+  configuration
 
 ## Working Rules
 
-- Deploy only from tagged git commits after green CI
-- Keep production secrets in `/opt/aegis/shared/.env.production`, never in git
-- Do not copy developer workspaces to the VPS
-- If a file is not required to rebuild, run, or recover production, archive it instead of keeping it in the repo
+- Delete rather than archive. This repository has full history; a file kept
+  "just in case" goes stale and starts misleading readers instead
+- A document that states a fact about the running system must be corrected or
+  deleted when that fact changes. There is currently no running system
+- Do not document two parallel deploy paths. There is one answer to "how does
+  this ship", and right now it is "it does not"

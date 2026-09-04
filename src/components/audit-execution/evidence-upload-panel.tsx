@@ -155,7 +155,6 @@ export function EvidenceUploadPanel({
         );
 
         const confirmResult = await confirmExaminationEvidenceUpload({
-          evidenceId: (requestResult as any).data?.evidenceId ?? "",
           engagementId,
           responseId,
           s3Key,

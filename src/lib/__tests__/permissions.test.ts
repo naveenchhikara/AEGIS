@@ -235,3 +235,37 @@ describe("getRoleDisplayName", () => {
     expect(getRoleDisplayName(Role.BOARD_OBSERVER)).toBe("Board Observer");
   });
 });
+
+// ─── Onboarding gate (admin:manage_settings) ────────────────────────────────
+// The onboarding actions (src/actions/onboarding.ts) gate on
+// admin:manage_settings. These assertions cover only the role→permission
+// mapping that gate depends on — not that the actions call hasPermission (that
+// wiring lives in onboarding.ts and has no unit harness here). Their value is
+// as a tripwire: if someone widens admin:manage_settings to a lower role, the
+// onboarding gate silently widens with it, and these fail.
+
+describe("admin:manage_settings mapping (onboarding gate depends on it)", () => {
+  it("CAE may configure onboarding", () => {
+    expect(hasPermission([Role.CAE], "admin:manage_settings")).toBe(true);
+  });
+
+  it("SYSTEM_ADMIN may configure onboarding", () => {
+    expect(hasPermission([Role.SYSTEM_ADMIN], "admin:manage_settings")).toBe(
+      true,
+    );
+  });
+
+  it("AUDITEE may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDITEE], "admin:manage_settings")).toBe(false);
+  });
+
+  it("AUDITOR may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDITOR], "admin:manage_settings")).toBe(false);
+  });
+
+  it("AUDIT_MANAGER may NOT configure onboarding", () => {
+    expect(hasPermission([Role.AUDIT_MANAGER], "admin:manage_settings")).toBe(
+      false,
+    );
+  });
+});

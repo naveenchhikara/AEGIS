@@ -24,7 +24,7 @@ function observationDb(createdById: string) {
         version: 1,
         createdById,
       }),
-      update: vi.fn().mockResolvedValue({ id: OBSERVATION_A }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     observationTimeline: { create: vi.fn().mockResolvedValue({}) },
   });
@@ -55,7 +55,7 @@ describe("transitionObservation maker-checker", () => {
       success: false,
       error: "You raised this record; a different user must perform this step.",
     });
-    expect(db.observation.update).not.toHaveBeenCalled();
+    expect(db.observation.updateMany).not.toHaveBeenCalled();
   });
 
   it("allows review by a different user", async () => {
@@ -71,6 +71,6 @@ describe("transitionObservation maker-checker", () => {
       success: true,
       data: { id: OBSERVATION_A, newStatus: "REVIEWED" },
     });
-    expect(db.observation.update).toHaveBeenCalledTimes(1);
+    expect(db.observation.updateMany).toHaveBeenCalledTimes(1);
   });
 });

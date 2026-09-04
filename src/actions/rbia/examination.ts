@@ -96,8 +96,17 @@ export async function saveExaminationResponse(
         sessionId: session.session.id,
       });
 
-      // Compute decimal score from label
-      const score = SCORE_VALUES[validated.scoreLabel];
+      // Exactly one of these branches is populated — the schema's superRefine
+      // rejects a payload that carries both a score and the N/A flag, or
+      // neither. Marking N/A clears any score the item previously held, so a
+      // re-graded leaf cannot keep a stale contribution to the composite.
+      const scoreLabel = validated.isNotApplicable
+        ? null
+        : (validated.scoreLabel ?? null);
+      const score = scoreLabel === null ? null : SCORE_VALUES[scoreLabel];
+      const notApplicableReason = validated.isNotApplicable
+        ? (validated.notApplicableReason ?? "").trim()
+        : null;
 
       // Verify engagement exists and belongs to tenant
       const engagement = await tx.auditEngagement.findFirst({
@@ -107,6 +116,16 @@ export async function saveExaminationResponse(
 
       if (!engagement) {
         throw new Error("Engagement not found");
+      }
+
+      // Verify the examination node belongs to this tenant before referencing it
+      // in the response upsert or copying its metadata into an ActionPoint.
+      const node = await tx.examinationNode.findFirst({
+        where: { id: validated.nodeId, tenantId },
+        select: { code: true, name: true, path: true },
+      });
+      if (!node) {
+        throw new Error("Examination node not found");
       }
 
       if (!SCORING_ALLOWED_STATUSES.has(engagement.status)) {
@@ -129,7 +148,9 @@ export async function saveExaminationResponse(
           engagementId: validated.engagementId,
           nodeId: validated.nodeId,
           score,
-          scoreLabel: validated.scoreLabel,
+          scoreLabel,
+          isNotApplicable: validated.isNotApplicable,
+          notApplicableReason,
           workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,
@@ -138,7 +159,9 @@ export async function saveExaminationResponse(
         },
         update: {
           score,
-          scoreLabel: validated.scoreLabel,
+          scoreLabel,
+          isNotApplicable: validated.isNotApplicable,
+          notApplicableReason,
           workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,
@@ -157,12 +180,6 @@ export async function saveExaminationResponse(
         });
 
         if (!existingAp) {
-          // Load node for module code + description
-          const node = await tx.examinationNode.findUnique({
-            where: { id: validated.nodeId },
-            select: { code: true, name: true, path: true },
-          });
-
           // Atomic serial number within transaction
           const maxSerial = await tx.actionPoint.aggregate({
             where: { engagementId: validated.engagementId },
@@ -184,10 +201,10 @@ export async function saveExaminationResponse(
               engagementId: validated.engagementId,
               branchId: engagement.branchId,
               serialNo: nextSerialNo,
-              title: node?.name ?? "Action Point",
-              description: validated.workingNotes ?? node?.name ?? "",
+              title: node.name,
+              description: validated.workingNotes ?? node.name,
               severity: severityFromScore,
-              moduleCode: node?.path?.split(".")[1] ?? node?.code ?? "",
+              moduleCode: node.path.split("/").filter(Boolean)[1] ?? node.code,
               sourceResponseId: upsertedResponse.id,
               status: "DRAFT",
               createdById: session.user.id,

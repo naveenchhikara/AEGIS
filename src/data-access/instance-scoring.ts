@@ -210,6 +210,10 @@ export async function computeAndApplyInstanceScores(
         nodeId: leaf.id,
         score: SCORE_VALUES[moduleScoreLabel],
         scoreLabel: moduleScoreLabel,
+        // Auto-scoring an item asserts it applies: clear any prior N/A, or the
+        // leaf would carry a score and the N/A flag at once.
+        isNotApplicable: false,
+        notApplicableReason: null,
         workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
         flagForObservation: false,
         flagForActionPoint: false,
@@ -218,6 +222,10 @@ export async function computeAndApplyInstanceScores(
       update: {
         score: SCORE_VALUES[moduleScoreLabel],
         scoreLabel: moduleScoreLabel,
+        // Auto-scoring an item asserts it applies: clear any prior N/A, or the
+        // leaf would carry a score and the N/A flag at once.
+        isNotApplicable: false,
+        notApplicableReason: null,
         workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
         respondedAt: new Date(),
       },

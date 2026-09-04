@@ -429,8 +429,11 @@ more per job than you would hope:
   the other jobs iterate tenants sequentially, so their runtime grows linearly
   with tenant count.
 
-`/api/cron/escalation` exists as an external trigger for the same escalation
-work, for environments where the in-process scheduler is not trusted to run.
+Compliance escalation runs from this scheduler like the rest. The former
+`/api/cron/escalation` external trigger has been removed: middleware required a
+session cookie before its route-level Bearer check, so it was unreachable in
+practice, and a second auth scheme on a publicly routable endpoint was not worth
+keeping for a job the scheduler already owns.
 
 ## Files, exports and email
 

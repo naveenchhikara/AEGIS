@@ -10,6 +10,7 @@ import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { auth } from "@/lib/auth";
 import { PasswordSchema } from "@/lib/password-policy";
 import { sendInvitationEmail } from "@/lib/invitation-mailer";
+import { passwordValidationError } from "@/lib/credential-account";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -178,6 +179,11 @@ export async function acceptInvitation(
   }
 
   try {
+    const passwordError = passwordValidationError(password);
+    if (passwordError) {
+      return { success: false, error: passwordError };
+    }
+
     // Find user by email with INVITED status
     const user = await prisma.user.findFirst({
       where: {
@@ -216,7 +222,6 @@ export async function acceptInvitation(
     // configured algorithm. Hash through its context so the digest matches
     // what signIn.email will later verify — a bcrypt digest never would.
     const passwordHash = await (await auth.$context).password.hash(password);
-
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.

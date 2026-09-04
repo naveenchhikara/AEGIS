@@ -264,6 +264,7 @@ model Tenant {
   observations           Observation[]
   observationTimelines   ObservationTimeline[]
   evidence               Evidence[]
+  uploadIntents          UploadIntent[]
   complianceRequirements ComplianceRequirement[]
   branches               Branch[]
   zones                  Zone[]
@@ -594,6 +595,35 @@ model Evidence {
   @@index([accountExamResponseId])
 }
 
+enum UploadPurpose {
+  OBSERVATION_EVIDENCE
+  EXAMINATION_EVIDENCE
+}
+
+/// A server-issued permission to upload one object to one key for one parent
+/// record. Confirmation resolves the intent instead of trusting the caller's
+/// key and metadata, so an existing object cannot be rebound elsewhere.
+model UploadIntent {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  s3Key       String        @unique
+  purpose     UploadPurpose
+  parentId    String        @db.Uuid
+  contentType String
+  maxFileSize Int
+
+  createdById String    @db.Uuid
+  expiresAt   DateTime
+  consumedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([expiresAt])
+}
+
 // ─── Compliance Requirement ──────────────────────────────────────────────────
 
 model ComplianceRequirement {
@@ -685,6 +715,7 @@ model Branch {
   housekeepingMetrics     HousekeepingMetric[]
 
   @@unique([tenantId, code])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -727,6 +758,7 @@ model AuditArea {
   auditEngagements AuditEngagement[]
 
   @@unique([tenantId, name])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -751,6 +783,7 @@ model AuditPlan {
   engagements AuditEngagement[]
 
   @@unique([tenantId, year, quarter])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -841,6 +874,7 @@ model AuditEngagement {
   accountExamResponses   AccountExamResponse[]
 
   @@index([tenantId])
+  @@unique([tenantId, id])
   @@index([auditPlanId])
 }
 
@@ -1918,12 +1952,18 @@ model NotificationQueue {
   lastError   String?
   processedAt DateTime?
 
+  /// Identifies the worker pass that moved this row out of PENDING. Two
+  /// overlapping workers cannot share one, so the claimant can re-read exactly
+  /// the rows it won.
+  claimId String? @db.Uuid
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([status, sendAfter])
   @@index([batchKey, status])
+  @@index([claimId])
 }
 
 // ─── Email Log (audit trail for sent emails) ─────────────────────────────────
@@ -2145,6 +2185,11 @@ model ExaminationResponse {
   // 4-point scoring: 1.0 (Fully), 0.75 (Largely), 0.5 (Partially), 0.0 (Non-Compliant), NULL (not yet scored)
   score      Decimal?   @db.Decimal(4, 2)
   scoreLabel ScoreLabel?
+
+  // Explicit N/A. A null score means "not yet examined"; this means "examined
+  // and does not apply to this branch". The freeze gate distinguishes them.
+  isNotApplicable      Boolean @default(false)
+  notApplicableReason  String? @db.Text
 
   workingNotes       String?  @db.Text  // Auditor's detailed notes
   flagForObservation Boolean  @default(false) // Flag for promotion to formal 5C Observation

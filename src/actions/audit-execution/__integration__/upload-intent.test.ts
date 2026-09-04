@@ -91,11 +91,15 @@ describe("evidence confirmation binds to an upload intent", () => {
   it("refuses a key that was never issued", async () => {
     mockS3();
     const tenant = await createTenant();
-    const auditor = await createUser(tenant.id, ["AUDITOR"]);
+    const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const seed = await seedResponse(tenant.id);
 
     mockSessionModule(
-      fakeSession({ id: auditor.id, tenantId: tenant.id, roles: ["AUDITOR"] }),
+      fakeSession({
+        id: auditor.id,
+        tenantId: tenant.id,
+        roles: ["FIELD_AUDITOR"],
+      }),
     );
     const { confirmExaminationEvidenceUpload } =
       await import("../upload-examination-evidence");
@@ -110,17 +114,25 @@ describe("evidence confirmation binds to an upload intent", () => {
     });
 
     expect(result.success).toBe(false);
+    // Assert the reason, not just the refusal: with a role lacking
+    // examination:respond this test passed on the permission gate and never
+    // reached the intent lookup it exists to cover.
+    expect(result.success === false && result.error).toMatch(/not recognised/i);
     expect(await integrationPrisma.evidence.count()).toBe(0);
   });
 
   it("persists S3's metadata, not the caller's claims", async () => {
     mockS3({ contentLength: 2048, contentType: "application/pdf" });
     const tenant = await createTenant();
-    const auditor = await createUser(tenant.id, ["AUDITOR"]);
+    const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const seed = await seedResponse(tenant.id);
 
     mockSessionModule(
-      fakeSession({ id: auditor.id, tenantId: tenant.id, roles: ["AUDITOR"] }),
+      fakeSession({
+        id: auditor.id,
+        tenantId: tenant.id,
+        roles: ["FIELD_AUDITOR"],
+      }),
     );
     const mod = await import("../upload-examination-evidence");
 
@@ -157,11 +169,15 @@ describe("evidence confirmation binds to an upload intent", () => {
   it("refuses to consume the same intent twice", async () => {
     mockS3();
     const tenant = await createTenant();
-    const auditor = await createUser(tenant.id, ["AUDITOR"]);
+    const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const seed = await seedResponse(tenant.id);
 
     mockSessionModule(
-      fakeSession({ id: auditor.id, tenantId: tenant.id, roles: ["AUDITOR"] }),
+      fakeSession({
+        id: auditor.id,
+        tenantId: tenant.id,
+        roles: ["FIELD_AUDITOR"],
+      }),
     );
     const mod = await import("../upload-examination-evidence");
 

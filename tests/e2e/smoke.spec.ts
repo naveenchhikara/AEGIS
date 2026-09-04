@@ -81,10 +81,12 @@ test.describe("@smoke critical paths", () => {
     test.use({ storageState: "playwright/.auth/auditee.json" });
 
     test("an auditee cannot reach the admin area @smoke", async ({ page }) => {
+      // requirePermission redirects to /dashboard?unauthorized=true; denial is
+      // a browser alert(), not DOM text. Soft redirects often drop the query,
+      // so assert the destination URL — same property as permission-guards.
       await page.goto("/admin/users");
-      await expect(
-        page.getByText(/permission|not authori[sz]ed|forbidden/i),
-      ).toBeVisible();
+      await expect(page).toHaveURL(/\/dashboard(\?|$)/);
+      await expect(page).not.toHaveURL(/\/admin\b/);
     });
   });
 });

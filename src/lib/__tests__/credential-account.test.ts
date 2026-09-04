@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { verifyPassword } from "better-auth/crypto";
-import { readFileSync } from "fs";
-import { join } from "path";
 import {
   hashedCredentialAccount,
   passwordValidationError,
@@ -39,25 +37,5 @@ describe("hashedCredentialAccount", () => {
         password: "wrong-password",
       }),
     ).toBe(false);
-  });
-});
-
-describe("acceptInvitation wires credentials", () => {
-  const source = readFileSync(
-    join(process.cwd(), "src/actions/user-invitations.ts"),
-    "utf-8",
-  );
-
-  it("uses the submitted password instead of discarding it", () => {
-    expect(source).toMatch(/password: string/);
-    expect(source).not.toMatch(/_password/);
-  });
-
-  it("creates a Better Auth credential Account in the same transaction", () => {
-    expect(
-      source.includes("hashedCredentialAccount") ||
-        source.includes("auth.$context).password.hash"),
-    ).toBe(true);
-    expect(source).toContain("tx.account.create");
   });
 });

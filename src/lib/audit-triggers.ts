@@ -8,9 +8,11 @@
 /**
  * Tables with an AFTER INSERT/UPDATE/DELETE `audit_trigger`.
  *
- * Source of truth: prisma/migrations/20260209015123_audit_trigger (10 tables)
- * and 20260209220425_add_remaining_audit_triggers (4 more). Keep in step with
- * those migrations — the discipline test reads this list.
+ * Source of truth: `prisma/sql/020_attach_audit_triggers.sql`, which attaches
+ * the trigger to exactly these tables on every database. Keep this list, that
+ * file, and `AUDIT_TRIGGER_TABLES` in `prisma/sql/manifest.ts` in step — the
+ * discipline test reads this one, `db:bootstrap` applies that one, and
+ * `db:verify` checks the third.
  */
 export const AUDITED_TABLES = [
   "AuditArea",
@@ -27,8 +29,8 @@ export const AUDITED_TABLES = [
   "Tenant",
   "User",
   "UserBranchAssignment",
-  // Attached only where add_notification_tables.sql has been applied, but
-  // included so the discipline test covers them everywhere.
+  // Historically attached only by add_notification_tables.sql; 020 now
+  // attaches them everywhere, so the discipline test and the database agree.
   "NotificationPreference",
   "BoardReport",
 ] as const;
@@ -44,8 +46,8 @@ interface UnsafeRawExecutor {
  * Which audited tables actually carry the trigger right now.
  *
  * A database built by `prisma db push` alone has none: the triggers come from
- * the non-Prisma migration SQL applied by hand. Detaching what is not attached
- * would fail, so ask first.
+ * `prisma/sql/020_attach_audit_triggers.sql`, applied by `pnpm db:bootstrap`.
+ * Detaching what is not attached would fail, so ask first.
  */
 async function attachedTables(db: UnsafeRawExecutor): Promise<string[]> {
   const rows = await db.$queryRawUnsafe<{ relname: string }[]>(
@@ -54,9 +56,10 @@ async function attachedTables(db: UnsafeRawExecutor): Promise<string[]> {
        JOIN pg_class c ON c.oid = t.tgrelid
       WHERE t.tgname = 'audit_trigger' AND NOT t.tgisinternal`,
   );
-  // Deliberately NOT filtered through AUDITED_TABLES: databases initialised
-  // with add_notification_tables.sql also carry audit_trigger on
-  // NotificationPreference and BoardReport. Detach whatever is actually there.
+  // Deliberately NOT filtered through AUDITED_TABLES. A database may carry
+  // audit_trigger on a table this build does not know about — an older schema,
+  // or a hand-applied legacy file. Detach whatever is actually there, so the
+  // `finally` restores exactly what it suspended.
   return rows.map((r) => r.relname);
 }
 
@@ -72,7 +75,12 @@ async function attachedTables(db: UnsafeRawExecutor): Promise<string[]> {
  * requires superuser, and dropping the trigger loses it outright if the
  * process dies mid-seed; this restores in a `finally`.
  *
- * Table names come from the AUDITED_TABLES constant, never from input.
+ * Table names are interpolated into DDL, so they come from pg_catalog via
+ * `attachedTables` — never from caller input.
+ *
+ * Not re-entrant: `attachedTables` reads pg_trigger without checking
+ * `tgenabled`, so a nested call would re-enable on its way out while the outer
+ * block is still writing. Callers that may nest need their own depth guard.
  */
 export async function withTriggersDetached<T>(
   db: UnsafeRawExecutor,

@@ -4,11 +4,11 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `788a7aa` (cursor/critical-bug-management-fd44)
+> Source commit: `13d9827` (hardening/integrity-and-operations-f07-f15)
 
 AEGIS has two callable surfaces.
 
-**HTTP endpoints** (12) are conventional routes under `/api`, used
+**HTTP endpoints** (11) are conventional routes under `/api`, used
 for file downloads, streamed exports and health checks.
 
 **Server actions** (151 exported
@@ -28,13 +28,6 @@ the database audit trigger reads.
 Better Auth API route handler
 
 - Source: `src/app/api/auth/[...all]/route.ts`
-- Rendering: `default`
-
-### `POST /api/cron/escalation`
-
-Daily cron endpoint for compliance escalation.
-
-- Source: `src/app/api/cron/escalation/route.ts`
 - Rendering: `default`
 
 ### `GET /api/dashboard`
@@ -258,7 +251,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 | `rbia/bm-evidence.ts` | — | `requestBmEvidenceUpload`, `confirmBmEvidenceUpload` | ActionPoint, Evidence |
 | `rbia/examination.ts` | — | `saveExaminationResponse`, `autoSelectModulesAction`, `addModuleSelectionAction`, `removeModuleSelectionAction` | ActionPoint, AuditEngagement, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
 | `rbia/findings.ts` | — | `createActionPoint`, `updateActionPoint`, `deleteActionPoint`, `promoteToObservation`, `submitBmResponse` | ActionPoint, AuditEngagement, BmResponseBatch, Observation |
-| `rbia/freeze.ts` | — | `freezeRbiaScore` | ActionPoint, AuditEngagement, BmResponseBatch, BranchRbiaScore, ExaminationNode, ExaminationResponse |
+| `rbia/freeze.ts` | — | `freezeRbiaScore` | ActionPoint, AuditEngagement, BmResponseBatch, BranchRbiaScore, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
 | `rbia/meetings.ts` | — | `recordMeeting`, `signOffMeeting` | AuditEngagement, EngagementMeeting |
 
 ### regulatory

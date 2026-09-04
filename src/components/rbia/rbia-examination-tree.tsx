@@ -366,6 +366,9 @@ function WorkingNotesPanel({
         engagementId,
         nodeId,
         scoreLabel,
+        // This panel only ever edits a scored item; marking an item not
+        // applicable is a separate control that does not exist yet.
+        isNotApplicable: false,
         workingNotes: notes || undefined,
         flagForActionPoint: flagAP,
         flagForObservation: flagObs,
@@ -651,6 +654,7 @@ export function RbiaExaminationTree({
             engagementId,
             nodeId,
             scoreLabel: label,
+            isNotApplicable: false,
             workingNotes:
               existingOverride?.workingNotes ??
               existingResponse?.workingNotes ??

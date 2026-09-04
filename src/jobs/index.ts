@@ -5,6 +5,7 @@ import { processOverdueEscalation } from "./overdue-escalation";
 import { processRbiaOverdueEscalation } from "./rbia-overdue-escalation";
 import { processWeeklyDigest } from "./weekly-digest";
 import { captureMetricsSnapshot } from "./snapshot-metrics";
+import { processComplianceEscalation } from "./compliance-escalation";
 import { logger } from "@/lib/logger";
 
 // Job names (duplicated from job-queue.ts to avoid server-only import)
@@ -14,6 +15,7 @@ const JOBS = {
   DEADLINE_CHECK: "deadline-check",
   GENERATE_BOARD_REPORT: "generate-board-report",
   SNAPSHOT_METRICS: "snapshot-metrics",
+  COMPLIANCE_ESCALATION: "compliance-escalation",
 } as const;
 
 /**
@@ -64,6 +66,11 @@ export async function registerJobs(boss: PgBoss): Promise<void> {
   // Daily metrics snapshot for dashboard trends (01:00 IST)
   await boss.work(JOBS.SNAPSHOT_METRICS, async () => {
     await captureMetricsSnapshot();
+  });
+
+  // Daily ComplianceItem escalation (06:30 IST), after deadline-check
+  await boss.work(JOBS.COMPLIANCE_ESCALATION, async () => {
+    await processComplianceEscalation();
   });
 
   logger.info(

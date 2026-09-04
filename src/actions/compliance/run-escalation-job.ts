@@ -4,7 +4,8 @@
  * Compliance Escalation Job (Phase 2 — R39)
  *
  * Full escalation pipeline: compute levels → route notifications → create queue entries.
- * Can be triggered manually (via session) or by cron (via tenantId).
+ * Triggered manually through runEscalationJob (session-scoped), and per tenant
+ * by the scheduled compliance-escalation job in src/jobs/.
  */
 
 import { prismaForTenant } from "@/data-access/prisma";
@@ -45,8 +46,12 @@ export async function runEscalationJob() {
 }
 
 /**
- * Run escalation job (internal, for cron).
- * No session requirement — called by cron route with tenantId.
+ * Run escalation job for one tenant, without a session.
+ *
+ * Callers supply the tenant: the scheduled job in src/jobs/compliance-escalation.ts,
+ * which iterates tenants, and runEscalationJob above, which resolves it from the
+ * caller's session after a permission check. There is no HTTP route — the former
+ * /api/cron/escalation was removed.
  */
 export async function runEscalationJobInternal(tenantId: string) {
   const db = prismaForTenant(tenantId);

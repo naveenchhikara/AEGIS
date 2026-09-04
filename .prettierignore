@@ -1,0 +1,8 @@
+# Lockfiles — pnpm rewrites these in its own canonical format;
+# letting Prettier reformat them produces 16k-line phantom diffs.
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build artifacts
+*.tsbuildinfo

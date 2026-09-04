@@ -17,14 +17,40 @@ No tag step; deploy is merge-to-main.
 
 ---
 
-## SQL Migrations (If Applicable)
+## Database Changes (If Applicable)
 
-**Important:** Prisma migrations do not ride along with deploys.
+**Important:** nothing in the deploy touches the database. The container runs
+`node server.js` — there is no `prisma migrate deploy` and no `db push`. Merging
+code that needs a new table or column deploys an application that queries
+something production does not have, and `/api/health` stays green while it does.
 
-Before or during the merge:
-- [ ] Apply `.sql` files from `prisma/migrations/` to production Postgres manually
-- [ ] Verify migration completed: `ssh vps 'sudo docker exec -it ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis'`
-- [ ] Run schema integrity checks if any
+**Do not** bulk-apply `prisma/migrations/*.sql`. That directory contains
+`superseded/`, which is history — its README says so, and applying
+`add_rls_policies.sql` would create the `aegis_app` role and enable row-level
+security on a system whose tenant isolation is enforced in application code.
+Apply named files only.
+
+Apply in this order — schema first, because `prisma/sql/060_tenant_composite_fks.sql`
+needs the `(tenantId, id)` unique indexes the schema file creates:
+
+- [ ] Apply this release's schema file, if it has one, with
+      `pnpm db:apply prisma/migrations/<file>.sql` (e.g.
+      `20260904_f07_f15_schema_additions.sql`). Each is idempotent and carries
+      its own header explaining what it adds and why. CI rehearses this exact
+      step against a freshly pushed schema, so a file that fails here has
+      already failed a build.
+- [ ] Run the pre-check queries in the header of
+      `prisma/sql/060_tenant_composite_fks.sql` — each must return zero rows. If
+      any returns rows there is cross-tenant data: **stop and repair it.** Do not
+      weaken the constraint.
+- [ ] `pnpm db:bootstrap` — applies `prisma/sql/manifest.ts` (triggers, views,
+      functions, composite FKs). Idempotent; safe against a live database.
+- [ ] Merge, and let Coolify deploy.
+- [ ] `pnpm db:verify` — asserts every required object landed. Exits non-zero
+      and lists what is missing.
+
+Shell access, if you need it:
+`ssh vps 'sudo docker exec -it ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis'`
 
 ---
 

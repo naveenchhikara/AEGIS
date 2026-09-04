@@ -86,18 +86,10 @@ export async function transitionObservation(input: TransitionObservationInput) {
       };
     }
 
-    // Step 4: Optimistic lock check
-    if (observation.version !== validated.version) {
-      return {
-        success: false as const,
-        error:
-          "Observation was modified by another user. Please refresh and try again.",
-      };
-    }
-
-    // Step 5: Atomic transaction — update status + create timeline entry
-    await db.$transaction(async (tx: any) => {
-      // Set audit context
+    // Step 4: Atomic transaction — the version and status predicates live in
+    // the UPDATE itself, so two concurrent callers cannot both win. The
+    // pre-read above is for the state machine only, never for locking.
+    const outcome = await db.$transaction(async (tx: any) => {
       await setAuditContext(tx, {
         actionType: "observation.status_changed",
         justification: validated.comment,
@@ -106,14 +98,12 @@ export async function transitionObservation(input: TransitionObservationInput) {
         sessionId: session.session.id,
       });
 
-      // Build update data
       const updateData: Record<string, unknown> = {
         status: targetStatus,
         statusUpdatedAt: new Date(),
         version: { increment: 1 },
       };
 
-      // If transitioning to RESPONSE, also update auditee response fields
       if (targetStatus === "RESPONSE") {
         if (validated.auditeeResponse) {
           updateData.auditeeResponse = validated.auditeeResponse;
@@ -123,16 +113,18 @@ export async function transitionObservation(input: TransitionObservationInput) {
         }
       }
 
-      // Update observation with tenant scope
-      await tx.observation.update({
+      const { count } = await tx.observation.updateMany({
         where: {
           id: validated.observationId,
           tenantId,
+          version: validated.version,
+          status: currentStatus,
         },
         data: updateData,
       });
 
-      // Create timeline entry
+      if (count !== 1) return { changed: false as const };
+
       await tx.observationTimeline.create({
         data: {
           observationId: validated.observationId,
@@ -144,7 +136,17 @@ export async function transitionObservation(input: TransitionObservationInput) {
           createdById: session.user.id,
         },
       });
+
+      return { changed: true as const };
     });
+
+    if (!outcome.changed) {
+      return {
+        success: false as const,
+        error:
+          "Observation was modified by another user. Please refresh and try again.",
+      };
+    }
 
     revalidatePath("/findings");
     revalidatePath(`/findings/${validated.observationId}`);

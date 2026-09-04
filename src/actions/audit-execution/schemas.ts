@@ -141,13 +141,12 @@ export type RequestExamEvidenceUploadInput = z.infer<
 >;
 
 export const ConfirmExamEvidenceUploadSchema = z.object({
-  evidenceId: z.string().uuid(),
   engagementId: z.string().uuid(),
-  responseId: z.string().uuid().optional(),
-  s3Key: z.string().optional(),
-  filename: z.string().optional(),
-  fileSize: z.number().optional(),
-  contentType: z.string().optional(),
+  responseId: z.string().uuid(),
+  s3Key: z.string().min(1, "S3 key is required"),
+  filename: z.string().min(1, "Filename is required"),
+  fileSize: z.number().int().positive(),
+  contentType: z.string().min(1, "Content type is required"),
   description: z.string().optional(),
 });
 

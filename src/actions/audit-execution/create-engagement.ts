@@ -6,6 +6,7 @@ import { prismaForTenant } from "@/lib/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+import { requireTenantRefs, TenantRefError } from "@/data-access/tenant-refs";
 import { CreateEngagementSchema, type CreateEngagementInput } from "./schemas";
 
 /**
@@ -58,6 +59,12 @@ export async function createEngagement(input: CreateEngagementInput) {
         userId: session.user.id,
         tenantId,
         sessionId: session.session.id,
+      });
+
+      await requireTenantRefs(tx, tenantId, {
+        auditPlanId: validated.auditPlanId,
+        branchId: validated.branchId,
+        auditAreaId: validated.auditAreaId,
       });
 
       // Build metadata with R11 optional fields
@@ -126,7 +133,14 @@ export async function createEngagement(input: CreateEngagementInput) {
       data: { id: result.id },
     };
   } catch (error) {
-    // ─── Step 8: Error Handling ────────────────────────────────
+    if (error instanceof TenantRefError) {
+      return {
+        success: false as const,
+        error:
+          "One of the selected records was not found. Please refresh and try again.",
+      };
+    }
+
     logger.error(
       { error, action: "create_engagement", tenantId },
       "Failed to create audit engagement",

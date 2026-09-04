@@ -49,20 +49,17 @@ export async function createNotification(
     ? new Date(Date.now() + BATCH_WINDOW_MS)
     : new Date();
 
-  return withAuditedMutation(
-    userActor(session),
-    "notification.queued",
-    (tx) =>
-      tx.notificationQueue.create({
-        data: {
-          tenantId,
-          recipientId: params.recipientId,
-          type: params.type as any,
-          payload: params.payload as object,
-          batchKey: params.batchKey ?? null,
-          sendAfter,
-        },
-      }),
+  return withAuditedMutation(userActor(session), "notification.queued", (tx) =>
+    tx.notificationQueue.create({
+      data: {
+        tenantId,
+        recipientId: params.recipientId,
+        type: params.type as any,
+        payload: params.payload as object,
+        batchKey: params.batchKey ?? null,
+        sendAfter,
+      },
+    }),
   );
 }
 
@@ -82,14 +79,19 @@ export async function getNotificationPreferences(session: Session) {
 
   if (existing) return existing;
 
-  return db.notificationPreference.create({
-    data: {
-      userId,
-      tenantId,
-      emailEnabled: true,
-      digestPreference: "immediate",
-    },
-  });
+  return withAuditedMutation(
+    userActor(session),
+    "notification.preferences_created",
+    (tx) =>
+      tx.notificationPreference.create({
+        data: {
+          userId,
+          tenantId,
+          emailEnabled: true,
+          digestPreference: "immediate",
+        },
+      }),
+  );
 }
 
 // ─── updateNotificationPreferences ─────────────────────────────────────────
@@ -130,23 +132,28 @@ export async function updateNotificationPreferences(
     );
   }
 
-  return db.notificationPreference.upsert({
-    where: { userId },
-    update: {
-      ...(prefs.emailEnabled !== undefined && {
-        emailEnabled: prefs.emailEnabled,
+  return withAuditedMutation(
+    userActor(session),
+    "notification.preferences_updated",
+    (tx) =>
+      tx.notificationPreference.upsert({
+        where: { userId },
+        update: {
+          ...(prefs.emailEnabled !== undefined && {
+            emailEnabled: prefs.emailEnabled,
+          }),
+          ...(prefs.digestPreference !== undefined && {
+            digestPreference: prefs.digestPreference,
+          }),
+        },
+        create: {
+          userId,
+          tenantId,
+          emailEnabled: prefs.emailEnabled ?? true,
+          digestPreference: prefs.digestPreference ?? "immediate",
+        },
       }),
-      ...(prefs.digestPreference !== undefined && {
-        digestPreference: prefs.digestPreference,
-      }),
-    },
-    create: {
-      userId,
-      tenantId,
-      emailEnabled: prefs.emailEnabled ?? true,
-      digestPreference: prefs.digestPreference ?? "immediate",
-    },
-  });
+  );
 }
 
 // ─── getPendingNotifications ───────────────────────────────────────────────
@@ -170,6 +177,39 @@ export async function getPendingNotifications(limit = 100) {
         select: { id: true, name: true, email: true },
       },
     },
+  });
+}
+
+// ─── claimNotifications ────────────────────────────────────────────────────
+
+/**
+ * Move PENDING rows to PROCESSING for one tenant and return exactly the rows
+ * this call won.
+ *
+ * The status predicate lives in the UPDATE, so an overlapping worker's rows
+ * are not re-claimed; the claimId lets us re-read our own winners rather than
+ * assuming the ids we asked for.
+ */
+export async function claimNotifications(
+  tenantId: string,
+  ids: string[],
+  claimId: string,
+) {
+  const { prisma } = await import("@/lib/prisma");
+
+  await withAuditedMutation(
+    systemActor(tenantId),
+    "notification.claimed",
+    (tx) =>
+      tx.notificationQueue.updateMany({
+        where: { id: { in: ids }, tenantId, status: "PENDING" },
+        data: { status: "PROCESSING", claimId },
+      }),
+  );
+
+  return prisma.notificationQueue.findMany({
+    where: { claimId },
+    include: { recipient: { select: { id: true, name: true, email: true } } },
   });
 }
 

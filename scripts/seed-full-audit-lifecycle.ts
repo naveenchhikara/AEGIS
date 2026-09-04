@@ -13,6 +13,7 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { createHash } from "crypto";
+import { withTriggersDetached } from "../src/lib/audit-triggers";
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────────── */
 
@@ -520,7 +521,7 @@ const ACTION_POINTS: Array<{
 /*  MAIN                                                                     */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-async function main() {
+async function seedLifecycle() {
   console.log("╔══════════════════════════════════════════════════════════╗");
   console.log("║  AEGIS — Seed Full Audit Lifecycle                      ║");
   console.log("╚══════════════════════════════════════════════════════════╝\n");
@@ -539,9 +540,6 @@ async function main() {
     tenantId = t.id;
     console.log(`Tenant: ${t.name} (${t.id})\n`);
   }
-
-  /* ─── Disable audit triggers (seed runs without app context) ─────────── */
-  await prisma.$executeRawUnsafe(`SET session_replication_role = 'replica'`);
 
   /* ─── Lookup existing records ────────────────────────────────────────── */
   console.log("Looking up existing records...");
@@ -1400,6 +1398,45 @@ async function main() {
     });
   }
   console.log("  ✓ 6 formal observations (5C format)");
+
+  // A LOW-severity observation parked in COMPLIANCE, so the E2E suite can
+  // exercise the COMPLIANCE → CLOSED transition deterministically. The title is
+  // matched verbatim by tests/e2e/observation-lifecycle.spec.ts.
+  // Idempotent: remove any prior copy of this fixture (it has no fixed ID in
+  // ID.obs, so the cleanup block above would not catch it).
+  await prisma.observation.deleteMany({
+    where: {
+      tenantId,
+      title: "E2E fixture: low severity awaiting closure",
+    },
+  });
+  await prisma.observation.create({
+    data: {
+      tenantId,
+      title: "E2E fixture: low severity awaiting closure",
+      condition: "Register not initialled for two days",
+      criteria: "Branch operations manual, clause 4.2",
+      cause: "Officer on leave without a delegate",
+      effect: "Minor control lapse",
+      recommendation: "Nominate a standing delegate",
+      severity: "LOW",
+      status: "COMPLIANCE",
+      branchId: kothrudId,
+      auditAreaId: creditArea.id,
+      createdById: sureshId,
+      version: 1,
+      // /findings renders only the 20 newest observations (getObservations
+      // defaults to pageSize 20, ordered by createdAt desc) and the page has no
+      // server-side filter or paging control. The E2E suite creates several
+      // observations per Playwright project, so by the last project this
+      // fixture — the oldest row — had been pushed off the only page the test
+      // can see. Dating it forward keeps it first regardless of how many
+      // observations a run creates. The trade-off is that this one row shows a
+      // negative "Age (days)" in the UI; nothing asserts on that column.
+      createdAt: new Date("2099-01-01T00:00:00.000Z"),
+    },
+  });
+  console.log("  ✓ E2E COMPLIANCE fixture observation");
 
   // Timeline entries for each observation
   const timelineEvents: Array<{
@@ -2472,12 +2509,26 @@ async function main() {
 
 /* ─── Execute with cleanup ───────────────────────────────────────────────── */
 
+/**
+ * Seed runs without an app session, so every write to an audited table would
+ * fail the audit trigger's NOT NULL tenant context. Suspend the triggers around
+ * the whole seed.
+ *
+ * This replaces `SET session_replication_role = 'replica'`, which was wrong
+ * twice over: it needs superuser, and it is per-connection, so with a pooled
+ * adapter (`max: 25`) the next statement could land on a connection that never
+ * saw it. `withTriggersDetached` uses ALTER TABLE, which the table owner may
+ * run, is visible to every connection, and restores in a `finally`.
+ */
+async function main() {
+  return withTriggersDetached(prisma, seedLifecycle);
+}
+
 main()
   .catch((err) => {
     console.error("Seed failed:", err);
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$executeRawUnsafe(`SET session_replication_role = 'origin'`);
     await prisma.$disconnect();
   });

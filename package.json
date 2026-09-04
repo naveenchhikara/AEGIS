@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:bootstrap": "tsx scripts/db-bootstrap.ts",
+    "db:apply": "tsx scripts/db-apply.ts",
     "db:verify": "tsx scripts/db-verify.ts",
     "db:studio": "prisma studio",
     "seed:master-directions": "tsx prisma/seed-master-directions.ts",

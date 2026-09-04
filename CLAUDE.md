@@ -303,6 +303,11 @@ correctly-routed container look unlabelled.
 - `--check` strips the `> Source commit:` line before comparing (the `norm()`
   helper near line 397 of the generator), so the commit/branch stamp never causes
   a false failure
+- **`docs/reference/` is in `.prettierignore` and must stay there.** The generator
+  owns those bytes and `docs:check` asserts byte-equality with its output, so a
+  Prettier pass reddens `lint` with no content change — and regenerating undoes
+  the formatting. The two rules fight, and whichever ran last decides the build.
+  A "stale reference docs" failure against files nobody edited is this, not drift
 - `security-audit` intermittently fails with `ERR_SOCKET_TIMEOUT` reaching
   `registry.npmjs.org` — an infrastructure flake that clears on re-run, not a
   vulnerability

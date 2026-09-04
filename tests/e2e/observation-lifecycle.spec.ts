@@ -25,7 +25,6 @@ import { test, expect } from "@playwright/test";
 // Test Group 1: Create Observation (OBS-01)
 // ═══════════════════════════════════════════════════════════════════════════
 
-
 /**
  * Fill every REQUIRED field on /findings/new and submit. The form gates
  * submission on title (>=5 chars), all 5C fields, severity, branch, and audit
@@ -157,37 +156,75 @@ test.describe.serial("Test Group 2: State Transitions", () => {
 // Test Group 3: Auditee Response (OBS-02)
 // ═══════════════════════════════════════════════════════════════════════════
 
-test.describe("Test Group 3: Auditee Response", () => {
-  test.use({ storageState: "playwright/.auth/auditee.json" });
+test.describe.serial("Test Group 3: Auditee Response", () => {
+  // Drives its own fixture: an auditor creates and submits, a manager approves
+  // and issues, then the auditee responds. Previously skipped because it
+  // assumed an ISSUED observation existed in the seed.
+  test.use({ storageState: "playwright/.auth/auditor.json" });
 
-  test.skip("auditee submits response to issued observation", async ({
-    page,
-  }) => {
-    // This test requires an observation in ISSUED state
-    // In a real implementation, you would:
-    // 1. Query database for ISSUED observation OR
-    // 2. Create observation via API and transition to ISSUED state
+  let observationUrl: string;
 
-    await page.goto("/findings");
+  test("auditor creates and submits an observation", async ({ page }) => {
+    await createObservation(page, { title: "Auditee response test finding" });
+    observationUrl = page.url();
 
-    // Find an issued observation
+    await page.getByRole("button", { name: /submit for review/i }).click();
     await page
-      .getByRole("cell", { name: /issued/i })
-      .first()
-      .click();
+      .getByPlaceholder(/reason for this transition/i)
+      .fill("Submitting for review");
+    await page.getByRole("button", { name: /^confirm$/i }).click();
+    await expect(page.getByText(/submitted/i).first()).toBeVisible();
+  });
 
-    // Submit response
-    await page.getByRole("button", { name: /submit response/i }).click();
-    await page
-      .getByLabel(/response/i)
-      .fill("We have implemented corrective actions");
-    await page
-      .getByLabel(/action plan/i)
-      .fill("Completed documentation review training for all staff");
-    await page.getByRole("button", { name: /submit/i }).click();
+  test("manager approves and issues it", async ({ browser }) => {
+    const managerCtx = await browser.newContext({
+      storageState: "playwright/.auth/manager.json",
+    });
+    const page = await managerCtx.newPage();
+    await page.goto(observationUrl);
 
-    // Verify status changed to RESPONSE
-    await expect(page.getByText(/response/i)).toBeVisible();
+    await page.getByRole("button", { name: /approve/i }).click();
+    await page
+      .getByPlaceholder(/reason for this transition/i)
+      .fill("Approved for issuance");
+    await page.getByRole("button", { name: /^confirm$/i }).click();
+    await expect(page.getByText(/reviewed/i).first()).toBeVisible();
+
+    await page.getByRole("button", { name: /issue to auditee/i }).click();
+    await page
+      .getByPlaceholder(/reason for this transition/i)
+      .fill("Issuing to branch manager");
+    await page.getByRole("button", { name: /^confirm$/i }).click();
+    await expect(page.getByText(/issued/i).first()).toBeVisible();
+
+    await managerCtx.close();
+  });
+
+  test("auditee submits a response", async ({ browser }) => {
+    const auditeeCtx = await browser.newContext({
+      storageState: "playwright/.auth/auditee.json",
+    });
+    const page = await auditeeCtx.newPage();
+    await page.goto(observationUrl);
+
+    // ISSUED -> RESPONSE is a state-machine transition like every other step in
+    // this file: the button carries the transition label from state-machine.ts
+    // ("Respond to Observation"), and confirming it needs a reason. The free-
+    // standing response form lives on the auditee portal at /auditee/[id], not
+    // here, so there is no "submit response" button on this page to click.
+    await page.getByRole("button", { name: /respond to observation/i }).click();
+    await page
+      .getByPlaceholder(/reason for this transition/i)
+      .fill("Corrective actions implemented and documented");
+    await page.getByRole("button", { name: /^confirm$/i }).click();
+
+    // The transition is consumed: an auditee has no further transition from
+    // RESPONSE, so the button it just used must be gone.
+    await expect(
+      page.getByRole("button", { name: /respond to observation/i }),
+    ).toBeHidden();
+
+    await auditeeCtx.close();
   });
 });
 
@@ -198,30 +235,28 @@ test.describe("Test Group 3: Auditee Response", () => {
 test.describe("Test Group 4: Severity-Based Closing", () => {
   test.use({ storageState: "playwright/.auth/manager.json" });
 
-  // Requires a LOW/MEDIUM observation already in COMPLIANCE state so the
-  // "Close Observation" transition (COMPLIANCE → CLOSED) is offered. The demo
-  // seed creates none — statuses run DRAFT/SUBMITTED/REVIEWED/ISSUED/RESPONSE/
-  // CLOSED — and the list cannot reliably identify COMPLIANCE rows anyway (an
-  // AuditArea named "Compliance" collides with the status text). Unskip once
-  // the seed includes a COMPLIANCE-state fixture or a lifecycle-drive helper
-  // exists to reach it. Tracked as follow-up.
-  test.fixme(
-    "manager can close LOW/MEDIUM observations",
-    async ({ page }) => {
-      await page.goto("/findings");
+  // Uses the COMPLIANCE-state fixture from scripts/seed-full-audit-lifecycle.ts,
+  // selected by its exact title. The previous version searched the list for a
+  // row matching /low|medium/ and "Compliance", which collided with an
+  // AuditArea named "Compliance" and could never be made reliable.
+  test("manager can close LOW/MEDIUM observations", async ({ page }) => {
+    await page.goto("/findings");
 
-      const lowObservation = page
-        .locator("tbody tr")
-        .filter({ hasText: /low|medium/i })
-        .filter({ has: page.getByText("Compliance", { exact: true }) })
-        .first();
+    // FindingsTable puts role="button" on each <TableRow> so the whole row is
+    // clickable, which overrides the implicit "row" role — getByRole("row")
+    // therefore never matches a data row. Match the row's accessible name.
+    await page
+      .getByRole("button", {
+        name: /E2E fixture: low severity awaiting closure/,
+      })
+      .first()
+      .click();
 
-      await lowObservation.click();
-      await expect(
-        page.getByRole("button", { name: /close observation/i }),
-      ).toBeVisible();
-    },
-  );
+    await expect(page).toHaveURL(/\/findings\/[a-f0-9-]+/);
+    await expect(
+      page.getByRole("button", { name: /close observation/i }),
+    ).toBeVisible();
+  });
 
   test("manager cannot close HIGH/CRITICAL observations", async ({ page }) => {
     await page.goto("/findings");
@@ -418,7 +453,9 @@ test.describe("Test Group 8: Resolved During Fieldwork", () => {
     });
 
     // Open the "Resolve During Fieldwork" dialog
-    await page.getByRole("button", { name: /resolve during fieldwork/i }).click();
+    await page
+      .getByRole("button", { name: /resolve during fieldwork/i })
+      .click();
 
     // Enter resolution reason (dialog textarea) and confirm with the
     // dialog's own "Resolve" button
@@ -426,9 +463,7 @@ test.describe("Test Group 8: Resolved During Fieldwork", () => {
       .locator("#resolution-reason, textarea")
       .first()
       .fill("Issue was corrected during audit fieldwork");
-    await page
-      .getByRole("button", { name: /^resolve$/i })
-      .click();
+    await page.getByRole("button", { name: /^resolve$/i }).click();
 
     // Badge/status reflects the fieldwork resolution
     await expect(

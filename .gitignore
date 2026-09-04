@@ -65,3 +65,6 @@ infra/*.d.ts
 # Temp / local docs
 Project Doc/~$*
 .gstack/
+
+# pnpm content-addressable store (created by local installs)
+.pnpm-store/

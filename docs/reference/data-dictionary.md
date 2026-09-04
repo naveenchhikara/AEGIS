@@ -4,10 +4,10 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
+> Source commit: `13d9827` (hardening/integrity-and-operations-f07-f15)
 
 Every table AEGIS maintains, with its columns, types and relationships.
-**75 models** and **21 enumerations**.
+**76 models** and **22 enumerations**.
 
 Conventions used throughout the schema:
 
@@ -28,6 +28,7 @@ Conventions used throughout the schema:
 - [ObservationTimeline](#observationtimeline)
 - [ObservationRbiCircular](#observationrbicircular)
 - [Evidence](#evidence)
+- [UploadIntent](#uploadintent)
 - [ComplianceRequirement](#compliancerequirement)
 - [RbiCircular](#rbicircular)
 - [Branch](#branch)
@@ -139,6 +140,7 @@ Conventions used throughout the schema:
 | `observations` | Observation[] | no | FK→Observation |  |  |
 | `observationTimelines` | ObservationTimeline[] | no | FK→ObservationTimeline |  |  |
 | `evidence` | Evidence[] | no | FK→Evidence |  |  |
+| `uploadIntents` | UploadIntent[] | no | FK→UploadIntent |  |  |
 | `complianceRequirements` | ComplianceRequirement[] | no | FK→ComplianceRequirement |  |  |
 | `branches` | Branch[] | no | FK→Branch |  |  |
 | `zones` | Zone[] | no | FK→Zone |  |  |
@@ -439,6 +441,32 @@ Indexes and constraints:
 - `@@index([actionPointId])`
 - `@@index([accountExamResponseId])`
 
+## UploadIntent
+
+/ A server-issued permission to upload one object to one key for one parent / record. Confirmation resolves the intent instead of trusting the caller's / key and metadata, so an existing object cannot be rebound elsewhere.
+
+*Tenant-scoped:* **yes** — always filter by `tenantId`
+
+| Column | Type | Null | Key | Default | Notes |
+|---|---|---|---|---|---|
+| `id` | String `@db.Uuid` | no | PK | `dbgenerated("gen_random_uuid()")` |  |
+| `tenantId` | String `@db.Uuid` | no |  |  |  |
+| `tenant` | Tenant | no | FK→Tenant |  | relation |
+| `s3Key` | String | no | UQ |  |  |
+| `purpose` | UploadPurpose | no |  |  |  |
+| `parentId` | String `@db.Uuid` | no |  |  |  |
+| `contentType` | String | no |  |  |  |
+| `maxFileSize` | Int | no |  |  |  |
+| `createdById` | String `@db.Uuid` | no |  |  |  |
+| `expiresAt` | DateTime | no |  |  |  |
+| `consumedAt` | DateTime | yes |  |  |  |
+| `createdAt` | DateTime | no |  | `now()` |  |
+
+Indexes and constraints:
+
+- `@@index([tenantId])`
+- `@@index([expiresAt])`
+
 ## ComplianceRequirement
 
 *Tenant-scoped:* **yes** — always filter by `tenantId`
@@ -521,6 +549,7 @@ Indexes and constraints:
 Indexes and constraints:
 
 - `@@unique([tenantId, code])`
+- `@@unique([tenantId, id])`
 - `@@index([tenantId])`
 
 ## Zone
@@ -561,6 +590,7 @@ Indexes and constraints:
 Indexes and constraints:
 
 - `@@unique([tenantId, name])`
+- `@@unique([tenantId, id])`
 - `@@index([tenantId])`
 
 ## AuditPlan
@@ -584,6 +614,7 @@ Indexes and constraints:
 Indexes and constraints:
 
 - `@@unique([tenantId, year, quarter])`
+- `@@unique([tenantId, id])`
 - `@@index([tenantId])`
 
 ## AuditEngagement
@@ -655,6 +686,7 @@ Indexes and constraints:
 Indexes and constraints:
 
 - `@@index([tenantId])`
+- `@@unique([tenantId, id])`
 - `@@index([auditPlanId])`
 
 ## AuditTeamMember
@@ -1653,6 +1685,7 @@ Indexes and constraints:
 | `retryCount` | Int | no |  | `0` | Processing metadata |
 | `lastError` | String | yes |  |  |  |
 | `processedAt` | DateTime | yes |  |  |  |
+| `claimId` | String `@db.Uuid` | yes |  |  | / Identifies the worker pass that moved this row out of PENDING. Two / overlapping workers cannot share one, so the claimant can re-read exactly / the rows it won. |
 | `createdAt` | DateTime | no |  | `now()` |  |
 | `updatedAt` | DateTime | no |  |  |  |
 
@@ -1661,6 +1694,7 @@ Indexes and constraints:
 - `@@index([tenantId])`
 - `@@index([status, sendAfter])`
 - `@@index([batchKey, status])`
+- `@@index([claimId])`
 
 ## EmailLog
 
@@ -1845,6 +1879,8 @@ Indexes and constraints:
 | `node` | ExaminationNode | no | FK→ExaminationNode |  | relation |
 | `score` | Decimal `@db.Decimal` | yes |  |  | 4-point scoring: 1.0 (Fully), 0.75 (Largely), 0.5 (Partially), 0.0 (Non-Compliant), NULL (not yet scored) |
 | `scoreLabel` | ScoreLabel | yes |  |  |  |
+| `isNotApplicable` | Boolean | no |  | `false` | Explicit N/A. A null score means "not yet examined"; this means "examined and does not apply to this branch". The freeze gate distinguishes them. |
+| `notApplicableReason` | String `@db.Text` | yes |  |  |  |
 | `workingNotes` | String `@db.Text` | yes |  |  |  |
 | `flagForObservation` | Boolean | no |  | `false` |  |
 | `flagForActionPoint` | Boolean | no |  | `false` |  |
@@ -2232,4 +2268,8 @@ Indian Financial Year quarters (D16) Q1 = Apr-Jun, Q2 = Jul-Sep, Q3 = Oct-Dec, Q
 ### NotificationStatus
 
 `PENDING` · `PROCESSING` · `SENT` · `FAILED` · `SKIPPED`
+
+### UploadPurpose
+
+`OBSERVATION_EVIDENCE` · `EXAMINATION_EVIDENCE`
 

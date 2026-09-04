@@ -16,6 +16,11 @@ import {
   generateDownloadUrl,
   verifyUpload,
 } from "@/lib/s3";
+import {
+  recordUploadIntent,
+  consumeUploadIntent,
+  UploadIntentError,
+} from "@/data-access/upload-intents";
 import { createNotification } from "@/data-access/notifications";
 import { logger } from "@/lib/logger";
 
@@ -306,6 +311,14 @@ export async function requestEvidenceUpload(
       fileSize,
     );
 
+    await recordUploadIntent(session, {
+      s3Key,
+      purpose: "OBSERVATION_EVIDENCE",
+      parentId: observationId,
+      contentType: fileTypeResult.mimeType,
+      maxFileSize: fileSize,
+    });
+
     return {
       success: true as const,
       data: {
@@ -353,8 +366,7 @@ export async function confirmEvidenceUpload(
     return { success: false as const, error: parsed.error.issues[0].message };
   }
 
-  const { observationId, s3Key, filename, fileSize, contentType, description } =
-    parsed.data;
+  const { observationId, s3Key, filename, description } = parsed.data;
   const db = prismaForTenant(tenantId);
 
   try {
@@ -395,6 +407,27 @@ export async function confirmEvidenceUpload(
         sessionId: session.session.id,
       });
 
+      const intent = await consumeUploadIntent(tx, {
+        tenantId,
+        s3Key,
+        purpose: "OBSERVATION_EVIDENCE",
+        parentId: observationId,
+      });
+
+      if (verifyResult.contentType !== intent.contentType) {
+        throw new UploadIntentError(
+          "The uploaded file's type does not match the authorised upload.",
+        );
+      }
+      if (
+        verifyResult.contentLength <= 0 ||
+        verifyResult.contentLength > intent.maxFileSize
+      ) {
+        throw new UploadIntentError(
+          "The uploaded file's size does not match the authorised upload.",
+        );
+      }
+
       // Atomic evidence count check (prevents race conditions)
       const count = await tx.evidence.count({
         where: { observationId, tenantId, deletedAt: null },
@@ -410,8 +443,8 @@ export async function confirmEvidenceUpload(
           tenantId,
           filename,
           s3Key,
-          fileSize,
-          contentType,
+          fileSize: verifyResult.contentLength,
+          contentType: verifyResult.contentType,
           description: description || null,
           uploadedById: session.user.id,
         },
@@ -437,6 +470,9 @@ export async function confirmEvidenceUpload(
 
     return { success: true as const, data: { evidenceId } };
   } catch (error) {
+    if (error instanceof UploadIntentError) {
+      return { success: false as const, error: error.message };
+    }
     if (error instanceof Error && error.message === "EVIDENCE_LIMIT_REACHED") {
       return {
         success: false as const,

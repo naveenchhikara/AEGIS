@@ -15,6 +15,11 @@ import {
   generateDownloadUrl,
   verifyUpload,
 } from "@/lib/s3";
+import {
+  recordUploadIntent,
+  consumeUploadIntent,
+  UploadIntentError,
+} from "@/data-access/upload-intents";
 import { logger } from "@/lib/logger";
 import {
   RequestExamEvidenceUploadSchema,
@@ -105,6 +110,14 @@ export async function requestExaminationEvidenceUpload(
       validated.fileSize,
     );
 
+    await recordUploadIntent(session, {
+      s3Key,
+      purpose: "EXAMINATION_EVIDENCE",
+      parentId: validated.responseId,
+      contentType: mimeType,
+      maxFileSize: validated.fileSize,
+    });
+
     return {
       success: true as const,
       data: { uploadUrl, s3Key, contentType: mimeType },
@@ -159,7 +172,8 @@ export async function confirmExaminationEvidenceUpload(
   const db = prismaForTenant(tenantId);
 
   try {
-    // Verify upload exists in S3
+    // Trust the object, not the caller. HeadObject supplies the size and type
+    // that get persisted; the intent supplies the key/parent binding.
     const uploadResult = await verifyUpload(validated.s3Key ?? "");
     if (!uploadResult.exists) {
       return {
@@ -168,14 +182,13 @@ export async function confirmExaminationEvidenceUpload(
       };
     }
 
-    // Verify examination response exists and belongs to tenant
     const response = await db.auditExaminationResponse.findFirst({
       where: {
         id: validated.responseId,
         tenantId,
         engagementId: validated.engagementId,
       },
-      select: { id: true, engagementId: true },
+      select: { id: true },
     });
 
     if (!response) {
@@ -185,9 +198,7 @@ export async function confirmExaminationEvidenceUpload(
       };
     }
 
-    // Create Evidence record in transaction
     const result = await db.$transaction(async (tx: any) => {
-      // Set audit context
       await setAuditContext(tx, {
         actionType: AUDIT_ACTION_TYPES.EVIDENCE.UPLOADED,
         userId: session.user.id,
@@ -195,31 +206,49 @@ export async function confirmExaminationEvidenceUpload(
         sessionId: session.session.id,
       });
 
-      // Create Evidence record
-      const evidence = await tx.evidence.create({
+      const intent = await consumeUploadIntent(tx, {
+        tenantId,
+        s3Key: validated.s3Key ?? "",
+        purpose: "EXAMINATION_EVIDENCE",
+        parentId: validated.responseId,
+      });
+
+      if (uploadResult.contentType !== intent.contentType) {
+        throw new UploadIntentError(
+          "The uploaded file's type does not match the authorised upload.",
+        );
+      }
+      if (
+        uploadResult.contentLength <= 0 ||
+        uploadResult.contentLength > intent.maxFileSize
+      ) {
+        throw new UploadIntentError(
+          "The uploaded file's size does not match the authorised upload.",
+        );
+      }
+
+      return tx.evidence.create({
         data: {
           tenantId,
           examinationResponseId: validated.responseId,
           filename: validated.filename,
           s3Key: validated.s3Key,
-          fileSize: validated.fileSize,
-          contentType: validated.contentType,
+          fileSize: uploadResult.contentLength,
+          contentType: uploadResult.contentType,
           description: validated.description ?? null,
           uploadedById: session.user.id,
         },
       });
-
-      return evidence;
     });
 
-    // Revalidate audit execution pages
     revalidatePath("/audit-execution");
 
-    return {
-      success: true as const,
-      data: { evidenceId: result.id },
-    };
+    return { success: true as const, data: { evidenceId: result.id } };
   } catch (error) {
+    if (error instanceof UploadIntentError) {
+      return { success: false as const, error: error.message };
+    }
+
     logger.error(
       { error, responseId: validated.responseId, tenantId },
       "Failed to confirm examination evidence upload",

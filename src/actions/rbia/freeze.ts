@@ -18,7 +18,6 @@ import {
   FreezeRbiaScoreSchema,
   type FreezeRbiaScoreInput,
   type ActionResult,
-  type ActionErrorCode,
 } from "./schemas";
 import { syncAllInstanceScores } from "@/data-access/instance-scoring";
 
@@ -211,7 +210,9 @@ export async function freezeRbiaScore(
         where: { engagementId: validated.engagementId, tenantId },
         select: { moduleNodeId: true },
       });
-      const selectedIds = new Set(selections.map((s) => s.moduleNodeId));
+      const selectedIds = new Set<string>(
+        selections.map((s: { moduleNodeId: string }) => s.moduleNodeId),
+      );
 
       for (const node of nodeMap.values()) {
         if (node.parentId) {

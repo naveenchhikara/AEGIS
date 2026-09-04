@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
+> Source commit: `788a7aa` (cursor/critical-bug-management-fd44)
 
 Every addressable path in the application: **65 pages** and
 **12 HTTP endpoints**.

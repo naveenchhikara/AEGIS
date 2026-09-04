@@ -84,7 +84,7 @@
       "sublabel": "session cookies",
       "pos": [450, 130],
       "size": [140, 64],
-      "sources": [{ "path": "src/lib/auth.ts", "line": 1, "label": "betterAuth()" }]
+      "sources": [{ "path": "src/lib/auth.ts", "line": 21, "label": "betterAuth()" }]
     },
     {
       "id": "postgres",

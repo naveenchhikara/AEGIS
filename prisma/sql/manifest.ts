@@ -18,7 +18,13 @@ export const SQL_MANIFEST = [
   "prisma/sql/060_tenant_composite_fks.sql",
 ] as const;
 
-/** Tables carrying `audit_trigger`, per the two Prisma trigger migrations. */
+/**
+ * Tables carrying `audit_trigger`. Must equal `AUDITED_TABLES` in
+ * `src/lib/audit-triggers.ts` and the array in `020_attach_audit_triggers.sql`:
+ * the discipline test reads the first, `db:bootstrap` applies the second, and
+ * `db:verify` checks this one. A table missing from any of the three is a table
+ * whose unattributed writes pass CI and fail in production.
+ */
 const AUDIT_TRIGGER_TABLES = [
   "Tenant",
   "User",
@@ -34,6 +40,8 @@ const AUDIT_TRIGGER_TABLES = [
   "AuditeeResponse",
   "NotificationQueue",
   "EmailLog",
+  "NotificationPreference",
+  "BoardReport",
 ] as const;
 
 export interface RequiredObjects {

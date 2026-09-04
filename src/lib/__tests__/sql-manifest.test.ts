@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { SQL_MANIFEST, REQUIRED_OBJECTS } from "../../../prisma/sql/manifest";
+import { AUDITED_TABLES } from "../audit-triggers";
 
 describe("SQL manifest", () => {
   it("lists files that all exist", () => {
@@ -22,11 +23,33 @@ describe("SQL manifest", () => {
     expect(attach).toBeGreaterThan(fn);
   });
 
-  it("requires the audit trigger on every audited table the migrations cover", () => {
-    expect(REQUIRED_OBJECTS.triggers).toHaveLength(14);
-    expect(REQUIRED_OBJECTS.triggers).toContain("Observation");
-    expect(REQUIRED_OBJECTS.triggers).toContain("NotificationQueue");
-    expect(REQUIRED_OBJECTS.triggers).not.toContain("NotificationPreference");
+  /**
+   * Three places name the audited tables, and all three must agree:
+   *
+   *   AUDITED_TABLES            the discipline test reads it
+   *   020_attach_audit_triggers what db:bootstrap actually applies
+   *   REQUIRED_OBJECTS.triggers what db:verify asserts landed
+   *
+   * A table in the first but not the second is the dangerous case: the
+   * discipline test lets an unwrapped write through as "audited", and the
+   * database has no trigger to reject it. It passes CI and fails in production.
+   * This asserted a hardcoded 14 while AUDITED_TABLES held 16, which is how
+   * NotificationPreference and BoardReport drifted apart unnoticed.
+   */
+  it("names the same audited tables as AUDITED_TABLES and the attach script", () => {
+    const sql = readFileSync(
+      join(process.cwd(), "prisma/sql/020_attach_audit_triggers.sql"),
+      "utf8",
+    );
+    const arrayBlock = sql.slice(
+      sql.indexOf("audited TEXT[] := ARRAY["),
+      sql.indexOf("];"),
+    );
+    const inSql = [...arrayBlock.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1]);
+
+    const sorted = (xs: readonly string[]) => [...xs].sort();
+    expect(sorted(inSql)).toEqual(sorted(AUDITED_TABLES));
+    expect(sorted(REQUIRED_OBJECTS.triggers)).toEqual(sorted(AUDITED_TABLES));
   });
 
   it("names no superseded file", () => {

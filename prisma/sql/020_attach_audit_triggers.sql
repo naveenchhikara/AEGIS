@@ -2,7 +2,8 @@
 --
 -- The original attachments live in two Prisma migrations
 -- (20260209015123_audit_trigger, 20260209220425_add_remaining_audit_triggers)
--- which `prisma db push` never runs. This file is the single place the
+-- and, for the last two tables, in add_notification_tables.sql — none of which
+-- `prisma db push` runs. This file is the single place the
 -- attachment is expressed for any database built by push, and it is safe to
 -- re-run against a database that already has them.
 --
@@ -15,7 +16,11 @@ DECLARE
   audited TEXT[] := ARRAY[
     'Tenant', 'User', 'Branch', 'AuditArea', 'AuditPlan', 'AuditEngagement',
     'Observation', 'ObservationTimeline', 'Evidence', 'ComplianceRequirement',
-    'UserBranchAssignment', 'AuditeeResponse', 'NotificationQueue', 'EmailLog'
+    'UserBranchAssignment', 'AuditeeResponse', 'NotificationQueue', 'EmailLog',
+    -- Previously attached only by add_notification_tables.sql, so a
+    -- push-built database silently left them unaudited while
+    -- AUDITED_TABLES claimed otherwise. Attached here for every database.
+    'NotificationPreference', 'BoardReport'
   ];
 BEGIN
   FOREACH t IN ARRAY audited LOOP

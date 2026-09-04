@@ -207,16 +207,22 @@ test.describe.serial("Test Group 3: Auditee Response", () => {
     const page = await auditeeCtx.newPage();
     await page.goto(observationUrl);
 
-    await page.getByRole("button", { name: /submit response/i }).click();
+    // ISSUED -> RESPONSE is a state-machine transition like every other step in
+    // this file: the button carries the transition label from state-machine.ts
+    // ("Respond to Observation"), and confirming it needs a reason. The free-
+    // standing response form lives on the auditee portal at /auditee/[id], not
+    // here, so there is no "submit response" button on this page to click.
+    await page.getByRole("button", { name: /respond to observation/i }).click();
     await page
-      .getByLabel(/response/i)
-      .fill("We have implemented corrective actions");
-    await page
-      .getByLabel(/action plan/i)
-      .fill("Completed documentation review training for all staff");
-    await page.getByRole("button", { name: /^submit$/i }).click();
+      .getByPlaceholder(/reason for this transition/i)
+      .fill("Corrective actions implemented and documented");
+    await page.getByRole("button", { name: /^confirm$/i }).click();
 
-    await expect(page.getByText(/response/i).first()).toBeVisible();
+    // The transition is consumed: an auditee has no further transition from
+    // RESPONSE, so the button it just used must be gone.
+    await expect(
+      page.getByRole("button", { name: /respond to observation/i }),
+    ).toBeHidden();
 
     await auditeeCtx.close();
   });
@@ -236,9 +242,13 @@ test.describe("Test Group 4: Severity-Based Closing", () => {
   test("manager can close LOW/MEDIUM observations", async ({ page }) => {
     await page.goto("/findings");
 
+    // FindingsTable puts role="button" on each <TableRow> so the whole row is
+    // clickable, which overrides the implicit "row" role — getByRole("row")
+    // therefore never matches a data row. Match the row's accessible name.
     await page
-      .getByRole("row")
-      .filter({ hasText: "E2E fixture: low severity awaiting closure" })
+      .getByRole("button", {
+        name: /E2E fixture: low severity awaiting closure/,
+      })
       .first()
       .click();
 

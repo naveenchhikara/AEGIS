@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
-import { getRequiredSession } from "@/data-access/session";
-import { hasPermission, type Permission, type Role } from "@/lib/permissions";
+import {
+  getOnboardingSession,
+  getRequiredSession,
+} from "@/data-access/session";
+import { hasPermission, type Permission } from "@/lib/permissions";
 
 /**
  * Require specific permission to access a page.
@@ -61,6 +64,23 @@ export async function requireAnyPermission(permissions: Permission[]) {
 
   const hasAny = permissions.some((perm) => hasPermission(userRoles, perm));
   if (!hasAny) {
+    redirect("/dashboard?unauthorized=true");
+  }
+
+  return session;
+}
+
+/**
+ * Permission guard for the onboarding wizard.
+ *
+ * Uses getOnboardingSession because the wizard is the one place a user
+ * legitimately has no tenant yet; getRequiredSession would redirect them here,
+ * and here would redirect them here again.
+ */
+export async function requireOnboardingPermission(permission: Permission) {
+  const session = await getOnboardingSession();
+
+  if (!hasPermission(session.user.roles, permission)) {
     redirect("/dashboard?unauthorized=true");
   }
 

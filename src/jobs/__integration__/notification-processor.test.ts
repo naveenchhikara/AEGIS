@@ -4,6 +4,7 @@ import {
   createTenant,
   createUser,
   integrationPrisma,
+  withFixtures,
 } from "../../../tests/integration/harness";
 
 const sent: Array<{ to: string; subject: string }> = [];
@@ -30,17 +31,19 @@ async function queue(
   recipientId: string,
   batchKey: string | null,
 ) {
-  return integrationPrisma.notificationQueue.create({
-    data: {
-      tenantId,
-      recipientId,
-      type: "OBSERVATION_ASSIGNED",
-      status: "PENDING",
-      batchKey,
-      sendAfter: new Date(Date.now() - 1000),
-      payload: { observationTitle: "Probe" },
-    },
-    select: { id: true },
+  return withFixtures(async () => {
+    return integrationPrisma.notificationQueue.create({
+      data: {
+        tenantId,
+        recipientId,
+        type: "OBSERVATION_ASSIGNED",
+        status: "PENDING",
+        batchKey,
+        sendAfter: new Date(Date.now() - 1000),
+        payload: { observationTitle: "Probe" },
+      },
+      select: { id: true },
+    });
   });
 }
 

@@ -4,47 +4,56 @@ import {
   createTenant,
   createUser,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 async function seedOverdueComplianceItem(
   tenantId: string,
   daysOverdue: number,
 ) {
-  const branch = await integrationPrisma.branch.create({
-    data: { tenantId, code: "BR-001", name: "Main", city: "Pune", state: "MH" },
-    select: { id: true },
-  });
-  const user = await createUser(tenantId, ["AUDITOR"]);
-  const observation = await integrationPrisma.observation.create({
-    data: {
-      tenantId,
-      title: "Overdue item",
-      condition: "c",
-      criteria: "c",
-      cause: "c",
-      effect: "c",
-      recommendation: "r",
-      severity: "HIGH",
-      status: "ISSUED",
-      branchId: branch.id,
-      createdById: user.id,
-    },
-    select: { id: true },
-  });
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() - daysOverdue);
+  return withFixtures(async () => {
+    const branch = await integrationPrisma.branch.create({
+      data: {
+        tenantId,
+        code: "BR-001",
+        name: "Main",
+        city: "Pune",
+        state: "MH",
+      },
+      select: { id: true },
+    });
+    const user = await createUser(tenantId, ["AUDITOR"]);
+    const observation = await integrationPrisma.observation.create({
+      data: {
+        tenantId,
+        title: "Overdue item",
+        condition: "c",
+        criteria: "c",
+        cause: "c",
+        effect: "c",
+        recommendation: "r",
+        severity: "HIGH",
+        status: "ISSUED",
+        branchId: branch.id,
+        createdById: user.id,
+      },
+      select: { id: true },
+    });
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() - daysOverdue);
 
-  return integrationPrisma.complianceItem.create({
-    data: {
-      tenantId,
-      observationId: observation.id,
-      branchId: branch.id,
-      status: "OPEN",
-      dueDate,
-      escalationLevel: 0,
-      daysOpen: daysOverdue,
-    },
-    select: { id: true },
+    return integrationPrisma.complianceItem.create({
+      data: {
+        tenantId,
+        observationId: observation.id,
+        branchId: branch.id,
+        status: "OPEN",
+        dueDate,
+        escalationLevel: 0,
+        daysOpen: daysOverdue,
+      },
+      select: { id: true },
+    });
   });
 }
 

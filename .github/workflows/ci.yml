@@ -330,6 +330,15 @@ jobs:
       - name: Seed database
         run: pnpm db:seed
 
+      # seed:lifecycle resolves CRD-HLN examination nodes and their questions by
+      # code; without these two it aborts with "examination node not found".
+      # Order is fixed: nodes, then the questions that hang off them.
+      - name: Seed RBIA housing examination tree
+        run: pnpm seed:rbia-housing
+
+      - name: Seed examination questions
+        run: pnpm seed:exam-questions
+
       - name: Seed audit lifecycle fixtures
         run: pnpm seed:lifecycle
 
@@ -412,6 +421,15 @@ jobs:
 
       - name: Seed database
         run: pnpm db:seed
+
+      # seed:lifecycle resolves CRD-HLN examination nodes and their questions by
+      # code; without these two it aborts with "examination node not found".
+      # Order is fixed: nodes, then the questions that hang off them.
+      - name: Seed RBIA housing examination tree
+        run: pnpm seed:rbia-housing
+
+      - name: Seed examination questions
+        run: pnpm seed:exam-questions
 
       - name: Seed audit lifecycle fixtures
         run: pnpm seed:lifecycle

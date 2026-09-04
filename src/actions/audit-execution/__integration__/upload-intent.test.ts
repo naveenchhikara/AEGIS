@@ -6,6 +6,7 @@ import {
   fakeSession,
   mockSessionModule,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 /**
@@ -31,52 +32,54 @@ function mockS3(
 }
 
 async function seedResponse(tenantId: string) {
-  const plan = await integrationPrisma.auditPlan.create({
-    data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
-    select: { id: true },
+  return withFixtures(async () => {
+    const plan = await integrationPrisma.auditPlan.create({
+      data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
+      select: { id: true },
+    });
+    const engagement = await integrationPrisma.auditEngagement.create({
+      data: {
+        tenantId,
+        auditPlanId: plan.id,
+        auditNumber: "RBIA/2026-27/BR-001/V1",
+        periodFrom: new Date("2026-04-01"),
+        periodTo: new Date("2026-06-30"),
+        status: "IN_PROGRESS",
+      },
+      select: { id: true },
+    });
+    // ExaminationItem requires an area, itemNumber, particulars, displayOrder
+    // (brief seed used code/description — adjusted to the live schema).
+    const area = await integrationPrisma.examinationArea.create({
+      data: {
+        tenantId,
+        code: "CASH",
+        name: "Cash",
+        displayOrder: 1,
+      },
+      select: { id: true },
+    });
+    const item = await integrationPrisma.examinationItem.create({
+      data: {
+        tenantId,
+        areaId: area.id,
+        itemNumber: "1.1.1",
+        particulars: "Check cash",
+        displayOrder: 1,
+      },
+      select: { id: true },
+    });
+    const response = await integrationPrisma.auditExaminationResponse.create({
+      data: {
+        tenantId,
+        engagementId: engagement.id,
+        itemId: item.id,
+        status: "PENDING",
+      },
+      select: { id: true },
+    });
+    return { engagementId: engagement.id, responseId: response.id };
   });
-  const engagement = await integrationPrisma.auditEngagement.create({
-    data: {
-      tenantId,
-      auditPlanId: plan.id,
-      auditNumber: "RBIA/2026-27/BR-001/V1",
-      periodFrom: new Date("2026-04-01"),
-      periodTo: new Date("2026-06-30"),
-      status: "IN_PROGRESS",
-    },
-    select: { id: true },
-  });
-  // ExaminationItem requires an area, itemNumber, particulars, displayOrder
-  // (brief seed used code/description — adjusted to the live schema).
-  const area = await integrationPrisma.examinationArea.create({
-    data: {
-      tenantId,
-      code: "CASH",
-      name: "Cash",
-      displayOrder: 1,
-    },
-    select: { id: true },
-  });
-  const item = await integrationPrisma.examinationItem.create({
-    data: {
-      tenantId,
-      areaId: area.id,
-      itemNumber: "1.1.1",
-      particulars: "Check cash",
-      displayOrder: 1,
-    },
-    select: { id: true },
-  });
-  const response = await integrationPrisma.auditExaminationResponse.create({
-    data: {
-      tenantId,
-      engagementId: engagement.id,
-      itemId: item.id,
-      status: "PENDING",
-    },
-    select: { id: true },
-  });
-  return { engagementId: engagement.id, responseId: response.id };
 }
 
 describe("evidence confirmation binds to an upload intent", () => {

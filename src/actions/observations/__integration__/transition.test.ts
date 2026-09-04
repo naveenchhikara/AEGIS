@@ -6,29 +6,38 @@ import {
   fakeSession,
   mockSessionModule,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 async function seedObservation(tenantId: string, createdById: string) {
-  const branch = await integrationPrisma.branch.create({
-    data: { tenantId, code: "BR-001", name: "Main", city: "Pune", state: "MH" },
-    select: { id: true },
-  });
-  return integrationPrisma.observation.create({
-    data: {
-      tenantId,
-      title: "Concurrency probe",
-      condition: "c",
-      criteria: "c",
-      cause: "c",
-      effect: "c",
-      recommendation: "r",
-      severity: "HIGH",
-      status: "DRAFT",
-      branchId: branch.id,
-      createdById,
-      version: 1,
-    },
-    select: { id: true, version: true },
+  return withFixtures(async () => {
+    const branch = await integrationPrisma.branch.create({
+      data: {
+        tenantId,
+        code: "BR-001",
+        name: "Main",
+        city: "Pune",
+        state: "MH",
+      },
+      select: { id: true },
+    });
+    return integrationPrisma.observation.create({
+      data: {
+        tenantId,
+        title: "Concurrency probe",
+        condition: "c",
+        criteria: "c",
+        cause: "c",
+        effect: "c",
+        recommendation: "r",
+        severity: "HIGH",
+        status: "DRAFT",
+        branchId: branch.id,
+        createdById,
+        version: 1,
+      },
+      select: { id: true, version: true },
+    });
   });
 }
 

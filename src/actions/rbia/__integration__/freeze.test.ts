@@ -6,6 +6,7 @@ import {
   fakeSession,
   mockSessionModule,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 /**
@@ -14,62 +15,70 @@ import {
  * EngagementModuleSelection rather than the whole tenant catalogue.
  */
 async function seedExamination(tenantId: string, userId: string) {
-  const plan = await integrationPrisma.auditPlan.create({
-    data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
-    select: { id: true },
-  });
-  const branch = await integrationPrisma.branch.create({
-    data: { tenantId, code: "BR-001", name: "Main", city: "Pune", state: "MH" },
-    select: { id: true },
-  });
-  const engagement = await integrationPrisma.auditEngagement.create({
-    data: {
-      tenantId,
-      auditPlanId: plan.id,
-      branchId: branch.id,
-      auditNumber: "RBIA/2026-27/BR-001/V1",
-      periodFrom: new Date("2026-04-01"),
-      periodTo: new Date("2026-06-30"),
-      status: "IN_PROGRESS",
-    },
-    select: { id: true },
-  });
-
-  const node = (
-    code: string,
-    path: string,
-    depth: number,
-    isLeaf: boolean,
-    parentId: string | null,
-  ) =>
-    integrationPrisma.examinationNode.create({
+  return withFixtures(async () => {
+    const plan = await integrationPrisma.auditPlan.create({
+      data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
+      select: { id: true },
+    });
+    const branch = await integrationPrisma.branch.create({
       data: {
         tenantId,
-        code,
-        name: code,
-        path,
-        depth,
-        isLeaf,
-        parentId,
-        weight: 1,
-        isActive: true,
+        code: "BR-001",
+        name: "Main",
+        city: "Pune",
+        state: "MH",
       },
-      select: { id: true, code: true },
+      select: { id: true },
+    });
+    const engagement = await integrationPrisma.auditEngagement.create({
+      data: {
+        tenantId,
+        auditPlanId: plan.id,
+        branchId: branch.id,
+        auditNumber: "RBIA/2026-27/BR-001/V1",
+        periodFrom: new Date("2026-04-01"),
+        periodTo: new Date("2026-06-30"),
+        status: "IN_PROGRESS",
+      },
+      select: { id: true },
     });
 
-  const root = await node("ROOT", "ROOT", 0, false, null);
-  const ops = await node("OPS", "ROOT/OPS", 1, false, root.id);
-  const opsA = await node("OPS-001", "ROOT/OPS/OPS-001", 2, true, ops.id);
-  const opsB = await node("OPS-002", "ROOT/OPS/OPS-002", 2, true, ops.id);
-  const credit = await node("CREDIT", "ROOT/CREDIT", 1, false, root.id);
-  await node("CREDIT-001", "ROOT/CREDIT/CREDIT-001", 2, true, credit.id);
+    const node = (
+      code: string,
+      path: string,
+      depth: number,
+      isLeaf: boolean,
+      parentId: string | null,
+    ) =>
+      integrationPrisma.examinationNode.create({
+        data: {
+          tenantId,
+          code,
+          name: code,
+          path,
+          depth,
+          isLeaf,
+          parentId,
+          weight: 1,
+          isActive: true,
+        },
+        select: { id: true, code: true },
+      });
 
-  // Only OPS is in scope for this engagement.
-  await integrationPrisma.engagementModuleSelection.create({
-    data: { tenantId, engagementId: engagement.id, moduleNodeId: ops.id },
+    const root = await node("ROOT", "ROOT", 0, false, null);
+    const ops = await node("OPS", "ROOT/OPS", 1, false, root.id);
+    const opsA = await node("OPS-001", "ROOT/OPS/OPS-001", 2, true, ops.id);
+    const opsB = await node("OPS-002", "ROOT/OPS/OPS-002", 2, true, ops.id);
+    const credit = await node("CREDIT", "ROOT/CREDIT", 1, false, root.id);
+    await node("CREDIT-001", "ROOT/CREDIT/CREDIT-001", 2, true, credit.id);
+
+    // Only OPS is in scope for this engagement.
+    await integrationPrisma.engagementModuleSelection.create({
+      data: { tenantId, engagementId: engagement.id, moduleNodeId: ops.id },
+    });
+
+    return { engagementId: engagement.id, opsA, opsB, userId };
   });
-
-  return { engagementId: engagement.id, opsA, opsB, userId };
 }
 
 async function score(

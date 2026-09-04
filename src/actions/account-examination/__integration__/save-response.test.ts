@@ -8,6 +8,7 @@ import {
   fakeSession,
   mockSessionModule,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 /**
@@ -24,22 +25,24 @@ async function seedEngagement(
   tenantId: string,
   status: EngagementStatus = "IN_PROGRESS",
 ) {
-  const plan = await integrationPrisma.auditPlan.create({
-    data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
-    select: { id: true },
+  return withFixtures(async () => {
+    const plan = await integrationPrisma.auditPlan.create({
+      data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
+      select: { id: true },
+    });
+    const engagement = await integrationPrisma.auditEngagement.create({
+      data: {
+        tenantId,
+        auditPlanId: plan.id,
+        auditNumber: `RBIA/2026-27/${randomUUID().slice(0, 8)}/V1`,
+        periodFrom: new Date("2026-04-01"),
+        periodTo: new Date("2026-06-30"),
+        status,
+      },
+      select: { id: true },
+    });
+    return engagement;
   });
-  const engagement = await integrationPrisma.auditEngagement.create({
-    data: {
-      tenantId,
-      auditPlanId: plan.id,
-      auditNumber: `RBIA/2026-27/${randomUUID().slice(0, 8)}/V1`,
-      periodFrom: new Date("2026-04-01"),
-      periodTo: new Date("2026-06-30"),
-      status,
-    },
-    select: { id: true },
-  });
-  return engagement;
 }
 
 async function seedLoanAccount(
@@ -47,33 +50,35 @@ async function seedLoanAccount(
   engagementId: string,
   isSampled: boolean,
 ) {
-  // LoanAccount requires branchId + core portfolio columns (not just accountNo).
-  const branch = await integrationPrisma.branch.create({
-    data: {
-      tenantId,
-      code: `BR-${randomUUID().slice(0, 8)}`,
-      name: "Main",
-      city: "Pune",
-      state: "MH",
-    },
-    select: { id: true },
-  });
-  return integrationPrisma.loanAccount.create({
-    data: {
-      tenantId,
-      engagementId,
-      branchId: branch.id,
-      moduleCode: "CRD-HLN",
-      accountNo: `LN-${randomUUID().slice(0, 8)}`,
-      borrowerName: "Test Borrower",
-      productType: "Housing Loan",
-      sanctionAmount: 1_000_000,
-      sanctionDate: new Date("2025-01-15"),
-      outstandingAmount: 750_000,
-      assetClass: "STANDARD",
-      isSampled,
-    },
-    select: { id: true },
+  return withFixtures(async () => {
+    // LoanAccount requires branchId + core portfolio columns (not just accountNo).
+    const branch = await integrationPrisma.branch.create({
+      data: {
+        tenantId,
+        code: `BR-${randomUUID().slice(0, 8)}`,
+        name: "Main",
+        city: "Pune",
+        state: "MH",
+      },
+      select: { id: true },
+    });
+    return integrationPrisma.loanAccount.create({
+      data: {
+        tenantId,
+        engagementId,
+        branchId: branch.id,
+        moduleCode: "CRD-HLN",
+        accountNo: `LN-${randomUUID().slice(0, 8)}`,
+        borrowerName: "Test Borrower",
+        productType: "Housing Loan",
+        sanctionAmount: 1_000_000,
+        sanctionDate: new Date("2025-01-15"),
+        outstandingAmount: 750_000,
+        assetClass: "STANDARD",
+        isSampled,
+      },
+      select: { id: true },
+    });
   });
 }
 

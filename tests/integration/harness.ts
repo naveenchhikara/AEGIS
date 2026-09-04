@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { vi } from "vitest";
 import type { Role } from "@/generated/prisma/enums";
+import { withTriggersDetached } from "@/lib/audit-triggers";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -12,6 +13,34 @@ import { prisma } from "@/lib/prisma";
  * a test cannot read a snapshot the action has not committed yet.
  */
 export const integrationPrisma = prisma;
+
+/**
+ * Build fixtures with the audit triggers suspended.
+ *
+ * Fixture rows are preconditions, not audited actions. `audit_trigger_function`
+ * normalises a missing tenant context to NULL, which violates
+ * `AuditLog.tenantId NOT NULL`, so an unwrapped write to an audited table
+ * throws — by design. The action under test still runs with the triggers
+ * attached, which is the point of these suites.
+ *
+ * `withTriggersDetached` is not re-entrant (it reads pg_trigger without
+ * checking `tgenabled`, so a nested call re-enables on its way out while the
+ * outer block is still writing). Fixture helpers call each other freely, so
+ * this depth guard makes only the outermost call touch DDL. Integration tests
+ * run single-worker (`fileParallelism: false`, `maxWorkers: 1`), so a
+ * module-level counter is sufficient — there is no second worker to race.
+ */
+let fixtureDepth = 0;
+
+export async function withFixtures<T>(fn: () => Promise<T>): Promise<T> {
+  if (fixtureDepth > 0) return fn();
+  fixtureDepth++;
+  try {
+    return await withTriggersDetached(integrationPrisma, fn);
+  } finally {
+    fixtureDepth--;
+  }
+}
 
 export interface AuthSessionLike {
   user: { id: string; tenantId: string; roles: string[] };
@@ -35,32 +64,36 @@ export async function resetDatabase(): Promise<void> {
 }
 
 export async function createTenant(name = "Test Cooperative Bank") {
-  return integrationPrisma.tenant.create({
-    data: {
-      name,
-      shortName: name.slice(0, 12),
-      rbiLicenseNo: randomUUID(),
-      tier: "TIER_1",
-      state: "Maharashtra",
-      city: "Mumbai",
-    },
-    select: { id: true },
-  });
+  return withFixtures(() =>
+    integrationPrisma.tenant.create({
+      data: {
+        name,
+        shortName: name.slice(0, 12),
+        rbiLicenseNo: randomUUID(),
+        tier: "TIER_1",
+        state: "Maharashtra",
+        city: "Mumbai",
+      },
+      select: { id: true },
+    }),
+  );
 }
 
 export async function createUser(tenantId: string, roles: string[]) {
   const email = `user-${randomUUID()}@example.test`;
-  return integrationPrisma.user.create({
-    data: {
-      email,
-      name: "Test User",
-      tenantId,
-      roles: roles as Role[],
-      status: "ACTIVE",
-      emailVerified: true,
-    },
-    select: { id: true, email: true },
-  });
+  return withFixtures(() =>
+    integrationPrisma.user.create({
+      data: {
+        email,
+        name: "Test User",
+        tenantId,
+        roles: roles as Role[],
+        status: "ACTIVE",
+        emailVerified: true,
+      },
+      select: { id: true, email: true },
+    }),
+  );
 }
 
 export function fakeSession(user: {

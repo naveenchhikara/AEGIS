@@ -6,18 +6,27 @@ import {
   fakeSession,
   mockSessionModule,
   integrationPrisma,
+  withFixtures,
 } from "../../../../tests/integration/harness";
 
 async function seedPlanAndBranch(tenantId: string) {
-  const plan = await integrationPrisma.auditPlan.create({
-    data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
-    select: { id: true },
+  return withFixtures(async () => {
+    const plan = await integrationPrisma.auditPlan.create({
+      data: { tenantId, year: 2026, quarter: "Q1_APR_JUN", status: "PLANNED" },
+      select: { id: true },
+    });
+    const branch = await integrationPrisma.branch.create({
+      data: {
+        tenantId,
+        code: "BR-001",
+        name: "Main",
+        city: "Pune",
+        state: "MH",
+      },
+      select: { id: true },
+    });
+    return { planId: plan.id, branchId: branch.id };
   });
-  const branch = await integrationPrisma.branch.create({
-    data: { tenantId, code: "BR-001", name: "Main", city: "Pune", state: "MH" },
-    select: { id: true },
-  });
-  return { planId: plan.id, branchId: branch.id };
 }
 
 describe("cross-tenant relation IDs", () => {
@@ -68,18 +77,20 @@ describe("cross-tenant relation IDs", () => {
     const victimUser = await createUser(victim.id, ["AUDITOR"]);
     const refs = await seedPlanAndBranch(attacker.id);
 
-    const engagement = await integrationPrisma.auditEngagement.create({
-      data: {
-        tenantId: attacker.id,
-        auditPlanId: refs.planId,
-        branchId: refs.branchId,
-        auditNumber: "RBIA/2026-27/BR-001/V1",
-        periodFrom: new Date("2026-04-01"),
-        periodTo: new Date("2026-06-30"),
-        status: "PLANNED",
-      },
-      select: { id: true },
-    });
+    const engagement = await withFixtures(() =>
+      integrationPrisma.auditEngagement.create({
+        data: {
+          tenantId: attacker.id,
+          auditPlanId: refs.planId,
+          branchId: refs.branchId,
+          auditNumber: "RBIA/2026-27/BR-001/V1",
+          periodFrom: new Date("2026-04-01"),
+          periodTo: new Date("2026-06-30"),
+          status: "PLANNED",
+        },
+        select: { id: true },
+      }),
+    );
 
     mockSessionModule(
       fakeSession({

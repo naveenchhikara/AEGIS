@@ -13,6 +13,7 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { createHash } from "crypto";
+import { withTriggersDetached } from "../src/lib/audit-triggers";
 
 /* ─── Bootstrap ──────────────────────────────────────────────────────────── */
 
@@ -520,7 +521,7 @@ const ACTION_POINTS: Array<{
 /*  MAIN                                                                     */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-async function main() {
+async function seedLifecycle() {
   console.log("╔══════════════════════════════════════════════════════════╗");
   console.log("║  AEGIS — Seed Full Audit Lifecycle                      ║");
   console.log("╚══════════════════════════════════════════════════════════╝\n");
@@ -539,9 +540,6 @@ async function main() {
     tenantId = t.id;
     console.log(`Tenant: ${t.name} (${t.id})\n`);
   }
-
-  /* ─── Disable audit triggers (seed runs without app context) ─────────── */
-  await prisma.$executeRawUnsafe(`SET session_replication_role = 'replica'`);
 
   /* ─── Lookup existing records ────────────────────────────────────────── */
   console.log("Looking up existing records...");
@@ -2502,12 +2500,26 @@ async function main() {
 
 /* ─── Execute with cleanup ───────────────────────────────────────────────── */
 
+/**
+ * Seed runs without an app session, so every write to an audited table would
+ * fail the audit trigger's NOT NULL tenant context. Suspend the triggers around
+ * the whole seed.
+ *
+ * This replaces `SET session_replication_role = 'replica'`, which was wrong
+ * twice over: it needs superuser, and it is per-connection, so with a pooled
+ * adapter (`max: 25`) the next statement could land on a connection that never
+ * saw it. `withTriggersDetached` uses ALTER TABLE, which the table owner may
+ * run, is visible to every connection, and restores in a `finally`.
+ */
+async function main() {
+  return withTriggersDetached(prisma, seedLifecycle);
+}
+
 main()
   .catch((err) => {
     console.error("Seed failed:", err);
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$executeRawUnsafe(`SET session_replication_role = 'origin'`);
     await prisma.$disconnect();
   });

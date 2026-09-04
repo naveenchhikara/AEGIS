@@ -22,12 +22,16 @@ export interface EscalationResult {
 }
 
 /**
- * Compute days between two dates (always positive).
+ * Signed whole days from `startDate` to `endDate`. Negative when `endDate`
+ * is still in the future of `startDate`.
+ *
+ * Must stay signed: `Math.abs` would treat a due date 30 days away as
+ * already 30 days overdue, and the daily escalation job would promote a
+ * brand-new ComplianceItem (dueDate = createdAt + 30d) straight to L2.
  */
 function daysBetween(startDate: Date, endDate: Date): number {
   const msPerDay = 1000 * 60 * 60 * 24;
-  const diffMs = endDate.getTime() - startDate.getTime();
-  return Math.floor(Math.abs(diffMs) / msPerDay);
+  return Math.floor((endDate.getTime() - startDate.getTime()) / msPerDay);
 }
 
 /**
@@ -56,10 +60,10 @@ export function computeEscalation(
   currentEscalationLevel: EscalationLevel,
   now: Date = new Date(),
 ): EscalationResult {
-  // Days since item was created
-  const daysOpen = daysBetween(createdAt, now);
+  // Days since item was created (never negative)
+  const daysOpen = Math.max(0, daysBetween(createdAt, now));
 
-  // Days overdue (negative if still within SLA)
+  // Days past dueDate; a future due date must clamp to 0, not flip sign
   const daysOverdue = Math.max(0, daysBetween(dueDate, now));
 
   // New escalation level

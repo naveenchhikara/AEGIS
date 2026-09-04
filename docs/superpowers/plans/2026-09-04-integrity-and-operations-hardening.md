@@ -23,74 +23,74 @@
 
 ## Findings Covered
 
-| ID | Title | Task |
-| --- | --- | --- |
-| F12 | Database behaviour depends on manually applied loose SQL | 1 |
-| F13 | Critical behaviour lacks executable regression coverage | 2, 3, 5, 6, 7, 9 |
-| F08 | Workflow optimistic locking is a read-then-write check | 3 |
-| F07 | Cross-tenant relation IDs are not resolved before writes | 4 |
-| F10 | RBIA can freeze a partially scored examination | 5 |
-| F09 | Evidence confirmation trusts caller-selected keys and metadata | 6 |
-| F11 | Notification claiming and batching are not concurrency-safe | 7 |
-| F15 | Worker shutdown and HTTP cron routing are incomplete | 8 |
-| F14 | E2E failures do not gate production-bound merges | 10 |
+| ID  | Title                                                          | Task             |
+| --- | -------------------------------------------------------------- | ---------------- |
+| F12 | Database behaviour depends on manually applied loose SQL       | 1                |
+| F13 | Critical behaviour lacks executable regression coverage        | 2, 3, 5, 6, 7, 9 |
+| F08 | Workflow optimistic locking is a read-then-write check         | 3                |
+| F07 | Cross-tenant relation IDs are not resolved before writes       | 4                |
+| F10 | RBIA can freeze a partially scored examination                 | 5                |
+| F09 | Evidence confirmation trusts caller-selected keys and metadata | 6                |
+| F11 | Notification claiming and batching are not concurrency-safe    | 7                |
+| F15 | Worker shutdown and HTTP cron routing are incomplete           | 8                |
+| F14 | E2E failures do not gate production-bound merges               | 10               |
 
 ## Two Corrections to the Review
 
 Source reading turned up two things the findings understate. Both are folded into the tasks below; an implementer should know they are deliberate, not scope creep.
 
-1. **F12 is worse than "views and guards may be missing."** The `audit_trigger` on all 14 audited tables is created by *Prisma* migrations (`20260209015123_audit_trigger`, `20260209220425_add_remaining_audit_triggers`), and CI/E2E builds its database with `prisma db push`, which does not run the migrations folder at all. `src/lib/audit-triggers.ts` already says so in a comment: "A database built by `prisma db push` alone has none." So CI exercises the audited-mutation machinery against a database where the audit trigger does not exist. Task 1 fixes the substrate, not just the views.
+1. **F12 is worse than "views and guards may be missing."** The `audit_trigger` on all 14 audited tables is created by _Prisma_ migrations (`20260209015123_audit_trigger`, `20260209220425_add_remaining_audit_triggers`), and CI/E2E builds its database with `prisma db push`, which does not run the migrations folder at all. `src/lib/audit-triggers.ts` already says so in a comment: "A database built by `prisma db push` alone has none." So CI exercises the audited-mutation machinery against a database where the audit trigger does not exist. Task 1 fixes the substrate, not just the views.
 
-2. **F15's "documented external cron calls never reach the handler" hides a dead pipeline.** `POST /api/cron/escalation` calls `runEscalationJobInternal`, which drives the **ComplianceItem** escalation pipeline (R39). The pg-boss `deadline-check` job runs `processOverdueEscalation`, which is a *different* job over **Observations**. Nothing schedules `runEscalationJobInternal`. Because middleware blocks the route, compliance escalation has never run automatically. Task 8 schedules it in pg-boss and deletes the route, rather than exposing a route under a second auth scheme.
+2. **F15's "documented external cron calls never reach the handler" hides a dead pipeline.** `POST /api/cron/escalation` calls `runEscalationJobInternal`, which drives the **ComplianceItem** escalation pipeline (R39). The pg-boss `deadline-check` job runs `processOverdueEscalation`, which is a _different_ job over **Observations**. Nothing schedules `runEscalationJobInternal`. Because middleware blocks the route, compliance escalation has never run automatically. Task 8 schedules it in pg-boss and deletes the route, rather than exposing a route under a second auth scheme.
 
 ## File Structure
 
 **Created**
 
-| Path | Responsibility |
-| --- | --- |
-| `prisma/sql/manifest.ts` | Ordered, classified list of database objects applied outside Prisma |
-| `prisma/sql/020_attach_audit_triggers.sql` | Idempotent attach of `audit_trigger` to the 14 audited tables |
-| `prisma/sql/050_observation_indexes.sql` | Idempotent re-issue of the observation lifecycle indexes |
-| `prisma/sql/060_tenant_composite_fks.sql` | Composite `(tenantId, id)` foreign keys Prisma cannot express |
-| `scripts/db-bootstrap.ts` | Applies the manifest in order |
-| `scripts/db-verify.ts` | Asserts required database objects exist; exits non-zero if not |
-| `vitest.integration.config.ts` | Vitest project for Postgres-backed integration tests |
-| `tests/integration/global-setup.ts` | Pushes schema, runs bootstrap, verifies, once per run |
-| `tests/integration/harness.ts` | Tenant/user fixtures, truncation, session mocking helpers |
-| `tests/integration/server-only-stub.ts` | Empty module aliased over `server-only` for Node-environment tests |
-| `src/data-access/tenant-refs.ts` | `requireTenantRefs` — resolves referenced IDs under one tenant |
-| `src/data-access/upload-intents.ts` | Create and consume upload intents |
-| `src/lib/rbia-completeness.ts` | Pure function: which selected leaves are unscored |
-| `tests/e2e/smoke.spec.ts` | Blocking critical-path browser subset |
+| Path                                       | Responsibility                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| `prisma/sql/manifest.ts`                   | Ordered, classified list of database objects applied outside Prisma |
+| `prisma/sql/020_attach_audit_triggers.sql` | Idempotent attach of `audit_trigger` to the 14 audited tables       |
+| `prisma/sql/050_observation_indexes.sql`   | Idempotent re-issue of the observation lifecycle indexes            |
+| `prisma/sql/060_tenant_composite_fks.sql`  | Composite `(tenantId, id)` foreign keys Prisma cannot express       |
+| `scripts/db-bootstrap.ts`                  | Applies the manifest in order                                       |
+| `scripts/db-verify.ts`                     | Asserts required database objects exist; exits non-zero if not      |
+| `vitest.integration.config.ts`             | Vitest project for Postgres-backed integration tests                |
+| `tests/integration/global-setup.ts`        | Pushes schema, runs bootstrap, verifies, once per run               |
+| `tests/integration/harness.ts`             | Tenant/user fixtures, truncation, session mocking helpers           |
+| `tests/integration/server-only-stub.ts`    | Empty module aliased over `server-only` for Node-environment tests  |
+| `src/data-access/tenant-refs.ts`           | `requireTenantRefs` — resolves referenced IDs under one tenant      |
+| `src/data-access/upload-intents.ts`        | Create and consume upload intents                                   |
+| `src/lib/rbia-completeness.ts`             | Pure function: which selected leaves are unscored                   |
+| `tests/e2e/smoke.spec.ts`                  | Blocking critical-path browser subset                               |
 
 **Modified**
 
-| Path | Change |
-| --- | --- |
-| `prisma/schema.prisma` | `UploadIntent` + `UploadPurpose`; `NotificationQueue.claimId`; `ExaminationResponse.isNotApplicable`/`notApplicableReason`; `@@unique([tenantId, id])` on four models |
-| `package.json` | `db:bootstrap`, `db:verify`, `test:integration`, `test:e2e:smoke` scripts |
-| `.github/workflows/ci.yml` | Bootstrap + verify steps; `integration-test` job; blocking `e2e-smoke` job |
-| `src/actions/observations/transition.ts` | Atomic conditional update (F08) |
-| `src/actions/audit-execution/create-engagement.ts` | Tenant-scoped relation resolution (F07) |
-| `src/actions/audit-execution/assign-team.ts` | Tenant-scoped relation resolution (F07) |
-| `src/actions/rbia/freeze.ts` | Module-selection scoping + completeness gate (F10) |
-| `src/actions/auditee.ts` | Upload-intent binding (F09) |
-| `src/actions/audit-execution/upload-examination-evidence.ts` | Upload-intent binding (F09) |
-| `src/jobs/notification-processor.ts` | Atomic claim + tenant/recipient batching (F11) |
-| `src/data-access/notifications.ts` | Claim helper; wrap preference writes |
-| `src/lib/job-queue.ts` | Compliance escalation queue + schedule; shutdown export |
-| `src/jobs/index.ts` | Compliance escalation handler |
-| `src/instrumentation.ts` | SIGTERM/SIGINT → graceful stop (F15) |
-| `src/lib/audit-triggers.ts` | Comment correction once triggers are guaranteed |
-| `tests/e2e/observation-lifecycle.spec.ts` | Unskip Group 3; make Group 4 deterministic |
-| `scripts/seed-full-audit-lifecycle.ts` | Add a COMPLIANCE-state fixture |
+| Path                                                         | Change                                                                                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prisma/schema.prisma`                                       | `UploadIntent` + `UploadPurpose`; `NotificationQueue.claimId`; `ExaminationResponse.isNotApplicable`/`notApplicableReason`; `@@unique([tenantId, id])` on four models |
+| `package.json`                                               | `db:bootstrap`, `db:verify`, `test:integration`, `test:e2e:smoke` scripts                                                                                             |
+| `.github/workflows/ci.yml`                                   | Bootstrap + verify steps; `integration-test` job; blocking `e2e-smoke` job                                                                                            |
+| `src/actions/observations/transition.ts`                     | Atomic conditional update (F08)                                                                                                                                       |
+| `src/actions/audit-execution/create-engagement.ts`           | Tenant-scoped relation resolution (F07)                                                                                                                               |
+| `src/actions/audit-execution/assign-team.ts`                 | Tenant-scoped relation resolution (F07)                                                                                                                               |
+| `src/actions/rbia/freeze.ts`                                 | Module-selection scoping + completeness gate (F10)                                                                                                                    |
+| `src/actions/auditee.ts`                                     | Upload-intent binding (F09)                                                                                                                                           |
+| `src/actions/audit-execution/upload-examination-evidence.ts` | Upload-intent binding (F09)                                                                                                                                           |
+| `src/jobs/notification-processor.ts`                         | Atomic claim + tenant/recipient batching (F11)                                                                                                                        |
+| `src/data-access/notifications.ts`                           | Claim helper; wrap preference writes                                                                                                                                  |
+| `src/lib/job-queue.ts`                                       | Compliance escalation queue + schedule; shutdown export                                                                                                               |
+| `src/jobs/index.ts`                                          | Compliance escalation handler                                                                                                                                         |
+| `src/instrumentation.ts`                                     | SIGTERM/SIGINT → graceful stop (F15)                                                                                                                                  |
+| `src/lib/audit-triggers.ts`                                  | Comment correction once triggers are guaranteed                                                                                                                       |
+| `tests/e2e/observation-lifecycle.spec.ts`                    | Unskip Group 3; make Group 4 deterministic                                                                                                                            |
+| `scripts/seed-full-audit-lifecycle.ts`                       | Add a COMPLIANCE-state fixture                                                                                                                                        |
 
 **Deleted**
 
-| Path | Reason |
-| --- | --- |
-| `src/app/api/cron/escalation/route.ts` | Unreachable; replaced by a pg-boss schedule |
+| Path                                          | Reason                                                    |
+| --------------------------------------------- | --------------------------------------------------------- |
+| `src/app/api/cron/escalation/route.ts`        | Unreachable; replaced by a pg-boss schedule               |
 | `prisma/migrations/*.sql` (five files, moved) | Superseded — relocated to `prisma/migrations/superseded/` |
 
 ---
@@ -100,6 +100,7 @@ Source reading turned up two things the findings understate. Both are folded int
 Today the database's behaviour depends on a human remembering to run loose `.sql` files. CI never runs them, so a green build proves nothing about triggers, views, or guards. This task makes the set of non-Prisma database objects an ordered, idempotent, verifiable artifact.
 
 **Files:**
+
 - Create: `prisma/sql/manifest.ts`
 - Create: `prisma/sql/020_attach_audit_triggers.sql`
 - Create: `prisma/sql/050_observation_indexes.sql`
@@ -112,6 +113,7 @@ Today the database's behaviour depends on a human remembering to run loose `.sql
 - Move: `prisma/migrations/20260209_onboarding_models.sql`, `add_rls_policies.sql`, `add_auditee_portal_schema.sql`, `add_notification_tables.sql`, `add_audit_log_rules.sql` → `prisma/migrations/superseded/`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks.
 - Produces:
   - `prisma/sql/manifest.ts` exports `SQL_MANIFEST: readonly string[]` (repo-relative paths, apply order) and `REQUIRED_OBJECTS: RequiredObjects`.
@@ -121,18 +123,18 @@ Today the database's behaviour depends on a human remembering to run loose `.sql
 
 **Classification decisions (do not re-litigate these while implementing):**
 
-| File | Disposition | Why |
-| --- | --- | --- |
-| `20260826_audit_trigger_null_safe.sql` | **Apply, 1st** | `CREATE OR REPLACE FUNCTION` — idempotent, and the null-safe function must exist before triggers fire |
-| `020_attach_audit_triggers.sql` (new) | **Apply, 2nd** | The Prisma migrations that attach the triggers never run under `db push` |
-| `20260209_dashboard_views.sql` | **Apply, 3rd** | All `CREATE OR REPLACE` — idempotent |
-| `20260222_rbia_db_guards.sql` | **Apply, 4th** | Idempotent by design |
-| `050_observation_indexes.sql` (new) | **Apply, 5th** | Copy of `add_observation_lifecycle_indexes.sql` minus its non-idempotent `CREATE POLICY` tail |
-| `20260209_onboarding_models.sql` | **Superseded** | `CREATE TYPE "UserStatus"` and bare `ADD COLUMN`s; all of it is now in `schema.prisma`, so it errors on a pushed database |
-| `add_rls_policies.sql` | **Superseded** | Creates the `aegis_app` role and enables RLS. `CLAUDE.md`: "Tenant isolation is enforced in application code, not PostgreSQL RLS" |
-| `add_auditee_portal_schema.sql` | **Superseded** | RLS policies + grants to `aegis_app` |
-| `add_notification_tables.sql` | **Superseded** | RLS + grants; its trigger attachments are absorbed into `020_attach_audit_triggers.sql` |
-| `add_audit_log_rules.sql` | **Superseded** | Non-idempotent `CREATE RULE`, grants to `aegis_app` |
+| File                                   | Disposition    | Why                                                                                                                               |
+| -------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `20260826_audit_trigger_null_safe.sql` | **Apply, 1st** | `CREATE OR REPLACE FUNCTION` — idempotent, and the null-safe function must exist before triggers fire                             |
+| `020_attach_audit_triggers.sql` (new)  | **Apply, 2nd** | The Prisma migrations that attach the triggers never run under `db push`                                                          |
+| `20260209_dashboard_views.sql`         | **Apply, 3rd** | All `CREATE OR REPLACE` — idempotent                                                                                              |
+| `20260222_rbia_db_guards.sql`          | **Apply, 4th** | Idempotent by design                                                                                                              |
+| `050_observation_indexes.sql` (new)    | **Apply, 5th** | Copy of `add_observation_lifecycle_indexes.sql` minus its non-idempotent `CREATE POLICY` tail                                     |
+| `20260209_onboarding_models.sql`       | **Superseded** | `CREATE TYPE "UserStatus"` and bare `ADD COLUMN`s; all of it is now in `schema.prisma`, so it errors on a pushed database         |
+| `add_rls_policies.sql`                 | **Superseded** | Creates the `aegis_app` role and enables RLS. `CLAUDE.md`: "Tenant isolation is enforced in application code, not PostgreSQL RLS" |
+| `add_auditee_portal_schema.sql`        | **Superseded** | RLS policies + grants to `aegis_app`                                                                                              |
+| `add_notification_tables.sql`          | **Superseded** | RLS + grants; its trigger attachments are absorbed into `020_attach_audit_triggers.sql`                                           |
+| `add_audit_log_rules.sql`              | **Superseded** | Non-idempotent `CREATE RULE`, grants to `aegis_app`                                                                               |
 
 `020_attach_audit_triggers.sql` deliberately attaches to the **14** tables the two Prisma migrations cover — not to `NotificationPreference` or `BoardReport`. Those two appear in `AUDITED_TABLES` but are only triggered where `add_notification_tables.sql` was applied. Attaching them would make `getNotificationPreferences` and `updateNotificationPreferences` fail, because they write `NotificationPreference` outside `withAuditedMutation`. Step 8 fixes those two call sites so the codebase is correct either way; widening the trigger set is a separate decision.
 
@@ -155,8 +157,12 @@ describe("SQL manifest", () => {
   });
 
   it("applies the audit trigger function before attaching triggers", () => {
-    const fn = SQL_MANIFEST.findIndex((p) => p.includes("audit_trigger_null_safe"));
-    const attach = SQL_MANIFEST.findIndex((p) => p.includes("attach_audit_triggers"));
+    const fn = SQL_MANIFEST.findIndex((p) =>
+      p.includes("audit_trigger_null_safe"),
+    );
+    const attach = SQL_MANIFEST.findIndex((p) =>
+      p.includes("attach_audit_triggers"),
+    );
     expect(fn).toBeGreaterThanOrEqual(0);
     expect(attach).toBeGreaterThan(fn);
   });
@@ -464,14 +470,14 @@ These files are kept for history. **Do not apply them.** The live set of
 non-Prisma database objects is `prisma/sql/manifest.ts`, applied by
 `pnpm db:bootstrap` and checked by `pnpm db:verify`.
 
-| File | Why it is not applied |
-| --- | --- |
-| `20260209_onboarding_models.sql` | Creates the `UserStatus` enum and adds User/Tenant/ComplianceRequirement columns that `schema.prisma` now owns. Errors against a pushed database. |
-| `add_rls_policies.sql` | Creates the `aegis_app` role and enables row-level security. Tenant isolation is enforced in application code, not PostgreSQL RLS (see `CLAUDE.md`). |
-| `add_auditee_portal_schema.sql` | RLS policies and `aegis_app` grants. |
-| `add_notification_tables.sql` | RLS policies and grants. Its `audit_trigger` attachments are absorbed into `prisma/sql/020_attach_audit_triggers.sql`. |
-| `add_audit_log_rules.sql` | Non-idempotent `CREATE RULE` plus `aegis_app` grants. |
-| `add_observation_lifecycle_indexes.sql` | Replaced by `prisma/sql/050_observation_indexes.sql`, which drops the non-idempotent `CREATE POLICY` tail. |
+| File                                    | Why it is not applied                                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20260209_onboarding_models.sql`        | Creates the `UserStatus` enum and adds User/Tenant/ComplianceRequirement columns that `schema.prisma` now owns. Errors against a pushed database.    |
+| `add_rls_policies.sql`                  | Creates the `aegis_app` role and enables row-level security. Tenant isolation is enforced in application code, not PostgreSQL RLS (see `CLAUDE.md`). |
+| `add_auditee_portal_schema.sql`         | RLS policies and `aegis_app` grants.                                                                                                                 |
+| `add_notification_tables.sql`           | RLS policies and grants. Its `audit_trigger` attachments are absorbed into `prisma/sql/020_attach_audit_triggers.sql`.                               |
+| `add_audit_log_rules.sql`               | Non-idempotent `CREATE RULE` plus `aegis_app` grants.                                                                                                |
+| `add_observation_lifecycle_indexes.sql` | Replaced by `prisma/sql/050_observation_indexes.sql`, which drops the non-idempotent `CREATE POLICY` tail.                                           |
 ```
 
 - [ ] **Step 8: Wrap the two unaudited NotificationPreference writes**
@@ -492,7 +498,12 @@ export async function getNotificationPreferences(session: Session) {
 
   return withAuditedMutation(userActor(session), "notification.queued", (tx) =>
     tx.notificationPreference.create({
-      data: { userId, tenantId, emailEnabled: true, digestPreference: "immediate" },
+      data: {
+        userId,
+        tenantId,
+        emailEnabled: true,
+        digestPreference: "immediate",
+      },
     }),
   );
 }
@@ -501,25 +512,25 @@ export async function getNotificationPreferences(session: Session) {
 and the final `db.notificationPreference.upsert(...)` in `updateNotificationPreferences` (`src/data-access/notifications.ts:133-149`) with:
 
 ```typescript
-  return withAuditedMutation(userActor(session), "notification.queued", (tx) =>
-    tx.notificationPreference.upsert({
-      where: { userId },
-      update: {
-        ...(prefs.emailEnabled !== undefined && {
-          emailEnabled: prefs.emailEnabled,
-        }),
-        ...(prefs.digestPreference !== undefined && {
-          digestPreference: prefs.digestPreference,
-        }),
-      },
-      create: {
-        userId,
-        tenantId,
-        emailEnabled: prefs.emailEnabled ?? true,
-        digestPreference: prefs.digestPreference ?? "immediate",
-      },
-    }),
-  );
+return withAuditedMutation(userActor(session), "notification.queued", (tx) =>
+  tx.notificationPreference.upsert({
+    where: { userId },
+    update: {
+      ...(prefs.emailEnabled !== undefined && {
+        emailEnabled: prefs.emailEnabled,
+      }),
+      ...(prefs.digestPreference !== undefined && {
+        digestPreference: prefs.digestPreference,
+      }),
+    },
+    create: {
+      userId,
+      tenantId,
+      emailEnabled: prefs.emailEnabled ?? true,
+      digestPreference: prefs.digestPreference ?? "immediate",
+    },
+  }),
+);
 ```
 
 - [ ] **Step 9: Add the scripts**
@@ -536,14 +547,14 @@ In `package.json`, inside `"scripts"`, after `"db:seed"`:
 In `.github/workflows/ci.yml`, in the `e2e` job, replace the `Push database schema` step (`.github/workflows/ci.yml:269-271`) with:
 
 ```yaml
-      - name: Push database schema
-        run: pnpm db:push
+- name: Push database schema
+  run: pnpm db:push
 
-      - name: Apply non-Prisma database objects
-        run: pnpm db:bootstrap
+- name: Apply non-Prisma database objects
+  run: pnpm db:bootstrap
 
-      - name: Verify required database objects
-        run: pnpm db:verify
+- name: Verify required database objects
+  run: pnpm db:verify
 ```
 
 - [ ] **Step 11: Run the tests**
@@ -593,6 +604,7 @@ Refs F12"
 Every remaining correctness fix is a change to a WHERE predicate or a transaction boundary. Mocked Prisma cannot tell a correct predicate from an incorrect one. This task builds the harness those tests need, so Tasks 3–7 can each be genuine TDD.
 
 **Files:**
+
 - Create: `vitest.integration.config.ts`
 - Create: `tests/integration/global-setup.ts`
 - Create: `tests/integration/harness.ts`
@@ -602,6 +614,7 @@ Every remaining correctness fix is a change to a WHERE predicate or a transactio
 - Modify: `.github/workflows/ci.yml` (new `integration-test` job)
 
 **Interfaces:**
+
 - Consumes: `pnpm db:bootstrap`, `pnpm db:verify` from Task 1.
 - Produces, from `tests/integration/harness.ts`:
   - `resetDatabase(): Promise<void>` — truncates all tenant data, leaves schema and objects.
@@ -612,6 +625,7 @@ Every remaining correctness fix is a change to a WHERE predicate or a transactio
   - `integrationPrisma: PrismaClient` — a raw client for assertions.
 
 **Constraints that shape the design:**
+
 - Server action files carry `"use server"`. Outside the Next compiler that is an inert string directive, so importing them in Vitest works.
 - Actions import `server-only`, which throws in a non-RSC environment. Alias it to a stub.
 - Actions call `revalidatePath` from `next/cache`. Mock it.
@@ -694,7 +708,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       // `server-only` throws outside an RSC environment; the DAL imports it.
-      "server-only": path.resolve(__dirname, "./tests/integration/server-only-stub.ts"),
+      "server-only": path.resolve(
+        __dirname,
+        "./tests/integration/server-only-stub.ts",
+      ),
     },
   },
 });
@@ -849,51 +866,51 @@ In `package.json`, after `"test:coverage"`:
 In `.github/workflows/ci.yml`, after the `unit-test` job (which ends at `.github/workflows/ci.yml:191`), add:
 
 ```yaml
-  integration-test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: aegis_integration
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    env:
-      DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_integration
-      SKIP_ENV_VALIDATION: "1"
-      BETTER_AUTH_SECRET: ci-integration-secret-0123456789abcdef0123456789
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+integration-test:
+  runs-on: ubuntu-latest
+  services:
+    postgres:
+      image: postgres:16-alpine
+      env:
+        POSTGRES_USER: test
+        POSTGRES_PASSWORD: testpassword
+        POSTGRES_DB: aegis_integration
+      options: >-
+        --health-cmd pg_isready
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
+      ports:
+        - 5432:5432
+  env:
+    DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_integration
+    SKIP_ENV_VALIDATION: "1"
+    BETTER_AUTH_SECRET: ci-integration-secret-0123456789abcdef0123456789
+    BETTER_AUTH_URL: http://localhost:3000
+    NEXT_PUBLIC_APP_URL: http://localhost:3000
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: "pnpm"
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm prisma generate
+    - name: Generate Prisma Client
+      run: pnpm prisma generate
 
-      - name: Run integration tests
-        run: pnpm test:integration
+    - name: Run integration tests
+      run: pnpm test:integration
 ```
 
 This job has no `continue-on-error`: it blocks from the day it lands, because it starts with three passing tests.
@@ -920,10 +937,12 @@ Refs F13"
 `transitionObservation` reads `version`, compares it in application code, then updates on `{ id, tenantId }` only. Two concurrent callers can both read version 3, both pass the check, and both write — producing two timeline entries for one transition and a status that depends on commit order.
 
 **Files:**
+
 - Modify: `src/actions/observations/transition.ts:48-146`
 - Test: `src/actions/observations/__integration__/transition.test.ts`
 
 **Interfaces:**
+
 - Consumes: `resetDatabase`, `createTenant`, `createUser`, `fakeSession`, `mockSessionModule`, `integrationPrisma` from `tests/integration/harness.ts` (Task 2).
 - Produces: `transitionObservation` keeps its existing signature — `(input: TransitionObservationInput) => Promise<{ success: true; data: { id: string; newStatus: string } } | { success: false; error: string }>`. Only its concurrency behaviour changes.
 
@@ -1066,67 +1085,67 @@ Expected: the stale-version and cross-tenant tests pass; **"lets exactly one of 
 In `src/actions/observations/transition.ts`, delete the pre-transaction optimistic-lock block at lines 89–96 (`if (observation.version !== validated.version) { ... }`) and replace the `tx.observation.update(...)` call at lines 127–133 with a conditional `updateMany` plus a row-count assertion. The transaction body becomes:
 
 ```typescript
-    // Step 4: Atomic transaction — the version and status predicates live in
-    // the UPDATE itself, so two concurrent callers cannot both win. The
-    // pre-read above is for the state machine only, never for locking.
-    const outcome = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "observation.status_changed",
-        justification: validated.comment,
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+// Step 4: Atomic transaction — the version and status predicates live in
+// the UPDATE itself, so two concurrent callers cannot both win. The
+// pre-read above is for the state machine only, never for locking.
+const outcome = await db.$transaction(async (tx: any) => {
+  await setAuditContext(tx, {
+    actionType: "observation.status_changed",
+    justification: validated.comment,
+    userId: session.user.id,
+    tenantId,
+    sessionId: session.session.id,
+  });
 
-      const updateData: Record<string, unknown> = {
-        status: targetStatus,
-        statusUpdatedAt: new Date(),
-        version: { increment: 1 },
-      };
+  const updateData: Record<string, unknown> = {
+    status: targetStatus,
+    statusUpdatedAt: new Date(),
+    version: { increment: 1 },
+  };
 
-      if (targetStatus === "RESPONSE") {
-        if (validated.auditeeResponse) {
-          updateData.auditeeResponse = validated.auditeeResponse;
-        }
-        if (validated.actionPlan) {
-          updateData.actionPlan = validated.actionPlan;
-        }
-      }
-
-      const { count } = await tx.observation.updateMany({
-        where: {
-          id: validated.observationId,
-          tenantId,
-          version: validated.version,
-          status: currentStatus,
-        },
-        data: updateData,
-      });
-
-      if (count !== 1) return { changed: false as const };
-
-      await tx.observationTimeline.create({
-        data: {
-          observationId: validated.observationId,
-          tenantId,
-          event: "status_changed",
-          oldValue: currentStatus,
-          newValue: targetStatus,
-          comment: validated.comment,
-          createdById: session.user.id,
-        },
-      });
-
-      return { changed: true as const };
-    });
-
-    if (!outcome.changed) {
-      return {
-        success: false as const,
-        error:
-          "Observation was modified by another user. Please refresh and try again.",
-      };
+  if (targetStatus === "RESPONSE") {
+    if (validated.auditeeResponse) {
+      updateData.auditeeResponse = validated.auditeeResponse;
     }
+    if (validated.actionPlan) {
+      updateData.actionPlan = validated.actionPlan;
+    }
+  }
+
+  const { count } = await tx.observation.updateMany({
+    where: {
+      id: validated.observationId,
+      tenantId,
+      version: validated.version,
+      status: currentStatus,
+    },
+    data: updateData,
+  });
+
+  if (count !== 1) return { changed: false as const };
+
+  await tx.observationTimeline.create({
+    data: {
+      observationId: validated.observationId,
+      tenantId,
+      event: "status_changed",
+      oldValue: currentStatus,
+      newValue: targetStatus,
+      comment: validated.comment,
+      createdById: session.user.id,
+    },
+  });
+
+  return { changed: true as const };
+});
+
+if (!outcome.changed) {
+  return {
+    success: false as const,
+    error:
+      "Observation was modified by another user. Please refresh and try again.",
+  };
+}
 ```
 
 Everything after this point — `revalidatePath`, the `ISSUED` side effects, the return — is unchanged.
@@ -1163,6 +1182,7 @@ Refs F08"
 `createEngagement` writes `auditPlanId`, `branchId` and `auditAreaId` straight from input, and `assignTeamMember` writes `engagementId` and `userId` the same way. Each row gets the session's `tenantId` while pointing at another tenant's rows. Prisma relations are ID-only, so the database does not object.
 
 **Files:**
+
 - Create: `src/data-access/tenant-refs.ts`
 - Create: `prisma/sql/060_tenant_composite_fks.sql`
 - Modify: `prisma/schema.prisma` (add `@@unique([tenantId, id])` to `AuditPlan`, `Branch`, `AuditArea`, `AuditEngagement`)
@@ -1172,6 +1192,7 @@ Refs F08"
 - Test: `src/actions/audit-execution/__integration__/tenant-refs.test.ts`
 
 **Interfaces:**
+
 - Consumes: the Task 2 harness; `SQL_MANIFEST` from Task 1.
 - Produces, from `src/data-access/tenant-refs.ts`:
   - `class TenantRefError extends Error` with `readonly ref: string`.
@@ -1405,11 +1426,11 @@ import { requireTenantRefs, TenantRefError } from "@/data-access/tenant-refs";
 Immediately after the `setAuditContext` call inside the transaction (currently `src/actions/audit-execution/create-engagement.ts:56-61`), insert:
 
 ```typescript
-      await requireTenantRefs(tx, tenantId, {
-        auditPlanId: validated.auditPlanId,
-        branchId: validated.branchId,
-        auditAreaId: validated.auditAreaId,
-      });
+await requireTenantRefs(tx, tenantId, {
+  auditPlanId: validated.auditPlanId,
+  branchId: validated.branchId,
+  auditAreaId: validated.auditAreaId,
+});
 ```
 
 Then, in the `catch` block, return the reference error ahead of the generic message:
@@ -1440,21 +1461,21 @@ Then, in the `catch` block, return the reference error ahead of the generic mess
 In `src/actions/audit-execution/assign-team.ts`, add the same import, then insert after the `setAuditContext` call inside `assignTeamMember`'s transaction (`src/actions/audit-execution/assign-team.ts:62-67`):
 
 ```typescript
-      await requireTenantRefs(tx, tenantId, {
-        engagementId: validated.engagementId,
-        userId: validated.userId,
-      });
+await requireTenantRefs(tx, tenantId, {
+  engagementId: validated.engagementId,
+  userId: validated.userId,
+});
 ```
 
 Update the `catch` block's message selection:
 
 ```typescript
-    const errorMessage =
-      error instanceof TenantRefError
-        ? "The selected engagement or user was not found."
-        : error instanceof Error && error.message.includes("already assigned")
-          ? error.message
-          : "Failed to assign team member. Please try again.";
+const errorMessage =
+  error instanceof TenantRefError
+    ? "The selected engagement or user was not found."
+    : error instanceof Error && error.message.includes("already assigned")
+      ? error.message
+      : "Failed to assign team member. Please try again.";
 ```
 
 Apply the same `requireTenantRefs` call inside `removeTeamMember`'s transaction (after `src/actions/audit-execution/assign-team.ts:170-175`) with the same two references, so a removal cannot be aimed at another tenant's engagement.
@@ -1596,6 +1617,7 @@ There is a second defect in the same function: it loads **every active `Examinat
 Completeness needs a way to say "deliberately not applicable", which the schema lacks today — a `null` score currently means both "not yet done" and "N/A". This task adds the explicit marker.
 
 **Files:**
+
 - Create: `src/lib/rbia-completeness.ts`
 - Create: `src/lib/__tests__/rbia-completeness.test.ts`
 - Modify: `prisma/schema.prisma` (`ExaminationResponse`)
@@ -1603,6 +1625,7 @@ Completeness needs a way to say "deliberately not applicable", which the schema 
 - Test: `src/actions/rbia/__integration__/freeze.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ScoredNode` from `@/lib/rbia-scoring-engine`; the Task 2 harness.
 - Produces, from `src/lib/rbia-completeness.ts`:
   - `type LeafStatus = { nodeId: string; code: string; scored: boolean; notApplicable: boolean }`
@@ -1618,11 +1641,29 @@ import { findUnscoredLeaves, type LeafStatus } from "../rbia-completeness";
 import type { ScoredNode } from "../rbia-scoring-engine";
 
 function leaf(nodeId: string, code: string): ScoredNode {
-  return { nodeId, code, weight: 1, isCritical: false, isLeaf: true, children: [] };
+  return {
+    nodeId,
+    code,
+    weight: 1,
+    isCritical: false,
+    isLeaf: true,
+    children: [],
+  };
 }
 
-function group(nodeId: string, code: string, children: ScoredNode[]): ScoredNode {
-  return { nodeId, code, weight: 1, isCritical: false, isLeaf: false, children };
+function group(
+  nodeId: string,
+  code: string,
+  children: ScoredNode[],
+): ScoredNode {
+  return {
+    nodeId,
+    code,
+    weight: 1,
+    isCritical: false,
+    isLeaf: false,
+    children,
+  };
 }
 
 function statuses(entries: LeafStatus[]): Map<string, LeafStatus> {
@@ -1641,7 +1682,12 @@ describe("findUnscoredLeaves", () => {
       statuses([
         { nodeId: "l1", code: "OPS-001", scored: true, notApplicable: false },
         { nodeId: "l2", code: "OPS-002", scored: true, notApplicable: false },
-        { nodeId: "l3", code: "CREDIT-001", scored: true, notApplicable: false },
+        {
+          nodeId: "l3",
+          code: "CREDIT-001",
+          scored: true,
+          notApplicable: false,
+        },
       ]),
     );
     expect(result).toEqual([]);
@@ -1653,7 +1699,12 @@ describe("findUnscoredLeaves", () => {
       statuses([
         { nodeId: "l1", code: "OPS-001", scored: true, notApplicable: false },
         { nodeId: "l2", code: "OPS-002", scored: false, notApplicable: true },
-        { nodeId: "l3", code: "CREDIT-001", scored: true, notApplicable: false },
+        {
+          nodeId: "l3",
+          code: "CREDIT-001",
+          scored: true,
+          notApplicable: false,
+        },
       ]),
     );
     expect(result).toEqual([]);
@@ -1681,9 +1732,18 @@ describe("findUnscoredLeaves", () => {
 
   it("ignores non-leaf nodes", () => {
     const result = findUnscoredLeaves(
-      [group("m1", "OPS", [group("s1", "OPS-SUB", [leaf("l1", "OPS-SUB-001")])])],
+      [
+        group("m1", "OPS", [
+          group("s1", "OPS-SUB", [leaf("l1", "OPS-SUB-001")]),
+        ]),
+      ],
       statuses([
-        { nodeId: "l1", code: "OPS-SUB-001", scored: true, notApplicable: false },
+        {
+          nodeId: "l1",
+          code: "OPS-SUB-001",
+          scored: true,
+          notApplicable: false,
+        },
       ]),
     );
     expect(result).toEqual([]);
@@ -1972,81 +2032,83 @@ import { findUnscoredLeaves, type LeafStatus } from "@/lib/rbia-completeness";
 Replace Step 1's response query (`src/actions/rbia/freeze.ts:139-148`) so it is tenant-scoped and carries the N/A marker:
 
 ```typescript
-      currentStep = "loading_responses";
-      const responses = await tx.examinationResponse.findMany({
-        where: { engagementId: validated.engagementId, tenantId },
-        select: {
-          id: true,
-          nodeId: true,
-          score: true,
-          scoreLabel: true,
-          isNotApplicable: true,
-        },
-      });
+currentStep = "loading_responses";
+const responses = await tx.examinationResponse.findMany({
+  where: { engagementId: validated.engagementId, tenantId },
+  select: {
+    id: true,
+    nodeId: true,
+    score: true,
+    scoreLabel: true,
+    isNotApplicable: true,
+  },
+});
 ```
 
 Replace the module-collection block (`src/actions/rbia/freeze.ts:204-213`) so modules come from the engagement's selection rather than every depth-1 node in the tenant:
 
 ```typescript
-      // Link children -> parents. Modules in scope come from the engagement's
-      // selection, not from every depth-1 node in the tenant catalogue: the
-      // snapshot must describe this engagement, not the whole product.
-      const selections = await tx.engagementModuleSelection.findMany({
-        where: { engagementId: validated.engagementId, tenantId },
-        select: { moduleNodeId: true },
-      });
-      const selectedIds = new Set(selections.map((s) => s.moduleNodeId));
+// Link children -> parents. Modules in scope come from the engagement's
+// selection, not from every depth-1 node in the tenant catalogue: the
+// snapshot must describe this engagement, not the whole product.
+const selections = await tx.engagementModuleSelection.findMany({
+  where: { engagementId: validated.engagementId, tenantId },
+  select: { moduleNodeId: true },
+});
+const selectedIds = new Set(selections.map((s) => s.moduleNodeId));
 
-      for (const node of nodeMap.values()) {
-        if (node.parentId) {
-          const parent = nodeMap.get(node.parentId);
-          if (parent) parent.children.push(node);
-        }
-      }
+for (const node of nodeMap.values()) {
+  if (node.parentId) {
+    const parent = nodeMap.get(node.parentId);
+    if (parent) parent.children.push(node);
+  }
+}
 
-      const moduleNodes: ScoredNode[] = [];
-      for (const id of selectedIds) {
-        const module = nodeMap.get(id);
-        if (module) moduleNodes.push(module);
-      }
+const moduleNodes: ScoredNode[] = [];
+for (const id of selectedIds) {
+  const module = nodeMap.get(id);
+  if (module) moduleNodes.push(module);
+}
 
-      if (moduleNodes.length === 0) {
-        throw Object.assign(
-          new Error("Cannot freeze: no examination modules are selected for this engagement"),
-          { code: "INCOMPLETE_EXAMINATION" },
-        );
-      }
+if (moduleNodes.length === 0) {
+  throw Object.assign(
+    new Error(
+      "Cannot freeze: no examination modules are selected for this engagement",
+    ),
+    { code: "INCOMPLETE_EXAMINATION" },
+  );
+}
 
-      // ── Completeness gate ──
-      currentStep = "checking_completeness";
-      const leafStatuses = new Map<string, LeafStatus>();
-      for (const r of responses) {
-        const node = nodeMap.get(r.nodeId);
-        if (!node) continue;
-        leafStatuses.set(r.nodeId, {
-          nodeId: r.nodeId,
-          code: node.code,
-          scored: r.scoreLabel != null,
-          notApplicable: r.isNotApplicable,
-        });
-      }
+// ── Completeness gate ──
+currentStep = "checking_completeness";
+const leafStatuses = new Map<string, LeafStatus>();
+for (const r of responses) {
+  const node = nodeMap.get(r.nodeId);
+  if (!node) continue;
+  leafStatuses.set(r.nodeId, {
+    nodeId: r.nodeId,
+    code: node.code,
+    scored: r.scoreLabel != null,
+    notApplicable: r.isNotApplicable,
+  });
+}
 
-      const outstanding = findUnscoredLeaves(moduleNodes, leafStatuses);
-      if (outstanding.length > 0) {
-        const shown = outstanding.slice(0, 10).join(", ");
-        const more =
-          outstanding.length > 10 ? ` and ${outstanding.length - 10} more` : "";
-        throw Object.assign(
-          new Error(
-            `Cannot freeze: ${outstanding.length} examination item(s) are neither ` +
-              `scored nor marked not applicable — ${shown}${more}`,
-          ),
-          { code: "INCOMPLETE_EXAMINATION" },
-        );
-      }
+const outstanding = findUnscoredLeaves(moduleNodes, leafStatuses);
+if (outstanding.length > 0) {
+  const shown = outstanding.slice(0, 10).join(", ");
+  const more =
+    outstanding.length > 10 ? ` and ${outstanding.length - 10} more` : "";
+  throw Object.assign(
+    new Error(
+      `Cannot freeze: ${outstanding.length} examination item(s) are neither ` +
+        `scored nor marked not applicable — ${shown}${more}`,
+    ),
+    { code: "INCOMPLETE_EXAMINATION" },
+  );
+}
 ```
 
-Note the old loop assigned `moduleNodes` by `depth === 1` *and* skipped linking those nodes to parents; the replacement links every node with a parent and then picks modules by selection, which is why the `else` branch is gone.
+Note the old loop assigned `moduleNodes` by `depth === 1` _and_ skipped linking those nodes to parents; the replacement links every node with a parent and then picks modules by selection, which is why the `else` branch is gone.
 
 - [ ] **Step 9: Surface the new error code**
 
@@ -2059,15 +2121,15 @@ In the same file's `catch` block, extend the step messages and the code selectio
 and replace the code/message selection (`src/actions/rbia/freeze.ts:343-348`) with:
 
 ```typescript
-    const errorCode =
-      error instanceof Error && (error as any).code
-        ? ((error as any).code as string)
-        : "INTERNAL_ERROR";
-    const isKnown =
-      errorCode === "SCORE_FROZEN" || errorCode === "INCOMPLETE_EXAMINATION";
-    const userMessage = isKnown
-      ? (error as Error).message
-      : (stepMessages[currentStep] ?? "Status transition blocked");
+const errorCode =
+  error instanceof Error && (error as any).code
+    ? ((error as any).code as string)
+    : "INTERNAL_ERROR";
+const isKnown =
+  errorCode === "SCORE_FROZEN" || errorCode === "INCOMPLETE_EXAMINATION";
+const userMessage = isKnown
+  ? (error as Error).message
+  : (stepMessages[currentStep] ?? "Status transition blocked");
 ```
 
 Confirm `ActionResult`'s `code` union in `src/actions/rbia/schemas.ts` includes `"INCOMPLETE_EXAMINATION"`; add it if the type enumerates codes.
@@ -2104,9 +2166,10 @@ Refs F10"
 
 ### Task 6: Bind evidence confirmation to an upload intent (F09)
 
-Both confirmation actions accept a caller-supplied `s3Key`, `fileSize` and `contentType`, prove only that *something* exists at that key, and persist the caller's claims. An existing object can be rebound to a different record with falsified metadata.
+Both confirmation actions accept a caller-supplied `s3Key`, `fileSize` and `contentType`, prove only that _something_ exists at that key, and persist the caller's claims. An existing object can be rebound to a different record with falsified metadata.
 
 **Files:**
+
 - Create: `src/data-access/upload-intents.ts`
 - Modify: `prisma/schema.prisma` (`UploadIntent` model, `UploadPurpose` enum, `Tenant` back-reference)
 - Modify: `src/actions/auditee.ts` (request path around lines 290–316; `confirmEvidenceUpload` at 340–419)
@@ -2114,6 +2177,7 @@ Both confirmation actions accept a caller-supplied `s3Key`, `fileSize` and `cont
 - Test: `src/actions/audit-execution/__integration__/upload-intent.test.ts`
 
 **Interfaces:**
+
 - Consumes: `generateS3Key`, `generateUploadUrl`, `verifyUpload` from `@/lib/s3`; the Task 2 harness.
 - Produces, from `src/data-access/upload-intents.ts`:
   - `type UploadPurposeName = "OBSERVATION_EVIDENCE" | "EXAMINATION_EVIDENCE"`
@@ -2187,7 +2251,9 @@ import {
  * and a parent record, not about AWS. `verifyUpload` reports an object that is
  * larger and of a different type than the intent allowed.
  */
-function mockS3(overrides: { contentLength?: number; contentType?: string } = {}) {
+function mockS3(
+  overrides: { contentLength?: number; contentType?: string } = {},
+) {
   vi.doMock("@/lib/s3", async () => {
     const actual = await vi.importActual<typeof import("@/lib/s3")>("@/lib/s3");
     return {
@@ -2249,9 +2315,8 @@ describe("evidence confirmation binds to an upload intent", () => {
     mockSessionModule(
       fakeSession({ id: auditor.id, tenantId: tenant.id, roles: ["AUDITOR"] }),
     );
-    const { confirmExaminationEvidenceUpload } = await import(
-      "../upload-examination-evidence"
-    );
+    const { confirmExaminationEvidenceUpload } =
+      await import("../upload-examination-evidence");
 
     const result = await confirmExaminationEvidenceUpload({
       engagementId: seed.engagementId,
@@ -2335,8 +2400,12 @@ describe("evidence confirmation binds to an upload intent", () => {
       contentType: "application/pdf",
     };
 
-    expect((await mod.confirmExaminationEvidenceUpload(input)).success).toBe(true);
-    expect((await mod.confirmExaminationEvidenceUpload(input)).success).toBe(false);
+    expect((await mod.confirmExaminationEvidenceUpload(input)).success).toBe(
+      true,
+    );
+    expect((await mod.confirmExaminationEvidenceUpload(input)).success).toBe(
+      false,
+    );
     expect(await integrationPrisma.evidence.count()).toBe(1);
   });
 });
@@ -2439,9 +2508,7 @@ export async function consumeUploadIntent(
   });
 
   if (count !== 1) {
-    throw new UploadIntentError(
-      "This upload has already been recorded.",
-    );
+    throw new UploadIntentError("This upload has already been recorded.");
   }
 
   return { contentType: intent.contentType, maxFileSize: intent.maxFileSize };
@@ -2463,13 +2530,13 @@ import {
 After `generateUploadUrl` succeeds (`src/actions/audit-execution/upload-examination-evidence.ts:102-106`), and before the return, insert:
 
 ```typescript
-    await recordUploadIntent(session, {
-      s3Key,
-      purpose: "EXAMINATION_EVIDENCE",
-      parentId: validated.responseId,
-      contentType: mimeType,
-      maxFileSize: validated.fileSize,
-    });
+await recordUploadIntent(session, {
+  s3Key,
+  purpose: "EXAMINATION_EVIDENCE",
+  parentId: validated.responseId,
+  contentType: mimeType,
+  maxFileSize: validated.fileSize,
+});
 ```
 
 - [ ] **Step 6: Bind the examination confirmation to the intent**
@@ -2477,94 +2544,94 @@ After `generateUploadUrl` succeeds (`src/actions/audit-execution/upload-examinat
 In the same file, replace the body of `confirmExaminationEvidenceUpload` from the `verifyUpload` call through the transaction (`src/actions/audit-execution/upload-examination-evidence.ts:161-213`) with:
 
 ```typescript
-  try {
-    // Trust the object, not the caller. HeadObject supplies the size and type
-    // that get persisted; the intent supplies the key/parent binding.
-    const uploadResult = await verifyUpload(validated.s3Key ?? "");
-    if (!uploadResult.exists) {
-      return {
-        success: false as const,
-        error: "Upload verification failed. File not found in S3.",
-      };
-    }
-
-    const response = await db.auditExaminationResponse.findFirst({
-      where: {
-        id: validated.responseId,
-        tenantId,
-        engagementId: validated.engagementId,
-      },
-      select: { id: true },
-    });
-
-    if (!response) {
-      return {
-        success: false as const,
-        error: "Examination response not found.",
-      };
-    }
-
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: AUDIT_ACTION_TYPES.EVIDENCE.UPLOADED,
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
-
-      const intent = await consumeUploadIntent(tx, {
-        tenantId,
-        s3Key: validated.s3Key ?? "",
-        purpose: "EXAMINATION_EVIDENCE",
-        parentId: validated.responseId,
-      });
-
-      if (uploadResult.contentType !== intent.contentType) {
-        throw new UploadIntentError(
-          "The uploaded file's type does not match the authorised upload.",
-        );
-      }
-      if (
-        uploadResult.contentLength <= 0 ||
-        uploadResult.contentLength > intent.maxFileSize
-      ) {
-        throw new UploadIntentError(
-          "The uploaded file's size does not match the authorised upload.",
-        );
-      }
-
-      return tx.evidence.create({
-        data: {
-          tenantId,
-          examinationResponseId: validated.responseId,
-          filename: validated.filename,
-          s3Key: validated.s3Key,
-          fileSize: uploadResult.contentLength,
-          contentType: uploadResult.contentType,
-          description: validated.description ?? null,
-          uploadedById: session.user.id,
-        },
-      });
-    });
-
-    revalidatePath("/audit-execution");
-
-    return { success: true as const, data: { evidenceId: result.id } };
-  } catch (error) {
-    if (error instanceof UploadIntentError) {
-      return { success: false as const, error: error.message };
-    }
-
-    logger.error(
-      { error, responseId: validated.responseId, tenantId },
-      "Failed to confirm examination evidence upload",
-    );
-
+try {
+  // Trust the object, not the caller. HeadObject supplies the size and type
+  // that get persisted; the intent supplies the key/parent binding.
+  const uploadResult = await verifyUpload(validated.s3Key ?? "");
+  if (!uploadResult.exists) {
     return {
       success: false as const,
-      error: "Failed to save evidence record. Please try again.",
+      error: "Upload verification failed. File not found in S3.",
     };
   }
+
+  const response = await db.auditExaminationResponse.findFirst({
+    where: {
+      id: validated.responseId,
+      tenantId,
+      engagementId: validated.engagementId,
+    },
+    select: { id: true },
+  });
+
+  if (!response) {
+    return {
+      success: false as const,
+      error: "Examination response not found.",
+    };
+  }
+
+  const result = await db.$transaction(async (tx: any) => {
+    await setAuditContext(tx, {
+      actionType: AUDIT_ACTION_TYPES.EVIDENCE.UPLOADED,
+      userId: session.user.id,
+      tenantId,
+      sessionId: session.session.id,
+    });
+
+    const intent = await consumeUploadIntent(tx, {
+      tenantId,
+      s3Key: validated.s3Key ?? "",
+      purpose: "EXAMINATION_EVIDENCE",
+      parentId: validated.responseId,
+    });
+
+    if (uploadResult.contentType !== intent.contentType) {
+      throw new UploadIntentError(
+        "The uploaded file's type does not match the authorised upload.",
+      );
+    }
+    if (
+      uploadResult.contentLength <= 0 ||
+      uploadResult.contentLength > intent.maxFileSize
+    ) {
+      throw new UploadIntentError(
+        "The uploaded file's size does not match the authorised upload.",
+      );
+    }
+
+    return tx.evidence.create({
+      data: {
+        tenantId,
+        examinationResponseId: validated.responseId,
+        filename: validated.filename,
+        s3Key: validated.s3Key,
+        fileSize: uploadResult.contentLength,
+        contentType: uploadResult.contentType,
+        description: validated.description ?? null,
+        uploadedById: session.user.id,
+      },
+    });
+  });
+
+  revalidatePath("/audit-execution");
+
+  return { success: true as const, data: { evidenceId: result.id } };
+} catch (error) {
+  if (error instanceof UploadIntentError) {
+    return { success: false as const, error: error.message };
+  }
+
+  logger.error(
+    { error, responseId: validated.responseId, tenantId },
+    "Failed to confirm examination evidence upload",
+  );
+
+  return {
+    success: false as const,
+    error: "Failed to save evidence record. Please try again.",
+  };
+}
 ```
 
 - [ ] **Step 7: Apply the same binding to the auditee path**
@@ -2572,38 +2639,38 @@ In the same file, replace the body of `confirmExaminationEvidenceUpload` from th
 In `src/actions/auditee.ts`, add the same three imports. After `generateUploadUrl` in the request action (around `src/actions/auditee.ts:302-308`), insert:
 
 ```typescript
-    await recordUploadIntent(session, {
-      s3Key,
-      purpose: "OBSERVATION_EVIDENCE",
-      parentId: observationId,
-      contentType: fileTypeResult.mimeType,
-      maxFileSize: fileSize,
-    });
+await recordUploadIntent(session, {
+  s3Key,
+  purpose: "OBSERVATION_EVIDENCE",
+  parentId: observationId,
+  contentType: fileTypeResult.mimeType,
+  maxFileSize: fileSize,
+});
 ```
 
 In `confirmEvidenceUpload`, inside the transaction and immediately after `setAuditContext` (`src/actions/auditee.ts:391-397`), insert:
 
 ```typescript
-      const intent = await consumeUploadIntent(tx, {
-        tenantId,
-        s3Key,
-        purpose: "OBSERVATION_EVIDENCE",
-        parentId: observationId,
-      });
+const intent = await consumeUploadIntent(tx, {
+  tenantId,
+  s3Key,
+  purpose: "OBSERVATION_EVIDENCE",
+  parentId: observationId,
+});
 
-      if (verifyResult.contentType !== intent.contentType) {
-        throw new UploadIntentError(
-          "The uploaded file's type does not match the authorised upload.",
-        );
-      }
-      if (
-        verifyResult.contentLength <= 0 ||
-        verifyResult.contentLength > intent.maxFileSize
-      ) {
-        throw new UploadIntentError(
-          "The uploaded file's size does not match the authorised upload.",
-        );
-      }
+if (verifyResult.contentType !== intent.contentType) {
+  throw new UploadIntentError(
+    "The uploaded file's type does not match the authorised upload.",
+  );
+}
+if (
+  verifyResult.contentLength <= 0 ||
+  verifyResult.contentLength > intent.maxFileSize
+) {
+  throw new UploadIntentError(
+    "The uploaded file's size does not match the authorised upload.",
+  );
+}
 ```
 
 and change the `tx.evidence.create` data (`src/actions/auditee.ts:407-418`) to use the verified values:
@@ -2648,12 +2715,14 @@ Refs F09"
 The claim is `updateMany({ where: { id: { in: ids } } })` with no status predicate and no count check, so two overlapping workers both "claim" the same rows and both send. Batching groups by `batchKey` alone across every tenant and recipient in the run, so a reused key mixes recipients — and `processBatchedNotifications` then sends the whole group to `notifications[0].recipient`.
 
 **Files:**
+
 - Modify: `prisma/schema.prisma` (`NotificationQueue.claimId`)
 - Modify: `src/data-access/notifications.ts` (add `claimNotifications`)
 - Modify: `src/jobs/notification-processor.ts:66-143,192-229`
 - Test: `src/jobs/__integration__/notification-processor.test.ts`
 
 **Interfaces:**
+
 - Consumes: `withAuditedMutation`, `systemActor`; the Task 2 harness.
 - Produces, from `src/data-access/notifications.ts`:
   - `claimNotifications(tenantId: string, ids: string[], claimId: string): Promise<Array<PendingNotification>>` where `PendingNotification` is the element type of `getPendingNotifications`'s result. Returns only rows this call actually moved from `PENDING` to `PROCESSING`.
@@ -2844,58 +2913,57 @@ export async function claimNotifications(
 In `src/jobs/notification-processor.ts`, replace everything from the `idsByTenant` map through the batching loop (`src/jobs/notification-processor.ts:79-144`) with:
 
 ```typescript
-  // The queue is read across tenants, but a session context carries exactly
-  // one tenant, so claim one tenant at a time. A failed claim must not strand
-  // the tenants already claimed: later runs only select PENDING rows, so
-  // anything left PROCESSING but unsent would sit there for good.
-  const idsByTenant = new Map<string, string[]>();
-  for (const n of notifications) {
-    const ids = idsByTenant.get(n.tenantId) ?? [];
-    ids.push(n.id);
-    idsByTenant.set(n.tenantId, ids);
+// The queue is read across tenants, but a session context carries exactly
+// one tenant, so claim one tenant at a time. A failed claim must not strand
+// the tenants already claimed: later runs only select PENDING rows, so
+// anything left PROCESSING but unsent would sit there for good.
+const idsByTenant = new Map<string, string[]>();
+for (const n of notifications) {
+  const ids = idsByTenant.get(n.tenantId) ?? [];
+  ids.push(n.id);
+  idsByTenant.set(n.tenantId, ids);
+}
+
+const claimedNotifications: typeof notifications = [];
+
+for (const [tenantId, ids] of idsByTenant) {
+  try {
+    const won = await claimNotifications(tenantId, ids, randomUUID());
+    claimedNotifications.push(...won);
+  } catch (error) {
+    logger.error(
+      {
+        action: "notification_claim_failed",
+        tenantId,
+        stranded: ids.length,
+        message: error instanceof Error ? error.message : "Unknown claim error",
+      },
+      "Failed to claim notifications; left PENDING for the next run",
+    );
   }
+}
 
-  const claimedNotifications: typeof notifications = [];
+if (claimedNotifications.length === 0) return;
 
-  for (const [tenantId, ids] of idsByTenant) {
-    try {
-      const won = await claimNotifications(tenantId, ids, randomUUID());
-      claimedNotifications.push(...won);
-    } catch (error) {
-      logger.error(
-        {
-          action: "notification_claim_failed",
-          tenantId,
-          stranded: ids.length,
-          message:
-            error instanceof Error ? error.message : "Unknown claim error",
-        },
-        "Failed to claim notifications; left PENDING for the next run",
-      );
-    }
-  }
+const individual = claimedNotifications.filter((n) => !n.batchKey);
 
-  if (claimedNotifications.length === 0) return;
+// A batch is one email to one person. Grouping by batchKey alone would let a
+// reused key merge two tenants' or two recipients' notifications into a
+// single send addressed to whichever row happened to be first.
+const batched = new Map<string, typeof notifications>();
+for (const n of claimedNotifications.filter((n) => n.batchKey)) {
+  const key = `${n.tenantId}::${n.recipientId}::${n.batchKey}`;
+  if (!batched.has(key)) batched.set(key, []);
+  batched.get(key)!.push(n);
+}
 
-  const individual = claimedNotifications.filter((n) => !n.batchKey);
+for (const notification of individual) {
+  await processOneNotification(notification);
+}
 
-  // A batch is one email to one person. Grouping by batchKey alone would let a
-  // reused key merge two tenants' or two recipients' notifications into a
-  // single send addressed to whichever row happened to be first.
-  const batched = new Map<string, typeof notifications>();
-  for (const n of claimedNotifications.filter((n) => n.batchKey)) {
-    const key = `${n.tenantId}::${n.recipientId}::${n.batchKey}`;
-    if (!batched.has(key)) batched.set(key, []);
-    batched.get(key)!.push(n);
-  }
-
-  for (const notification of individual) {
-    await processOneNotification(notification);
-  }
-
-  for (const [groupKey, group] of batched) {
-    await processBatchedNotifications(groupKey, group);
-  }
+for (const [groupKey, group] of batched) {
+  await processBatchedNotifications(groupKey, group);
+}
 ```
 
 Update the imports at the top of the file:
@@ -2979,6 +3047,7 @@ Refs F11"
 The fix is not to punch a hole in middleware for a second auth scheme. pg-boss already owns scheduled work; compliance escalation joins it, and the route goes.
 
 **Files:**
+
 - Modify: `src/instrumentation.ts`
 - Modify: `src/lib/job-queue.ts:12-18,56-81`
 - Modify: `src/jobs/index.ts`
@@ -2987,6 +3056,7 @@ The fix is not to punch a hole in middleware for a second auth scheme. pg-boss a
 - Test: `src/jobs/__integration__/compliance-escalation.test.ts`
 
 **Interfaces:**
+
 - Consumes: `runEscalationJobInternal` from `@/actions/compliance/run-escalation-job`; the Task 2 harness.
 - Produces:
   - `JOB_NAMES.COMPLIANCE_ESCALATION = "compliance-escalation"` in `src/lib/job-queue.ts`.
@@ -3026,18 +3096,16 @@ describe("processComplianceEscalation", () => {
       }),
     }));
 
-    const { processComplianceEscalation } = await import(
-      "../compliance-escalation"
-    );
+    const { processComplianceEscalation } =
+      await import("../compliance-escalation");
     await processComplianceEscalation();
 
     expect(new Set(seen)).toEqual(new Set([one.id, two.id]));
   });
 
   it("does nothing when there are no tenants", async () => {
-    const { processComplianceEscalation } = await import(
-      "../compliance-escalation"
-    );
+    const { processComplianceEscalation } =
+      await import("../compliance-escalation");
     await expect(processComplianceEscalation()).resolves.toBeUndefined();
     expect(await integrationPrisma.tenant.count()).toBe(0);
   });
@@ -3069,9 +3137,8 @@ import { logger } from "@/lib/logger";
  * Distinct from processOverdueEscalation, which escalates Observations.
  */
 export async function processComplianceEscalation(): Promise<void> {
-  const { runEscalationJobInternal } = await import(
-    "@/actions/compliance/run-escalation-job"
-  );
+  const { runEscalationJobInternal } =
+    await import("@/actions/compliance/run-escalation-job");
 
   const tenants = await prisma.tenant.findMany({
     select: { id: true, shortName: true },
@@ -3121,13 +3188,13 @@ In `src/lib/job-queue.ts`, add to `JOB_NAMES` (`src/lib/job-queue.ts:12-18`):
 In `startWorkers`, add a queue after the others (`src/lib/job-queue.ts:71`):
 
 ```typescript
-  await queue.createQueue(JOB_NAMES.COMPLIANCE_ESCALATION, QUEUE_OPTIONS);
+await queue.createQueue(JOB_NAMES.COMPLIANCE_ESCALATION, QUEUE_OPTIONS);
 ```
 
 and a schedule after the others (`src/lib/job-queue.ts:76`):
 
 ```typescript
-  await queue.schedule(JOB_NAMES.COMPLIANCE_ESCALATION, "0 1 * * *"); // daily 01:00 UTC = 06:30 IST
+await queue.schedule(JOB_NAMES.COMPLIANCE_ESCALATION, "0 1 * * *"); // daily 01:00 UTC = 06:30 IST
 ```
 
 In `src/jobs/index.ts`, add the import and the mirrored job name and handler:
@@ -3141,10 +3208,10 @@ import { processComplianceEscalation } from "./compliance-escalation";
 ```
 
 ```typescript
-  // Daily ComplianceItem escalation (06:30 IST), after deadline-check
-  await boss.work(JOBS.COMPLIANCE_ESCALATION, async () => {
-    await processComplianceEscalation();
-  });
+// Daily ComplianceItem escalation (06:30 IST), after deadline-check
+await boss.work(JOBS.COMPLIANCE_ESCALATION, async () => {
+  await processComplianceEscalation();
+});
 ```
 
 - [ ] **Step 5: Wire graceful shutdown**
@@ -3255,10 +3322,12 @@ Tasks 3–8 covered `transitionObservation`, `freezeRbiaScore`, `processNotifica
 `saveAccountExamResponse` has an authorization defect of its own (F06: it accepts `audit_execution:read` for a write). **That fix belongs to the F01–F06 plan, not this one.** These tests characterise what the action does today and assert the tenant-scoping it already claims, so that the F06 fix has a safety net to land against. Do not change the action here.
 
 **Files:**
+
 - Create: `src/actions/account-examination/__integration__/save-response.test.ts`
 - Create: `src/actions/compliance/__integration__/run-escalation-job.test.ts`
 
 **Interfaces:**
+
 - Consumes: the Task 2 harness. Adds no production exports.
 
 - [ ] **Step 1: Write the account-examination characterisation test**
@@ -3511,7 +3580,10 @@ import {
   integrationPrisma,
 } from "../../../../tests/integration/harness";
 
-async function seedOverdueComplianceItem(tenantId: string, daysOverdue: number) {
+async function seedOverdueComplianceItem(
+  tenantId: string,
+  daysOverdue: number,
+) {
   const branch = await integrationPrisma.branch.create({
     data: { tenantId, code: "BR-001", name: "Main", city: "Pune", state: "MH" },
     select: { id: true },
@@ -3622,6 +3694,7 @@ Refs F13"
 The `e2e` job is `if: github.event_name == 'pull_request'` and `continue-on-error: true`, so a known browser regression merges with every required check green — and merging to `main` deploys. The answer is not to make a 40-minute flaky suite blocking; it is to carve out a small, deterministic critical path that does block, and leave the rest advisory.
 
 **Files:**
+
 - Create: `tests/e2e/smoke.spec.ts`
 - Modify: `tests/e2e/observation-lifecycle.spec.ts:160-192,199-224`
 - Modify: `scripts/seed-full-audit-lifecycle.ts`
@@ -3629,6 +3702,7 @@ The `e2e` job is `if: github.event_name == 'pull_request'` and `continue-on-erro
 - Modify: `.github/workflows/ci.yml:222-287`
 
 **Interfaces:**
+
 - Consumes: existing Playwright auth states in `playwright/.auth/*.json` (see `tests/auth.setup.ts`); the bootstrap scripts from Task 1.
 - Produces: `pnpm test:e2e:smoke` runs only tests tagged `@smoke`.
 
@@ -3687,7 +3761,9 @@ test.describe("@smoke critical paths", () => {
       ).toBeVisible();
     });
 
-    test("an observation can be created and opened @smoke", async ({ page }) => {
+    test("an observation can be created and opened @smoke", async ({
+      page,
+    }) => {
       await page.goto("/findings/new");
       await page.getByLabel(/^title/i).fill("Smoke: cash retention breach");
       await page.getByLabel(/condition/i).fill("Cash held above the limit");
@@ -3699,7 +3775,10 @@ test.describe("@smoke critical paths", () => {
         .fill("Automate the daily reconciliation");
 
       await page.getByRole("combobox", { name: /severity/i }).click();
-      await page.getByRole("option", { name: /^high$/i }).first().click();
+      await page
+        .getByRole("option", { name: /^high$/i })
+        .first()
+        .click();
       await page.getByRole("combobox", { name: /^branch$/i }).click();
       await page.getByRole("option").first().click();
       await page.getByRole("combobox", { name: /audit area/i }).click();
@@ -3716,8 +3795,9 @@ test.describe("@smoke critical paths", () => {
 
     test("an auditee cannot reach the admin area @smoke", async ({ page }) => {
       await page.goto("/admin/users");
-      await expect(page.getByText(/permission|not authori[sz]ed|forbidden/i))
-        .toBeVisible();
+      await expect(
+        page.getByText(/permission|not authori[sz]ed|forbidden/i),
+      ).toBeVisible();
     });
   });
 });
@@ -3728,26 +3808,26 @@ test.describe("@smoke critical paths", () => {
 In `scripts/seed-full-audit-lifecycle.ts`, add one observation in `COMPLIANCE` state with a stable, greppable title. Place it beside the existing observation creation, following the file's own helper style:
 
 ```typescript
-  // A LOW-severity observation parked in COMPLIANCE, so the E2E suite can
-  // exercise the COMPLIANCE → CLOSED transition deterministically. The title is
-  // matched verbatim by tests/e2e/observation-lifecycle.spec.ts.
-  await prisma.observation.create({
-    data: {
-      tenantId,
-      title: "E2E fixture: low severity awaiting closure",
-      condition: "Register not initialled for two days",
-      criteria: "Branch operations manual, clause 4.2",
-      cause: "Officer on leave without a delegate",
-      effect: "Minor control lapse",
-      recommendation: "Nominate a standing delegate",
-      severity: "LOW",
-      status: "COMPLIANCE",
-      branchId,
-      auditAreaId,
-      createdById: auditorId,
-      version: 1,
-    },
-  });
+// A LOW-severity observation parked in COMPLIANCE, so the E2E suite can
+// exercise the COMPLIANCE → CLOSED transition deterministically. The title is
+// matched verbatim by tests/e2e/observation-lifecycle.spec.ts.
+await prisma.observation.create({
+  data: {
+    tenantId,
+    title: "E2E fixture: low severity awaiting closure",
+    condition: "Register not initialled for two days",
+    criteria: "Branch operations manual, clause 4.2",
+    cause: "Officer on leave without a delegate",
+    effect: "Minor control lapse",
+    recommendation: "Nominate a standing delegate",
+    severity: "LOW",
+    status: "COMPLIANCE",
+    branchId,
+    auditAreaId,
+    createdById: auditorId,
+    version: 1,
+  },
+});
 ```
 
 Use the `tenantId`, `branchId`, `auditAreaId` and `auditorId` bindings already in scope at that point in the script.
@@ -3833,24 +3913,24 @@ test.describe.serial("Test Group 3: Auditee Response", () => {
 Replace the `test.fixme("manager can close LOW/MEDIUM observations", ...)` block (lines 199–224, including its explanatory comment) with:
 
 ```typescript
-  // Uses the COMPLIANCE-state fixture from scripts/seed-full-audit-lifecycle.ts,
-  // selected by its exact title. The previous version searched the list for a
-  // row matching /low|medium/ and "Compliance", which collided with an
-  // AuditArea named "Compliance" and could never be made reliable.
-  test("manager can close LOW/MEDIUM observations", async ({ page }) => {
-    await page.goto("/findings");
+// Uses the COMPLIANCE-state fixture from scripts/seed-full-audit-lifecycle.ts,
+// selected by its exact title. The previous version searched the list for a
+// row matching /low|medium/ and "Compliance", which collided with an
+// AuditArea named "Compliance" and could never be made reliable.
+test("manager can close LOW/MEDIUM observations", async ({ page }) => {
+  await page.goto("/findings");
 
-    await page
-      .getByRole("row")
-      .filter({ hasText: "E2E fixture: low severity awaiting closure" })
-      .first()
-      .click();
+  await page
+    .getByRole("row")
+    .filter({ hasText: "E2E fixture: low severity awaiting closure" })
+    .first()
+    .click();
 
-    await expect(page).toHaveURL(/\/findings\/[a-f0-9-]+/);
-    await expect(
-      page.getByRole("button", { name: /close observation/i }),
-    ).toBeVisible();
-  });
+  await expect(page).toHaveURL(/\/findings\/[a-f0-9-]+/);
+  await expect(
+    page.getByRole("button", { name: /close observation/i }),
+  ).toBeVisible();
+});
 ```
 
 Leave Test Group 7 (repeat finding detection) as `test.skip`. It needs a CLOSED observation plus a matching new one to trigger similarity detection, which is a fixture of its own; do not fake it here.
@@ -3868,156 +3948,156 @@ In `package.json`, after `"test:e2e"`:
 In `.github/workflows/ci.yml`, replace the single `e2e` job (`.github/workflows/ci.yml:222-287`) with two. The smoke job runs on PRs **and** on pushes to `main`, and blocks; the full suite stays advisory:
 
 ```yaml
-  # Blocking browser subset. Small, deterministic, and gates the merge that
-  # deploys — the full suite below stays advisory because it is slow and has
-  # known flaky scenarios.
-  e2e-smoke:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: aegis_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    env:
-      DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_test
-      BETTER_AUTH_SECRET: e2e-test-secret-0123456789abcdef0123456789abcdef
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      SKIP_ENV_VALIDATION: "1"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+# Blocking browser subset. Small, deterministic, and gates the merge that
+# deploys — the full suite below stays advisory because it is slow and has
+# known flaky scenarios.
+e2e-smoke:
+  runs-on: ubuntu-latest
+  services:
+    postgres:
+      image: postgres:16-alpine
+      env:
+        POSTGRES_USER: test
+        POSTGRES_PASSWORD: testpassword
+        POSTGRES_DB: aegis_test
+      options: >-
+        --health-cmd pg_isready
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
+      ports:
+        - 5432:5432
+  env:
+    DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_test
+    BETTER_AUTH_SECRET: e2e-test-secret-0123456789abcdef0123456789abcdef
+    BETTER_AUTH_URL: http://localhost:3000
+    NEXT_PUBLIC_APP_URL: http://localhost:3000
+    SKIP_ENV_VALIDATION: "1"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: "pnpm"
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm prisma generate
+    - name: Generate Prisma Client
+      run: pnpm prisma generate
 
-      - name: Push database schema
-        run: pnpm db:push
+    - name: Push database schema
+      run: pnpm db:push
 
-      - name: Apply non-Prisma database objects
-        run: pnpm db:bootstrap
+    - name: Apply non-Prisma database objects
+      run: pnpm db:bootstrap
 
-      - name: Verify required database objects
-        run: pnpm db:verify
+    - name: Verify required database objects
+      run: pnpm db:verify
 
-      - name: Seed database
-        run: pnpm db:seed
+    - name: Seed database
+      run: pnpm db:seed
 
-      - name: Seed audit lifecycle fixtures
-        run: pnpm seed:lifecycle
+    - name: Seed audit lifecycle fixtures
+      run: pnpm seed:lifecycle
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
 
-      - name: Run smoke tests
-        run: pnpm test:e2e:smoke
+    - name: Run smoke tests
+      run: pnpm test:e2e:smoke
 
-      - name: Upload test report
-        uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: playwright-report-smoke
-          path: playwright-report/
-          retention-days: 3
+    - name: Upload test report
+      uses: actions/upload-artifact@v6
+      if: failure()
+      with:
+        name: playwright-report-smoke
+        path: playwright-report/
+        retention-days: 3
 
-  # Full browser suite — advisory. Quarantine individual flaky scenarios with
-  # test.skip and a reason; do not restore continue-on-error to e2e-smoke.
-  e2e:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: aegis_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    env:
-      DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_test
-      BETTER_AUTH_SECRET: e2e-test-secret-0123456789abcdef0123456789abcdef
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      SKIP_ENV_VALIDATION: "1"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+# Full browser suite — advisory. Quarantine individual flaky scenarios with
+# test.skip and a reason; do not restore continue-on-error to e2e-smoke.
+e2e:
+  if: github.event_name == 'pull_request'
+  runs-on: ubuntu-latest
+  continue-on-error: true
+  services:
+    postgres:
+      image: postgres:16-alpine
+      env:
+        POSTGRES_USER: test
+        POSTGRES_PASSWORD: testpassword
+        POSTGRES_DB: aegis_test
+      options: >-
+        --health-cmd pg_isready
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
+      ports:
+        - 5432:5432
+  env:
+    DATABASE_URL: postgresql://test:testpassword@localhost:5432/aegis_test
+    BETTER_AUTH_SECRET: e2e-test-secret-0123456789abcdef0123456789abcdef
+    BETTER_AUTH_URL: http://localhost:3000
+    NEXT_PUBLIC_APP_URL: http://localhost:3000
+    SKIP_ENV_VALIDATION: "1"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: "pnpm"
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm prisma generate
+    - name: Generate Prisma Client
+      run: pnpm prisma generate
 
-      - name: Push database schema
-        run: pnpm db:push
+    - name: Push database schema
+      run: pnpm db:push
 
-      - name: Apply non-Prisma database objects
-        run: pnpm db:bootstrap
+    - name: Apply non-Prisma database objects
+      run: pnpm db:bootstrap
 
-      - name: Verify required database objects
-        run: pnpm db:verify
+    - name: Verify required database objects
+      run: pnpm db:verify
 
-      - name: Seed database
-        run: pnpm db:seed
+    - name: Seed database
+      run: pnpm db:seed
 
-      - name: Seed audit lifecycle fixtures
-        run: pnpm seed:lifecycle
+    - name: Seed audit lifecycle fixtures
+      run: pnpm seed:lifecycle
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: pnpm test:e2e
+    - name: Run E2E tests
+      run: pnpm test:e2e
 
-      - name: Upload test report
-        uses: actions/upload-artifact@v6
-        if: failure()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 3
+    - name: Upload test report
+      uses: actions/upload-artifact@v6
+      if: failure()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 3
 ```
 
 - [ ] **Step 7: Run the suites locally**
@@ -4068,14 +4148,19 @@ All six must pass before opening the PR. CI runs on the **merge ref**, so a gree
 
 ## Production Rollout Order
 
-Two tasks add database objects that a deploy will not apply. Apply them by hand, in this order, **before** merging the code that depends on them:
+**Nothing in the deploy touches the database.** The container runs `node server.js`; `pnpm start` is `next start`. There is no `prisma migrate deploy` and no `db push`, so *every* database change here is applied by hand — including Task 5's, 6's and 7's ordinary columns and tables. Merging first would deploy code that queries `UploadIntent`, `NotificationQueue.claimId` and `ExaminationResponse.isNotApplicable` against a database that has none of them, and `/api/health` (a `SELECT 1` plus a pgboss row count) would stay green throughout.
 
-1. Task 1's manifest (`pnpm db:bootstrap` against production, then `pnpm db:verify`). Everything in it is idempotent, so this is safe on the current database.
-2. Task 4's composite foreign keys — run the pre-check queries in `prisma/sql/060_tenant_composite_fks.sql`'s header first. If any returns rows, there is existing cross-tenant data: stop and repair it. Do not weaken the constraint.
-3. Task 5's and Task 6's and Task 7's schema additions reach production through `prisma db push` as part of the normal deploy, since they are ordinary columns and tables. Confirm `NotificationQueue.claimId`, `ExaminationResponse.isNotApplicable`, and the `UploadIntent` table exist after the deploy.
+Apply in this order, **before** merging:
+
+1. `prisma/migrations/20260904_f07_f15_schema_additions.sql` — the enum, table, columns and `(tenantId, id)` unique indexes from Tasks 5–7. Idempotent. **This must precede step 3:** the manifest includes `060_tenant_composite_fks.sql`, whose composite FKs reference those unique indexes, so bootstrapping first fails with *no unique constraint matching given keys*.
+2. The pre-check queries in `prisma/sql/060_tenant_composite_fks.sql`'s header. Each must return zero rows. If any returns rows there is existing cross-tenant data: stop and repair it. Do not weaken the constraint.
+3. `pnpm db:bootstrap` — the whole manifest, idempotent, safe on the current database.
+4. Merge. Coolify deploys automatically.
+5. `pnpm db:verify` — asserts every required object landed.
 
 ```bash
-ssh vps 'sudo docker exec -i ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis' < prisma/sql/060_tenant_composite_fks.sql
+ssh vps 'sudo docker exec -i ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis' < prisma/migrations/20260904_f07_f15_schema_additions.sql
+DATABASE_URL=... pnpm db:bootstrap && DATABASE_URL=... pnpm db:verify
 curl -fsS https://aegis.nexlyadvisory.com/api/health | jq
 ```
 
@@ -4083,5 +4168,5 @@ curl -fsS https://aegis.nexlyadvisory.com/api/health | jq
 
 - **F01–F06** (identity and authorization) — a separate plan. Task 9 deliberately characterises `saveAccountExamResponse`'s current behaviour rather than fixing its F06 permission defect.
 - **A UI control for `isNotApplicable`** — Task 5 adds the field and the gate; the examination response form needs a matching control or auditors will be unable to satisfy the gate. Raise as a follow-up issue before Task 5 merges.
-- **Widening `audit_trigger` to `NotificationPreference` and `BoardReport`** — they appear in `AUDITED_TABLES` but are not attached by the canonical migrations. Task 1 fixes the two unwrapped write sites so the decision can be taken later on its own merits.
+- ~~**Widening `audit_trigger` to `NotificationPreference` and `BoardReport`**~~ — resolved rather than deferred. Leaving them unattached meant board reports and notification preferences were silently unaudited in production while `AUDITED_TABLES`, `prisma/migrations/superseded/README.md` and `db:verify` all said otherwise. Every write site already carries audit context (`withAuditedMutation` or `setAuditContext`), so `020_attach_audit_triggers.sql` now attaches all 16, and a manifest test asserts the three lists agree.
 - **Test Group 7 (repeat finding detection)** in the E2E suite — needs its own CLOSED-observation fixture.

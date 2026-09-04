@@ -2,8 +2,9 @@
  * Assert every required database object exists.
  *
  * Usage: pnpm db:verify
- * Exits 1 and lists what is missing. Run it after db:bootstrap in CI, and
- * against production after applying SQL by hand.
+ * Exits 1 and lists what is missing. Run it after db:bootstrap — in CI, and
+ * against production as the last step of a release that touched the database
+ * (see docs/ops/release-checklist.md).
  */
 import { Client } from "pg";
 import { REQUIRED_OBJECTS } from "../prisma/sql/manifest";

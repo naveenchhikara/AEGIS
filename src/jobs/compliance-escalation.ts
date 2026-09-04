@@ -4,11 +4,13 @@ import { logger } from "@/lib/logger";
 /**
  * Daily ComplianceItem escalation (R39) across every tenant.
  *
- * This pipeline previously had no scheduled trigger at all: its only caller was
- * POST /api/cron/escalation, which middleware blocked because it requires a
- * session cookie before any route-level Bearer check. Scheduling it here puts
- * it alongside the other recurring work, with no second auth scheme and no
- * externally reachable endpoint.
+ * This pipeline previously had no scheduled trigger at all. Its only automated
+ * trigger was POST /api/cron/escalation, which middleware blocked because it
+ * requires a session cookie before any route-level Bearer check; the pipeline
+ * was otherwise reachable only through runEscalationJob, the permission-gated
+ * manual server action. Scheduling it here puts it alongside the other
+ * recurring work, with no second auth scheme and no externally reachable
+ * endpoint.
  *
  * Distinct from processOverdueEscalation, which escalates Observations.
  */

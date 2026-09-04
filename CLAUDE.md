@@ -56,13 +56,19 @@ pnpm db:push
 pnpm db:migrate
 pnpm db:seed
 pnpm db:studio
+pnpm db:bootstrap
+pnpm db:apply
+pnpm db:verify
 pnpm seed:master-directions
+pnpm seed:rbia-housing
 pnpm seed:exam-questions
 pnpm seed:lifecycle
 pnpm test:unit
+pnpm test:integration
 pnpm test:coverage
 pnpm test:e2e
 pnpm test:e2e:ui
+pnpm test:e2e:smoke
 pnpm build:analyze
 ```
 
@@ -101,19 +107,19 @@ src/
 
 ## Route Snapshot
 
-| Group | Examples | Purpose |
-| --- | --- | --- |
-| Auth | `/login`, `/accept-invite`, `/onboarding` | Login and onboarding |
-| Dashboard | `/dashboard`, `/analytics`, `/audit-trail` | Summary and analytics |
-| Planning | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling` | Risk scoring and planning |
-| Audit Execution | `/audit-execution/[id]/...` | Branch audit workflows |
-| RBIA | `/audit-execution/[id]/rbia/...` | RBIA examination and scoring |
-| Findings | `/findings`, `/findings/[id]` | Observation lifecycle |
-| Compliance | `/compliance/...`, `/auditee/[id]` | Responses and escalation |
-| GRC | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment` | Risk, controls, QA |
-| Regulatory | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | Regulatory modules |
-| Reports | `/reports` | XLSX and PDF outputs |
-| Admin | `/admin/...`, `/settings` | Tenant configuration |
+| Group           | Examples                                                                                                     | Purpose                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login and onboarding         |
+| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | Summary and analytics        |
+| Planning        | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                          | Risk scoring and planning    |
+| Audit Execution | `/audit-execution/[id]/...`                                                                                  | Branch audit workflows       |
+| RBIA            | `/audit-execution/[id]/rbia/...`                                                                             | RBIA examination and scoring |
+| Findings        | `/findings`, `/findings/[id]`                                                                                | Observation lifecycle        |
+| Compliance      | `/compliance/...`, `/auditee/[id]`                                                                           | Responses and escalation     |
+| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk, controls, QA           |
+| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | Regulatory modules           |
+| Reports         | `/reports`                                                                                                   | XLSX and PDF outputs         |
+| Admin           | `/admin/...`, `/settings`                                                                                    | Tenant configuration         |
 
 ## Core Patterns
 
@@ -151,7 +157,7 @@ AEGIS runs as **Coolify app id 6**, uuid `nil0nfvohfrgehgjxdv1g2xc`, `dockerfile
 build pack, `ports_exposes=3000`, in project `10-sapiex-websites` on the
 `sapiex-websites` Docker network. Its database is a Coolify-managed Postgres
 (`postgres:16-alpine`, container `ii2dkkgiwrf76iesksuhv5iq`, user/db `aegis`) on
-the same network. `coolify-proxy` *is* Traefik and terminates TLS. Config and
+the same network. `coolify-proxy` _is_ Traefik and terminates TLS. Config and
 secrets live in Coolify, not in a file on disk.
 
 ### Release Flow
@@ -162,9 +168,18 @@ secrets live in Coolify, not in a file on disk.
 3. Coolify builds and releases automatically, within a minute or two.
 4. Verify `https://aegis.nexlyadvisory.com/api/health`.
 
-**SQL migrations do not ride along with a deploy.** The loose `.sql` files in
-`prisma/migrations/` are applied by hand. Merging code that depends on one does
-not apply it — apply it yourself, before or with the merge.
+**SQL does not ride along with a deploy.** The container runs `node server.js`:
+no `migrate deploy`, no `db push`. Two things are applied by hand, in this order:
+
+1. The release's schema file in `prisma/migrations/`, if it has one — a dated,
+   idempotent `.sql` adding that release's tables and columns. Apply it with
+   `pnpm db:apply <path>`, which is what CI rehearses.
+2. `pnpm db:bootstrap`, which applies `prisma/sql/manifest.ts` (triggers, views,
+   functions, composite FKs), then `pnpm db:verify` to assert it landed.
+
+Schema first: `060_tenant_composite_fks.sql` depends on `(tenantId, id)` unique
+indexes the schema file creates. `prisma/migrations/superseded/` is history —
+do not apply it. Full sequence in `docs/ops/release-checklist.md`.
 
 ### Operational Commands
 
@@ -234,7 +249,8 @@ correctly-routed container look unlabelled.
   previously set them. `''::UUID` throws. Always wrap reads in
   `NULLIF(current_setting(...), '')` — see
   `prisma/migrations/20260826_audit_trigger_null_safe.sql`
-- Dashboard views still require SQL application on a fresh environment
+- A fresh database needs `pnpm db:bootstrap` after `db:push`; `db:push` alone
+  leaves it with no audit triggers, dashboard views, or composite FKs
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from
   the server bundle
 - `!` in passwords is awkward in shell commands; quote carefully

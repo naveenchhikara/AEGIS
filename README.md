@@ -37,22 +37,23 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16, TypeScript 5.9, React 19 |
-| Database | PostgreSQL 16, Prisma 7 (75 models, 21 enums) |
-| Auth | Better Auth (17 roles, 78 permissions, maker-checker RBAC) |
-| UI | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts |
-| Cloud | AWS S3 (evidence storage), AWS SES (email) |
-| Jobs | pg-boss (notifications, reminders) |
-| i18n | next-intl (English, Hindi, Marathi, Gujarati) |
-| Export | ExcelJS (XLSX), @react-pdf/renderer (PDF) |
-| Testing | Vitest (unit + static discipline suites), Playwright E2E (5 role projects) |
-| Deploy | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt |
+| Layer     | Technology                                                                 |
+| --------- | -------------------------------------------------------------------------- |
+| Framework | Next.js 16, TypeScript 5.9, React 19                                       |
+| Database  | PostgreSQL 16, Prisma 7 (75 models, 21 enums)                              |
+| Auth      | Better Auth (17 roles, 78 permissions, maker-checker RBAC)                 |
+| UI        | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts                             |
+| Cloud     | AWS S3 (evidence storage), AWS SES (email)                                 |
+| Jobs      | pg-boss (notifications, reminders)                                         |
+| i18n      | next-intl (English, Hindi, Marathi, Gujarati)                              |
+| Export    | ExcelJS (XLSX), @react-pdf/renderer (PDF)                                  |
+| Testing   | Vitest (unit + static discipline suites), Playwright E2E (5 role projects) |
+| Deploy    | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt    |
 
 ## Features
 
 ### Core Audit (v5.0)
+
 - **RAM Engine** — 19 configurable risk parameters with weighted scoring and frequency rules (12/18/24 months)
 - **Annual Audit Plans** — Generated from RAM scores with engagement creation
 - **Audit Execution** — 25 examination areas, 239 items across 39 functional areas
@@ -61,6 +62,7 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 - **Loan Review** — Manual entry + CSV bulk import, SMA/NPA tracking
 
 ### Findings & Compliance (v5.0)
+
 - **Observation Lifecycle** — DRAFT > SUBMITTED > REVIEWED > ISSUED > RESPONSE > COMPLIANCE > CLOSED
 - **5C Framework** — Condition, Criteria, Cause, Effect, Recommendation
 - **Repeat Detection** — pg_trgm similarity matching with 1.5x risk uplift
@@ -68,6 +70,7 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 - **Compliance Routing** — Branch Response > ZAC Review > ACE > ACB (30-day SLA)
 
 ### RBIA (v6.0)
+
 - **Hierarchical Examination Trees** — Variable depth (0-5) with materialized paths
 - **4-Point Scoring** — Fully/Largely/Partially/Non-Compliant with weighted roll-up
 - **8-State Engagement Lifecycle** — Planned through Completed
@@ -75,11 +78,13 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 - **Branch Scoring** — Frozen immutable snapshots with DB-level trigger protection
 
 ### Sample-Based Examination (v7.0)
+
 - **Configurable Sampling** — 20% rate with 4 criteria buckets (lockable config)
 - **Instance-Based Scoring** — Weighted roll-up per examination node
 - **Full Lifecycle** — RAM > Engagement > Execution > Score Freeze > Observations > Compliance > Board Report > GRC
 
 ### GRC & Governance
+
 - **Risk Register** — Inherent/residual scoring, KRI tracking with thresholds
 - **Control Library** — Test procedures, effectiveness analytics
 - **Board Workspace** — ACB dashboards, agenda builder, RBI pack export
@@ -87,6 +92,7 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 - **IS/EDP Audit** — Application inventory, 6 checklists, 122 cyber security questionnaires
 
 ### Dashboards
+
 - 7 analytics tabs: Branch Risk (heatmap), Audit Plans, Compliance (aging), Findings (trend), NPA (waterfall), Controls (effectiveness), Risk MIS
 - Role-scoped views: Auditor, Auditee, CAE, CEO
 
@@ -102,6 +108,8 @@ Node.js 22+, pnpm, PostgreSQL 16, Docker (optional)
 pnpm install
 pnpm db:generate          # Generate Prisma client
 pnpm db:push              # Push schema to DB
+pnpm db:bootstrap         # Audit triggers, views, functions, composite FKs
+pnpm db:verify            # Assert they all landed
 pnpm db:seed              # Seed reference data
 pnpm dev                  # Next.js with Turbopack on :3000
 ```

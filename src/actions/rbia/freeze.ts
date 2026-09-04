@@ -13,10 +13,12 @@ import {
   SCORE_VALUES,
   type ScoredNode,
 } from "@/lib/rbia-scoring-engine";
+import { findUnscoredLeaves, type LeafStatus } from "@/lib/rbia-completeness";
 import {
   FreezeRbiaScoreSchema,
   type FreezeRbiaScoreInput,
   type ActionResult,
+  type ActionErrorCode,
 } from "./schemas";
 import { syncAllInstanceScores } from "@/data-access/instance-scoring";
 
@@ -138,12 +140,13 @@ export async function freezeRbiaScore(
       // ── Step 1: Load all ExaminationResponses for this engagement ──
       currentStep = "loading_responses";
       const responses = await tx.examinationResponse.findMany({
-        where: { engagementId: validated.engagementId },
+        where: { engagementId: validated.engagementId, tenantId },
         select: {
           id: true,
           nodeId: true,
           score: true,
           scoreLabel: true,
+          isNotApplicable: true,
         },
       });
 
@@ -201,15 +204,63 @@ export async function freezeRbiaScore(
         });
       }
 
-      // Link children -> parents, collect module nodes (depth 1)
-      const moduleNodes: ScoredNode[] = [];
+      // Link children -> parents. Modules in scope come from the engagement's
+      // selection, not from every depth-1 node in the tenant catalogue: the
+      // snapshot must describe this engagement, not the whole product.
+      const selections = await tx.engagementModuleSelection.findMany({
+        where: { engagementId: validated.engagementId, tenantId },
+        select: { moduleNodeId: true },
+      });
+      const selectedIds = new Set(selections.map((s) => s.moduleNodeId));
+
       for (const node of nodeMap.values()) {
-        if (node.depth === 1) {
-          moduleNodes.push(node);
-        } else if (node.parentId) {
+        if (node.parentId) {
           const parent = nodeMap.get(node.parentId);
           if (parent) parent.children.push(node);
         }
+      }
+
+      const moduleNodes: ScoredNode[] = [];
+      for (const id of selectedIds) {
+        const mod = nodeMap.get(id);
+        if (mod) moduleNodes.push(mod);
+      }
+
+      if (moduleNodes.length === 0) {
+        throw Object.assign(
+          new Error(
+            "Cannot freeze: no examination modules are selected for this engagement",
+          ),
+          { code: "INCOMPLETE_EXAMINATION" },
+        );
+      }
+
+      // ── Completeness gate ──
+      currentStep = "checking_completeness";
+      const leafStatuses = new Map<string, LeafStatus>();
+      for (const r of responses) {
+        const node = nodeMap.get(r.nodeId);
+        if (!node) continue;
+        leafStatuses.set(r.nodeId, {
+          nodeId: r.nodeId,
+          code: node.code,
+          scored: r.scoreLabel != null,
+          notApplicable: r.isNotApplicable,
+        });
+      }
+
+      const outstanding = findUnscoredLeaves(moduleNodes, leafStatuses);
+      if (outstanding.length > 0) {
+        const shown = outstanding.slice(0, 10).join(", ");
+        const more =
+          outstanding.length > 10 ? ` and ${outstanding.length - 10} more` : "";
+        throw Object.assign(
+          new Error(
+            `Cannot freeze: ${outstanding.length} examination item(s) are neither ` +
+              `scored nor marked not applicable — ${shown}${more}`,
+          ),
+          { code: "INCOMPLETE_EXAMINATION" },
+        );
       }
 
       // ── Step 3: Compute per-module scores and composite score ──
@@ -334,17 +385,21 @@ export async function freezeRbiaScore(
       loading_engagement: "Engagement not found or inaccessible",
       loading_responses: "Failed to load examination responses",
       building_tree: "Failed to build examination tree",
+      checking_completeness: "Examination is not complete",
       computing_scores: "Failed to compute scores",
       writing_score: "Score snapshot failed",
       issuing_action_points: "Failed to issue action points",
       creating_bm_batch: "Failed to create response batch",
     };
 
-    const isScoreFrozen =
-      error instanceof Error && (error as any).code === "SCORE_FROZEN";
-    const errorCode = isScoreFrozen ? "SCORE_FROZEN" : "INTERNAL_ERROR";
-    const userMessage = isScoreFrozen
-      ? "Score has already been frozen for this engagement"
+    const errorCode =
+      error instanceof Error && (error as any).code
+        ? ((error as any).code as string)
+        : "INTERNAL_ERROR";
+    const isKnown =
+      errorCode === "SCORE_FROZEN" || errorCode === "INCOMPLETE_EXAMINATION";
+    const userMessage = isKnown
+      ? (error as Error).message
       : (stepMessages[currentStep] ?? "Status transition blocked");
 
     logger.error(

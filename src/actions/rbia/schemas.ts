@@ -25,6 +25,7 @@ export type ActionErrorCode =
   | "CONFLICT"
   | "TRANSITION_BLOCKED"
   | "SCORE_FROZEN"
+  | "INCOMPLETE_EXAMINATION"
   | "INTERNAL_ERROR";
 
 export type ActionSuccess<T> = { success: true; data: T };

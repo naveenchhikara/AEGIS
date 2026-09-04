@@ -2150,6 +2150,11 @@ model ExaminationResponse {
   score      Decimal?   @db.Decimal(4, 2)
   scoreLabel ScoreLabel?
 
+  // Explicit N/A. A null score means "not yet examined"; this means "examined
+  // and does not apply to this branch". The freeze gate distinguishes them.
+  isNotApplicable      Boolean @default(false)
+  notApplicableReason  String? @db.Text
+
   workingNotes       String?  @db.Text  // Auditor's detailed notes
   flagForObservation Boolean  @default(false) // Flag for promotion to formal 5C Observation
   flagForActionPoint Boolean  @default(false) // Flag for promotion to Action Point

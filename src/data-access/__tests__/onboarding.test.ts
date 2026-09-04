@@ -20,7 +20,7 @@ const {
   }));
   return {
     tenantFindUnique: vi.fn(async () => ({ shortName: "Apex Bank" })),
-    sendInvitationEmail: vi.fn(async () => undefined),
+    sendInvitationEmail: vi.fn(async (_params: unknown) => undefined),
     bcryptHash: vi.fn(async (raw: string) => `bcrypt:${raw}`),
     userCreate,
     // A fake transaction whose doubles let the onboarding closure run through.

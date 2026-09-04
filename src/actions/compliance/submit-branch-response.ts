@@ -51,6 +51,12 @@ export async function submitBranchResponse(input: SubmitBranchResponseInput) {
       // Verify compliance item exists and is open
       const item = await tx.complianceItem.findFirst({
         where: { id: parsed.data.complianceItemId, tenantId },
+        select: {
+          id: true,
+          status: true,
+          branchId: true,
+          observation: { select: { branchId: true } },
+        },
       });
 
       if (!item) {

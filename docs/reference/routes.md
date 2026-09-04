@@ -4,10 +4,10 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
+> Source commit: `da86150` (copilot/fix-github-actions-job)
 
 Every addressable path in the application: **65 pages** and
-**12 HTTP endpoints**.
+**11 HTTP endpoints**.
 
 Pages are React Server Components under the Next.js App Router. Route groups in
 parentheses — `(dashboard)`, `(auth)` — organise files without appearing in
@@ -88,7 +88,6 @@ the URL, so they are stripped here.
 | Endpoint | Methods | Rendering | Purpose |
 |---|---|---|---|
 | `/api/auth/[...all]` | — | default | Better Auth API route handler |
-| `/api/cron/escalation` | POST | default | Daily cron endpoint for compliance escalation. |
 | `/api/dashboard` | GET | force-dynamic |  |
 | `/api/download` | GET | force-dynamic | Generate a presigned S3 download URL and redirect to it. |
 | `/api/exports/audit-plans` | GET | force-dynamic |  |

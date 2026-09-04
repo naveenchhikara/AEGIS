@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
+> Source commit: `da86150` (copilot/fix-github-actions-job)
 
 Which processes read and write which tables.
 
@@ -47,8 +47,11 @@ reachability graph.
 
 | Job | Audited | Tables touched directly |
 |---|---|---|
+| `compliance-escalation` | — | `Tenant` |
+| `compliance-escalation.test` | — | — |
 | `deadline-reminder` | yes | `NotificationQueue`, `Observation`, `Tenant` |
-| `notification-processor` | yes | `NotificationQueue` |
+| `notification-processor` | — | — |
+| `notification-processor.test` | — | — |
 | `overdue-escalation` | yes | `NotificationQueue`, `Observation`, `Tenant`, `User` |
 | `rbia-overdue-escalation` | yes | `BmResponseBatch`, `NotificationQueue`, `Tenant`, `User` |
 | `snapshot-metrics` | — | `DashboardSnapshot`, `Tenant` |

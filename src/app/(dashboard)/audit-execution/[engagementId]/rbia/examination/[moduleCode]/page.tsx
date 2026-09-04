@@ -6,7 +6,7 @@ import {
   type AccountWithProgress,
   type QuestionWithResponse,
 } from "@/data-access/account-examination";
-import { notFound } from "next/navigation";
+import { hasPermission } from "@/lib/permissions";
 import { AccountSidebar } from "@/components/account-examination/account-sidebar";
 import { QuestionCard } from "@/components/account-examination/question-card";
 import { ExaminationProgressBar } from "@/components/account-examination/examination-progress-bar";
@@ -90,6 +90,7 @@ export default async function ExaminationPage({
   const { accountId } = await searchParams;
 
   const session = await getRequiredSession();
+  const canRespond = hasPermission(session.user.roles, "examination:respond");
 
   // Fetch accounts and overall progress in parallel
   const [accounts, progress] = await Promise.all([
@@ -193,6 +194,7 @@ export default async function ExaminationPage({
                   question={q}
                   engagementId={engagementId}
                   loanAccountId={selectedAccountId}
+                  canRespond={canRespond}
                 />
               ))}
             </div>

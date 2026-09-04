@@ -265,9 +265,19 @@ correctly-routed container look unlabelled.
   pnpm 11 reads that field and self-delegates, so a bare `pnpm install` is now
   safe whatever is on `PATH`. Do **not** add a `version:` input to
   `pnpm/action-setup` — it throws when the two disagree
-- **pnpm 11 silently ignores `pnpm.overrides`.** It warns and exits 0 rather than
-  failing, so all 27 security pins would vanish unnoticed. pnpm 11 also relocates
-  the setting out of `package.json`; migrate those pins before adopting 11
+- **pnpm settings live in `pnpm-workspace.yaml`**, not the `pnpm` field of
+  `package.json`: the 27 transitive-dependency security pins and
+  `onlyBuiltDependencies`. pnpm 10.34.5 warns on every invocation that it no
+  longer reads that field, and pnpm 11 is where the deprecation completes.
+  The warning overstates the present: while the settings sat in
+  `package.json` the pins still resolved correctly, including across a forced
+  re-resolution, because `pnpm-lock.yaml` carries its own `overrides:` block
+  that pnpm keeps. Nothing was unpinned; the move is forward-compatibility
+- **`pnpm-workspace.yaml` is now load-bearing for any install.** Because the
+  settings are no longer duplicated in `package.json`, a context that copies
+  the manifest and lockfile without it fails `--frozen-lockfile` with
+  `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`. The `Dockerfile` deps stage copies all
+  three files for exactly this reason — do not trim that `COPY`
 
 ## Domain Context
 

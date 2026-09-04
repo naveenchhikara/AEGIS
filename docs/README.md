@@ -1,9 +1,20 @@
-# AEGIS documentation
+# AEGIS Documentation
+
+## Authoritative Sources
+
+**For development, deployment, and operations, start with [`../CLAUDE.md`](../CLAUDE.md).** It is the single source of truth for:
+- Production deployment (Coolify, merge-to-main, VPS config)
+- Environment contract and secrets management
+- Code style, patterns, and gotchas
+- Tenant isolation and audit attribution
+
+---
 
 ## Start here
 
 | Document | What it is |
 |---|---|
+| [`../CLAUDE.md`](../CLAUDE.md) | **Production guide** — deployment, environment, code patterns, operations (primary reference). |
 | [`architecture.md`](architecture.md) | How the system is put together and the invariants that hold it together — layering, audit lifecycle data flow, tenant isolation, audit attribution, authorization, the pure engines, jobs. Hand-written; read it before changing code. |
 
 ## Specification
@@ -30,16 +41,18 @@ they have drifted.
 
 | Document | What it is |
 |---|---|
+| [`ops/runbook.md`](ops/runbook.md) | **Day-to-day operations** — Coolify health checks, VPS access, deployment, rollback, container inspection. Refers to [`CLAUDE.md`](../CLAUDE.md#operational-commands) for full procedures. |
+| [`ops/release-checklist.md`](ops/release-checklist.md) | **Pre-release checks** — Merge-to-main model (no tags); SQL migrations; deployment verification. |
+| [`ops/repository-hygiene.md`](ops/repository-hygiene.md) | Repository conventions and cleanup. |
 | [`SEED-PROCESS-MANUAL.md`](SEED-PROCESS-MANUAL.md) | Loading demonstration data and its failure modes. |
-| [`ops/runbook.md`](ops/runbook.md) | Day-to-day operations. |
-| [`ops/release-checklist.md`](ops/release-checklist.md) | Pre-release checks. |
-| [`ops/repository-hygiene.md`](ops/repository-hygiene.md) | Repository conventions. |
-| [`agents/`](agents/) | Issue tracking, triage labels and domain-doc conventions. |
+| [`agents/`](agents/) | Issue tracking, triage labels, domain-doc conventions. |
 
-## Elsewhere in the repository
+## Elsewhere in the Repository
 
-- `CLAUDE.md` — how the project is built and deployed; the environment contract and known traps.
-- `src/data-access/README.md` — the tenant-scoped query pattern, in detail.
-- `CONTEXT.md` — glossary of domain terms.
-- `SECURITY-AUDIT.md` — security review, including items marked unverified.
+- [`../CLAUDE.md`](../CLAUDE.md) — **PRIMARY REFERENCE** — deployment, environment contract, code patterns, known traps. Start here for any production or deployment question.
+- [`../AGENTS.md`](../AGENTS.md) — Quick reference for commands and code style (see CLAUDE.md for authoritative details).
+- [`../CONTEXT.md`](../CONTEXT.md) — Glossary of RBI/audit domain terms.
+- [`../SECURITY-AUDIT.md`](../SECURITY-AUDIT.md) — Security review and verified/unverified items.
+- `src/data-access/README.md` — Tenant-scoped query patterns, in detail.
+- `deploy/README.md` — **⚠️ LEGACY** — old tag-driven deployment (do not use; see CLAUDE.md instead).
 - `tests/TEST-PLAN.md` — manual verification script.

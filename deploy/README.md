@@ -1,6 +1,16 @@
-# AEGIS Deployment Guide
+# ⚠️ LEGACY — AEGIS Deployment Guide
 
-Production is a git-backed Docker Compose deployment on the VPS behind
+**This document is obsolete.** The VPS was rebuilt on 2026-08-23 to use
+**Coolify** (self-hosted PaaS) instead of the git-backed Docker Compose +
+Nginx + systemd setup described below.
+
+**For current production deployment, see [`CLAUDE.md`](../CLAUDE.md#deployment).**
+
+---
+
+## Historical Reference (No Longer Used)
+
+Production *was* a git-backed Docker Compose deployment on the VPS behind
 Nginx.
 
 ## Current Production Layout

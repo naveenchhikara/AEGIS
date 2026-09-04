@@ -1,9 +1,11 @@
 # AGENTS.md - AEGIS Platform Development Guide
 
-**Last Updated:** March 8, 2026
+**Last Updated:** September 4, 2026  
+**⚠️ Status:** Simplified reference. **For authoritative guidance, see [`CLAUDE.md`](CLAUDE.md).**
 
 Guidelines for agentic coding agents working on the AEGIS UCB audit and
-compliance platform.
+compliance platform. This document highlights key commands and quick references;
+full patterns, deployment procedures, and ops details live in CLAUDE.md.
 
 ---
 
@@ -61,61 +63,20 @@ pnpm build:analyze    # Build with webpack bundle analysis
 
 ## Code Style Guidelines
 
-### Imports
+⚠️ **See [`CLAUDE.md`](CLAUDE.md#code-style) for the complete style guide.**
 
-- Use `@/*` path aliases (`@/*` → `./src/*`)
-- Group imports as React → third-party → internal → types
-- Re-export icons from `@/lib/icons`
+This file intentionally duplicates core principles; refer to CLAUDE.md for the authoritative version, including tenant-scoping rules, audited-mutation patterns, and edge-case gotchas.
 
-```typescript
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cn } from "@/lib/utils";
-import type { ButtonProps } from "@/components/ui/button";
-```
+### Quick Reference
 
-### Formatting
+- Use `@/*` path aliases
+- Import icons from `@/lib/icons`
+- Prefer server components
+- Use `cn()` for Tailwind classes
+- Semicolons enabled, double quotes
+- Route audited writes through `withAuditedMutation()`
 
-- Semicolons enabled
-- Double quotes
-- `prettier-plugin-tailwindcss` sorts Tailwind classes
-- Prefer lines in the 80-100 character range
-
-### TypeScript
-
-- Strict mode enabled
-- Export shared types from `src/types/index.ts`
-- Use `type` for type-only exports
-- Prefer `interface` for extensible object shapes and `type` for unions
-
-### Naming
-
-- Components: PascalCase
-- Functions: camelCase
-- Constants: UPPER_SNAKE_CASE
-- Files: kebab-case
-- Booleans: `is`, `has`, or `should` prefixes
-
-### Dates
-
-- Use ISO 8601 strings, not `Date` objects, for persisted values
-
-### React Patterns
-
-- Default to server components
-- Use client components only for interactivity or browser APIs
-- Keep components focused; extract reusable logic into hooks or services
-- Set `displayName` on forwarded refs
-
-### Class Names
-
-- Always use `cn()` from `@/lib/utils`
-- Let Prettier handle Tailwind class ordering
-
-### Error Handling
-
-- Return clear user-facing messages for failed actions
-- Log enough detail for debugging without exposing secrets
+See CLAUDE.md § "Code Style" and "Gotchas" for full detail.
 
 ---
 
@@ -169,11 +130,15 @@ docs/ops/             # Release and recovery docs
 
 ### Production Deployment
 
-- Production runs from `/opt/aegis/repo/docker-compose.prod.yml`
-- Secrets live in `/opt/aegis/shared/.env.production`
-- Deploy only from annotated git tags after green CI
-- Do not document or reintroduce copied-workspace deploys, PM2, or
-  Dockge paths
+⚠️ **See [`CLAUDE.md`](CLAUDE.md#deployment) for the authoritative production setup.**
+
+The VPS was reprovisioned on 2026-08-23 to run **Coolify** (self-hosted PaaS).
+- **Deploy trigger:** Merge to `main` (no tag step)
+- **Secrets:** Configured in Coolify UI, not in files
+- **Infrastructure:** Coolify-managed Postgres, Traefik TLS via Let's Encrypt
+- **Do not reintroduce:** `/opt/aegis/` paths, `docker-compose.prod.yml`, tag-driven pipeline, PM2, or Dockge
+
+See CLAUDE.md § "Deployment" and "Operational Commands" for current procedures.
 
 ---
 

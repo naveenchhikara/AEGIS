@@ -1401,6 +1401,36 @@ async function main() {
   }
   console.log("  ✓ 6 formal observations (5C format)");
 
+  // A LOW-severity observation parked in COMPLIANCE, so the E2E suite can
+  // exercise the COMPLIANCE → CLOSED transition deterministically. The title is
+  // matched verbatim by tests/e2e/observation-lifecycle.spec.ts.
+  // Idempotent: remove any prior copy of this fixture (it has no fixed ID in
+  // ID.obs, so the cleanup block above would not catch it).
+  await prisma.observation.deleteMany({
+    where: {
+      tenantId,
+      title: "E2E fixture: low severity awaiting closure",
+    },
+  });
+  await prisma.observation.create({
+    data: {
+      tenantId,
+      title: "E2E fixture: low severity awaiting closure",
+      condition: "Register not initialled for two days",
+      criteria: "Branch operations manual, clause 4.2",
+      cause: "Officer on leave without a delegate",
+      effect: "Minor control lapse",
+      recommendation: "Nominate a standing delegate",
+      severity: "LOW",
+      status: "COMPLIANCE",
+      branchId: kothrudId,
+      auditAreaId: creditArea.id,
+      createdById: sureshId,
+      version: 1,
+    },
+  });
+  console.log("  ✓ E2E COMPLIANCE fixture observation");
+
   // Timeline entries for each observation
   const timelineEvents: Array<{
     obsIdx: number;

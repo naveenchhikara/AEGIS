@@ -16,9 +16,9 @@ DB_PORT=5432
 DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}"
 
 # 1. PostgreSQL 16 (durable system dependency; skipped when already present).
-if ! command -v pg_ctlcluster >/dev/null 2>&1; then
+if ! command -v pg_ctlcluster >/dev/null 2>&1 || ! pg_lsclusters -h 2>/dev/null | awk '{print $1}' | grep -qx "$PGVER"; then
   sudo apt-get update -qq
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-contrib
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "postgresql-${PGVER}" "postgresql-contrib-${PGVER}"
 fi
 
 # 2. Bring the cluster up so we can provision it (start.sh owns per-boot startup).
@@ -73,21 +73,22 @@ pnpm db:push
 #    Applied by hand per docs; guarded on the trigger function so re-runs skip.
 #    RLS policy files are intentionally NOT applied (dead code — see docs).
 if ! psql "$DATABASE_URL" -tAc "SELECT 1 FROM pg_proc WHERE proname='audit_trigger_function'" | grep -q 1; then
-  for f in \
-    prisma/migrations/20260209015123_audit_trigger/migration.sql \
-    prisma/migrations/20260209220425_add_remaining_audit_triggers/migration.sql \
-    prisma/migrations/20260826_audit_trigger_null_safe.sql \
-    prisma/migrations/20260209_dashboard_views.sql \
-    prisma/migrations/20260222_rbia_db_guards.sql; do
-    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
-  done
-  # Observation lifecycle indexes only (the file's RLS/grant tail targets a
-  # role that this environment does not create).
+  # Apply all augmentation in one transaction so a failure cannot leave a
+  # partially-augmented database that later runs would skip.
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q <<SQL
+BEGIN;
+\i prisma/migrations/20260209015123_audit_trigger/migration.sql
+\i prisma/migrations/20260209220425_add_remaining_audit_triggers/migration.sql
+\i prisma/migrations/20260826_audit_trigger_null_safe.sql
+\i prisma/migrations/20260209_dashboard_views.sql
+\i prisma/migrations/20260222_rbia_db_guards.sql
+-- Observation lifecycle indexes only (the file's RLS/grant tail targets a
+-- role that this environment does not create).
 CREATE INDEX IF NOT EXISTS idx_observation_repeat_detection ON "Observation" ("tenantId","branchId","auditAreaId",status) WHERE status='CLOSED';
 CREATE INDEX IF NOT EXISTS idx_observation_title_trgm ON "Observation" USING gin (title gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_timeline_observation_ordered ON "ObservationTimeline" ("observationId","createdAt");
 CREATE INDEX IF NOT EXISTS idx_observation_version ON "Observation" (id, version);
+COMMIT;
 SQL
 fi
 

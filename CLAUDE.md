@@ -181,10 +181,11 @@ and `https://aegis.nexlyadvisory.com/api/health` was the check.
 
 An older layout before the 2026-08-23 reprovision — `/opt/aegis`,
 `docker-compose.prod.yml`, bespoke nginx, systemd timers, a `v*` tag pipeline —
-is stale twice over. `Deploy Production` is `disabled_manually` in Actions; do
-not re-enable it. `Health Check` is still **active** and runs every 12 hours
-against `https://aegis.nexlyadvisory.com/api/health`, so it fails every time —
-those red runs are the absent deployment, not a regression.
+is stale twice over. `Deploy Production` and `Health Check` are both
+`disabled_manually` in Actions; do not re-enable either while AEGIS is
+undeployed. `Health Check` was disabled on 2026-09-05 — it curled
+`https://aegis.nexlyadvisory.com/api/health` every 12 hours and failed every run
+from the teardown onward, because that host serves an unrelated app.
 
 </details>
 

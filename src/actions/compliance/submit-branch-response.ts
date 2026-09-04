@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
+import { requireBranchAssignment } from "@/data-access/access-guards";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import {
@@ -40,6 +41,32 @@ export async function submitBranchResponse(input: SubmitBranchResponseInput) {
   const db = prismaForTenant(tenantId);
 
   try {
+    // Resolve the branch before authorizing. ComplianceItem.branchId is a
+    // denormalised copy and may be null on older rows, so fall back to the
+    // observation that produced the item.
+    const item = await db.complianceItem.findFirst({
+      where: { id: parsed.data.complianceItemId, tenantId },
+      select: {
+        id: true,
+        status: true,
+        branchId: true,
+        observation: { select: { branchId: true } },
+      },
+    });
+
+    if (!item) {
+      return { success: false as const, error: "Compliance item not found" };
+    }
+
+    const branchGuard = await requireBranchAssignment(
+      { userId: session.user.id, tenantId },
+      item.branchId ?? item.observation?.branchId ?? null,
+    );
+
+    if (!branchGuard.ok) {
+      return { success: false as const, error: branchGuard.error };
+    }
+
     const result = await db.$transaction(async (tx: any) => {
       await setAuditContext(tx, {
         actionType: "compliance.branch_response_submitted",
@@ -48,28 +75,26 @@ export async function submitBranchResponse(input: SubmitBranchResponseInput) {
         sessionId: session.session.id,
       });
 
-      // Verify compliance item exists and is open
-      const item = await tx.complianceItem.findFirst({
-        where: { id: parsed.data.complianceItemId, tenantId },
-        select: {
-          id: true,
-          status: true,
-          branchId: true,
-          observation: { select: { branchId: true } },
-        },
+      // Re-read inside the transaction: status is the part that can change
+      // between the authorization read and the write.
+      const current = await tx.complianceItem.findFirst({
+        where: { id: item.id, tenantId },
+        select: { id: true, status: true },
       });
 
-      if (!item) {
+      if (!current) {
         throw new Error("Compliance item not found");
       }
 
-      if (item.status !== "OPEN" && item.status !== "BRANCH_RESPONSE_DUE") {
+      if (
+        current.status !== "OPEN" &&
+        current.status !== "BRANCH_RESPONSE_DUE"
+      ) {
         throw new Error("Can only respond to open compliance items");
       }
 
-      // Update compliance item
       return tx.complianceItem.update({
-        where: { id: item.id },
+        where: { id: current.id },
         data: {
           branchResponseText: parsed.data.responseText,
           branchResponseDate: new Date(),

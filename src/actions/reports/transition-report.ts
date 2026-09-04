@@ -13,6 +13,7 @@ import {
   type ReportStatus,
 } from "./schemas";
 import type { TransitionReportInput } from "./schemas";
+import { checkReportTransition } from "@/lib/maker-checker";
 
 /**
  * Server action for report state transitions (R33).
@@ -55,6 +56,8 @@ export async function transitionReportStatus(input: TransitionReportInput) {
         id: true,
         reportStatus: true,
         bhCertSignedAt: true,
+        reportReviewedById: true,
+        reportApprovedById: true,
         observations: {
           select: { id: true },
         },
@@ -99,6 +102,23 @@ export async function transitionReportStatus(input: TransitionReportInput) {
       return {
         success: false as const,
         error: `You do not have permission to perform this transition. Required roles: ${requiredRoles.join(", ")}.`,
+      };
+    }
+
+    // ─── Step 5b: Maker-checker ────────────────────────────────────
+    // The reviewer may neither approve nor issue. The approver may issue,
+    // because only CAE can issue and a bank may hold exactly one.
+    const makerChecker = checkReportTransition(
+      currentStatus,
+      targetStatus,
+      session.user.id,
+      { reportReviewedById: engagement.reportReviewedById },
+    );
+
+    if (!makerChecker.allowed) {
+      return {
+        success: false as const,
+        error: makerChecker.reason,
       };
     }
 

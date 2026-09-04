@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
-import { getRequiredSession } from "@/data-access/session";
-import { hasPermission, type Permission, type Role } from "@/lib/permissions";
+import {
+  getOnboardingSession,
+  getRequiredSession,
+} from "@/data-access/session";
+import { hasPermission, type Permission } from "@/lib/permissions";
 
 /**
  * Require specific permission to access a page.
@@ -61,6 +64,31 @@ export async function requireAnyPermission(permissions: Permission[]) {
 
   const hasAny = permissions.some((perm) => hasPermission(userRoles, perm));
   if (!hasAny) {
+    redirect("/dashboard?unauthorized=true");
+  }
+
+  return session;
+}
+
+/**
+ * Permission guard for the onboarding wizard.
+ *
+ * Uses getOnboardingSession because the wizard is the one place a user
+ * legitimately has no tenant yet; getRequiredSession would redirect them here,
+ * and here would redirect them here again.
+ *
+ * A tenantless session is the founder / signup path: Better Auth creates the
+ * user before roles or a tenant exist, so the permission check is skipped.
+ * Once a tenant is attached, the usual admin:manage_settings gate applies.
+ */
+export async function requireOnboardingPermission(permission: Permission) {
+  const session = await getOnboardingSession();
+
+  if (session.user.tenantId === null) {
+    return session;
+  }
+
+  if (!hasPermission(session.user.roles, permission)) {
     redirect("/dashboard?unauthorized=true");
   }
 

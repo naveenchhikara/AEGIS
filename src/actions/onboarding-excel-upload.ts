@@ -19,7 +19,7 @@ import { generateOrgStructureTemplate } from "@/lib/excel-templates/org-structur
 import { parseOrgStructureExcel } from "@/lib/excel-parsers/org-structure-parser";
 import type { BranchEntry, DepartmentEntry } from "@/types/onboarding";
 import { logger } from "@/lib/logger";
-import { getRequiredSession } from "@/data-access/session";
+import { getOnboardingSession } from "@/data-access/session";
 import { hasPermission } from "@/lib/permissions";
 import type { Role } from "@/generated/prisma/enums";
 
@@ -46,7 +46,7 @@ type UploadResult =
     };
 
 async function requireOnboardingPermission() {
-  const session = await getRequiredSession();
+  const session = await getOnboardingSession();
   if (
     !hasPermission(
       (session.user.roles as Role[] | undefined) ?? [],

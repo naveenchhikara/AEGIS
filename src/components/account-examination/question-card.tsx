@@ -44,6 +44,7 @@ interface QuestionCardProps {
   question: QuestionCardQuestion;
   engagementId: string;
   loanAccountId: string;
+  canRespond: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ export function QuestionCard({
   question,
   engagementId,
   loanAccountId,
+  canRespond,
 }: QuestionCardProps) {
   // ── Local state ────────────────────────────────────────────────────────────
   const [currentStatus, setCurrentStatus] = useState<
@@ -102,6 +104,12 @@ export function QuestionCard({
   // ── Debounced note auto-save ──────────────────────────────────────────────
   const saveNote = useCallback(
     (note: string, status: "COMPLIANT" | "VIOLATION") => {
+      if (!canRespond) {
+        toast.error(
+          "You do not have permission to record examination responses.",
+        );
+        return;
+      }
       setIsSavingNote(true);
       saveAccountExamResponse({
         engagementId,
@@ -124,7 +132,7 @@ export function QuestionCard({
           setIsSavingNote(false);
         });
     },
-    [engagementId, loanAccountId, question.id],
+    [canRespond, engagementId, loanAccountId, question.id],
   );
 
   // Debounce note saves — 500ms after last keystroke
@@ -151,6 +159,12 @@ export function QuestionCard({
   // ── Compliance button handler ──────────────────────────────────────────────
   const handleComplianceClick = useCallback(
     (status: "COMPLIANT" | "VIOLATION") => {
+      if (!canRespond) {
+        toast.error(
+          "You do not have permission to record examination responses.",
+        );
+        return;
+      }
       const previousStatus = currentStatus;
       setPendingStatus(status);
       // Optimistic update
@@ -180,6 +194,7 @@ export function QuestionCard({
       });
     },
     [
+      canRespond,
       currentStatus,
       engagementId,
       loanAccountId,
@@ -278,7 +293,7 @@ export function QuestionCard({
                 : "hover:border-green-300 hover:bg-green-50 hover:text-green-700",
             )}
             onClick={() => handleComplianceClick("COMPLIANT")}
-            disabled={isPending}
+            disabled={isPending || !canRespond}
           >
             {isPending && pendingStatus === "COMPLIANT" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -296,7 +311,7 @@ export function QuestionCard({
                 : "hover:border-red-300 hover:bg-red-50 hover:text-red-700",
             )}
             onClick={() => handleComplianceClick("VIOLATION")}
-            disabled={isPending}
+            disabled={isPending || !canRespond}
           >
             {isPending && pendingStatus === "VIOLATION" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -341,7 +356,7 @@ export function QuestionCard({
                       : "Add notes (optional)..."
                   }
                   className="min-h-[80px] resize-none text-sm"
-                  disabled={!currentStatus}
+                  disabled={!currentStatus || !canRespond}
                 />
                 {!currentStatus && (
                   <p className="text-muted-foreground mt-1 text-xs">

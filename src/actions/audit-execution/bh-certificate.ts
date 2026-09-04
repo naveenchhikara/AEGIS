@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
+import {
+  requireBranchAssignment,
+  requireTeamMembership,
+} from "@/data-access/access-guards";
 import { logger } from "@/lib/logger";
 import type { Role } from "@/generated/prisma/enums";
 import {
@@ -54,29 +58,33 @@ export async function signBhCertificate(input: SignBhCertificateInput) {
   // ─── Step 4: Tenant-Scoped Database ────────────────────────────
   const db = prismaForTenant(tenantId);
 
-  // ─── Step 5: Transaction (Atomic Operation) ────────────────────
+  // ─── Step 5: Resolve the engagement and authorize the branch ───
   try {
+    const engagement = await db.auditEngagement.findFirst({
+      where: { id: validated.engagementId, tenantId },
+      select: { id: true, branchId: true, bhCertSignedAt: true },
+    });
+
+    if (!engagement) {
+      throw new Error("Engagement not found");
+    }
+
+    if (engagement.bhCertSignedAt) {
+      throw new Error("BH Certificate has already been signed");
+    }
+
+    // The BRANCH_HEAD role is tenant-wide; the certificate is not.
+    const branchGuard = await requireBranchAssignment(
+      { userId: session.user.id, tenantId },
+      engagement.branchId,
+    );
+
+    if (!branchGuard.ok) {
+      return { success: false as const, error: branchGuard.error };
+    }
+
+    // ─── Step 6: Transaction (Atomic Operation) ────────────────────
     const result = await db.$transaction(async (tx: any) => {
-      // Verify engagement exists and is not already signed
-      const engagement = await tx.auditEngagement.findFirst({
-        where: {
-          id: validated.engagementId,
-          tenantId,
-        },
-        select: {
-          id: true,
-          bhCertSignedAt: true,
-        },
-      });
-
-      if (!engagement) {
-        throw new Error("Engagement not found");
-      }
-
-      if (engagement.bhCertSignedAt) {
-        throw new Error("BH Certificate has already been signed");
-      }
-
       // Set audit context for AuditLog trigger
       await setAuditContext(tx, {
         actionType: "bh_certificate.signed",
@@ -85,23 +93,32 @@ export async function signBhCertificate(input: SignBhCertificateInput) {
         sessionId: session.session.id,
       });
 
-      // Update engagement with signature
-      const now = new Date();
-      const updated = await tx.auditEngagement.update({
-        where: { id: validated.engagementId },
+      // Update engagement with signature, predicated on it still being
+      // unsigned so two branch heads cannot both claim the signature.
+      const signed = await tx.auditEngagement.updateMany({
+        where: {
+          id: validated.engagementId,
+          tenantId,
+          bhCertSignedAt: null,
+        },
         data: {
           bhCertSignedById: session.user.id,
-          bhCertSignedAt: now,
+          bhCertSignedAt: new Date(),
           bhCertComments: validated.comments,
-        },
-        select: {
-          id: true,
-          bhCertSignedAt: true,
         },
       });
 
+      if (signed.count !== 1) {
+        throw new Error("BH Certificate has already been signed");
+      }
+
+      const updated = await tx.auditEngagement.findFirst({
+        where: { id: validated.engagementId, tenantId },
+        select: { id: true, bhCertSignedAt: true },
+      });
+
       return {
-        signedAt: updated.bhCertSignedAt!,
+        signedAt: updated!.bhCertSignedAt!,
         signedBy: session.user.name,
       };
     });
@@ -176,6 +193,20 @@ export async function countersignBhCertificate(
   }
   const validated = parsed.data;
 
+  // LEAD_AUDITOR is an engagement role and must be on this engagement's team.
+  // AUDIT_MANAGER is a tenant-wide oversight role and is not enrolled in
+  // AuditTeamMember, so it is exempt.
+  if (!userRoles.includes("AUDIT_MANAGER")) {
+    const teamGuard = await requireTeamMembership(
+      { userId: session.user.id, tenantId: session.user.tenantId },
+      validated.engagementId,
+    );
+
+    if (!teamGuard.ok) {
+      return { success: false as const, error: teamGuard.error };
+    }
+  }
+
   // ─── Step 4: Tenant-Scoped Database ────────────────────────────
   const db = prismaForTenant(tenantId);
 
@@ -191,6 +222,7 @@ export async function countersignBhCertificate(
         select: {
           id: true,
           bhCertSignedAt: true,
+          bhCertSignedById: true,
           bhCertCountersignedAt: true,
         },
       });
@@ -205,6 +237,14 @@ export async function countersignBhCertificate(
 
       if (engagement.bhCertCountersignedAt) {
         throw new Error("BH Certificate has already been countersigned");
+      }
+
+      // A user holding both BRANCH_HEAD and AUDIT_MANAGER could otherwise sign
+      // and countersign the same certificate.
+      if (engagement.bhCertSignedById === session.user.id) {
+        throw new Error(
+          "You signed this certificate; a different user must countersign it.",
+        );
       }
 
       // Set audit context for AuditLog trigger

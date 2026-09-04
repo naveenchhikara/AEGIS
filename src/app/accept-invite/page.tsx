@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { acceptInvitation } from "@/actions/user-invitations";
+import { PasswordSchema } from "@/lib/password-policy";
 import {
   Card,
   CardContent,
@@ -48,8 +49,9 @@ function AcceptInviteForm() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    const passwordCheck = PasswordSchema.safeParse(password);
+    if (!passwordCheck.success) {
+      setError(passwordCheck.error.issues[0].message);
       return;
     }
 

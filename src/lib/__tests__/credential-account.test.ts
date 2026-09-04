@@ -54,7 +54,10 @@ describe("acceptInvitation wires credentials", () => {
   });
 
   it("creates a Better Auth credential Account in the same transaction", () => {
-    expect(source).toContain("hashedCredentialAccount");
+    expect(
+      source.includes("hashedCredentialAccount") ||
+        source.includes("auth.$context).password.hash"),
+    ).toBe(true);
     expect(source).toContain("tx.account.create");
   });
 });

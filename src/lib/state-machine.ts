@@ -41,6 +41,28 @@ export type TransitionDef = {
 // ─── Transition Definitions ─────────────────────────────────────────────────
 
 /**
+ * Roles that can author an observation — the roles granted `observation:create`
+ * in src/lib/permissions.ts (AUDITOR plus the specialised auditor roles).
+ *
+ * Every author submits their own draft for review — that is the maker step of
+ * maker-checker — so the DRAFT → SUBMITTED transition is open to all of them,
+ * not just AUDITOR. A role that can create an observation but not submit it
+ * would strand its drafts in DRAFT with no available action (the detail page
+ * even tells the user to "submit for review" while showing no button).
+ *
+ * Kept in sync with ROLE_PERMISSIONS by
+ * src/lib/__tests__/observation-author-roles.test.ts, which fails the build if
+ * a role gains `observation:create` without also being able to submit.
+ */
+export const OBSERVATION_AUTHOR_ROLES: Role[] = [
+  "AUDITOR",
+  "LEAD_AUDITOR",
+  "FIELD_AUDITOR",
+  "CONCURRENT_AUDITOR",
+  "IS_AUDITOR",
+];
+
+/**
  * All valid transitions in the observation lifecycle.
  * 6 forward transitions + 2 return transitions = 8 total.
  */
@@ -49,7 +71,7 @@ export const TRANSITIONS: TransitionDef[] = [
   {
     from: "DRAFT",
     to: "SUBMITTED",
-    allowedRoles: ["AUDITOR"],
+    allowedRoles: OBSERVATION_AUTHOR_ROLES,
     label: "Submit for Review",
   },
   {

@@ -18,6 +18,7 @@ import {
   FreezeRbiaScoreSchema,
   type FreezeRbiaScoreInput,
   type ActionResult,
+  type ActionErrorCode,
 } from "./schemas";
 import { syncAllInstanceScores } from "@/data-access/instance-scoring";
 
@@ -393,12 +394,13 @@ export async function freezeRbiaScore(
       creating_bm_batch: "Failed to create response batch",
     };
 
-    const errorCode =
+    const thrownCode =
       error instanceof Error && (error as any).code
         ? ((error as any).code as string)
-        : "INTERNAL_ERROR";
+        : undefined;
     const isKnown =
-      errorCode === "SCORE_FROZEN" || errorCode === "INCOMPLETE_EXAMINATION";
+      thrownCode === "SCORE_FROZEN" || thrownCode === "INCOMPLETE_EXAMINATION";
+    const errorCode: ActionErrorCode = isKnown ? thrownCode : "INTERNAL_ERROR";
     const userMessage = isKnown
       ? (error as Error).message
       : (stepMessages[currentStep] ?? "Status transition blocked");

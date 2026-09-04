@@ -118,6 +118,16 @@ export async function saveExaminationResponse(
         throw new Error("Engagement not found");
       }
 
+      // Verify the examination node belongs to this tenant before referencing it
+      // in the response upsert or copying its metadata into an ActionPoint.
+      const node = await tx.examinationNode.findFirst({
+        where: { id: validated.nodeId, tenantId },
+        select: { code: true, name: true, path: true },
+      });
+      if (!node) {
+        throw new Error("Examination node not found");
+      }
+
       if (!SCORING_ALLOWED_STATUSES.has(engagement.status)) {
         return {
           _conflict: true as const,
@@ -170,12 +180,6 @@ export async function saveExaminationResponse(
         });
 
         if (!existingAp) {
-          // Load node for module code + description
-          const node = await tx.examinationNode.findUnique({
-            where: { id: validated.nodeId },
-            select: { code: true, name: true, path: true },
-          });
-
           // Atomic serial number within transaction
           const maxSerial = await tx.actionPoint.aggregate({
             where: { engagementId: validated.engagementId },
@@ -197,10 +201,10 @@ export async function saveExaminationResponse(
               engagementId: validated.engagementId,
               branchId: engagement.branchId,
               serialNo: nextSerialNo,
-              title: node?.name ?? "Action Point",
-              description: validated.workingNotes ?? node?.name ?? "",
+              title: node.name,
+              description: validated.workingNotes ?? node.name,
               severity: severityFromScore,
-              moduleCode: node?.path?.split(".")[1] ?? node?.code ?? "",
+              moduleCode: node.path.split(".")[1] ?? node.code,
               sourceResponseId: upsertedResponse.id,
               status: "DRAFT",
               createdById: session.user.id,

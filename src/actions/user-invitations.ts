@@ -6,12 +6,10 @@ import { hasPermission, type Role } from "@/lib/permissions";
 import { headers } from "next/headers";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
-import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { auth } from "@/lib/auth";
 import { PasswordSchema } from "@/lib/password-policy";
+import { sendInvitationEmail } from "@/lib/invitation-mailer";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -102,12 +100,13 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
             );
           }
 
-          // Log invitation email (console fallback — SES integration in Phase 8)
-          console.log(
-            `[INVITATION] Email would be sent to ${invite.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(invite.email)}`,
-          );
-
-          results.push({ id: user.id, email: user.email, name: user.name });
+          results.push({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            rawToken,
+            inviteExpiry: user.inviteExpiry!,
+          });
         }
 
         // Audit log
@@ -129,10 +128,31 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
         });
 
         return results;
-    },
+      },
     );
 
-    return { success: true, error: null, data: createdUsers };
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { shortName: true },
+    });
+
+    // Sent after the transaction commits: SES is network I/O, and a transient
+    // delivery failure must not roll back the user records.
+    for (const invitee of createdUsers) {
+      await sendInvitationEmail({
+        to: invitee.email,
+        inviteeName: invitee.name,
+        bankName: tenant?.shortName ?? "AEGIS",
+        rawToken: invitee.rawToken,
+        expiresAt: invitee.inviteExpiry,
+      });
+    }
+
+    return {
+      success: true,
+      error: null,
+      data: createdUsers.map(({ id, email, name }) => ({ id, email, name })),
+    };
   } catch (error) {
     logger.error(
       { error, action: "send_user_invitations", tenantId },
@@ -249,7 +269,10 @@ export async function acceptInvitation(
     return { success: true, error: null };
   } catch (error) {
     if (error instanceof Error && error.message === ALREADY_ACCEPTED) {
-      return { success: false, error: "This invitation has already been used." };
+      return {
+        success: false,
+        error: "This invitation has already been used.",
+      };
     }
     logger.error(
       { error, action: "accept_invitation", email },
@@ -285,6 +308,8 @@ export async function resendInvitation(userId: string) {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = await bcrypt.hash(rawToken, 12);
 
+    const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
     await withAuditedMutation(
       userActor(session),
@@ -294,14 +319,23 @@ export async function resendInvitation(userId: string) {
           where: { id: userId, tenantId },
           data: {
             inviteTokenHash: tokenHash,
-            inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            inviteExpiry: newExpiry,
           },
         }),
     );
 
-    console.log(
-      `[INVITATION RESEND] Email would be sent to ${user.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(user.email)}`,
-    );
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { shortName: true },
+    });
+
+    await sendInvitationEmail({
+      to: user.email,
+      inviteeName: user.name,
+      bankName: tenant?.shortName ?? "AEGIS",
+      rawToken,
+      expiresAt: newExpiry,
+    });
 
     return { success: true, error: null };
   } catch (error) {

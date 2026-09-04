@@ -28,6 +28,7 @@ vi.mock("@/data-access/audited-mutation", () => ({
   withAuditedMutation: vi.fn(),
   userActor: vi.fn(),
 }));
+vi.mock("@/lib/invitation-mailer", () => ({ sendInvitationEmail: vi.fn() }));
 
 import { acceptInvitation } from "../user-invitations";
 import { prisma } from "@/lib/prisma";
@@ -101,7 +102,11 @@ describe("acceptInvitation", () => {
   });
 
   it("refuses a password that fails the policy before touching the database", async () => {
-    const result = await acceptInvitation("raw-token", "asha@ucb.example", "short");
+    const result = await acceptInvitation(
+      "raw-token",
+      "asha@ucb.example",
+      "short",
+    );
 
     expect(result).toEqual({
       success: false,

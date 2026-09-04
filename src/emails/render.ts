@@ -1,6 +1,10 @@
 import { render } from "@react-email/components";
 import { createElement } from "react";
 import {
+  InvitationEmail,
+  getInvitationSubject,
+} from "./templates/invitation-email";
+import {
   AssignmentEmail,
   getAssignmentSubject,
 } from "./templates/assignment-email";
@@ -60,6 +64,17 @@ export async function renderEmailTemplate(
   let subject: string;
 
   switch (templateName) {
+    case "invitation":
+      element = createElement(InvitationEmail, {
+        bankName,
+        appUrl,
+        inviteeName: p.inviteeName ?? "",
+        acceptUrl: p.acceptUrl ?? `${appUrl}/accept-invite`,
+        expiresOn: p.expiresOn ?? "",
+      });
+      subject = getInvitationSubject(bankName);
+      break;
+
     case "assignment":
       element = createElement(AssignmentEmail, {
         bankName,

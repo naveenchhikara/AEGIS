@@ -10,7 +10,20 @@ import {
   type OnboardingCompletionData,
 } from "@/data-access/onboarding";
 import { checklistItems } from "@/data/rbi-master-directions";
+import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+
+/**
+ * Onboarding provisions the tenant: it overwrites the bank profile, creates
+ * branches and audit areas, and mints users with caller-supplied roles. That is
+ * a tenant-configuration operation, so both entry points gate on
+ * `admin:manage_settings` (held by CAE and SYSTEM_ADMIN). Without the gate any
+ * authenticated tenant user could replay onboarding to grant themselves an
+ * admin role.
+ */
+const ONBOARDING_PERMISSION = "admin:manage_settings" as const;
+const ONBOARDING_FORBIDDEN =
+  "You do not have permission to configure onboarding.";
 
 /**
  * Server Actions for the Onboarding Wizard
@@ -32,6 +45,10 @@ export async function saveWizardStep(
 
   if (!tenantId) {
     return { success: false, error: "No tenant associated with this user." };
+  }
+
+  if (!hasPermission(session.user.roles, ONBOARDING_PERMISSION)) {
+    return { success: false, error: ONBOARDING_FORBIDDEN };
   }
 
   try {
@@ -94,6 +111,10 @@ export async function completeOnboarding(input: CompleteOnboardingInput) {
 
   if (!tenantId) {
     return { success: false, error: "No tenant associated with this user." };
+  }
+
+  if (!hasPermission(session.user.roles, ONBOARDING_PERMISSION)) {
+    return { success: false, error: ONBOARDING_FORBIDDEN };
   }
 
   try {

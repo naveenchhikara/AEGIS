@@ -191,13 +191,23 @@ export async function acceptInvitation(
     // Hash before the transaction so we do not hold a connection across scrypt.
     const account = await hashedCredentialAccount(user.id, password);
 
+    // Read before the transaction: an Actor carries the IP, and a throw here
+    // must land before anything commits, not after.
+    const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
+
     // Activate the user and attach a credential Account in one transaction.
     // The accept-invite page never calls Better Auth signUp — it only posts
     // here — so skipping Account.create left ACTIVE users with no password.
+    //
+    // No auditLog.create follows this. "User" carries audit_trigger, so the
+    // update below already writes the row, taking actionType and IP from the
+    // session context. A manual row would duplicate it, and — landing after
+    // the commit — would report a completed activation as a failure, sending
+    // the user back to an invitation their own success has already consumed.
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.
-      { kind: "user", userId: user.id, tenantId },
+      { kind: "user", userId: user.id, tenantId, ipAddress },
       "user.invitation_accepted",
       async (tx) => {
         await tx.user.update({
@@ -212,19 +222,6 @@ export async function acceptInvitation(
         await tx.account.create({ data: account });
       },
     );
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId: user.tenantId!,
-        tableName: "User",
-        recordId: user.id,
-        operation: "UPDATE",
-        actionType: "user.invitation_accepted",
-        userId: user.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {
@@ -311,26 +308,23 @@ export async function revokeInvitation(userId: string) {
       return { success: false, error: "User not found or already active." };
     }
 
-    // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
+    const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
+
+    // Include tenantId in WHERE to prevent IDOR cross-tenant deletion.
+    // The delete fires audit_trigger, which writes the AuditLog row from this
+    // context — the Actor is spelled out rather than built by userActor so it
+    // carries the IP and session id the trigger would otherwise record as NULL.
     await withAuditedMutation(
-      userActor(session),
+      {
+        kind: "user",
+        userId: session.user.id,
+        tenantId,
+        ipAddress,
+        sessionId: session.session.id,
+      },
       "user.invitation_revoked",
       (tx) => tx.user.deleteMany({ where: { id: userId, tenantId } }),
     );
-
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId,
-        tableName: "User",
-        recordId: userId,
-        operation: "DELETE",
-        actionType: "user.invitation_revoked",
-        userId: session.user.id,
-        sessionId: session.session.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {

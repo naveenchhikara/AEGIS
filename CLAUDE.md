@@ -257,8 +257,10 @@ correctly-routed container look unlabelled.
   uploads and email degrade rather than block boot
 - `NEXT_PUBLIC_*` variables must exist at Docker build time
 - `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` must stay aligned with each other;
-  locally both are `http://localhost:3000`. The Dockerfile still defaults
-  `NEXT_PUBLIC_APP_URL` to `https://aegis.nexlyadvisory.com` for image builds
+  locally both are `http://localhost:3000`, and so is the Dockerfile's
+  `NEXT_PUBLIC_APP_URL` build arg. It is inlined into the client bundle and
+  cannot be changed at runtime, so an image for a real host needs
+  `--build-arg NEXT_PUBLIC_APP_URL=https://<host>`
 - **pnpm is pinned by `packageManager` in `package.json`** (`pnpm@10.34.5`).
   pnpm 11 reads that field and self-delegates, so a bare `pnpm install` is now
   safe whatever is on `PATH`. Do **not** add a `version:` input to

@@ -218,6 +218,8 @@ export async function acceptInvitation(
       return { success: false, error: "Invitation is not linked to a bank." };
     }
 
+    const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
+
     // Better Auth keeps credentials on Account and hashes with its own
     // configured algorithm. Hash through its context so the digest matches
     // what signIn.email will later verify — a bcrypt digest never would.
@@ -225,7 +227,7 @@ export async function acceptInvitation(
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.
-      { kind: "user", userId: user.id, tenantId },
+      { kind: "user", userId: user.id, tenantId, ipAddress },
       "user.invitation_accepted",
       async (tx) => {
         // Predicated on INVITED so two concurrent acceptances cannot both
@@ -257,19 +259,6 @@ export async function acceptInvitation(
         });
       },
     );
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId,
-        tableName: "User",
-        recordId: user.id,
-        operation: "UPDATE",
-        actionType: "user.invitation_accepted",
-        userId: user.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {

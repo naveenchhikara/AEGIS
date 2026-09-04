@@ -84,6 +84,12 @@ describe("acceptInvitation", () => {
         password: "scrypt:Branch2026audit",
       },
     });
+    expect(withAuditedMutation).toHaveBeenCalledWith(
+      { kind: "user", userId: USER_A, tenantId: TENANT_A, ipAddress: "10.0.0.1" },
+      "user.invitation_accepted",
+      expect.any(Function),
+    );
+    expect(prisma.auditLog.create).not.toHaveBeenCalled();
   });
 
   it("activates only from INVITED, so a second acceptance is refused", async () => {

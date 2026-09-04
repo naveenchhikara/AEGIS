@@ -6,10 +6,11 @@ import { hasPermission, type Role } from "@/lib/permissions";
 import { headers } from "next/headers";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+  hashedCredentialAccount,
+  passwordValidationError,
+} from "@/lib/credential-account";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -127,7 +128,7 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
         });
 
         return results;
-    },
+      },
     );
 
     return { success: true, error: null, data: createdUsers };
@@ -145,9 +146,14 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
 export async function acceptInvitation(
   token: string,
   email: string,
-  _password: string,
+  password: string,
 ) {
   try {
+    const passwordError = passwordValidationError(password);
+    if (passwordError) {
+      return { success: false, error: passwordError };
+    }
+
     // Find user by email with INVITED status
     const user = await prisma.user.findFirst({
       where: {
@@ -182,15 +188,19 @@ export async function acceptInvitation(
       return { success: false, error: "Invitation is not linked to a bank." };
     }
 
-    // Activate user: clear token, update status
-    // Note: Better Auth's signUp.email handles password hashing internally with bcrypt
+    // Hash before the transaction so we do not hold a connection across scrypt.
+    const account = await hashedCredentialAccount(user.id, password);
+
+    // Activate the user and attach a credential Account in one transaction.
+    // The accept-invite page never calls Better Auth signUp — it only posts
+    // here — so skipping Account.create left ACTIVE users with no password.
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.
       { kind: "user", userId: user.id, tenantId },
       "user.invitation_accepted",
-      (tx) =>
-        tx.user.update({
+      async (tx) => {
+        await tx.user.update({
           where: { id: user.id },
           data: {
             status: "ACTIVE",
@@ -198,7 +208,9 @@ export async function acceptInvitation(
             inviteExpiry: null,
             emailVerified: true,
           },
-        }),
+        });
+        await tx.account.create({ data: account });
+      },
     );
 
     // Create audit log

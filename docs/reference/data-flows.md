@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c30f98` (cursor/mermaid-data-flow-diagram-84bb)
+> Source commit: `788a7aa` (cursor/critical-bug-management-fd44)
 
 Which processes read and write which tables.
 
@@ -18,7 +18,7 @@ reachability graph.
 
 | Domain | Modules | Tables touched directly |
 |---|---|---|
-| `(root)` | 8 | `AuditLog`, `AuditeeResponse`, `Branch`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User`, `UserBranchAssignment` |
+| `(root)` | 8 | `Account`, `AuditLog`, `AuditeeResponse`, `Branch`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User`, `UserBranchAssignment` |
 | `account-examination` | 1 | `AccountExamResponse`, `AuditEngagement`, `LoanAccount` |
 | `admin` | 4 | `AuditCalendar`, `Branch`, `ReportTemplate`, `Zone` |
 | `audit-execution` | 12 | `AuditEngagement`, `AuditExaminationResponse`, `AuditSectionInstance`, `AuditTeamMember`, `CashCheck`, `Evidence`, `ExaminationArea`, `ExaminationItem`, `LoanReview`, `Observation`, `ObservationTimeline`, `SmaNpaEntry` |

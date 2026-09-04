@@ -11,6 +11,7 @@ docker-compose*.yml
 .DS_Store
 *.md
 .claude
+.worktrees
 .codex
 awesome-claude-code-subagents
 Project Doc

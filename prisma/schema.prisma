@@ -264,6 +264,7 @@ model Tenant {
   observations           Observation[]
   observationTimelines   ObservationTimeline[]
   evidence               Evidence[]
+  uploadIntents          UploadIntent[]
   complianceRequirements ComplianceRequirement[]
   branches               Branch[]
   zones                  Zone[]
@@ -592,6 +593,35 @@ model Evidence {
   @@index([newExaminationResponseId])
   @@index([actionPointId])
   @@index([accountExamResponseId])
+}
+
+enum UploadPurpose {
+  OBSERVATION_EVIDENCE
+  EXAMINATION_EVIDENCE
+}
+
+/// A server-issued permission to upload one object to one key for one parent
+/// record. Confirmation resolves the intent instead of trusting the caller's
+/// key and metadata, so an existing object cannot be rebound elsewhere.
+model UploadIntent {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @db.Uuid
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  s3Key       String        @unique
+  purpose     UploadPurpose
+  parentId    String        @db.Uuid
+  contentType String
+  maxFileSize Int
+
+  createdById String    @db.Uuid
+  expiresAt   DateTime
+  consumedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([expiresAt])
 }
 
 // ─── Compliance Requirement ──────────────────────────────────────────────────

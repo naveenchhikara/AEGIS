@@ -1,17 +1,31 @@
-import pino from "pino";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { logger } from "@/lib/logger";
 
 describe("logger error serialization", () => {
-  it("serializes Error instances under the error key with message and stack", () => {
-    const serializers = (logger as unknown as Record<symbol, unknown>)[
-      pino.symbols.serializersSym
-    ] as Record<string, (value: unknown) => { message?: string; stack?: string }>;
+  it("serializes Error instances under the error key with message and stack", async () => {
+    const writes: string[] = [];
+    const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(
+      ((chunk: string | Uint8Array) => {
+        writes.push(Buffer.isBuffer(chunk) ? chunk.toString("utf8") : chunk);
+        return true;
+      }) as typeof process.stdout.write,
+    );
 
-    const serialized = serializers.error(new Error("boom"));
+    try {
+      logger.error({ error: new Error("boom"), action: "test" }, "Failed");
+      await new Promise((resolve) => setImmediate(resolve));
+    } finally {
+      writeSpy.mockRestore();
+    }
 
-    expect(serialized.message).toBe("boom");
-    expect(serialized.stack).toContain("Error: boom");
+    const logLine = writes.find((line) => line.includes("\"msg\":\"Failed\""));
+    expect(logLine).toBeDefined();
+    const parsed = JSON.parse(logLine ?? "{}") as {
+      error?: { message?: string; stack?: string };
+    };
+
+    expect(parsed.error?.message).toBe("boom");
+    expect(parsed.error?.stack).toContain("Error: boom");
   });
 });

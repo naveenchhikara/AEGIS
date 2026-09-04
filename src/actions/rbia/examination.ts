@@ -96,8 +96,17 @@ export async function saveExaminationResponse(
         sessionId: session.session.id,
       });
 
-      // Compute decimal score from label
-      const score = SCORE_VALUES[validated.scoreLabel];
+      // Exactly one of these branches is populated — the schema's superRefine
+      // rejects a payload that carries both a score and the N/A flag, or
+      // neither. Marking N/A clears any score the item previously held, so a
+      // re-graded leaf cannot keep a stale contribution to the composite.
+      const scoreLabel = validated.isNotApplicable
+        ? null
+        : (validated.scoreLabel ?? null);
+      const score = scoreLabel === null ? null : SCORE_VALUES[scoreLabel];
+      const notApplicableReason = validated.isNotApplicable
+        ? (validated.notApplicableReason ?? "").trim()
+        : null;
 
       // Verify engagement exists and belongs to tenant
       const engagement = await tx.auditEngagement.findFirst({
@@ -129,7 +138,9 @@ export async function saveExaminationResponse(
           engagementId: validated.engagementId,
           nodeId: validated.nodeId,
           score,
-          scoreLabel: validated.scoreLabel,
+          scoreLabel,
+          isNotApplicable: validated.isNotApplicable,
+          notApplicableReason,
           workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,
@@ -138,7 +149,9 @@ export async function saveExaminationResponse(
         },
         update: {
           score,
-          scoreLabel: validated.scoreLabel,
+          scoreLabel,
+          isNotApplicable: validated.isNotApplicable,
+          notApplicableReason,
           workingNotes: validated.workingNotes ?? null,
           flagForObservation: validated.flagForObservation,
           flagForActionPoint: validated.flagForActionPoint,

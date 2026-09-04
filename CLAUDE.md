@@ -17,6 +17,15 @@ confirmed 2026-09-04. There is no VPS deployment and no Coolify application.
 > check. `https://aegis.nexlyadvisory.com` does **not** serve AEGIS; it resolves
 > to a host running an unrelated app. See [Deployment](#deployment).
 
+## Stack
+
+Next.js 16 (App Router) · React 19 · TypeScript 5.9 (strict) ·
+Prisma 7 → PostgreSQL 16 · Tailwind 4 · shadcn/ui + Radix ·
+Better Auth · next-intl 4 · pg-boss · pnpm
+
+Schema is large: 75 models, 21 enums in `prisma/schema.prisma`.
+Assume current-generation idioms — these are all recent majors.
+
 ## Working Style
 
 - Execute verifications yourself when the task changes runnable behavior
@@ -105,6 +114,12 @@ src/
 ├── stores/                    # Zustand stores
 └── types/                     # Shared types
 ```
+
+Vitest unit tests live beside the code they cover in `src/**/__tests__/`,
+not under `tests/` — for example
+`src/data-access/__tests__/tenant-isolation.test.ts` and
+`src/lib/__tests__/permissions.test.ts`. Only Playwright E2E specs live in
+`tests/e2e/`.
 
 ## Route Snapshot
 
@@ -280,7 +295,24 @@ correctly-routed container look unlabelled.
 
 ## Gotchas
 
-- Tenant isolation is enforced in application code, not PostgreSQL RLS
+- Tenant isolation is enforced in application code, not PostgreSQL RLS.
+  `prismaForTenant()` returns the plain singleton; isolation comes from the
+  explicit `WHERE tenantId` in every DAL function.
+- `prisma/migrations/superseded/add_rls_policies.sql` is quarantined for a
+  reason worth knowing. It sets `FORCE ROW LEVEL SECURITY` on 11 tables keyed to
+  `app.current_tenant_id` — a GUC only audited transactions set, through
+  `setSessionContext()` in `src/lib/session-context.ts` or the legacy
+  `setAuditContext()`. Ordinary reads never set it, so applying the file makes
+  those tables return **zero rows** rather than erroring, and raises an
+  invalid-UUID error wherever a pooled connection exposes the GUC as `''`. The
+  RLS enforcement model is still undecided; do not revive this file to settle it
+- There is no `postinstall` hook: run `pnpm db:generate` after a fresh
+  clone or any `schema.prisma` change, or `pnpm build` fails on missing
+  imports from `@/generated/prisma`
+- `prisma/migrations/` mixes Prisma migration directories with bare `.sql`
+  files, and Prisma never discovers the loose ones. Apply those with
+  `pnpm db:apply <path>` — the same path CI rehearses — not by hand with `psql`.
+  Timestamped directories apply only under an explicit Prisma migration command
 - **Session GUCs read back as `''`, not NULL, on a pooled connection** that has
   previously set them. `''::UUID` throws. Always wrap reads in
   `NULLIF(current_setting(...), '')` — see

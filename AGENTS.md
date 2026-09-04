@@ -91,12 +91,14 @@ src/
 ├── data-access/      # Tenant-aware queries
 ├── emails/           # React Email templates
 ├── hooks/            # Shared hooks
+├── i18n/             # Locale configuration
 ├── jobs/             # pg-boss workers and schedulers
 ├── lib/              # Utilities, auth, uploads, exports
 ├── providers/        # React providers
 ├── services/         # Domain services and engines
 ├── stores/           # Zustand stores
 └── types/            # Shared TypeScript types
+src/**/__tests__/     # Vitest unit tests, beside the code they cover
 tests/
 ├── e2e/              # Playwright specs
 └── auth.setup.ts     # E2E auth bootstrap
@@ -128,17 +130,23 @@ docs/ops/             # Release and recovery docs
 - Banking terminology changes should stay domain-accurate across all
   locales
 
-### Production Deployment
+### Deployment
 
-⚠️ **See [`CLAUDE.md`](CLAUDE.md#deployment) for the authoritative production setup.**
+⚠️ **AEGIS is not deployed anywhere.** Local development and testing only,
+confirmed 2026-09-04. Merging to `main` releases nothing, so do not gate work on
+deploy risk; CI on the PR is the only check that exists.
 
-The VPS was reprovisioned on 2026-08-23 to run **Coolify** (self-hosted PaaS).
-- **Deploy trigger:** Merge to `main` (no tag step)
-- **Secrets:** Configured in Coolify UI, not in files
-- **Infrastructure:** Coolify-managed Postgres, Traefik TLS via Let's Encrypt
-- **Do not reintroduce:** `/opt/aegis/` paths, `docker-compose.prod.yml`, tag-driven pipeline, PM2, or Dockge
+- **`aegis.nexlyadvisory.com` does not serve AEGIS.** It resolves to a host
+  running an unrelated app, which answers 404 behind a self-signed certificate
+- **There is no `vps` host.** That alias does not resolve; the real ones are
+  `vps-control`, `vps-worker` and `vps-443`, none of which run AEGIS
+- **`Deploy Production` and `Health Check` are both disabled** in Actions
+- **Do not reintroduce:** `/opt/aegis/` paths, `docker-compose.prod.yml`,
+  tag-driven pipeline, PM2, or Dockge
 
-See CLAUDE.md § "Deployment" and "Operational Commands" for current procedures.
+The dormant Coolify layout is kept for restoration only. See
+[`CLAUDE.md`](CLAUDE.md#deployment) — the authoritative source for deployment
+state, SSH aliases, and how SQL is applied.
 
 ---
 

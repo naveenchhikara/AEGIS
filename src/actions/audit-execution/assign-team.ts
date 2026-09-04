@@ -6,6 +6,7 @@ import { prismaForTenant } from "@/lib/prisma";
 import { setAuditContext } from "@/data-access/audit-context";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+import { requireTenantRefs, TenantRefError } from "@/data-access/tenant-refs";
 import {
   AssignTeamMemberSchema,
   RemoveTeamMemberSchema,
@@ -66,6 +67,11 @@ export async function assignTeamMember(input: AssignTeamMemberInput) {
         sessionId: session.session.id,
       });
 
+      await requireTenantRefs(tx, tenantId, {
+        engagementId: validated.engagementId,
+        userId: validated.userId,
+      });
+
       // Check if user already assigned to this engagement
       const existing = await tx.auditTeamMember.findUnique({
         where: {
@@ -111,9 +117,11 @@ export async function assignTeamMember(input: AssignTeamMemberInput) {
 
     // User-friendly error message
     const errorMessage =
-      error instanceof Error && error.message.includes("already assigned")
-        ? error.message
-        : "Failed to assign team member. Please try again.";
+      error instanceof TenantRefError
+        ? "The selected engagement or user was not found."
+        : error instanceof Error && error.message.includes("already assigned")
+          ? error.message
+          : "Failed to assign team member. Please try again.";
 
     return {
       success: false as const,
@@ -172,6 +180,11 @@ export async function removeTeamMember(input: RemoveTeamMemberInput) {
         userId: session.user.id,
         tenantId,
         sessionId: session.session.id,
+      });
+
+      await requireTenantRefs(tx, tenantId, {
+        engagementId: validated.engagementId,
+        userId: validated.userId,
       });
 
       // Delete AuditTeamMember by engagement + user

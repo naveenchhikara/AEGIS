@@ -15,6 +15,7 @@ export const SQL_MANIFEST = [
   "prisma/migrations/20260209_dashboard_views.sql",
   "prisma/migrations/20260222_rbia_db_guards.sql",
   "prisma/sql/050_observation_indexes.sql",
+  "prisma/sql/060_tenant_composite_fks.sql",
 ] as const;
 
 /** Tables carrying `audit_trigger`, per the two Prisma trigger migrations. */
@@ -57,5 +58,11 @@ export const REQUIRED_OBJECTS: RequiredObjects = {
     "v_auditor_workload",
   ],
   triggers: AUDIT_TRIGGER_TABLES,
-  constraints: ["examination_node_path_ends_with_code"],
+  constraints: [
+    "examination_node_path_ends_with_code",
+    "engagement_plan_same_tenant",
+    "engagement_branch_same_tenant",
+    "engagement_area_same_tenant",
+    "team_member_engagement_same_tenant",
+  ],
 };

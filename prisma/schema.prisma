@@ -685,6 +685,7 @@ model Branch {
   housekeepingMetrics     HousekeepingMetric[]
 
   @@unique([tenantId, code])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -727,6 +728,7 @@ model AuditArea {
   auditEngagements AuditEngagement[]
 
   @@unique([tenantId, name])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -751,6 +753,7 @@ model AuditPlan {
   engagements AuditEngagement[]
 
   @@unique([tenantId, year, quarter])
+  @@unique([tenantId, id])
   @@index([tenantId])
 }
 
@@ -841,6 +844,7 @@ model AuditEngagement {
   accountExamResponses   AccountExamResponse[]
 
   @@index([tenantId])
+  @@unique([tenantId, id])
   @@index([auditPlanId])
 }
 

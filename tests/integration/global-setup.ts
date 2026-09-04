@@ -19,7 +19,7 @@ export default function setup() {
   const run = (cmd: string) =>
     execSync(cmd, { stdio: "inherit", env: process.env });
 
-  run("npx prisma db push --skip-generate --force-reset");
+  run("npx prisma db push --force-reset");
   run("npx tsx scripts/db-bootstrap.ts");
   run("npx tsx scripts/db-verify.ts");
 }

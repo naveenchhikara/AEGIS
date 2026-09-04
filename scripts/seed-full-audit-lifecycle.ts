@@ -1425,6 +1425,15 @@ async function seedLifecycle() {
       auditAreaId: creditArea.id,
       createdById: sureshId,
       version: 1,
+      // /findings renders only the 20 newest observations (getObservations
+      // defaults to pageSize 20, ordered by createdAt desc) and the page has no
+      // server-side filter or paging control. The E2E suite creates several
+      // observations per Playwright project, so by the last project this
+      // fixture — the oldest row — had been pushed off the only page the test
+      // can see. Dating it forward keeps it first regardless of how many
+      // observations a run creates. The trade-off is that this one row shows a
+      // negative "Age (days)" in the UI; nothing asserts on that column.
+      createdAt: new Date("2099-01-01T00:00:00.000Z"),
     },
   });
   console.log("  ✓ E2E COMPLIANCE fixture observation");

@@ -3,6 +3,10 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { withAuditedMutation } from "./audited-mutation";
+import {
+  createInvitedUserWithToken,
+  type InvitationDelivery,
+} from "./invited-users";
 
 /**
  * Onboarding Data Access Layer
@@ -78,6 +82,7 @@ export interface CompletionResult {
   departmentCount: number;
   branchCount: number;
   invitedUserCount: number;
+  invitationDeliveries: InvitationDelivery[];
 }
 
 // ─── Save/Load Wizard Progress ──────────────────────────────────────────────
@@ -226,17 +231,16 @@ export async function completeOnboardingTransaction(
     // 5. Create invited users (if any)
     const createdUsers = await Promise.all(
       data.invitedUsers.map(async (invite) => {
-        const user = await tx.user.create({
-          data: {
+        const { user, rawToken, inviteExpiry } = await createInvitedUserWithToken(
+          tx,
+          {
             email: invite.email,
             name: invite.name,
-            roles: invite.roles as any[],
+            roles: invite.roles,
             tenantId: data.tenantId,
-            status: "INVITED",
-            invitedAt: new Date(),
             invitedBy: data.userId,
           },
-        });
+        );
 
         // 6. Create branch assignments for AUDITEE users
         if (
@@ -259,7 +263,7 @@ export async function completeOnboardingTransaction(
           );
         }
 
-        return user;
+        return { user, rawToken, inviteExpiry };
       }),
     );
 
@@ -297,7 +301,15 @@ export async function completeOnboardingTransaction(
       complianceCount: complianceRecords.length,
       departmentCount: createdDepts.length,
       branchCount: createdBranches.length,
-        invitedUserCount: createdUsers.length,
+      invitedUserCount: createdUsers.length,
+      invitationDeliveries: createdUsers.map(
+        ({ user, rawToken, inviteExpiry }) => ({
+          email: user.email,
+          name: user.name,
+          rawToken,
+          inviteExpiry,
+        }),
+      ),
       };
     },
   );

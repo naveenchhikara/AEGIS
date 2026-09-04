@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { PasswordSchema } from "@/lib/password-policy";
 import { sendInvitationEmail } from "@/lib/invitation-mailer";
 import { passwordValidationError } from "@/lib/credential-account";
+import { createInvitedUserWithToken } from "@/data-access/invited-users";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -54,26 +55,14 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
       async (tx) => {
         const results = [];
         for (const invite of users) {
-          // Generate invite token (32 bytes hex)
-          const crypto = await import("crypto");
-          const rawToken = crypto.randomBytes(32).toString("hex");
-
-          // Hash the token with bcrypt before storing (security best practice)
-          const tokenHash = await bcrypt.hash(rawToken, 12);
-
-          const user = await tx.user.create({
-            data: {
+          const { user, rawToken, inviteExpiry } =
+            await createInvitedUserWithToken(tx, {
               email: invite.email,
               name: invite.name,
-              roles: invite.roles as any[],
+              roles: invite.roles,
               tenantId,
-              status: "INVITED",
-              invitedAt: new Date(),
               invitedBy: session.user.id,
-              inviteTokenHash: tokenHash,
-              inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            },
-          });
+            });
 
           // Create branch assignments for AUDITEE users
           if (
@@ -106,7 +95,7 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
             email: user.email,
             name: user.name,
             rawToken,
-            inviteExpiry: user.inviteExpiry!,
+            inviteExpiry,
           });
         }
 

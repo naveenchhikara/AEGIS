@@ -12,6 +12,8 @@ import {
 import { checklistItems } from "@/data/rbi-master-directions";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import { sendInvitationEmail } from "@/lib/invitation-mailer";
 
 /**
  * Onboarding provisions the tenant: it overwrites the bank profile, creates
@@ -158,6 +160,24 @@ export async function completeOnboarding(input: CompleteOnboardingInput) {
     };
 
     const result = await completeOnboardingTransaction(completionData);
+    const { invitationDeliveries, ...summary } = result;
+
+    if (invitationDeliveries.length > 0) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { shortName: true },
+      });
+
+      for (const invitee of invitationDeliveries) {
+        await sendInvitationEmail({
+          to: invitee.email,
+          inviteeName: invitee.name,
+          bankName: tenant?.shortName ?? "AEGIS",
+          rawToken: invitee.rawToken,
+          expiresAt: invitee.inviteExpiry,
+        });
+      }
+    }
 
     revalidatePath("/dashboard");
     revalidatePath("/compliance");
@@ -165,7 +185,7 @@ export async function completeOnboarding(input: CompleteOnboardingInput) {
     return {
       success: true,
       error: null,
-      data: result,
+      data: summary,
     };
   } catch (error) {
     logger.error(

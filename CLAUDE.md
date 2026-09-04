@@ -7,14 +7,15 @@ India. It manages internal audit planning, execution, RBIA workflows,
 observations, compliance tracking, reporting, and governance in line
 with RBI operating requirements.
 
-**Live:** https://aegis.nexlyadvisory.com
 **GitHub:** [nc-sapiex/AEGIS](https://github.com/nc-sapiex/AEGIS) (private)
-**Production state:** Runs as a Coolify application on the shared VPS.
-**Deploy:** merge to `main` — Coolify auto-deploys. There is no tag step.
+**Deployment state:** **Not deployed.** Local development and testing only,
+confirmed 2026-09-04. There is no VPS deployment and no Coolify application.
 
-> **Merging to `main` deploys to production.** Auto-deploy is on and `main`
-> has no branch protection, so nothing gates a merge. Confirm before merging
-> anything you would not deploy.
+> **Merging to `main` releases nothing.** There is no deployment target, so a
+> merge is ordinary integration, not a release — do not gate work on deploy
+> risk. `main` still has no branch protection, so CI on the PR is the only
+> check. `https://aegis.nexlyadvisory.com` does **not** serve AEGIS; it resolves
+> to a host running an unrelated app. See [Deployment](#deployment).
 
 ## Working Style
 
@@ -145,31 +146,53 @@ database. Health checks include queue status and database latency.
 
 ## Deployment
 
-**The VPS was reprovisioned on 2026-08-23 and the old layout is gone.** Anything
-describing `/opt/aegis`, `docker-compose.prod.yml`, a bespoke nginx, systemd
-timers, or a `v*` tag pipeline is stale — that host no longer exists. `Deploy
-Production` and `Health Check` are `disabled_manually` in Actions; do not
-re-enable them.
+**AEGIS is not currently deployed anywhere.** The Coolify application was taken
+down deliberately; the project is local-only for now. Nothing in this repository
+releases on merge, and there is no production environment to verify against.
 
-### Current Production Layout
+Verified 2026-09-04 — `docker ps` on both reachable hosts shows no AEGIS
+container, no `coolify-proxy` and no Coolify Postgres.
 
-AEGIS runs as **Coolify app id 6**, uuid `nil0nfvohfrgehgjxdv1g2xc`, `dockerfile`
-build pack, `ports_exposes=3000`, in project `10-sapiex-websites` on the
-`sapiex-websites` Docker network. Its database is a Coolify-managed Postgres
-(`postgres:16-alpine`, container `ii2dkkgiwrf76iesksuhv5iq`, user/db `aegis`) on
-the same network. `coolify-proxy` _is_ Traefik and terminates TLS. Config and
-secrets live in Coolify, not in a file on disk.
-
-### Release Flow
+### Current Flow
 
 1. Open a PR; CI runs on the **merge ref**, so a check reflects branch + main at
    that moment, not the branch alone.
-2. Merge to `main`.
-3. Coolify builds and releases automatically, within a minute or two.
-4. Verify `https://aegis.nexlyadvisory.com/api/health`.
+2. Merge to `main`. That is the end of it — nothing builds or releases.
 
-**SQL does not ride along with a deploy.** The container runs `node server.js`:
-no `migrate deploy`, no `db push`. Two things are applied by hand, in this order:
+CI is therefore the only gate that exists. The `docker-build` job still builds
+the production image on every PR, so `Dockerfile` changes stay validated even
+though the image is not deployed.
+
+### Dormant Production Layout (for restoration only)
+
+**Do not treat any of this as live.** None of it exists right now; it is kept as
+a record of how the deployment was configured before it was torn down.
+
+<details>
+<summary>Previous Coolify setup</summary>
+
+AEGIS ran as **Coolify app id 6**, uuid `nil0nfvohfrgehgjxdv1g2xc`, `dockerfile`
+build pack, `ports_exposes=3000`, in project `10-sapiex-websites` on the
+`sapiex-websites` Docker network. Its database was a Coolify-managed Postgres
+(`postgres:16-alpine`, container `ii2dkkgiwrf76iesksuhv5iq`, user/db `aegis`) on
+the same network. `coolify-proxy` _was_ Traefik and terminated TLS. Config and
+secrets lived in Coolify, not in a file on disk. Merging to `main` auto-deployed,
+and `https://aegis.nexlyadvisory.com/api/health` was the check.
+
+An older layout before the 2026-08-23 reprovision — `/opt/aegis`,
+`docker-compose.prod.yml`, bespoke nginx, systemd timers, a `v*` tag pipeline —
+is stale twice over. `Deploy Production` is `disabled_manually` in Actions; do
+not re-enable it. `Health Check` is still **active** and runs every 12 hours
+against `https://aegis.nexlyadvisory.com/api/health`, so it fails every time —
+those red runs are the absent deployment, not a regression.
+
+</details>
+
+### Applying SQL
+
+**SQL is never applied automatically** — not by a build, and not by starting the
+app. The container runs `node server.js`: no `migrate deploy`, no `db push`. On
+any database, local included, two things are applied by hand, in this order:
 
 1. The release's schema file in `prisma/migrations/`, if it has one — a dated,
    idempotent `.sql` adding that release's tables and columns. Apply it with
@@ -183,35 +206,47 @@ do not apply it. Full sequence in `docs/ops/release-checklist.md`.
 
 ### Operational Commands
 
-The VPS is reached over **Tailscale** as host `vps` (public :22 is filtered).
+**There is no `vps` host.** That alias does not exist and never resolves. The
+real `~/.ssh/config` entries are:
+
+| Alias         | Host                          | User        | Notes                                                                                          |
+| ------------- | ----------------------------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| `vps-control` | 187.124.97.7 (`srv1447173`)   | `developer` | What `aegis.nexlyadvisory.com` resolves to. Runs an unrelated `hello-stack` app, **not AEGIS** |
+| `vps-worker`  | 100.67.104.100 (`srv1940204`) | `deploy`    | Tailnet; public fallback 200.234.43.54. **Docker is not installed**                            |
+| `vps-443`     | 187.124.97.7 port 443         | `developer` | Same box as `vps-control`, for networks blocking outbound 22                                   |
+
+Neither host serves AEGIS, so there is no health check or container to inspect.
+`curl https://aegis.nexlyadvisory.com/api/health` returns
+`404 {"ok":false,"error":"not found"}` from the unrelated app, behind a
+self-signed `CN=srv1447173.hstgr.cloud` certificate — that is expected, not an
+outage.
+
 Tailscale SSH runs in check mode and needs periodic browser re-auth; **never pass
 `BatchMode=yes`** — it suppresses the auth URL and the connection hangs silently.
-The `nc` user has passwordless sudo but is not in the `docker` group, so Docker
-needs `sudo`.
 
-```bash
-curl -fsS https://aegis.nexlyadvisory.com/api/health | jq
-ssh vps 'sudo docker ps --filter name=nil0nfvohfrgehgjxdv1g2xc'
-ssh vps 'sudo docker exec -it ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis'
-```
-
-When reading container labels, do **not** truncate: Docker prints `com.docker.*`
-before `traefik.*`, so a `head -20` hides every Traefik label and makes a
+If the Coolify deployment is ever restored: Docker needs `sudo`, and when reading
+container labels do **not** truncate — Docker prints `com.docker.*` before
+`traefik.*`, so a `head -20` hides every Traefik label and makes a
 correctly-routed container look unlabelled.
 
 ## Environment Notes
 
 - `.env.example` is for local development only
-- Production secrets live in Coolify, not in git or a file on the host
+- There is no production environment; `.env` is the only config that matters
 - `src/env.ts` requires four vars — `DATABASE_URL`, `BETTER_AUTH_SECRET` (min 32),
   `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`. AWS/S3/SES vars are `.optional()`, so
   uploads and email degrade rather than block boot
 - `NEXT_PUBLIC_*` variables must exist at Docker build time
-- `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` must stay aligned with the
-  public domain — both are `https://aegis.nexlyadvisory.com`
-- Use `npx -y pnpm@10` locally: the Dockerfile pins pnpm 9 and CI pins 10, while
-  pnpm 11 ignores the `pnpm.overrides` block in `package.json` and fails
-  `--frozen-lockfile`
+- `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` must stay aligned with each other;
+  locally both are `http://localhost:3000`. The Dockerfile still defaults
+  `NEXT_PUBLIC_APP_URL` to `https://aegis.nexlyadvisory.com` for image builds
+- **pnpm is pinned by `packageManager` in `package.json`** (`pnpm@10.34.5`).
+  pnpm 11 reads that field and self-delegates, so a bare `pnpm install` is now
+  safe whatever is on `PATH`. Do **not** add a `version:` input to
+  `pnpm/action-setup` — it throws when the two disagree
+- **pnpm 11 silently ignores `pnpm.overrides`.** It warns and exits 0 rather than
+  failing, so all 27 security pins would vanish unnoticed. pnpm 11 also relocates
+  the setting out of `package.json`; migrate those pins before adopting 11
 
 ## Domain Context
 
@@ -257,7 +292,7 @@ correctly-routed container look unlabelled.
 - If a deployment is healthy but a browser shows stale server-action
   errors, verify with a fresh session before changing infrastructure
 - **The `lint` CI job runs `pnpm docs:check`** (`scripts/generate-reference-docs.mjs
-  --check`), which regenerates `docs/reference/` from `prisma/schema.prisma` and
+--check`), which regenerates `docs/reference/` from `prisma/schema.prisma` and
   the `src/` tree and fails if the committed output differs
 - **`docs/reference/` goes stale from code changes, not just doc edits.** Adding a
   new Prisma model write to a server action changes that action's tables-touched

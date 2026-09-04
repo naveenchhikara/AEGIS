@@ -82,14 +82,19 @@ export async function getNotificationPreferences(session: Session) {
 
   if (existing) return existing;
 
-  return db.notificationPreference.create({
-    data: {
-      userId,
-      tenantId,
-      emailEnabled: true,
-      digestPreference: "immediate",
-    },
-  });
+  return withAuditedMutation(
+    userActor(session),
+    "notification.preferences_created",
+    (tx) =>
+      tx.notificationPreference.create({
+        data: {
+          userId,
+          tenantId,
+          emailEnabled: true,
+          digestPreference: "immediate",
+        },
+      }),
+  );
 }
 
 // ─── updateNotificationPreferences ─────────────────────────────────────────
@@ -130,23 +135,28 @@ export async function updateNotificationPreferences(
     );
   }
 
-  return db.notificationPreference.upsert({
-    where: { userId },
-    update: {
-      ...(prefs.emailEnabled !== undefined && {
-        emailEnabled: prefs.emailEnabled,
+  return withAuditedMutation(
+    userActor(session),
+    "notification.preferences_updated",
+    (tx) =>
+      tx.notificationPreference.upsert({
+        where: { userId },
+        update: {
+          ...(prefs.emailEnabled !== undefined && {
+            emailEnabled: prefs.emailEnabled,
+          }),
+          ...(prefs.digestPreference !== undefined && {
+            digestPreference: prefs.digestPreference,
+          }),
+        },
+        create: {
+          userId,
+          tenantId,
+          emailEnabled: prefs.emailEnabled ?? true,
+          digestPreference: prefs.digestPreference ?? "immediate",
+        },
       }),
-      ...(prefs.digestPreference !== undefined && {
-        digestPreference: prefs.digestPreference,
-      }),
-    },
-    create: {
-      userId,
-      tenantId,
-      emailEnabled: prefs.emailEnabled ?? true,
-      digestPreference: prefs.digestPreference ?? "immediate",
-    },
-  });
+  );
 }
 
 // ─── getPendingNotifications ───────────────────────────────────────────────

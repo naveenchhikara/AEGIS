@@ -269,6 +269,12 @@ jobs:
       - name: Push database schema
         run: pnpm db:push
 
+      - name: Apply non-Prisma database objects
+        run: pnpm db:bootstrap
+
+      - name: Verify required database objects
+        run: pnpm db:verify
+
       - name: Seed database
         run: pnpm db:seed
 

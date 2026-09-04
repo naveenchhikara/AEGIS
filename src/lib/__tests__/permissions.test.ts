@@ -237,11 +237,14 @@ describe("getRoleDisplayName", () => {
 });
 
 // ─── Onboarding gate (admin:manage_settings) ────────────────────────────────
-// The onboarding actions provision the tenant and mint users, so they gate on
-// admin:manage_settings. These assertions pin who may run onboarding; a change
-// here is a change to who can create a tenant's first admin accounts.
+// The onboarding actions (src/actions/onboarding.ts) gate on
+// admin:manage_settings. These assertions cover only the role→permission
+// mapping that gate depends on — not that the actions call hasPermission (that
+// wiring lives in onboarding.ts and has no unit harness here). Their value is
+// as a tripwire: if someone widens admin:manage_settings to a lower role, the
+// onboarding gate silently widens with it, and these fail.
 
-describe("onboarding is gated to tenant admins", () => {
+describe("admin:manage_settings mapping (onboarding gate depends on it)", () => {
   it("CAE may configure onboarding", () => {
     expect(hasPermission([Role.CAE], "admin:manage_settings")).toBe(true);
   });

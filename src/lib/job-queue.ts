@@ -15,6 +15,7 @@ export const JOB_NAMES = {
   DEADLINE_CHECK: "deadline-check",
   GENERATE_BOARD_REPORT: "generate-board-report",
   SNAPSHOT_METRICS: "snapshot-metrics",
+  COMPLIANCE_ESCALATION: "compliance-escalation",
 } as const;
 
 /** Default queue options for notification queues */
@@ -68,12 +69,14 @@ export async function startWorkers(): Promise<void> {
   await queue.createQueue(JOB_NAMES.SEND_WEEKLY_DIGEST, QUEUE_OPTIONS);
   await queue.createQueue(JOB_NAMES.GENERATE_BOARD_REPORT, QUEUE_OPTIONS);
   await queue.createQueue(JOB_NAMES.SNAPSHOT_METRICS, QUEUE_OPTIONS);
+  await queue.createQueue(JOB_NAMES.COMPLIANCE_ESCALATION, QUEUE_OPTIONS);
 
   // Schedule recurring jobs (IST = UTC+5:30, all cron in UTC)
   await queue.schedule(JOB_NAMES.PROCESS_NOTIFICATIONS, "* * * * *"); // every minute
   await queue.schedule(JOB_NAMES.DEADLINE_CHECK, "30 0 * * *"); // daily 00:30 UTC = 06:00 IST
   await queue.schedule(JOB_NAMES.SEND_WEEKLY_DIGEST, "30 4 * * 1"); // Monday 04:30 UTC = 10:00 IST
   await queue.schedule(JOB_NAMES.SNAPSHOT_METRICS, "30 19 * * *"); // daily 19:30 UTC = 01:00 IST
+  await queue.schedule(JOB_NAMES.COMPLIANCE_ESCALATION, "0 1 * * *"); // daily 01:00 UTC = 06:30 IST
 
   // Register real job handlers from src/jobs/
   const { registerJobs } = await import("@/jobs/index");

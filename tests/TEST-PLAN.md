@@ -192,8 +192,8 @@
 ### 6.5 Escalation Engine
 
 - [ ] **T093** — Escalation levels compute correctly: L1(+15d) → L2(+30d) → L3(+90d) → L4(+180d) (R39)
-- [ ] **T094** — `POST /api/cron/escalation` with valid CRON_SECRET triggers escalation
-- [ ] **T095** — Invalid CRON_SECRET returns 401
+- [ ] **T094** — The `compliance-escalation` pg-boss job runs daily and escalates open ComplianceItems per tenant
+- [ ] **T095** — A tenant failing escalation does not stop the remaining tenants
 
 ---
 

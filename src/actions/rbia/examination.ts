@@ -204,7 +204,7 @@ export async function saveExaminationResponse(
               title: node.name,
               description: validated.workingNotes ?? node.name,
               severity: severityFromScore,
-              moduleCode: node.path.split(".")[1] ?? node.code,
+              moduleCode: node.path.split("/").filter(Boolean)[1] ?? node.code,
               sourceResponseId: upsertedResponse.id,
               status: "DRAFT",
               createdById: session.user.id,

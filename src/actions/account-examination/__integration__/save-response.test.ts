@@ -246,11 +246,10 @@ describe("saveAccountExamResponse", () => {
     if (!result.success) expect(result.error).toMatch(/COMPLETED/);
   });
 
-  // F06 target. The action never checks the question's tenant, so a question
-  // from another bank can be attached to a sampled account. This test asserts
-  // the CURRENT behaviour on purpose: when F06 lands, invert it to expect
-  // `success: false` and delete this comment.
-  it("currently accepts a question from another tenant (F06 gap)", async () => {
+  // F06: the action must not attach a question from another bank to a sampled
+  // account. save-response resolves the question with a tenant + module
+  // predicate, so a foreign-tenant question is "not found" and is rejected.
+  it("rejects a question from another tenant (F06)", async () => {
     const tenant = await createTenant("Acting Bank");
     const other = await createTenant("Other Bank");
     const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
@@ -274,6 +273,7 @@ describe("saveAccountExamResponse", () => {
       status: "VIOLATION",
     });
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toMatch(/not found/i);
   });
 });

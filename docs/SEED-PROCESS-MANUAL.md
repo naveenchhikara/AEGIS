@@ -1,27 +1,29 @@
 # AEGIS — Seed Process Manual
 
-> How to populate the VPS production database with realistic demo data covering the full RBIA audit lifecycle.
+> How to populate a **local** database with realistic demo data covering the full
+> RBIA audit lifecycle. There is no hosted environment to seed — AEGIS is not
+> deployed.
 
 ## Overview
 
-The seed pipeline runs **3 scripts in sequence**, each building on the previous. The final result is a complete audit lifecycle for Kothrud Branch (BR002) — from RAM assessment through board reporting — with 50 loan accounts, 250 exam responses, 6 formal observations, compliance tracking, and GRC linkages.
+The seed pipeline runs **four scripts in sequence**, each building on the previous. The final result is a complete audit lifecycle for Kothrud Branch (BR002) — from RAM assessment through board reporting — with 50 loan accounts, 250 exam responses, 6 formal observations, compliance tracking, and GRC linkages.
 
 ## Prerequisites
 
-- SSH access to VPS (`ssh vps` — key at `~/.ssh/vps_key`)
-- PostgreSQL running (`postgres-postgres-1` container)
-- Prisma client generated (`npx prisma generate`)
-- `DATABASE_URL` set to `postgresql://aegis:AegisDb2026Secure@127.0.0.1:5432/aegis` (use `127.0.0.1` on host, not Docker DNS)
+- A local PostgreSQL 16 — `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+- `DATABASE_URL` set in `.env`. Use `127.0.0.1`, not a Docker DNS hostname
+- Schema pushed and bootstrapped: `pnpm db:push && pnpm db:bootstrap && pnpm db:verify`
+- Prisma client generated: `pnpm db:generate`
+
+`db:push` alone leaves a database with no audit triggers, no dashboard views and
+no composite foreign keys. Seeding against it will not behave as documented here.
 
 ## Seed Pipeline
 
 ### Step 1: Base Seed (tenants, users, branches, exam areas)
 
 ```bash
-ssh vps
-cd /root/.openclaw/workspace/projects/aegis/repo
-export DATABASE_URL='postgresql://aegis:AegisDb2026Secure@127.0.0.1:5432/aegis'
-npx tsx prisma/seed.ts
+pnpm db:seed
 ```
 
 **Creates:** 2 tenants, 10 users, 12 branches, 39 examination areas, 568 examination items, RAM parameters, RBI circulars, audit plans.
@@ -29,7 +31,7 @@ npx tsx prisma/seed.ts
 ### Step 2: RBIA Housing Module (examination nodes)
 
 ```bash
-npx tsx scripts/seed-rbia-housing.ts
+pnpm seed:rbia-housing
 ```
 
 **Creates:** 30 ExaminationNode records for the CRD-HLN (Housing Loan) module with hierarchical tree structure.
@@ -37,7 +39,7 @@ npx tsx scripts/seed-rbia-housing.ts
 ### Step 3: Examination Questions
 
 ```bash
-npx tsx scripts/seed-exam-questions.ts
+pnpm seed:exam-questions
 ```
 
 **Creates:** 25 ExaminationQuestion records covering 7 audit areas (PSL classification, CERSAI, income verification, LTV, insurance, NPA/IRAC, documentation).
@@ -45,7 +47,7 @@ npx tsx scripts/seed-exam-questions.ts
 ### Step 4: Full Audit Lifecycle
 
 ```bash
-npx tsx scripts/seed-full-audit-lifecycle.ts
+pnpm seed:lifecycle
 ```
 
 **Creates (9 phases):**
@@ -65,14 +67,7 @@ npx tsx scripts/seed-full-audit-lifecycle.ts
 ## Quick Run (All Steps)
 
 ```bash
-ssh vps
-cd /root/.openclaw/workspace/projects/aegis/repo
-export DATABASE_URL='postgresql://aegis:AegisDb2026Secure@127.0.0.1:5432/aegis'
-
-npx tsx prisma/seed.ts && \
-npx tsx scripts/seed-rbia-housing.ts && \
-npx tsx scripts/seed-exam-questions.ts && \
-npx tsx scripts/seed-full-audit-lifecycle.ts
+pnpm db:seed && pnpm seed:rbia-housing && pnpm seed:exam-questions && pnpm seed:lifecycle
 ```
 
 ## Re-running (Idempotency)
@@ -82,14 +77,14 @@ The lifecycle seed script (Step 4) is **idempotent** — it deletes previous lif
 To re-run just the lifecycle seed:
 
 ```bash
-npx tsx scripts/seed-full-audit-lifecycle.ts
+pnpm seed:lifecycle
 ```
 
 If you get **unique constraint errors** on `RamAssessmentScore`, clean orphan records first:
 
 ```bash
-docker exec postgres-postgres-1 psql -U aegis -d aegis -c \
-  "DELETE FROM \"RamAssessmentScore\" WHERE \"assessmentId\" NOT IN (SELECT id FROM \"RamAssessment\");"
+psql "$DATABASE_URL" -c \
+  'DELETE FROM "RamAssessmentScore" WHERE "assessmentId" NOT IN (SELECT id FROM "RamAssessment");'
 ```
 
 ## Troubleshooting
@@ -98,22 +93,23 @@ docker exec postgres-postgres-1 psql -U aegis -d aegis -c \
 
 `DATABASE_URL` is not set. Export it before running scripts.
 
-### "getaddrinfo EAI_AGAIN postgres-postgres-1"
+### "getaddrinfo EAI_AGAIN <hostname>"
 
-You're using the Docker DNS hostname on the host. Use `127.0.0.1` instead.
+You're using a Docker DNS hostname from the host. Use `127.0.0.1` instead.
 
-### "column createdat of relation AuditLog does not exist"
+### Audit-trigger failures during seed
 
-The `audit_trigger_function()` has unquoted `createdat`. Fix:
+The seed runs without an app session, so every write to an audited table would
+otherwise fail the audit trigger's NOT NULL tenant context.
+`seed-full-audit-lifecycle.ts` wraps the whole run in `withTriggersDetached`,
+which uses `ALTER TABLE` — visible to every pooled connection, restored in a
+`finally`. It deliberately does **not** use
+`SET session_replication_role = 'replica'`: that needs superuser and is
+per-connection, so with a pooled adapter the next statement can land on a
+connection that never saw it.
 
-```sql
-docker exec postgres-postgres-1 psql -U aegis -d aegis -c "
-CREATE OR REPLACE FUNCTION audit_trigger_function() ...
--- Ensure all column names are quoted: \"createdAt\" not createdat
-"
-```
-
-The seed script works around this by setting `session_replication_role = 'replica'` to disable triggers during execution.
+If a run is killed hard, triggers may be left detached. `pnpm db:verify` reports
+it; `pnpm db:bootstrap` reattaches them.
 
 ### "Unique constraint failed on (assessmentId, paramConfigId)"
 
@@ -121,19 +117,16 @@ Orphan `RamAssessmentScore` records from a previous failed run. Clean them with 
 
 ### Prisma version mismatch
 
-All three Prisma packages must be the same version:
-
-```bash
-pnpm add prisma@7.4.2 @prisma/client@7.4.2 @prisma/adapter-pg@7.4.2
-npx prisma generate
-```
+`prisma`, `@prisma/client` and `@prisma/adapter-pg` must all resolve to the same
+version. Check with `pnpm ls prisma @prisma/client @prisma/adapter-pg`, then
+`pnpm install && pnpm db:generate`.
 
 ## Verification
 
 After seeding, verify record counts:
 
 ```sql
-docker exec postgres-postgres-1 psql -U aegis -d aegis -c "
+psql "$DATABASE_URL" -c "
 SELECT 'RamAssessment' as tbl, COUNT(*) FROM \"RamAssessment\"
 UNION ALL SELECT 'AuditEngagement', COUNT(*) FROM \"AuditEngagement\"
 UNION ALL SELECT 'LoanAccount', COUNT(*) FROM \"LoanAccount\"
@@ -150,8 +143,12 @@ ORDER BY 1;
 
 ## Test Login
 
-After seeding, verify the app at https://aegis.nexlyadvisory.com:
+After seeding, start the app with `pnpm dev` and sign in at
+<http://localhost:3000>:
 
 - **Email:** `rajesh.deshmukh@apexbank.example`
 - **Password:** `TestPassword123!`
 - **Role:** CEO (full dashboard access)
+
+These are local seed credentials for a disposable database. They are not secrets,
+and must never be reused anywhere reachable from a network.

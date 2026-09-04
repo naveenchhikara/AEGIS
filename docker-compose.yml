@@ -1,6 +1,12 @@
-# AEGIS - Production Docker Compose
-# PostgreSQL 16 + Next.js application
-# Usage: docker-compose up -d
+# AEGIS - local Docker Compose
+# PostgreSQL 16 + the Next.js application, for running the stack on a developer
+# machine. AEGIS is not deployed anywhere; this is not a production manifest.
+#
+# Usage (PostgreSQL only, app via `pnpm dev` — the normal path):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Usage (full stack in containers):
+#   docker compose up -d
 
 services:
   postgres:

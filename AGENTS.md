@@ -1,6 +1,6 @@
 # AGENTS.md - AEGIS Platform Development Guide
 
-**Last Updated:** September 4, 2026  
+**Last Updated:** September 5, 2026  
 **⚠️ Status:** Simplified reference. **For authoritative guidance, see [`CLAUDE.md`](CLAUDE.md).**
 
 Guidelines for agentic coding agents working on the AEGIS UCB audit and
@@ -102,8 +102,8 @@ src/**/__tests__/     # Vitest unit tests, beside the code they cover
 tests/
 ├── e2e/              # Playwright specs
 └── auth.setup.ts     # E2E auth bootstrap
-deploy/               # VPS deploy, backup, restore, systemd assets
-docs/ops/             # Release and recovery docs
+docs/ops/             # Release checklist and local operations
+scripts/              # Database bootstrap/verify, seeds, doc generation
 ```
 
 ---
@@ -140,9 +140,13 @@ deploy risk; CI on the PR is the only check that exists.
   running an unrelated app, which answers 404 behind a self-signed certificate
 - **There is no `vps` host.** That alias does not resolve; the real ones are
   `vps-control`, `vps-worker` and `vps-443`, none of which run AEGIS
-- **`Deploy Production` and `Health Check` are both disabled** in Actions
+- **Config:** `.env` locally; there is no production environment
+- **SQL:** never applied by a build or by app start; the release schema file and
+  `pnpm db:bootstrap` are run by hand, in that order
 - **Do not reintroduce:** `/opt/aegis/` paths, `docker-compose.prod.yml`,
   tag-driven pipeline, PM2, or Dockge
+- **Do not re-create** the `Deploy Production` and `Health Check` workflows.
+  They were disabled in Actions, then deleted on 2026-09-05
 
 The dormant Coolify layout is kept for restoration only. See
 [`CLAUDE.md`](CLAUDE.md#deployment) — the authoritative source for deployment
@@ -183,5 +187,5 @@ import type { BankProfile } from "@/types";
 
 ---
 
-_Keep this guide aligned with the live product and the documented
-production process._
+_Keep this guide aligned with the code as it stands. AEGIS is not deployed;
+there is no production process to mirror._

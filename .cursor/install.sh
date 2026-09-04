@@ -16,9 +16,18 @@ DB_PORT=5432
 DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}"
 
 # 1. PostgreSQL 16 (durable system dependency; skipped when already present).
-if ! command -v pg_ctlcluster >/dev/null 2>&1 || ! pg_lsclusters -h 2>/dev/null | awk '{print $1}' | grep -qx "$PGVER"; then
+if ! command -v pg_ctlcluster >/dev/null 2>&1 || ! dpkg-query -W -f='${Status}' "postgresql-${PGVER}" 2>/dev/null | grep -q "install ok installed"; then
   sudo apt-get update -qq
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "postgresql-${PGVER}" "postgresql-contrib-${PGVER}"
+fi
+
+# Ensure the expected major-version cluster exists.
+if ! command -v pg_createcluster >/dev/null 2>&1; then
+  echo "pg_createcluster is required but not available after PostgreSQL install." >&2
+  exit 1
+fi
+if ! pg_lsclusters -h 2>/dev/null | awk '{print $1, $2}' | grep -qx "$PGVER main"; then
+  sudo pg_createcluster "$PGVER" main --start-conf=manual
 fi
 
 # 2. Bring the cluster up so we can provision it (start.sh owns per-boot startup).

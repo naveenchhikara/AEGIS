@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8482c4c` (hardening/integrity-and-operations-f07-f15)
+> Source commit: `13d9827` (hardening/integrity-and-operations-f07-f15)
 
 Every addressable path in the application: **65 pages** and
 **11 HTTP endpoints**.

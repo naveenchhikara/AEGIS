@@ -1,0 +1,12 @@
+{
+  "name": "AEGIS",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "pnpm dev"
+    }
+  ],
+  "ports": [3000]
+}

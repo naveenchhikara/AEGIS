@@ -256,3 +256,18 @@ correctly-routed container look unlabelled.
 - `!` in passwords is awkward in shell commands; quote carefully
 - If a deployment is healthy but a browser shows stale server-action
   errors, verify with a fresh session before changing infrastructure
+- **The `lint` CI job runs `pnpm docs:check`** (`scripts/generate-reference-docs.mjs
+  --check`), which regenerates `docs/reference/` from `prisma/schema.prisma` and
+  the `src/` tree and fails if the committed output differs
+- **`docs/reference/` goes stale from code changes, not just doc edits.** Adding a
+  new Prisma model write to a server action changes that action's tables-touched
+  column in `docs/reference/api-reference.md` and `data-flows.md`, reddening
+  `lint`. It caught PR #86 (`tx.account.create` in
+  `src/actions/user-invitations.ts` added `Account` to its row) and PR #87. Fix:
+  run `pnpm docs:reference` and commit the four `docs/reference/*.md` files
+- `--check` strips the `> Source commit:` line before comparing (the `norm()`
+  helper near line 397 of the generator), so the commit/branch stamp never causes
+  a false failure
+- `security-audit` intermittently fails with `ERR_SOCKET_TIMEOUT` reaching
+  `registry.npmjs.org` — an infrastructure flake that clears on re-run, not a
+  vulnerability

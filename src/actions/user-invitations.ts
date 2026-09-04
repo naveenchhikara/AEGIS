@@ -10,6 +10,8 @@ import {
   withAuditedMutation,
   userActor,
 } from "@/data-access/audited-mutation";
+import { auth } from "@/lib/auth";
+import { PasswordSchema } from "@/lib/password-policy";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -142,11 +144,19 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
 
 // ─── Accept Invitation ──────────────────────────────────────────────────────
 
+/** Thrown inside the activation transaction to roll it back and report cleanly. */
+const ALREADY_ACCEPTED = "INVITATION_ALREADY_ACCEPTED";
+
 export async function acceptInvitation(
   token: string,
   email: string,
-  _password: string,
+  password: string,
 ) {
+  const passwordCheck = PasswordSchema.safeParse(password);
+  if (!passwordCheck.success) {
+    return { success: false, error: passwordCheck.error.issues[0].message };
+  }
+
   try {
     // Find user by email with INVITED status
     const user = await prisma.user.findFirst({
@@ -182,29 +192,51 @@ export async function acceptInvitation(
       return { success: false, error: "Invitation is not linked to a bank." };
     }
 
-    // Activate user: clear token, update status
-    // Note: Better Auth's signUp.email handles password hashing internally with bcrypt
+    // Better Auth keeps credentials on Account and hashes with its own
+    // configured algorithm. Hash through its context so the digest matches
+    // what signIn.email will later verify — a bcrypt digest never would.
+    const passwordHash = await (await auth.$context).password.hash(password);
+
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.
       { kind: "user", userId: user.id, tenantId },
       "user.invitation_accepted",
-      (tx) =>
-        tx.user.update({
-          where: { id: user.id },
+      async (tx) => {
+        // Predicated on INVITED so two concurrent acceptances cannot both
+        // activate and write competing credential rows.
+        const activated = await tx.user.updateMany({
+          where: { id: user.id, status: "INVITED" },
           data: {
             status: "ACTIVE",
             inviteTokenHash: null,
             inviteExpiry: null,
             emailVerified: true,
           },
-        }),
+        });
+
+        if (activated.count !== 1) {
+          throw new Error(ALREADY_ACCEPTED);
+        }
+
+        // Same transaction as activation: a user left ACTIVE with no
+        // credential can neither sign in nor be re-invited, because
+        // resendInvitation only matches status INVITED.
+        await tx.account.create({
+          data: {
+            userId: user.id,
+            accountId: user.id,
+            providerId: "credential",
+            password: passwordHash,
+          },
+        });
+      },
     );
 
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        tenantId: user.tenantId!,
+        tenantId,
         tableName: "User",
         recordId: user.id,
         operation: "UPDATE",
@@ -216,9 +248,12 @@ export async function acceptInvitation(
 
     return { success: true, error: null };
   } catch (error) {
+    if (error instanceof Error && error.message === ALREADY_ACCEPTED) {
+      return { success: false, error: "This invitation has already been used." };
+    }
     logger.error(
       { error, action: "accept_invitation", email },
-      "Failed to accept invitation",
+      "Failed to activate account.",
     );
     return { success: false, error: "Failed to activate account." };
   }

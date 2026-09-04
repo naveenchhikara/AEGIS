@@ -244,6 +244,19 @@ export async function acceptInvitation(
           throw new Error(ALREADY_ACCEPTED);
         }
 
+        const existingCredentialAccount = await tx.account.findFirst({
+          where: { userId: user.id, providerId: "credential" },
+          select: { id: true },
+        });
+
+        if (existingCredentialAccount) {
+          await tx.account.update({
+            where: { id: existingCredentialAccount.id },
+            data: { password: passwordHash },
+          });
+          return;
+        }
+
         // Same transaction as activation: a user left ACTIVE with no
         // credential can neither sign in nor be re-invited, because
         // resendInvitation only matches status INVITED.

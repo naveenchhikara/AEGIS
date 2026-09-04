@@ -22,10 +22,9 @@ import {
   UserStatus,
 } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hashPassword } from "better-auth/crypto";
-import { randomUUID } from "crypto";
 import { withTriggersDetached } from "../src/lib/audit-triggers";
 import { assertSafeSeedTarget } from "../src/lib/seed-guard";
+import { hashedCredentialAccount } from "../src/lib/credential-account";
 
 assertSafeSeedTarget({
   nodeEnv: process.env.NODE_ENV,
@@ -265,17 +264,9 @@ async function main() {
   const TEST_PASSWORD = "TestPassword123!";
   const allUsers = [...allUsersA, userBankB];
   for (const user of allUsers) {
-    const hashed = await hashPassword(TEST_PASSWORD);
+    const account = await hashedCredentialAccount(user.id, TEST_PASSWORD);
     await prisma.account.create({
-      data: {
-        id: randomUUID(),
-        userId: user.id,
-        accountId: user.id,
-        providerId: "credential",
-        password: hashed,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+      data: account,
     });
   }
   console.log(

@@ -1,7 +1,6 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { randomUUID } from "crypto";
-import { hashPassword } from "better-auth/crypto";
+import { hashedCredentialAccount } from "../src/lib/credential-account";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -20,18 +19,10 @@ async function main() {
   );
 
   for (const user of users) {
-    const userHash = await hashPassword(password);
     try {
+      const account = await hashedCredentialAccount(user.id, password);
       await prisma.account.create({
-        data: {
-          id: randomUUID(),
-          userId: user.id,
-          accountId: user.id,
-          providerId: "credential",
-          password: userHash,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        data: account,
       });
       console.log("Created account for:", user.email);
     } catch (e: any) {

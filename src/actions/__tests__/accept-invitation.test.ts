@@ -45,12 +45,19 @@ const INVITED_USER = {
 };
 
 /** Runs the audited callback against a fake tx and exposes the doubles. */
-function stubAuditedMutation(activatedCount: number) {
+function stubAuditedMutation(activatedCount: number | number[]) {
+  const counts = Array.isArray(activatedCount)
+    ? [...activatedCount]
+    : [activatedCount];
   const tx = fakeDb({
     user: {
-      updateMany: vi.fn(async () => ({ count: activatedCount })),
+      updateMany: vi.fn(async () => ({ count: counts.shift() ?? 0 })),
     },
-    account: { create: vi.fn(async () => ({ id: "account-1" })) },
+    account: {
+      findFirst: vi.fn(async () => null),
+      create: vi.fn(async () => ({ id: "account-1" })),
+      update: vi.fn(async () => ({ id: "account-1" })),
+    },
   });
   vi.mocked(withAuditedMutation).mockImplementation(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,6 +91,7 @@ describe("acceptInvitation", () => {
         password: "scrypt:Branch2026audit",
       },
     });
+    expect(tx.account.update).not.toHaveBeenCalled();
   });
 
   it("activates only from INVITED, so a second acceptance is refused", async () => {
@@ -99,6 +107,45 @@ describe("acceptInvitation", () => {
       success: false,
       error: "This invitation has already been used.",
     });
+  });
+
+  it("updates an existing credential account instead of creating a duplicate", async () => {
+    const tx = stubAuditedMutation(1);
+    vi.mocked(tx.account.findFirst).mockResolvedValue({ id: "account-1" });
+
+    const result = await acceptInvitation(
+      "raw-token",
+      "asha@ucb.example",
+      "Branch2026audit",
+    );
+
+    expect(result.success).toBe(true);
+    expect(tx.account.update).toHaveBeenCalledWith({
+      where: { id: "account-1" },
+      data: { password: "scrypt:Branch2026audit" },
+    });
+    expect(tx.account.create).not.toHaveBeenCalled();
+  });
+
+  it("allows exactly one success under two concurrent accepts of one token", async () => {
+    const tx = stubAuditedMutation([1, 0]);
+
+    const [a, b] = await Promise.all([
+      acceptInvitation("raw-token", "asha@ucb.example", "Branch2026audit"),
+      acceptInvitation("raw-token", "asha@ucb.example", "Branch2026audit"),
+    ]);
+
+    const winners = [a, b].filter((r) => r.success);
+    const losers = [a, b].filter((r) => !r.success);
+
+    expect(winners).toHaveLength(1);
+    expect(losers).toHaveLength(1);
+    expect(losers[0]).toEqual({
+      success: false,
+      error: "This invitation has already been used.",
+    });
+    expect(tx.account.create).toHaveBeenCalledTimes(1);
+    expect(tx.account.update).not.toHaveBeenCalled();
   });
 
   it("refuses a password that fails the policy before touching the database", async () => {

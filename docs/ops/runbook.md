@@ -1,103 +1,115 @@
 # AEGIS Ops Runbook
 
-**Production Environment:** Coolify (self-hosted PaaS) on shared VPS  
-**Last Verified:** 2026-08-23 (VPS migration to Coolify complete)  
-**Access:** Tailscale SSH to `vps` host (public :22 is filtered)
+**Environment:** local development only
+**Last verified:** 2026-09-05
+
+**There is nothing to operate.** AEGIS has no deployed instance, no staging, and
+no production database. The Coolify application that previously served it was
+taken down on 2026-09-04. This runbook therefore covers the only environment that
+exists — a developer machine — and records what would have to be rebuilt before
+any of the production procedures in this file's history become relevant again.
+
+`aegis.nexlyadvisory.com` resolves to a host running an unrelated application.
+A `404 {"ok":false,"error":"not found"}` from it, behind a self-signed
+`CN=srv1447173.hstgr.cloud` certificate, is the expected response — not an outage.
+There is no `vps` SSH alias; it never resolves.
 
 ---
 
-## Quick Health Check
+## Health Check
 
 ```bash
-# From local machine (requires Tailscale)
-curl -fsS https://aegis.nexlyadvisory.com/api/health | jq
-
-# Or via VPS SSH:
-ssh vps 'curl -fsS http://127.0.0.1:3000/api/health | jq'
+curl -fsS http://localhost:3000/api/health | jq
 ```
 
-Expected output: `{ "status": "healthy", "database": "ok", "queue": "ok" }`
+Expected: `status` `"ok"`, with `database` and `queue` both healthy. The endpoint
+runs `SELECT 1` and counts pg-boss rows — it does **not** check that the schema
+matches the code, so it stays green against a database missing this release's
+tables and columns. Verify schema separately with `pnpm db:verify`.
 
 ---
 
-## Deployment
-
-**Merge to `main` triggers auto-deploy in Coolify.** No manual action needed.
-
-1. Open a PR, verify CI passes
-2. Merge to `main` on GitHub
-3. Coolify builds and releases automatically (1–2 minutes)
-4. Verify health at `https://aegis.nexlyadvisory.com/api/health`
-
-**SQL migrations:** Applied by hand to Coolify-managed Postgres *before* or *with* the code merge.
-See CLAUDE.md § "SQL migrations do not ride along with a deploy."
-
----
-
-## Container & Database Inspection
+## Local Setup
 
 ```bash
-# List AEGIS container
-ssh vps 'sudo docker ps --filter name=nil0nfvohfrgehgjxdv1g2xc'
-
-# Container logs (last 50 lines)
-ssh vps 'sudo docker logs -n 50 <container-id>'
-
-# Connect to Postgres
-ssh vps 'sudo docker exec -it ii2dkkgiwrf76iesksuhv5iq psql -U aegis -d aegis'
+pnpm install
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d  # PostgreSQL 16 on :5433
+pnpm db:generate
+pnpm db:push
+pnpm db:bootstrap     # triggers, views, functions, composite FKs
+pnpm db:verify        # asserts they landed
+pnpm db:seed
+pnpm dev
 ```
 
-**Container identifiers:**
-- App: `nil0nfvohfrgehgjxdv1g2xc`
-- Postgres: `ii2dkkgiwrf76iesksuhv5iq`
-
-Note: Do not truncate Docker output (Docker prints `com.docker.*` labels before
-`traefik.*`, so `head -20` hides Traefik labels).
+`pnpm db:push` alone leaves a database with no audit triggers, no dashboard
+views, and no composite foreign keys. `db:bootstrap` is not optional.
 
 ---
 
-## Secrets & Configuration
+## Applying SQL
 
-Secrets are stored **in Coolify, not in files or git.**
+SQL is never applied automatically — not by a build, not by starting the app. The
+container entrypoint is `node server.js`: no `migrate deploy`, no `db push`. On
+any database, local included, two things are applied by hand, in this order:
 
-- Login: Coolify web UI (ask admin for access)
-- Configure via: Coolify → Project `10-sapiex-websites` → AEGIS (app id 6)
-- Environment variables: Set in Coolify UI
-- Required vars: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`
-- Optional (degrade gracefully): AWS S3/SES credentials
+1. The release's schema file in `prisma/migrations/`, if it has one — a dated,
+   idempotent `.sql`. Apply with `pnpm db:apply <path>`. CI rehearses this step.
+2. `pnpm db:bootstrap`, then `pnpm db:verify`.
 
----
+Schema first: `prisma/sql/060_tenant_composite_fks.sql` depends on the
+`(tenantId, id)` unique indexes the schema file creates.
 
-## Rollback
+`prisma/migrations/superseded/` is history. **Do not apply it** — it contains
+`add_rls_policies.sql`, which would create an `aegis_app` role and enable
+row-level security on a system whose tenant isolation is enforced in application
+code.
 
-Coolify maintains Docker images for recent deployments. To rollback:
-
-1. Login to Coolify UI
-2. Revert to a prior image/build
-3. Restart the container
-
-Alternatively, revert the git commit on `main` and push—Coolify will rebuild and deploy.
+Full sequence: [release-checklist.md](release-checklist.md).
 
 ---
 
-## Backup & Restore
+## Integration and Merge
 
-Backups are managed by Coolify (snapshots). Ask admin for:
-- Backup schedule
-- Restore procedures
-- Database snapshots
+1. Open a pull request. CI runs on the **merge ref**, so a green check reflects
+   the branch combined with `main` at that moment, not the branch alone.
+2. Merge to `main`. That is the end of it — nothing builds, releases, or deploys.
+
+`main` has no branch protection, so the PR's CI run is the only gate. The
+`docker-build` job still builds the production image on every PR, which keeps
+`Dockerfile` changes validated even though the image is never released.
 
 ---
 
-## VPS Access Notes
+## Backup and Restore
 
-- **Tailscale:** Host is `vps`, public :22 is blocked
-- **SSH mode:** Check mode (browser auth required); never pass `BatchMode=yes`—it suppresses auth URL and hangs
-- **Sudo:** User `nc` has passwordless sudo but is not in docker group, so prepend `sudo` to docker commands
-- **Network:** Postgres is internal-only, app is loopback-only on `127.0.0.1:3000`, Traefik (coolify-proxy) terminates TLS
+Not applicable — there is no hosted database. A local database is disposable:
+recreate it with the setup sequence above.
+
+---
+
+## Restoring a Deployment
+
+If AEGIS is deployed again, the retired Coolify configuration — application id,
+network, managed Postgres container, Traefik TLS termination — is recorded in
+[`CLAUDE.md` § Deployment](../../CLAUDE.md#deployment) under "Dormant Production
+Layout". None of it exists right now.
+
+The deploy scripts, systemd units, Nginx config, and AWS CDK stack that served
+the two earlier layouts were deleted on 2026-09-05; `git log` has them if they
+are ever wanted. They were already stale twice over and described machines that
+had been reprovisioned.
+
+Before standing anything up again, note that the schema files in
+`prisma/migrations/` and the manifest in `prisma/sql/` must be applied by hand to
+the new database. A fresh deploy of current `main` against an empty database
+gives you an application whose evidence upload, notification claiming, and RBIA
+freeze all fail while `/api/health` reports healthy.
 
 ---
 
 ## Reference
 
-For full production details, see **[CLAUDE.md § Deployment](../CLAUDE.md#deployment)** and **[CLAUDE.md § Operational Commands](../CLAUDE.md#operational-commands)**.
+[CLAUDE.md § Deployment](../../CLAUDE.md#deployment) ·
+[release-checklist.md](release-checklist.md) ·
+[repository-hygiene.md](repository-hygiene.md)

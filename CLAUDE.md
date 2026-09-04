@@ -23,7 +23,7 @@ Next.js 16 (App Router) · React 19 · TypeScript 5.9 (strict) ·
 Prisma 7 → PostgreSQL 16 · Tailwind 4 · shadcn/ui + Radix ·
 Better Auth · next-intl 4 · pg-boss · pnpm
 
-Schema is large: 75 models, 21 enums in `prisma/schema.prisma`.
+Schema is large: 76 models, 22 enums in `prisma/schema.prisma`.
 Assume current-generation idioms — these are all recent majors.
 
 ## Working Style
@@ -85,11 +85,9 @@ pnpm build:analyze
 ## Repository Map
 
 ```text
-infra/                         # AWS CDK infrastructure
 messages/                      # i18n dictionaries
-deploy/                        # VPS deploy, backup, restore, systemd assets
-docs/ops/                      # Release, rollback, recovery, hygiene docs
-scripts/                       # Local setup and utility scripts
+docs/ops/                      # Merge checklist, local runbook, repo hygiene
+scripts/                       # Database bootstrap/verify, seeds, doc generation
 prisma/
 ├── schema.prisma              # Production schema
 ├── migrations/                # Prisma and SQL migrations
@@ -196,11 +194,16 @@ and `https://aegis.nexlyadvisory.com/api/health` was the check.
 
 An older layout before the 2026-08-23 reprovision — `/opt/aegis`,
 `docker-compose.prod.yml`, bespoke nginx, systemd timers, a `v*` tag pipeline —
-is stale twice over. `Deploy Production` and `Health Check` are both
-`disabled_manually` in Actions; do not re-enable either while AEGIS is
-undeployed. `Health Check` was disabled on 2026-09-05 — it curled
+was stale twice over.
+
+The assets for both layouts were **deleted on 2026-09-05**, along with the
+`Deploy Production` and `Health Check` workflows that drove them: `deploy/`
+(deploy, backup, restore, nginx, systemd units), `infra/` (AWS CDK),
+`docker-compose.prod.yml`, `scripts/ec2-init.sh` and `scripts/setup-s3.sh`.
+`git log` has every one of them. `Health Check` had curled
 `https://aegis.nexlyadvisory.com/api/health` every 12 hours and failed every run
-from the teardown onward, because that host serves an unrelated app.
+from the teardown onward, because that host serves an unrelated app. Do not
+recreate any of this without a target to deploy to.
 
 </details>
 

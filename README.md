@@ -4,28 +4,37 @@
 
 Multi-tenant audit and compliance platform for Urban Cooperative Banks (UCBs) in India. Implements Risk-Based Internal Audit (RBIA) per RBI guidelines with sample-based examination, dual findings, escalation workflows, and board governance.
 
-**Live:** [aegis.nexlyadvisory.com](https://aegis.nexlyadvisory.com)
+**Status:** not deployed. AEGIS runs locally only — there is no hosted instance,
+no staging, and no production database. `aegis.nexlyadvisory.com` resolves to a
+host running an unrelated application; it does not serve AEGIS.
 
-## Recent Progress (August 2026)
+## Recent Progress (September 2026)
 
-- **Infrastructure migrated to Coolify.** The production VPS was rebuilt on
-  2026-08-23; AEGIS now runs as a Coolify application with a managed PostgreSQL 16
-  and Let's Encrypt TLS via Traefik. The database was bootstrapped fresh and
-  reseeded; the app is live and healthy (`/api/health` reports database and
-  pg-boss job queue OK).
+- **Deployment retired.** The Coolify application was taken down deliberately on
+  2026-09-04. Nothing releases on merge; CI on the pull request is the only gate.
+  See [Deployment](#deployment).
+- **Integrity and operations hardening (F07–F15)** landed
+  ([#87](https://github.com/nc-sapiex/AEGIS/pull/87)): atomic notification
+  claiming, server-issued upload intents, an ordered and verifiable database
+  bootstrap (`pnpm db:bootstrap` / `db:verify`), audit triggers attached to every
+  table `AUDITED_TABLES` claims, and a not-applicable path for RBIA examination
+  leaves.
 - **Security remediation underway**, tracked as a shared map on the issue tracker
-  ([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). In review: a fix for a
+  ([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). Merged so far: a fix for a
   cross-tenant IDOR in `/api/download` where any authenticated user could presign
   another tenant's evidence keys ([#57](https://github.com/nc-sapiex/AEGIS/pull/57)),
   and a dependency sweep clearing every high/critical production advisory —
   including a Better Auth account-takeover and a Next.js middleware bypass —
-  ([#59](https://github.com/nc-sapiex/AEGIS/pull/59)).
-- **Production Prisma connection leak fixed.** The client singleton was cached
-  only outside production, so `next start` opened a fresh connection pool per
-  request; corrected in [#57](https://github.com/nc-sapiex/AEGIS/pull/57).
-- **E2E suite stabilised** — it had drifted to 45/145 failing on a
-  `continue-on-error` job (silently); now **140 passing**, verified against a real
-  PostgreSQL and a production build.
+  ([#59](https://github.com/nc-sapiex/AEGIS/pull/59)). The `security-audit` CI job
+  now fails on any high/critical production advisory instead of merely warning.
+- **Prisma connection leak fixed.** The client singleton was cached only outside
+  production, so `next start` opened a fresh connection pool per request;
+  corrected in [#57](https://github.com/nc-sapiex/AEGIS/pull/57).
+- **E2E suite put behind a real gate.** It had drifted to failing silently on a
+  `continue-on-error` job. A small deterministic `e2e-smoke` subset now blocks
+  merges; the full `e2e` suite stays advisory because it is slow and has known
+  flaky scenarios. Quarantine flakes with `test.skip` and a reason — do not put
+  `continue-on-error` back on `e2e-smoke`.
 - **A claims-vs-implementation audit** ([docs/claims-vs-implementation.md](docs/claims-vs-implementation.md))
   records where marketing/spec claims diverge from the code; the milestone
   completion figures below predate that verification and are being reconciled.
@@ -40,7 +49,7 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 | Layer     | Technology                                                                 |
 | --------- | -------------------------------------------------------------------------- |
 | Framework | Next.js 16, TypeScript 5.9, React 19                                       |
-| Database  | PostgreSQL 16, Prisma 7 (75 models, 21 enums)                              |
+| Database  | PostgreSQL 16, Prisma 7 (76 models, 22 enums)                              |
 | Auth      | Better Auth (17 roles, 78 permissions, maker-checker RBAC)                 |
 | UI        | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts                             |
 | Cloud     | AWS S3 (evidence storage), AWS SES (email)                                 |
@@ -48,7 +57,7 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 | i18n      | next-intl (English, Hindi, Marathi, Gujarati)                              |
 | Export    | ExcelJS (XLSX), @react-pdf/renderer (PDF)                                  |
 | Testing   | Vitest (unit + static discipline suites), Playwright E2E (5 role projects) |
-| Deploy    | Coolify (self-hosted PaaS) + Traefik, managed PostgreSQL, Let's Encrypt    |
+| Deploy    | None — local development only (`Dockerfile` is built in CI, not released)  |
 
 ## Features
 
@@ -116,9 +125,10 @@ pnpm dev                  # Next.js with Turbopack on :3000
 
 ### Docker
 
+Local PostgreSQL only; the app runs from `pnpm dev`:
+
 ```bash
-docker compose up -d                              # Dev (PostgreSQL + app)
-docker compose -f docker-compose.prod.yml up -d   # Production
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
 ## Environment Variables
@@ -157,30 +167,28 @@ E2E tests authenticate as 5 roles: Auditor, Manager, CAE, CCO, Auditee.
 
 ## Deployment
 
-Deployed as a **Coolify** application (self-hosted PaaS). Coolify builds the
-`Dockerfile`, manages the container, and fronts it with Traefik terminating TLS
-via Let's Encrypt. A managed PostgreSQL runs alongside it on the same internal
-Docker network; only `BETTER_AUTH_SECRET` and `DATABASE_URL` are required at
-runtime. AWS S3/SES credentials are not required to boot, but evidence upload and
-email are non-functional until they are configured (they do not silently fall
-back to a working default).
+**There is no deployment target.** The Coolify application that previously served
+AEGIS was taken down on 2026-09-04, and nothing has replaced it. Merging to `main`
+is ordinary integration, not a release.
 
-Pushing to the configured branch triggers a rebuild in Coolify. CI (lint,
-typecheck, unit tests, build, dependency audit, E2E) runs on every pull request.
+CI (lint, typecheck, unit tests, integration, build, dependency audit, E2E, and a
+`docker-build` job that still builds the production image) runs on every pull
+request. Because `main` has no branch protection, that CI run is the only gate
+there is.
 
-> The earlier tag-driven pipeline that deployed to a bespoke `/opt/aegis` Docker
-> Compose + Nginx + systemd stack has been **retired** — that VPS was rebuilt on
-> 2026-08-23 and the workflow is disabled. Do not push `v*` release tags.
+SQL is never applied automatically — not by a build, not by starting the app. On
+any database, local included, the release's schema file and then `pnpm db:bootstrap`
+are applied by hand, in that order. See
+[`docs/ops/release-checklist.md`](docs/ops/release-checklist.md).
 
-Fresh-database bootstrap order (schema push, roles, non-Prisma SQL, seed with
-audit triggers detached) is non-obvious; see the project bootstrap notes before
-provisioning a new environment.
+A record of the retired Coolify layout is kept in
+[`CLAUDE.md`](CLAUDE.md#deployment) for restoration only. Do not treat it as live.
 
 ## Project Structure
 
 ```
 ├── src/
-│   ├── actions/        Server actions by domain (103 files)
+│   ├── actions/        Server actions by domain (105 files)
 │   ├── app/            Next.js App Router (auth, dashboard, onboarding, API)
 │   ├── components/     UI components (252 files, 32 domain folders)
 │   ├── data-access/    Tenant-aware DAL (53 files)
@@ -188,16 +196,15 @@ provisioning a new environment.
 │   ├── emails/         React Email templates
 │   ├── jobs/           pg-boss background workers
 │   └── lib/            Utilities (auth, permissions, scoring engines, S3, export)
-├── prisma/             Schema (75 models), migrations, seed scripts
-├── deploy/             Legacy VPS scripts (retired — deployment is via Coolify)
+├── prisma/             Schema (76 models), migrations, seed scripts
+├── scripts/            Database bootstrap/verify, seeds, doc generation
 ├── tests/              E2E specs, auth setup, 226-case test plan
-├── infra/              AWS CDK (TypeScript)
 └── messages/           i18n translations (en, hi, mr, gu)
 ```
 
 ## Scale
 
-- ~627 source files (excl. generated), 2,500-line Prisma schema
+- 644 source files (excl. generated), 2,545-line Prisma schema
 - 78 RBAC permissions across 17 roles, 18 functional modules
 - Exact model, page, endpoint and server-action inventories live in the
   generated [reference docs](docs/reference/) (`pnpm docs:reference`)

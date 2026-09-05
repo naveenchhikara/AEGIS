@@ -247,29 +247,25 @@ export async function acceptInvitation(
         // Same transaction as activation: a user left ACTIVE with no
         // credential can neither sign in nor be re-invited, because
         // resendInvitation only matches status INVITED.
-        await tx.account.create({
-          data: {
+        //
+        // upsert (not create) guards against duplicate credential rows from
+        // concurrent double-submission or prior script runs.  The unique key
+        // is (accountId, providerId); on conflict the password hash is
+        // refreshed so the user's chosen password always wins.
+        await tx.account.upsert({
+          where: { accountId_providerId: { accountId: user.id, providerId: "credential" } },
+          create: {
             userId: user.id,
             accountId: user.id,
             providerId: "credential",
             password: passwordHash,
           },
+          update: {
+            password: passwordHash,
+          },
         });
       },
     );
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId,
-        tableName: "User",
-        recordId: user.id,
-        operation: "UPDATE",
-        actionType: "user.invitation_accepted",
-        userId: user.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {

@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `8c7b75f` (claude/onboarding-entry-and-invitee-tokens)
+> Source commit: `2d809eb` (claude/slack-session-hkmr0s)
 
 Which processes read and write which tables.
 

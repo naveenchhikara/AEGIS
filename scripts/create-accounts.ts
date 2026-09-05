@@ -22,8 +22,11 @@ async function main() {
   for (const user of users) {
     const userHash = await hashPassword(password);
     try {
-      await prisma.account.create({
-        data: {
+      await prisma.account.upsert({
+        where: {
+          accountId_providerId: { accountId: user.id, providerId: "credential" },
+        },
+        create: {
           id: randomUUID(),
           userId: user.id,
           accountId: user.id,
@@ -32,14 +35,13 @@ async function main() {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        update: {
+          password: userHash,
+        },
       });
-      console.log("Created account for:", user.email);
+      console.log("Created/updated account for:", user.email);
     } catch (e: any) {
-      if (e.code === "P2002") {
-        console.log("Account already exists for:", user.email);
-      } else {
-        console.log("Error for", user.email, ":", e.message);
-      }
+      console.log("Error for", user.email, ":", e.message);
     }
   }
 

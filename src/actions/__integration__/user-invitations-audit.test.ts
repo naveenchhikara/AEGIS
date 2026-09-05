@@ -115,6 +115,48 @@ describe("user-invitations audit rows", () => {
     ).toBe(1);
   });
 
+  it("writes exactly one audit row per invited user, with no hand-written summary row", async () => {
+    const tenant = await createTenant();
+    const admin = await createUser(tenant.id, ["SYSTEM_ADMIN"]);
+    const session = fakeSession({
+      id: admin.id,
+      tenantId: tenant.id,
+      roles: ["SYSTEM_ADMIN"],
+    });
+    mockSessionModule(session);
+    mockHeaders();
+    vi.doMock("@/lib/invitation-mailer", () => ({
+      sendInvitationEmail: vi.fn(async () => undefined),
+    }));
+    const { sendUserInvitations } = await import("../user-invitations");
+
+    const result = await sendUserInvitations([
+      { name: "Asha", email: "asha@ucb.example", roles: ["AUDITOR"] },
+      { name: "Ravi", email: "ravi@ucb.example", roles: ["CCO"] },
+    ]);
+
+    expect(result.success).toBe(true);
+    if (!result.success) throw new Error("unreachable");
+    expect(result.data).toHaveLength(2);
+
+    for (const invitee of result.data) {
+      const rows = await integrationPrisma.auditLog.findMany({
+        where: { tableName: "User", recordId: invitee.id },
+      });
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        tenantId: tenant.id,
+        operation: "INSERT",
+        actionType: "user.invited",
+        userId: admin.id,
+      });
+    }
+
+    // No hand-written summary row alongside the two per-user trigger rows —
+    // exactly the bug #93 already fixed for accept and revoke.
+    expect(await integrationPrisma.auditLog.count()).toBe(2);
+  });
+
   it("writes exactly one audit row for a revocation, carrying IP and session", async () => {
     const tenant = await createTenant();
     const admin = await createUser(tenant.id, ["SYSTEM_ADMIN"]);

@@ -2,11 +2,16 @@
 
 import { prisma } from "@/lib/prisma";
 import { getRequiredSession } from "@/data-access/session";
-import { hasPermission, type Role } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { headers } from "next/headers";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
+import {
+  mintInviteToken,
+  createInvitedUsers,
+  type InvitedUserInput,
+} from "@/data-access/user-invitations";
 import { auth } from "@/lib/auth";
 import { PasswordSchema } from "@/lib/password-policy";
 import { sendInvitationEmail } from "@/lib/invitation-mailer";
@@ -48,88 +53,29 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
   }
 
   try {
+    // Minted before the transaction opens: bcrypt-12 is slow, and running it
+    // while a DB transaction holds a connection open is a cost worth avoiding.
+    const minted = await Promise.all(
+      users.map(async (invite) => ({ invite, ...(await mintInviteToken()) })),
+    );
+
     const createdUsers = await withAuditedMutation(
       userActor(session),
       "user.invited",
-      async (tx) => {
-        const results = [];
-        for (const invite of users) {
-          // Generate invite token (32 bytes hex)
-          const crypto = await import("crypto");
-          const rawToken = crypto.randomBytes(32).toString("hex");
-
-          // Hash the token with bcrypt before storing (security best practice)
-          const tokenHash = await bcrypt.hash(rawToken, 12);
-
-          const user = await tx.user.create({
-            data: {
-              email: invite.email,
+      (tx) =>
+        createInvitedUsers(tx, {
+          tenantId,
+          invitedBy: session.user.id,
+          invites: minted.map(
+            ({ invite, tokenHash }): InvitedUserInput => ({
               name: invite.name,
-              roles: invite.roles as any[],
-              tenantId,
-              status: "INVITED",
-              invitedAt: new Date(),
-              invitedBy: session.user.id,
-              inviteTokenHash: tokenHash,
-              inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            },
-          });
-
-          // Create branch assignments for AUDITEE users
-          if (
-            invite.roles.includes("AUDITEE") &&
-            invite.branchAssignments &&
-            invite.branchAssignments.length > 0
-          ) {
-            const branches = await tx.branch.findMany({
-              where: {
-                tenantId,
-                code: { in: invite.branchAssignments },
-              },
-            });
-
-            await Promise.all(
-              branches.map((branch) =>
-                tx.userBranchAssignment.create({
-                  data: {
-                    userId: user.id,
-                    branchId: branch.id,
-                    tenantId,
-                  },
-                }),
-              ),
-            );
-          }
-
-          results.push({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            rawToken,
-            inviteExpiry: user.inviteExpiry!,
-          });
-        }
-
-        // Audit log
-        await tx.auditLog.create({
-          data: {
-            tenantId,
-            tableName: "User",
-            recordId: tenantId,
-            operation: "CREATE",
-            actionType: "users.invited",
-            newData: {
-              count: results.length,
-              emails: results.map((r) => r.email),
-            } as any,
-            userId: session.user.id,
-            sessionId: session.session.id,
-            ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-          },
-        });
-
-        return results;
-      },
+              email: invite.email,
+              roles: invite.roles as InvitedUserInput["roles"],
+              branchAssignments: invite.branchAssignments,
+              tokenHash,
+            }),
+          ),
+        }),
     );
 
     const tenant = await prisma.tenant.findUnique({
@@ -139,12 +85,15 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
 
     // Sent after the transaction commits: SES is network I/O, and a transient
     // delivery failure must not roll back the user records.
+    const rawTokenByEmail = new Map(
+      minted.map(({ invite, rawToken }) => [invite.email, rawToken]),
+    );
     for (const invitee of createdUsers) {
       await sendInvitationEmail({
         to: invitee.email,
         inviteeName: invitee.name,
         bankName: tenant?.shortName ?? "AEGIS",
-        rawToken: invitee.rawToken,
+        rawToken: rawTokenByEmail.get(invitee.email)!,
         expiresAt: invitee.inviteExpiry,
       });
     }
@@ -319,11 +268,7 @@ export async function resendInvitation(userId: string) {
       return { success: false, error: "User not found or already active." };
     }
 
-    // Generate new token and hash it
-    const crypto = await import("crypto");
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const tokenHash = await bcrypt.hash(rawToken, 12);
-
+    const { rawToken, tokenHash } = await mintInviteToken();
     const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     // Include tenantId in WHERE to prevent IDOR cross-tenant mutation

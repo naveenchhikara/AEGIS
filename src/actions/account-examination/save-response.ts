@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { requireTeamMembership } from "@/data-access/access-guards";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
@@ -145,33 +146,40 @@ export async function saveAccountExamResponse(
       };
     }
 
-    // 6. Upsert AccountExamResponse on the unique constraint
-    const response = await db.accountExamResponse.upsert({
-      where: {
-        engagementId_loanAccountId_questionId: {
-          engagementId,
-          loanAccountId,
-          questionId,
-        },
-      },
-      update: {
-        status,
-        note: note ?? null,
-        respondedById: userId,
-        respondedAt: new Date(),
-      },
-      create: {
-        tenantId,
-        engagementId,
-        loanAccountId,
-        questionId,
-        status,
-        note: note ?? null,
-        respondedById: userId,
-        respondedAt: new Date(),
-      },
-      select: { id: true, status: true },
-    });
+    // 6. Upsert AccountExamResponse on the unique constraint. AccountExamResponse
+    // carries an audit trigger, so the write runs through withAuditedMutation,
+    // which sets the session context the trigger reads.
+    const response = await withAuditedMutation(
+      userActor(session),
+      "account_exam_response.saved",
+      (tx) =>
+        tx.accountExamResponse.upsert({
+          where: {
+            engagementId_loanAccountId_questionId: {
+              engagementId,
+              loanAccountId,
+              questionId,
+            },
+          },
+          update: {
+            status,
+            note: note ?? null,
+            respondedById: userId,
+            respondedAt: new Date(),
+          },
+          create: {
+            tenantId,
+            engagementId,
+            loanAccountId,
+            questionId,
+            status,
+            note: note ?? null,
+            respondedById: userId,
+            respondedAt: new Date(),
+          },
+          select: { id: true, status: true },
+        }),
+    );
 
     // 7. Revalidate the examination page
     revalidatePath(`/audit-execution/${engagementId}/rbia`);

@@ -11,33 +11,61 @@ host running an unrelated application; it does not serve AEGIS.
 ## Recent Progress (September 2026)
 
 - **Deployment retired.** The Coolify application was taken down deliberately on
-  2026-09-04. Nothing releases on merge; CI on the pull request is the only gate.
-  See [Deployment](#deployment).
-- **Integrity and operations hardening (F07–F15)** landed
+  2026-09-04 and its deploy assets deleted
+  ([#105](https://github.com/nc-sapiex/AEGIS/pull/105)). Nothing releases on
+  merge; CI on the pull request is the only gate. See [Deployment](#deployment).
+- **Audit trail extended to the regulated scoring tables**
+  ([#121](https://github.com/nc-sapiex/AEGIS/pull/121),
+  [#122](https://github.com/nc-sapiex/AEGIS/pull/122)). The eight RBIA/GRC
+  tables an examiner would ask for a change history on — RAM assessments and
+  scores, examination responses, action points, branch RBIA scores, loan samples
+  and their examination responses — now carry the audit trigger, bringing
+  coverage to 24 tables. Every write path to them sets the audit session context,
+  and a shrink-only coverage test fails the build if a regulated table ever
+  leaves the list. A related fix stopped duplicate audit rows being written
+  outside the transaction ([#119](https://github.com/nc-sapiex/AEGIS/pull/119)).
+- **Onboarding works end to end**
+  ([#116](https://github.com/nc-sapiex/AEGIS/pull/116),
+  [#117](https://github.com/nc-sapiex/AEGIS/pull/117)). The wizard is reachable,
+  a tenant admin can invite users from the UI, and an invitee can accept and sign
+  in — covered by an integration test that drives the whole flow
+  ([#125](https://github.com/nc-sapiex/AEGIS/pull/125)). `Account` rows are
+  unique on `(accountId, providerId)` at the database level
+  ([#120](https://github.com/nc-sapiex/AEGIS/pull/120)), and every script that
+  creates a credential account shares a single hashing helper
+  ([#124](https://github.com/nc-sapiex/AEGIS/pull/124)).
+- **Security remediation**, tracked as a shared map on the issue tracker
+  ([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). Merged: the identity and
+  authorization findings F01–F06 ([#90](https://github.com/nc-sapiex/AEGIS/pull/90)),
+  authorization on the onboarding actions
+  ([#103](https://github.com/nc-sapiex/AEGIS/pull/103)), a tenant-scoped
+  `ExaminationNode` lookup ([#104](https://github.com/nc-sapiex/AEGIS/pull/104)),
+  the earlier fix for a cross-tenant IDOR in `/api/download`
+  ([#57](https://github.com/nc-sapiex/AEGIS/pull/57)) — now pinned by a
+  route-level regression test proving a presigned URL is only ever minted for the
+  session tenant's key ([#127](https://github.com/nc-sapiex/AEGIS/pull/127)) —
+  and a dependency sweep clearing every high/critical production advisory
+  ([#59](https://github.com/nc-sapiex/AEGIS/pull/59)). The `security-audit` CI
+  job fails on any such advisory instead of merely warning. Open items remain on
+  #45.
+- **Integrity and operations hardening (F07–F15)**
   ([#87](https://github.com/nc-sapiex/AEGIS/pull/87)): atomic notification
   claiming, server-issued upload intents, an ordered and verifiable database
-  bootstrap (`pnpm db:bootstrap` / `db:verify`), audit triggers attached to every
-  table `AUDITED_TABLES` claims, and a not-applicable path for RBIA examination
-  leaves.
-- **Security remediation underway**, tracked as a shared map on the issue tracker
-  ([#45](https://github.com/nc-sapiex/AEGIS/issues/45)). Merged so far: a fix for a
-  cross-tenant IDOR in `/api/download` where any authenticated user could presign
-  another tenant's evidence keys ([#57](https://github.com/nc-sapiex/AEGIS/pull/57)),
-  and a dependency sweep clearing every high/critical production advisory —
-  including a Better Auth account-takeover and a Next.js middleware bypass —
-  ([#59](https://github.com/nc-sapiex/AEGIS/pull/59)). The `security-audit` CI job
-  now fails on any high/critical production advisory instead of merely warning.
-- **Prisma connection leak fixed.** The client singleton was cached only outside
-  production, so `next start` opened a fresh connection pool per request;
-  corrected in [#57](https://github.com/nc-sapiex/AEGIS/pull/57).
-- **E2E suite put behind a real gate.** It had drifted to failing silently on a
-  `continue-on-error` job. A small deterministic `e2e-smoke` subset now blocks
-  merges; the full `e2e` suite stays advisory because it is slow and has known
-  flaky scenarios. Quarantine flakes with `test.skip` and a reason — do not put
-  `continue-on-error` back on `e2e-smoke`.
-- **A claims-vs-implementation audit** ([docs/claims-vs-implementation.md](docs/claims-vs-implementation.md))
-  records where marketing/spec claims diverge from the code; the milestone
-  completion figures below predate that verification and are being reconciled.
+  bootstrap (`pnpm db:bootstrap` / `db:verify`), and a not-applicable path for
+  RBIA examination leaves.
+- **The test suite grew a second tier.** `pnpm test:integration` runs Vitest
+  against a live PostgreSQL (`src/**/__integration__/`); a source-grep test that
+  pinned implementation details was replaced by behavioural coverage
+  ([#114](https://github.com/nc-sapiex/AEGIS/pull/114)) and the F06
+  save-response suite was migrated onto the shared harness
+  ([#118](https://github.com/nc-sapiex/AEGIS/pull/118)). The deterministic
+  `e2e-smoke` subset gates merges; the full `e2e` suite stays advisory because it
+  is slow and has known flaky scenarios. Quarantine a flake with `test.skip` and
+  a reason — do not put `continue-on-error` back on `e2e-smoke`.
+- **A claims-vs-implementation audit**
+  ([docs/claims-vs-implementation.md](docs/claims-vs-implementation.md)) records
+  where marketing/spec claims diverged from the code as of August 2026. It is
+  kept as a dated record, with addenda where the code has since moved.
 
 ## Documentation
 
@@ -46,18 +74,18 @@ Start with **[`docs/architecture.md`](docs/architecture.md)**;
 
 ## Tech Stack
 
-| Layer     | Technology                                                                 |
-| --------- | -------------------------------------------------------------------------- |
-| Framework | Next.js 16, TypeScript 5.9, React 19                                       |
-| Database  | PostgreSQL 16, Prisma 7 (76 models, 22 enums)                              |
-| Auth      | Better Auth (17 roles, 78 permissions, maker-checker RBAC)                 |
-| UI        | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts                             |
-| Cloud     | AWS S3 (evidence storage), AWS SES (email)                                 |
-| Jobs      | pg-boss (notifications, reminders)                                         |
-| i18n      | next-intl (English, Hindi, Marathi, Gujarati)                              |
-| Export    | ExcelJS (XLSX), @react-pdf/renderer (PDF)                                  |
-| Testing   | Vitest (unit + static discipline suites), Playwright E2E (5 role projects) |
-| Deploy    | None — local development only (`Dockerfile` is built in CI, not released)  |
+| Layer     | Technology                                                                                                     |
+| --------- | -------------------------------------------------------------------------------------------------------------- |
+| Framework | Next.js 16, TypeScript 5.9, React 19                                                                           |
+| Database  | PostgreSQL 16, Prisma 7 (76 models, 22 enums)                                                                  |
+| Auth      | Better Auth (17 roles, 78 permissions, maker-checker RBAC)                                                     |
+| UI        | shadcn/ui + Radix UI, Tailwind CSS 4, Recharts                                                                 |
+| Cloud     | AWS S3 (evidence storage), AWS SES (email)                                                                     |
+| Jobs      | pg-boss (notifications, reminders)                                                                             |
+| i18n      | next-intl (English, Hindi, Marathi, Gujarati)                                                                  |
+| Export    | ExcelJS (XLSX), @react-pdf/renderer (PDF)                                                                      |
+| Testing   | Vitest (unit, static discipline suites, integration against live PostgreSQL), Playwright E2E (5 role projects) |
+| Deploy    | None — local development only (`Dockerfile` is built in CI, not released)                                      |
 
 ## Features
 
@@ -157,11 +185,18 @@ See `.env.example` for the full list.
 ## Testing
 
 ```bash
-pnpm test:unit             # Vitest unit tests
+pnpm test:unit             # Vitest unit tests (no database)
+pnpm test:integration      # Vitest against a live PostgreSQL — resets the DATABASE_URL database
 pnpm test:coverage         # With coverage report
-pnpm test:e2e              # Playwright E2E (5 role projects)
+pnpm test:e2e:smoke        # Deterministic Playwright subset; the one that gates merges
+pnpm test:e2e              # Full Playwright E2E (5 role projects); advisory in CI
 pnpm test:e2e:ui           # Playwright UI mode
 ```
+
+Unit tests live beside the code in `src/**/__tests__/`; integration tests in
+`src/**/__integration__/`, with their harness in `tests/integration/`. The
+integration global setup runs `prisma db push --force-reset` against whatever
+`DATABASE_URL` points at, so never aim it at a database you want to keep.
 
 E2E tests authenticate as 5 roles: Auditor, Manager, CAE, CCO, Auditee.
 
@@ -198,7 +233,7 @@ A record of the retired Coolify layout is kept in
 │   └── lib/            Utilities (auth, permissions, scoring engines, S3, export)
 ├── prisma/             Schema (76 models), migrations, seed scripts
 ├── scripts/            Database bootstrap/verify, seeds, doc generation
-├── tests/              E2E specs, auth setup, 226-case test plan
+├── tests/              E2E specs, integration harness, auth setup, 226-case test plan
 └── messages/           i18n translations (en, hi, mr, gu)
 ```
 

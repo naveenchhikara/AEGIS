@@ -32,23 +32,38 @@ prettier --write .    # Format files
 pnpm db:generate      # Generate Prisma client
 pnpm db:push          # Sync schema to local database
 pnpm db:migrate       # Create/apply local Prisma migration
+pnpm db:apply <path>  # Apply one loose .sql from prisma/migrations/ (CI rehearses this)
+pnpm db:bootstrap     # Apply prisma/sql/manifest.ts: triggers, views, functions, composite FKs
+pnpm db:verify        # Assert every bootstrap object landed
 pnpm db:seed          # Seed database via prisma/seed.ts
 pnpm db:studio        # Open Prisma Studio
 ```
 
+`db:push` alone leaves a database with no audit triggers; `db:bootstrap` is not
+optional. Full sequence in [`CLAUDE.md`](CLAUDE.md#applying-sql).
+
 ### Testing
 
 ```bash
-pnpm test:unit        # Run Vitest unit tests
+pnpm test:unit        # Run Vitest unit tests (no database)
+pnpm test:integration # Vitest against a live PostgreSQL — RESETS the DATABASE_URL database
 pnpm test:coverage    # Run unit tests with coverage
 pnpm test:e2e         # Run Playwright E2E tests
+pnpm test:e2e:smoke   # Deterministic E2E subset; the one that gates merges
 pnpm test:e2e:ui      # Run Playwright with UI
 ```
+
+Unit tests live beside the code in `src/**/__tests__/`; integration tests in
+`src/**/__integration__/`, with the harness in `tests/integration/`. The
+integration global setup runs `prisma db push --force-reset` against whatever
+`DATABASE_URL` points at, with no safety guard — never point it at a database
+you want to keep.
 
 ### Seed Utilities
 
 ```bash
 pnpm seed:master-directions # Seed RBI master directions dataset
+pnpm seed:rbia-housing      # Seed the RBIA housing dataset (scripts/seed-rbia-housing.ts)
 pnpm seed:exam-questions    # Seed exam question bank
 pnpm seed:lifecycle         # Seed full audit lifecycle demo data
 ```
@@ -180,10 +195,16 @@ import type { BankProfile } from "@/types";
 ## Before Committing
 
 1. Run `pnpm lint`
-2. Run `pnpm build` for changes that affect runtime behavior
-3. Run the relevant tests for the code you touched
-4. Check the browser for obvious regressions when UI flows changed
-5. Ensure no secrets or local-only artifacts are staged
+2. Run `pnpm docs:check` if you touched `prisma/schema.prisma`, `src/actions/`,
+   `src/app/` or `src/data-access/` — CI's `lint` job fails on stale
+   `docs/reference/`. Fix with `pnpm docs:reference` and commit the result;
+   never hand-edit those files
+3. Run `pnpm build` for changes that affect runtime behavior
+4. Run the relevant tests for the code you touched — `pnpm test:unit` always
+   (the discipline suites run here), `pnpm test:integration` when a write path
+   or the schema changed
+5. Check the browser for obvious regressions when UI flows changed
+6. Ensure no secrets or local-only artifacts are staged
 
 ---
 

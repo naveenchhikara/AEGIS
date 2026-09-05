@@ -28,7 +28,7 @@ Demo data is seeded locally — Apex Sahakari Bank (5 users, 12 branches,
 | Email        | AWS SES (optional; disabled when unconfigured) |
 | Reports      | ExcelJS (XLSX) + @react-pdf/renderer (PDF)     |
 | Jobs         | pg-boss                                        |
-| Testing      | Playwright (E2E) + Vitest (unit)               |
+| Testing      | Vitest (unit + integration) + Playwright (E2E) |
 | Deployment   | None — local only                              |
 | CI/CD        | GitHub Actions                                 |
 

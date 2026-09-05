@@ -53,8 +53,9 @@ SQL is never applied automatically — not by a build, not by starting the app. 
 container entrypoint is `node server.js`: no `migrate deploy`, no `db push`. On
 any database, local included, two things are applied by hand, in this order:
 
-1. The release's schema file in `prisma/migrations/`, if it has one — a dated,
-   idempotent `.sql`. Apply with `pnpm db:apply <path>`. CI rehearses this step.
+1. The release's schema files in `prisma/migrations/`, if it has any — dated,
+   idempotent `.sql` files, applied oldest first with `pnpm db:apply <path>`. CI
+   rehearses this step; the checklist lists the current files.
 2. `pnpm db:bootstrap`, then `pnpm db:verify`.
 
 Schema first: `prisma/sql/060_tenant_composite_fks.sql` depends on the

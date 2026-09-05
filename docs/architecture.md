@@ -44,12 +44,13 @@ reference to find out _what_ exists.
 A single Next.js App Router application, server-rendered, talking to one
 PostgreSQL database. There is no separate API service, no message broker, no
 cache tier. Everything that looks like infrastructure is either PostgreSQL or
-AWS.
+AWS. Nothing sits in front of the app today — AEGIS is not deployed, so there
+is no reverse proxy and no TLS termination; the retired Coolify layout put
+Traefik there (see [`CLAUDE.md` § Deployment](../CLAUDE.md#deployment)).
 
 ```mermaid
 flowchart TD
-    Browser["Browser"] --> Traefik["coolify-proxy (Traefik)<br/>TLS termination"]
-    Traefik --> App["Next.js app container<br/>App Router · server components · server actions"]
+    Browser["Browser"] --> App["Next.js app<br/>App Router · server components · server actions"]
     App --> PG[("PostgreSQL 16<br/>application data · AuditLog · pg-boss queues")]
     App --> S3["AWS S3<br/>evidence, reports"]
     App --> SES["AWS SES<br/>notification email"]
@@ -61,7 +62,7 @@ flowchart TD
 Two consequences worth internalising:
 
 - **The job queue lives in the application database.** pg-boss uses the same
-  `DATABASE_URL` as Prisma and its workers run inside the web container, started
+  `DATABASE_URL` as Prisma and its workers run inside the web process, started
   from `src/instrumentation.ts` on boot. There is no worker deployment to scale
   or restart separately — and equally, a job that wedges affects the web process.
 - **S3 and SES are optional at boot.** `src/env.ts` marks every AWS variable
@@ -215,12 +216,14 @@ convention exists.
 **Tenant isolation is enforced in application code. PostgreSQL row-level
 security is not enabled.**
 
-This surprises people, because `prisma/migrations/add_rls_policies.sql` exists
-and `prismaForTenant(tenantId)` reads like an RLS helper. Neither is what it
+This surprises people, because
+`prisma/migrations/superseded/add_rls_policies.sql` exists and
+`prismaForTenant(tenantId)` reads like an RLS helper. Neither is what it
 appears:
 
-- The RLS migration file is present in the repository but **not applied** to the
-  production database.
+- The RLS file is quarantined history. It is applied to **no** database and
+  must not be — the gotcha in [`CLAUDE.md`](../CLAUDE.md#gotchas) explains
+  what it would do to a system whose reads never set the tenant GUC.
 - `prismaForTenant()` validates that the tenant id is a well-formed UUID and
   returns the shared singleton client. It adds no filtering of its own.
 
@@ -305,10 +308,15 @@ Three details that matter:
   it in `NULLIF(current_setting(...), '')` — see
   `prisma/migrations/20260826_audit_trigger_null_safe.sql`.
 
-A mutation made outside the wrapper writes an audit row with no attribution, and
-historically did so in silence because callers wrap side effects in catch-alls.
+A mutation made outside the wrapper does not produce an unattributed row — it
+**fails**. The trigger normalises an unset tenant to `NULL`, and
+`AuditLog.tenantId` is `NOT NULL`, so the audit insert aborts and takes the
+business write down with it (`prisma/migrations/20260826_audit_trigger_null_safe.sql`
+explains why that is deliberate). Historically the failure went unnoticed
+because callers wrap side effects in catch-alls.
 `src/data-access/__tests__/audited-mutation-discipline.test.ts` therefore scans
-the source and fails the build on any unwrapped write to an audited table.
+the source and fails the build on any unwrapped write to an audited table,
+before it can reach a database.
 
 **Legacy call sites.** 63 action files predate the wrapper and set the context
 by hand via `setAuditContext` from `src/data-access/audit-context.ts`. They
@@ -316,9 +324,24 @@ work, and the discipline test allowlists them under a ceiling (67) that may
 only ever be lowered. New code must use `withAuditedMutation`; touching an
 allowlisted file is a good opportunity to migrate it and lower the ceiling.
 
-The list of audited tables lives in `src/lib/audit-triggers.ts` and must stay in
-step with the trigger migrations. Note that a database built by `prisma db push`
-alone has **no** triggers — they come from the non-Prisma SQL applied by hand.
+**Which tables are audited** is declared in three places that must agree:
+`AUDITED_TABLES` in `src/lib/audit-triggers.ts`, the `audited` array in
+`prisma/sql/020_attach_audit_triggers.sql`, and `AUDIT_TRIGGER_TABLES` in
+`prisma/sql/manifest.ts`; `src/lib/__tests__/sql-manifest.test.ts` fails the
+build if they drift. 24 tables carry the trigger, including the eight RBIA/GRC
+scoring tables an examiner would ask for a change history on (`RamAssessment`,
+`RamAssessmentScore`, `ExaminationResponse`, `AuditExaminationResponse`,
+`AccountExamResponse`, `ActionPoint`, `BranchRbiaScore`, `LoanAccount`).
+`src/lib/__tests__/audit-coverage.test.ts` pins that set: a regulated table
+leaving the list fails the build, and its exemption set is empty and may only
+shrink. Because the trigger fails an un-contexted write, a table can only join
+the list once every write path to it sets the context — attach the trigger
+last. Seeds and integration fixtures do not set context; they detach the
+triggers around their inserts with `withTriggersDetached` instead.
+
+A database built by `prisma db push` alone has **no** triggers — they come from
+`pnpm db:bootstrap`, and adding a table needs no dated migration because the
+attach script is idempotent.
 
 ## Invariant 3 — authorization
 
@@ -454,6 +477,14 @@ segment-based rather than `startsWith`, because a prefix test would let tenant
 tenant-_second_ and has an explicit branch; that branch must not be removed
 until the generators and stored keys are migrated.
 
+The route itself is pinned by `src/app/api/download/__tests__/route.test.ts`,
+which exercises `GET /api/download` with the real authorizer wired in and
+asserts that a presigned URL is only minted for the session tenant's key, that
+authorization runs before presigning, and — as a source invariant — that the
+tenant is never read from the request. The original bug (#46) was not a wrong
+function but a route that never called one, which a function-level test cannot
+catch.
+
 **Exports** are streamed from API routes rather than server actions, because
 they produce binary payloads: ExcelJS for XLSX, `@react-pdf/renderer` for PDF.
 Both, plus `pg-boss`, are listed in `serverExternalPackages` in
@@ -497,22 +528,31 @@ segment**: URLs are identical across languages. Dictionaries are
 
 ## Testing strategy
 
-| Kind       | Tool                    | Where                                              | Roughly                                                                                                                       |
-| ---------- | ----------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Unit       | Vitest                  | `src/lib/__tests__/`, `src/services/**/__tests__/` | Concentrated on the pure engines and state machines                                                                           |
-| Discipline | Vitest, static analysis | `src/data-access/__tests__/`                       | 2 suites that read source text, no database                                                                                   |
-| E2E        | Playwright              | `tests/e2e/`                                       | 2 spec files (observation lifecycle, permission guards), replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
+| Kind        | Tool                    | Where                                                      | Roughly                                                                                                                              |
+| ----------- | ----------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit        | Vitest                  | `src/**/__tests__/`                                        | Concentrated on the pure engines and state machines, plus route handlers with their I/O mocked                                       |
+| Discipline  | Vitest, static analysis | `src/data-access/__tests__/`, `src/lib/__tests__/`         | Suites that read source text, no database — see below                                                                                |
+| Integration | Vitest, live PostgreSQL | `src/**/__integration__/`, harness in `tests/integration/` | `pnpm test:integration`: real transactions, real triggers. Global setup **resets** the `DATABASE_URL` database                       |
+| E2E         | Playwright              | `tests/e2e/`                                               | 3 spec files (observation lifecycle, permission guards, smoke), replayed under 5 role projects (auditor, manager, cae, cco, auditee) |
 
 The discipline suites enforce different amounts.
 `audited-mutation-discipline.test.ts` fails the build on any unwrapped write to
-an audited table, with a shrink-only allowlist. `tenant-isolation.test.ts`
-fails the build on a DAL `findMany` with no `where` clause and on a DAL module
-missing `server-only`; its remaining checks only warn — the precise boundary is
-under [Invariant 1](#invariant-1--tenant-isolation).
+an audited table, with a shrink-only allowlist for legacy `setAuditContext`
+sites. `tenant-isolation.test.ts` fails the build on a DAL `findMany` with no
+`where` clause and on a DAL module missing `server-only`; its remaining checks
+only warn — the precise boundary is under
+[Invariant 1](#invariant-1--tenant-isolation). `sql-manifest.test.ts` and
+`audit-coverage.test.ts` hold the three audited-table declarations in sync and
+keep the regulated tables on the list —
+[Invariant 2](#invariant-2--audit-attribution). The `/api/download` route test
+carries a source-invariant block in the same idiom —
+[Files, exports and email](#files-exports-and-email).
 
-CI runs lint, typecheck, build, docker-build, unit-test and security-audit on
-every pull request, against the merge ref (see
-[`CLAUDE.md`](../CLAUDE.md#release-flow)).
+CI runs `lint` (which includes `pnpm docs:check`), `typecheck`, `build`,
+`docker-build`, `unit-test`, `integration-test`, `e2e-smoke` and
+`security-audit` as gates on every pull request, plus the full `e2e` suite as an
+advisory job, all against the merge ref (see
+[`CLAUDE.md`](../CLAUDE.md#current-flow)).
 
 ## Where the map is thin
 
@@ -537,8 +577,8 @@ the section that owns the detail; the numbers live there, once.
   → [Invariant 1](#invariant-1--tenant-isolation).
 - **The DAL is a shared-query library, not a strict gateway** — most actions
   query directly → [`src/data-access/README.md`](../src/data-access/README.md).
-- **E2E coverage is two spec files** — lifecycle and permission guards; most
-  modules have none → [Testing strategy](#testing-strategy).
+- **E2E coverage is three spec files** — lifecycle, permission guards and a
+  smoke pass; most modules have none → [Testing strategy](#testing-strategy).
 - **Dead demo JSON.** `src/data/index.ts` still exports DEPRECATED seed JSON
   (`findings`, `auditPlans`, `bankProfile`, …), but the chain is orphaned: its
   consumers have no importers, and the live dashboard reads the database
@@ -549,8 +589,12 @@ the section that owns the detail; the numbers live there, once.
 The path of least resistance, which is also the one the discipline tests expect:
 
 1. **Schema** — edit `prisma/schema.prisma`, then `pnpm db:generate` and
-   `pnpm db:push`. If the table should be audited, add it to `AUDITED_TABLES` in
-   `src/lib/audit-triggers.ts` _and_ write the trigger migration.
+   `pnpm db:push`. If the table should be audited, first make sure every write
+   to it will go through `withAuditedMutation` (the trigger fails un-contexted
+   writes), then add it to the three declarations under
+   [Invariant 2](#invariant-2--audit-attribution) — no trigger migration is
+   needed. If it holds regulated scoring data, add it to `REGULATED_MODELS` in
+   `src/lib/__tests__/audit-coverage.test.ts` so it cannot slip off the list.
 2. **Pure logic first** — if there is arithmetic or a lifecycle rule, put it in
    `src/lib/` as a pure function with a test beside it. Do not let scoring rules
    grow inside a server action.
@@ -567,4 +611,6 @@ The path of least resistance, which is also the one the discipline tests expect:
 6. **Permission** — if you added one, extend the `Permission` union and the
    `ROLE_PERMISSIONS` map in `src/lib/permissions.ts`.
 7. **Verify** — `pnpm lint`, `pnpm test:unit` (the discipline tests run here),
-   `pnpm build`, and `pnpm docs:reference` to refresh the generated reference.
+   `pnpm test:integration` if you touched a write path or the schema,
+   `pnpm build`, and `pnpm docs:reference` to refresh the generated reference —
+   CI's `docs:check` fails if it is stale.

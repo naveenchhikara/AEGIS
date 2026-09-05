@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `189f7c0` (claude/slack-session-hkmr0s)
+> Source commit: `728e44e` (refactor/collapse-invitation-creation)
 
 AEGIS has two callable surfaces.
 
@@ -102,7 +102,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 | `onboarding-excel-upload.ts` | — | `downloadOrgStructureTemplate`, `uploadOrgStructureExcel` | — |
 | `onboarding.ts` | — | `saveWizardStep`, `getWizardProgress`, `completeOnboarding` | — |
 | `settings.ts` | — | `updateTenantSettings` | Tenant |
-| `user-invitations.ts` | yes | `sendUserInvitations`, `acceptInvitation`, `resendInvitation`, `revokeInvitation` | Account, AuditLog, Branch, Tenant, User, UserBranchAssignment |
+| `user-invitations.ts` | yes | `sendUserInvitations`, `acceptInvitation`, `resendInvitation`, `revokeInvitation` | Account, Tenant, User |
 | `users.ts` | — | `updateUserRoles` | — |
 
 ### account-examination

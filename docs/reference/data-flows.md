@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `189f7c0` (claude/slack-session-hkmr0s)
+> Source commit: `728e44e` (refactor/collapse-invitation-creation)
 
 Which processes read and write which tables.
 
@@ -18,7 +18,7 @@ reachability graph.
 
 | Domain | Modules | Tables touched directly |
 |---|---|---|
-| `(root)` | 8 | `Account`, `AuditLog`, `AuditeeResponse`, `Branch`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User`, `UserBranchAssignment` |
+| `(root)` | 8 | `Account`, `AuditeeResponse`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User` |
 | `account-examination` | 1 | `AccountExamResponse`, `AuditEngagement`, `ExaminationQuestion`, `LoanAccount` |
 | `admin` | 4 | `AuditCalendar`, `Branch`, `ReportTemplate`, `Zone` |
 | `audit-execution` | 12 | `AuditEngagement`, `AuditExaminationResponse`, `AuditSectionInstance`, `AuditTeamMember`, `CashCheck`, `Evidence`, `ExaminationArea`, `ExaminationItem`, `LoanReview`, `Observation`, `ObservationTimeline`, `SmaNpaEntry` |
@@ -64,8 +64,8 @@ Tables reached from the greatest number of domains — the ones where a schema c
 | `AuditEngagement` | 8 | `account-examination`, `audit-execution`, `audit-plans`, `governance`, `loan-portfolio`, `rbia`, `reports`, `work-program` |
 | `Observation` | 8 | `(root)`, `audit-execution`, `concurrent-audit`, `governance`, `jobs`, `observations`, `rbia`, `repeat-findings` |
 | `User` | 6 | `(root)`, `compliance`, `concurrent-audit`, `governance`, `investment`, `jobs` |
-| `Branch` | 5 | `(root)`, `admin`, `audit-plans`, `governance`, `ram` |
 | `ObservationTimeline` | 5 | `(root)`, `audit-execution`, `concurrent-audit`, `observations`, `repeat-findings` |
+| `Branch` | 4 | `admin`, `audit-plans`, `governance`, `ram` |
 | `LoanAccount` | 3 | `account-examination`, `loan-portfolio`, `sampling` |
 | `Evidence` | 3 | `(root)`, `audit-execution`, `rbia` |
 | `ComplianceItem` | 3 | `compliance`, `governance`, `observations` |
@@ -87,8 +87,8 @@ flowchart LR
         T_AuditEngagement["AuditEngagement"]
         T_Observation["Observation"]
         T_User["User"]
-        T_Branch["Branch"]
         T_ObservationTimeline["ObservationTimeline"]
+        T_Branch["Branch"]
         T_LoanAccount["LoanAccount"]
     end
     D_account_examination["account-examination"]
@@ -128,18 +128,17 @@ flowchart LR
     D_investment["investment"]
     D_investment --> T_User
     D_jobs --> T_User
-    D__root_ --> T_Branch
+    D__root_ --> T_ObservationTimeline
+    D_audit_execution --> T_ObservationTimeline
+    D_concurrent_audit --> T_ObservationTimeline
+    D_observations --> T_ObservationTimeline
+    D_repeat_findings --> T_ObservationTimeline
     D_admin["admin"]
     D_admin --> T_Branch
     D_audit_plans --> T_Branch
     D_governance --> T_Branch
     D_ram["ram"]
     D_ram --> T_Branch
-    D__root_ --> T_ObservationTimeline
-    D_audit_execution --> T_ObservationTimeline
-    D_concurrent_audit --> T_ObservationTimeline
-    D_observations --> T_ObservationTimeline
-    D_repeat_findings --> T_ObservationTimeline
     D_account_examination --> T_LoanAccount
     D_loan_portfolio --> T_LoanAccount
     D_sampling["sampling"]

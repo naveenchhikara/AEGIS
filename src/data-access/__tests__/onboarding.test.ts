@@ -32,6 +32,7 @@ const {
           id: `br-${data.code}`,
           code: data.code,
         })),
+        findMany: vi.fn(async () => []),
       },
       complianceRequirement: { create: vi.fn(async () => ({ id: "cr" })) },
       user: { create: userCreate },

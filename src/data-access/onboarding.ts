@@ -1,10 +1,14 @@
 import "server-only";
 
-import bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { withAuditedMutation } from "./audited-mutation";
+import {
+  mintInviteToken,
+  createInvitedUsers,
+  type InvitedUserInput,
+  type CreatedInvitedUser,
+} from "./user-invitations";
 import { sendInvitationEmail } from "@/lib/invitation-mailer";
 
 /**
@@ -123,16 +127,18 @@ export async function completeOnboardingTransaction(
   // Onboarding mints the tenant's first users. Like the standalone invite flow,
   // each needs an activation token so they can set a password — without one the
   // wizard would create users who can never log in. Hash the tokens up front
-  // (bcrypt cost 12) so that work does not run while the transaction holds a DB
-  // connection, and reuse the raw tokens for the post-commit emails.
-  const inviteExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  // so that work does not run while the transaction holds a DB connection, and
+  // reuse the raw tokens for the post-commit emails.
   const preparedInvites = await Promise.all(
-    data.invitedUsers.map(async (invite) => {
-      const rawToken = randomBytes(32).toString("hex");
-      const tokenHash = await bcrypt.hash(rawToken, 12);
-      return { invite, rawToken, tokenHash };
-    }),
+    data.invitedUsers.map(async (invite) => ({
+      invite,
+      ...(await mintInviteToken()),
+    })),
   );
+
+  // Set inside the transaction, read after it commits, to build the
+  // post-commit emails without widening CompletionResult's public shape.
+  let invitedUsersForEmail: CreatedInvitedUser[] = [];
 
   // Every table touched below carries audit_trigger, so the whole onboarding
   // must run inside a session context — without it the first tenant.update
@@ -220,11 +226,6 @@ export async function completeOnboardingTransaction(
         ),
       );
 
-      // Build branch code → ID map for user assignments
-      const branchCodeToId = new Map(
-        createdBranches.map((b) => [b.code, b.id]),
-      );
-
       // 4. Seed compliance registry from selected checklist items
       const ninety_days = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
       const complianceRecords = await Promise.all(
@@ -245,47 +246,24 @@ export async function completeOnboardingTransaction(
       );
 
       // 5. Create invited users (if any), each with an activation token so the
-      // wizard's invitees can accept exactly like standalone invites.
-      const createdUsers = await Promise.all(
-        preparedInvites.map(async ({ invite, tokenHash }) => {
-          const user = await tx.user.create({
-            data: {
-              email: invite.email,
-              name: invite.name,
-              roles: invite.roles as any[],
-              tenantId: data.tenantId,
-              status: "INVITED",
-              invitedAt: new Date(),
-              invitedBy: data.userId,
-              inviteTokenHash: tokenHash,
-              inviteExpiry,
-            },
-          });
-
-          // 6. Create branch assignments for AUDITEE users
-          if (
-            invite.roles.includes("AUDITEE") &&
-            invite.branchAssignments.length > 0
-          ) {
-            await Promise.all(
-              invite.branchAssignments.map((branchCode) => {
-                const branchId = branchCodeToId.get(branchCode);
-                if (branchId) {
-                  return tx.userBranchAssignment.create({
-                    data: {
-                      userId: user.id,
-                      branchId,
-                      tenantId: data.tenantId,
-                    },
-                  });
-                }
-              }),
-            );
-          }
-
-          return user;
-        }),
-      );
+      // wizard's invitees can accept exactly like standalone invites. Branch
+      // resolution happens inside createInvitedUsers via a query on `tx`,
+      // which already sees the branches created in step 3 above — same
+      // transaction, same connection.
+      const createdUsers = await createInvitedUsers(tx, {
+        tenantId: data.tenantId,
+        invitedBy: data.userId,
+        invites: preparedInvites.map(
+          ({ invite, tokenHash }): InvitedUserInput => ({
+            name: invite.name,
+            email: invite.email,
+            roles: invite.roles as InvitedUserInput["roles"],
+            branchAssignments: invite.branchAssignments,
+            tokenHash,
+          }),
+        ),
+      });
+      invitedUsersForEmail = createdUsers;
 
       // 7. Create audit log entries
       await tx.auditLog.create({
@@ -337,13 +315,16 @@ export async function completeOnboardingTransaction(
     });
     const bankName = tenant?.shortName ?? "AEGIS";
 
-    for (const { invite, rawToken } of preparedInvites) {
+    const rawTokenByEmail = new Map(
+      preparedInvites.map(({ invite, rawToken }) => [invite.email, rawToken]),
+    );
+    for (const created of invitedUsersForEmail) {
       await sendInvitationEmail({
-        to: invite.email,
-        inviteeName: invite.name,
+        to: created.email,
+        inviteeName: created.name,
         bankName,
-        rawToken,
-        expiresAt: inviteExpiry,
+        rawToken: rawTokenByEmail.get(created.email)!,
+        expiresAt: created.inviteExpiry,
       });
     }
   }

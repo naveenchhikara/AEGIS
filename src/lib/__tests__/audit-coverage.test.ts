@@ -34,19 +34,12 @@ const REGULATED_MODELS = [
  * throws (`AuditLog.tenantId` is NOT NULL). Attaching the trigger before the
  * gap is closed would break the write, so the trigger waits on the fix.
  *
- * SHRINK ONLY — never add a model here to make a build pass. Removing the last
- * entry is the finish line for audit-trail coverage of the scoring surface.
- *
- * Tracked un-contexted write sites (closed in the follow-up PR):
- *   ExaminationResponse   src/data-access/instance-scoring.ts
- *   AccountExamResponse   src/actions/account-examination/save-response.ts
- *   LoanAccount           src/actions/account-examination/generate-sample.ts
+ * SHRINK ONLY — never add a model here to make a build pass. This is now empty:
+ * every regulated scoring model in `REGULATED_MODELS` carries an audit trigger.
+ * A new regulated model that ships un-audited must fail this suite, not be
+ * parked here.
  */
-const AUDIT_EXEMPT = new Set<string>([
-  "ExaminationResponse",
-  "AccountExamResponse",
-  "LoanAccount",
-]);
+const AUDIT_EXEMPT = new Set<string>([]);
 
 describe("audit coverage of regulated scoring models", () => {
   const audited = new Set<string>(AUDITED_TABLES);
@@ -59,10 +52,10 @@ describe("audit coverage of regulated scoring models", () => {
   );
 
   it("keeps the exemption list shrink-only (it must never grow)", () => {
-    // The follow-up PR drives this to 0 as it closes the gaps. This ceiling
-    // must only ever be lowered — raising it would re-admit an un-audited
-    // regulated model.
-    expect(AUDIT_EXEMPT.size).toBeLessThanOrEqual(3);
+    // Every regulated scoring model is now audited, so the exemption is empty.
+    // This ceiling must only ever be lowered — raising it would re-admit an
+    // un-audited regulated model.
+    expect(AUDIT_EXEMPT.size).toBeLessThanOrEqual(0);
   });
 
   it("never exempts a model that is already audited", () => {

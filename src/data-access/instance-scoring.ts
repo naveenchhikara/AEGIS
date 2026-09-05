@@ -1,5 +1,6 @@
 import "server-only";
 import { prismaForTenant } from "./prisma";
+import { withAuditedMutation, userActor } from "./audited-mutation";
 import type { AuthSession as Session } from "@/lib/auth";
 import {
   computeModuleComplianceScores,
@@ -195,43 +196,51 @@ export async function computeAndApplyInstanceScores(
     select: { id: true },
   });
 
-  // Step 6: Upsert ExaminationResponse for each leaf node with the module ScoreLabel
-  // This makes the existing scoring engine "see" the instance-based scores
-  let scoredLeafCount = 0;
+  // Step 6: Upsert ExaminationResponse for each leaf node with the module
+  // ScoreLabel. This makes the existing scoring engine "see" the instance-based
+  // scores. ExaminationResponse carries an audit trigger, and this runs outside
+  // the freeze transaction by design, so the leaf upserts get their own audited
+  // transaction attributed to the user driving the sync (the freeze actor).
+  await withAuditedMutation(
+    userActor(session),
+    "examination_response.instance_scored",
+    async (tx) => {
+      for (const leaf of leafNodes) {
+        await tx.examinationResponse.upsert({
+          where: {
+            engagementId_nodeId: { engagementId, nodeId: leaf.id },
+          },
+          create: {
+            tenantId,
+            engagementId,
+            nodeId: leaf.id,
+            score: SCORE_VALUES[moduleScoreLabel],
+            scoreLabel: moduleScoreLabel,
+            // Auto-scoring an item asserts it applies: clear any prior N/A, or
+            // the leaf would carry a score and the N/A flag at once.
+            isNotApplicable: false,
+            notApplicableReason: null,
+            workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
+            flagForObservation: false,
+            flagForActionPoint: false,
+            respondedAt: new Date(),
+          },
+          update: {
+            score: SCORE_VALUES[moduleScoreLabel],
+            scoreLabel: moduleScoreLabel,
+            // Auto-scoring an item asserts it applies: clear any prior N/A, or
+            // the leaf would carry a score and the N/A flag at once.
+            isNotApplicable: false,
+            notApplicableReason: null,
+            workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
+            respondedAt: new Date(),
+          },
+        });
+      }
+    },
+  );
 
-  for (const leaf of leafNodes) {
-    await db.examinationResponse.upsert({
-      where: {
-        engagementId_nodeId: { engagementId, nodeId: leaf.id },
-      },
-      create: {
-        tenantId,
-        engagementId,
-        nodeId: leaf.id,
-        score: SCORE_VALUES[moduleScoreLabel],
-        scoreLabel: moduleScoreLabel,
-        // Auto-scoring an item asserts it applies: clear any prior N/A, or the
-        // leaf would carry a score and the N/A flag at once.
-        isNotApplicable: false,
-        notApplicableReason: null,
-        workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
-        flagForObservation: false,
-        flagForActionPoint: false,
-        respondedAt: new Date(),
-      },
-      update: {
-        score: SCORE_VALUES[moduleScoreLabel],
-        scoreLabel: moduleScoreLabel,
-        // Auto-scoring an item asserts it applies: clear any prior N/A, or the
-        // leaf would carry a score and the N/A flag at once.
-        isNotApplicable: false,
-        notApplicableReason: null,
-        workingNotes: `Auto-scored from instance-based examination: ${modulePercentage}% compliance across ${complianceResults.length} question(s)`,
-        respondedAt: new Date(),
-      },
-    });
-    scoredLeafCount++;
-  }
+  const scoredLeafCount = leafNodes.length;
 
   return { scoredLeafCount, moduleScore };
 }

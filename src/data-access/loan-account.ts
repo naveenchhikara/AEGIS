@@ -136,27 +136,3 @@ export async function countLoanAccountsWithResponses(
 
   return accountsWithResponses.length;
 }
-
-// ─── deleteLoanAccountsForModule ──────────────────────────────────────────────
-
-/**
- * Delete all loan accounts for the given engagement + moduleCode.
- * Must be called within a transaction for atomicity.
- *
- * @param tx - Transaction client (Prisma transaction)
- * @param tenantId - Tenant UUID for isolation
- * @param engagementId - UUID of the AuditEngagement
- * @param moduleCode - Module code (e.g., "CRD-HLN")
- */
-export async function deleteLoanAccountsForModule(
-  // Prisma transaction client — typed as any to avoid complex generic constraints
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tx: any,
-  tenantId: string,
-  engagementId: string,
-  moduleCode: string,
-) {
-  return tx.loanAccount.deleteMany({
-    where: { engagementId, tenantId, moduleCode },
-  });
-}

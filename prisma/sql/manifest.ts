@@ -49,6 +49,10 @@ const AUDIT_TRIGGER_TABLES = [
   "RamAssessmentScore",
   "BranchRbiaScore",
   "AuditExaminationResponse",
+  // Remaining scoring tables; their write paths now set session context.
+  "ExaminationResponse",
+  "AccountExamResponse",
+  "LoanAccount",
 ] as const;
 
 export interface RequiredObjects {

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { GenerateSampleSchema, type GenerateSampleInput } from "./schemas";
@@ -53,8 +53,6 @@ export async function generateSampleAction(input: GenerateSampleInput) {
 
   const { engagementId, moduleCode } = parsed.data;
 
-  const db = prismaForTenant(tenantId);
-
   try {
     // 1. Fetch sampling config (validates that criteria have been saved)
     const config = await getSamplingConfig(session, engagementId, moduleCode);
@@ -88,71 +86,77 @@ export async function generateSampleAction(input: GenerateSampleInput) {
       criteriaBuckets: config.criteriaBuckets as unknown as BucketAllocation[],
     });
 
-    // 4. Persist sampling results in a transaction
-    await db.$transaction(async (tx: any) => {
-      // a. Reset all previously sampled accounts for this engagement + module
-      // Fetch currently sampled accounts to update their metadata
-      const previouslySampled = await tx.loanAccount.findMany({
-        where: { engagementId, moduleCode, tenantId, isSampled: true },
-        select: { id: true, metadata: true },
-      });
-
-      for (const account of previouslySampled) {
-        const existingMeta =
-          account.metadata && typeof account.metadata === "object"
-            ? (account.metadata as Record<string, unknown>)
-            : {};
-
-        await tx.loanAccount.update({
-          where: { id: account.id },
-          data: {
-            isSampled: false,
-            sampledAt: null,
-            metadata: { ...existingMeta, samplingBucket: null },
-          },
-        });
-      }
-
-      // b. Mark newly selected accounts as sampled
-      const sampledAt = new Date();
-      for (const sampledAccount of samplingResult.sampledAccounts) {
-        // Fetch current metadata to preserve other fields
-        const current = await tx.loanAccount.findFirst({
-          where: { id: sampledAccount.accountId, tenantId },
-          select: { metadata: true },
+    // 4. Persist sampling results in a transaction. Marking accounts sampled
+    // writes LoanAccount, which carries an audit trigger, so the transaction
+    // runs through withAuditedMutation to set the context the trigger reads.
+    await withAuditedMutation(
+      userActor(session),
+      "loan_sample.generated",
+      async (tx) => {
+        // a. Reset all previously sampled accounts for this engagement + module
+        // Fetch currently sampled accounts to update their metadata
+        const previouslySampled = await tx.loanAccount.findMany({
+          where: { engagementId, moduleCode, tenantId, isSampled: true },
+          select: { id: true, metadata: true },
         });
 
-        const existingMeta =
-          current?.metadata && typeof current.metadata === "object"
-            ? (current.metadata as Record<string, unknown>)
-            : {};
+        for (const account of previouslySampled) {
+          const existingMeta =
+            account.metadata && typeof account.metadata === "object"
+              ? (account.metadata as Record<string, unknown>)
+              : {};
 
-        await tx.loanAccount.update({
-          where: { id: sampledAccount.accountId },
-          data: {
-            isSampled: true,
-            sampledAt,
-            metadata: {
-              ...existingMeta,
-              samplingBucket: sampledAccount.bucket,
+          await tx.loanAccount.update({
+            where: { id: account.id },
+            data: {
+              isSampled: false,
+              sampledAt: null,
+              metadata: { ...existingMeta, samplingBucket: null },
             },
+          });
+        }
+
+        // b. Mark newly selected accounts as sampled
+        const sampledAt = new Date();
+        for (const sampledAccount of samplingResult.sampledAccounts) {
+          // Fetch current metadata to preserve other fields
+          const current = await tx.loanAccount.findFirst({
+            where: { id: sampledAccount.accountId, tenantId },
+            select: { metadata: true },
+          });
+
+          const existingMeta =
+            current?.metadata && typeof current.metadata === "object"
+              ? (current.metadata as Record<string, unknown>)
+              : {};
+
+          await tx.loanAccount.update({
+            where: { id: sampledAccount.accountId },
+            data: {
+              isSampled: true,
+              sampledAt,
+              metadata: {
+                ...existingMeta,
+                samplingBucket: sampledAccount.bucket,
+              },
+            },
+          });
+        }
+
+        // c. Lock the SamplingConfig — prevents further criteria changes
+        await tx.samplingConfig.update({
+          where: { id: config.id },
+          data: {
+            isLocked: true,
+            lockedAt: sampledAt,
+            lockedById: session.user.id,
+            sampleGenerated: true,
+            sampleGeneratedAt: sampledAt,
+            sampleCount: samplingResult.totalSelected,
           },
         });
-      }
-
-      // c. Lock the SamplingConfig — prevents further criteria changes
-      await tx.samplingConfig.update({
-        where: { id: config.id },
-        data: {
-          isLocked: true,
-          lockedAt: sampledAt,
-          lockedById: session.user.id,
-          sampleGenerated: true,
-          sampleGeneratedAt: sampledAt,
-          sampleCount: samplingResult.totalSelected,
-        },
-      });
-    });
+      },
+    );
 
     revalidatePath(`/audit-execution/${engagementId}/rbia/sampling`);
 

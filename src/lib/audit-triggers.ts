@@ -41,6 +41,11 @@ export const AUDITED_TABLES = [
   "RamAssessmentScore",
   "BranchRbiaScore",
   "AuditExaminationResponse",
+  // Remaining scoring tables. Their previously un-contexted write paths now run
+  // through withAuditedMutation, so the trigger fires cleanly on every write.
+  "ExaminationResponse",
+  "AccountExamResponse",
+  "LoanAccount",
 ] as const;
 
 export type AuditedTable = (typeof AUDITED_TABLES)[number];

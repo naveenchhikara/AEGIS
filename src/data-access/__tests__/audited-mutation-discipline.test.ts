@@ -106,6 +106,6 @@ Scheduled work uses systemActor(tenantId); one transaction carries one tenant.`,
   it("keeps the allowlist shrinking, never growing", () => {
     // Snapshot of the legacy hand-rolled call sites at the time the wrapper
     // landed. Lower this number as files migrate; never raise it.
-    expect(MIGRATION_ALLOWLIST.size).toBeLessThanOrEqual(67);
+    expect(MIGRATION_ALLOWLIST.size).toBeLessThanOrEqual(59);
   });
 });

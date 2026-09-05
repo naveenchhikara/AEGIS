@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { AssessmentIdSchema } from "./schemas";
@@ -30,43 +29,38 @@ export async function approveRamAssessment(input: { assessmentId: string }) {
     return { success: false as const, error: parsed.error.issues[0].message };
   }
 
-  const db = prismaForTenant(tenantId);
-
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "ram_assessment.approved",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const result = await withAuditedMutation(
+      userActor(session),
+      "ram_assessment.approved",
+      async (tx) => {
+        const assessment = await tx.ramAssessment.findFirst({
+          where: { id: parsed.data.assessmentId, tenantId },
+        });
 
-      const assessment = await tx.ramAssessment.findFirst({
-        where: { id: parsed.data.assessmentId, tenantId },
-      });
+        if (!assessment) {
+          throw new Error("Assessment not found");
+        }
+        if (assessment.status !== "COMPUTED") {
+          throw new Error("Only computed assessments can be approved");
+        }
+        // Maker-checker: approver ≠ computer
+        if (assessment.computedById === session.user.id) {
+          throw new Error(
+            "The person who computed the assessment cannot approve it",
+          );
+        }
 
-      if (!assessment) {
-        throw new Error("Assessment not found");
-      }
-      if (assessment.status !== "COMPUTED") {
-        throw new Error("Only computed assessments can be approved");
-      }
-      // Maker-checker: approver ≠ computer
-      if (assessment.computedById === session.user.id) {
-        throw new Error(
-          "The person who computed the assessment cannot approve it",
-        );
-      }
-
-      return tx.ramAssessment.update({
-        where: { id: assessment.id },
-        data: {
-          status: "APPROVED",
-          approvedById: session.user.id,
-          approvedAt: new Date(),
-        },
-      });
-    });
+        return tx.ramAssessment.update({
+          where: { id: assessment.id },
+          data: {
+            status: "APPROVED",
+            approvedById: session.user.id,
+            approvedAt: new Date(),
+          },
+        });
+      },
+    );
 
     revalidatePath("/ram");
     return {

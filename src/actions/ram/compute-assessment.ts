@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import {
@@ -41,97 +40,94 @@ export async function computeRamAssessment(input: { assessmentId: string }) {
     return { success: false as const, error: parsed.error.issues[0].message };
   }
 
-  const db = prismaForTenant(tenantId);
-
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "ram_assessment.computed",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
-
-      // Load assessment with scores and param configs
-      const assessment = await tx.ramAssessment.findFirst({
-        where: { id: parsed.data.assessmentId, tenantId },
-        include: {
-          scores: {
-            include: {
-              paramConfig: { select: { code: true, weight: true } },
+    const result = await withAuditedMutation(
+      userActor(session),
+      "ram_assessment.computed",
+      async (tx) => {
+        // Load assessment with scores and param configs
+        const assessment = await tx.ramAssessment.findFirst({
+          where: { id: parsed.data.assessmentId, tenantId },
+          include: {
+            scores: {
+              include: {
+                paramConfig: { select: { code: true, weight: true } },
+              },
             },
           },
-        },
-      });
+        });
 
-      if (!assessment) {
-        throw new Error("Assessment not found");
-      }
-      if (assessment.status === "APPROVED") {
-        throw new Error("Cannot re-compute an approved assessment");
-      }
-      if (assessment.scores.length === 0) {
-        throw new Error(
-          "No scores entered. Please score all parameters before computing.",
+        if (!assessment) {
+          throw new Error("Assessment not found");
+        }
+        if (assessment.status === "APPROVED") {
+          throw new Error("Cannot re-compute an approved assessment");
+        }
+        if (assessment.scores.length === 0) {
+          throw new Error(
+            "No scores entered. Please score all parameters before computing.",
+          );
+        }
+
+        // Prepare score inputs for engine
+        const scoreInputs: RamScoreInput[] = assessment.scores.map(
+          (s: any) => ({
+            paramCode: s.paramConfig.code,
+            score: Number(s.score),
+            weight: Number(s.paramConfig.weight),
+          }),
         );
-      }
 
-      // Prepare score inputs for engine
-      const scoreInputs: RamScoreInput[] = assessment.scores.map((s: any) => ({
-        paramCode: s.paramConfig.code,
-        score: Number(s.score),
-        weight: Number(s.paramConfig.weight),
-      }));
+        // Step: Detect repeat findings for this branch
+        const repeatSummary = await detectRepeatFindingsForBranch(
+          tenantId,
+          assessment.branchId,
+          undefined, // No current engagement filter — check all recent audits
+        );
 
-      // Step: Detect repeat findings for this branch
-      const repeatSummary = await detectRepeatFindingsForBranch(
-        tenantId,
-        assessment.branchId,
-        undefined, // No current engagement filter — check all recent audits
-      );
+        // Step: Compute uplift
+        const rawComposite = computeCompositeScore(scoreInputs);
+        const uplift = computeRepeatUplift(rawComposite, repeatSummary);
 
-      // Step: Compute uplift
-      const rawComposite = computeCompositeScore(scoreInputs);
-      const uplift = computeRepeatUplift(rawComposite, repeatSummary);
+        // Step: Full computation with uplift
+        const result = computeRamWithUplift(scoreInputs, uplift);
+        const { compositeScore, riskCategory, auditFrequency } = result;
 
-      // Step: Full computation with uplift
-      const result = computeRamWithUplift(scoreInputs, uplift);
-      const { compositeScore, riskCategory, auditFrequency } = result;
+        // Update assessment
+        const updated = await tx.ramAssessment.update({
+          where: { id: assessment.id },
+          data: {
+            compositeScore,
+            riskCategory,
+            auditFrequency,
+            rawCompositeScore: result.rawCompositeScore,
+            repeatUpliftApplied: result.repeatUpliftApplied,
+            repeatFindingCount: result.repeatFindingCount,
+            status: "COMPUTED",
+            computedById: session.user.id,
+            computedAt: new Date(),
+          },
+        });
 
-      // Update assessment
-      const updated = await tx.ramAssessment.update({
-        where: { id: assessment.id },
-        data: {
-          compositeScore,
-          riskCategory,
-          auditFrequency,
-          rawCompositeScore: result.rawCompositeScore,
-          repeatUpliftApplied: result.repeatUpliftApplied,
-          repeatFindingCount: result.repeatFindingCount,
-          status: "COMPUTED",
-          computedById: session.user.id,
-          computedAt: new Date(),
-        },
-      });
+        // Update branch cached fields
+        await tx.branch.update({
+          where: { id: assessment.branchId },
+          data: {
+            ramScore: compositeScore,
+            auditFrequency,
+          },
+        });
 
-      // Update branch cached fields
-      await tx.branch.update({
-        where: { id: assessment.branchId },
-        data: {
-          ramScore: compositeScore,
-          auditFrequency,
-        },
-      });
-
-      return {
-        assessment: updated,
-        upliftData: {
-          upliftApplied: uplift.upliftApplied,
-          repeatCount: uplift.repeatCount,
-          rawComposite,
-        },
-      };
-    });
+        return {
+          assessment: updated,
+          upliftData: {
+            upliftApplied: uplift.upliftApplied,
+            repeatCount: uplift.repeatCount,
+            rawComposite,
+          },
+        };
+      },
+    );
 
     revalidatePath("/ram");
     return {

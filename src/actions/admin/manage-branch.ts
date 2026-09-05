@@ -6,10 +6,7 @@ import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
-import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 
 /**
  * Schema for branch profile update (R2/R3).
@@ -63,25 +60,24 @@ export async function updateBranchProfile(input: UpdateBranchProfileInput) {
       return { success: false as const, error: "Branch not found." };
     }
 
-    await withAuditedMutation(
-      userActor(session),
-      "branch.updated",
-      (tx) =>
-        tx.branch.update({
-          where: { id: parsed.data.branchId },
-          data: {
-            ...(parsed.data.zoneId !== undefined && { zoneId: parsed.data.zoneId }),
-            ...(parsed.data.category !== undefined && {
-              category: parsed.data.category,
-            }),
-            ...(parsed.data.businessSize !== undefined && {
-              businessSize: parsed.data.businessSize,
-            }),
-            ...(parsed.data.staffStrength !== undefined && {
-              staffStrength: parsed.data.staffStrength,
-            }),
-          },
-        }),
+    await withAuditedMutation(userActor(session), "branch.updated", (tx) =>
+      tx.branch.update({
+        where: { id: parsed.data.branchId },
+        data: {
+          ...(parsed.data.zoneId !== undefined && {
+            zoneId: parsed.data.zoneId,
+          }),
+          ...(parsed.data.category !== undefined && {
+            category: parsed.data.category,
+          }),
+          ...(parsed.data.businessSize !== undefined && {
+            businessSize: parsed.data.businessSize,
+          }),
+          ...(parsed.data.staffStrength !== undefined && {
+            staffStrength: parsed.data.staffStrength,
+          }),
+        },
+      }),
     );
 
     revalidatePath("/admin/branches");

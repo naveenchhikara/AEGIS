@@ -13,10 +13,7 @@ import { RbiaReportDocument } from "@/components/pdf-report/rbia-report-document
 import { uploadToS3 } from "@/lib/s3";
 import { prismaForTenant } from "@/data-access/prisma";
 import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
-import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 
 /**
  * Generate PDF summary report and upload to S3.

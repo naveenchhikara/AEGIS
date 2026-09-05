@@ -4148,11 +4148,11 @@ All six must pass before opening the PR. CI runs on the **merge ref**, so a gree
 
 ## Production Rollout Order
 
-**Nothing in the deploy touches the database.** The container runs `node server.js`; `pnpm start` is `next start`. There is no `prisma migrate deploy` and no `db push`, so *every* database change here is applied by hand — including Task 5's, 6's and 7's ordinary columns and tables. Merging first would deploy code that queries `UploadIntent`, `NotificationQueue.claimId` and `ExaminationResponse.isNotApplicable` against a database that has none of them, and `/api/health` (a `SELECT 1` plus a pgboss row count) would stay green throughout.
+**Nothing in the deploy touches the database.** The container runs `node server.js`; `pnpm start` is `next start`. There is no `prisma migrate deploy` and no `db push`, so _every_ database change here is applied by hand — including Task 5's, 6's and 7's ordinary columns and tables. Merging first would deploy code that queries `UploadIntent`, `NotificationQueue.claimId` and `ExaminationResponse.isNotApplicable` against a database that has none of them, and `/api/health` (a `SELECT 1` plus a pgboss row count) would stay green throughout.
 
 Apply in this order, **before** merging:
 
-1. `prisma/migrations/20260904_f07_f15_schema_additions.sql` — the enum, table, columns and `(tenantId, id)` unique indexes from Tasks 5–7. Idempotent. **This must precede step 3:** the manifest includes `060_tenant_composite_fks.sql`, whose composite FKs reference those unique indexes, so bootstrapping first fails with *no unique constraint matching given keys*.
+1. `prisma/migrations/20260904_f07_f15_schema_additions.sql` — the enum, table, columns and `(tenantId, id)` unique indexes from Tasks 5–7. Idempotent. **This must precede step 3:** the manifest includes `060_tenant_composite_fks.sql`, whose composite FKs reference those unique indexes, so bootstrapping first fails with _no unique constraint matching given keys_.
 2. The pre-check queries in `prisma/sql/060_tenant_composite_fks.sql`'s header. Each must return zero rows. If any returns rows there is existing cross-tenant data: stop and repair it. Do not weaken the constraint.
 3. `pnpm db:bootstrap` — the whole manifest, idempotent, safe on the current database.
 4. Merge. Coolify deploys automatically.

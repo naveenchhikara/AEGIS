@@ -3,10 +3,7 @@ import { getRequiredSession } from "./session";
 import { prismaForTenant } from "./prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { TenantSettings } from "@/types";
-import {
-  withAuditedMutation,
-  userActor,
-} from "./audited-mutation";
+import { withAuditedMutation, userActor } from "./audited-mutation";
 
 /**
  * DATA ACCESS LAYER PATTERN (canonical example for all DAL modules):

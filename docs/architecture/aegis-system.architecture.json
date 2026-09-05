@@ -84,7 +84,9 @@
       "sublabel": "session cookies",
       "pos": [450, 130],
       "size": [140, 64],
-      "sources": [{ "path": "src/lib/auth.ts", "line": 21, "label": "betterAuth()" }]
+      "sources": [
+        { "path": "src/lib/auth.ts", "line": 21, "label": "betterAuth()" }
+      ]
     },
     {
       "id": "postgres",
@@ -94,7 +96,9 @@
       "pos": [680, 260],
       "size": [150, 70],
       "tag": "aegis",
-      "sources": [{ "path": "src/lib/prisma.ts", "line": 69, "label": "prismaForTenant" }]
+      "sources": [
+        { "path": "src/lib/prisma.ts", "line": 69, "label": "prismaForTenant" }
+      ]
     },
     {
       "id": "pgboss",
@@ -103,7 +107,9 @@
       "sublabel": "reminders / notify",
       "pos": [680, 450],
       "size": [150, 60],
-      "sources": [{ "path": "src/lib/job-queue.ts", "line": 2, "label": "PgBoss" }]
+      "sources": [
+        { "path": "src/lib/job-queue.ts", "line": 2, "label": "PgBoss" }
+      ]
     },
     {
       "id": "s3",

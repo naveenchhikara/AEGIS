@@ -96,28 +96,28 @@ async function processRbiaOverdueForTenant(tenantId: string): Promise<number> {
       systemActor(tenantId),
       "bm_batch.overdue_escalated",
       async (tx) => {
-      // Transition batch to OVERDUE
-      await tx.bmResponseBatch.update({
-        where: { id: batch.id },
-        data: { status: "OVERDUE" },
-      });
-
-      // Queue notification for each Zonal Auditor
-      for (const za of zonalAuditors) {
-        await tx.notificationQueue.create({
-          data: {
-            tenantId,
-            recipientId: za.id,
-            type: "BM_BATCH_OVERDUE" as any,
-            status: "PENDING",
-            payload: {
-              batchId: batch.id,
-              engagementId: batch.engagementId,
-              branchName,
-              overdueDays,
-            } as object,
-          },
+        // Transition batch to OVERDUE
+        await tx.bmResponseBatch.update({
+          where: { id: batch.id },
+          data: { status: "OVERDUE" },
         });
+
+        // Queue notification for each Zonal Auditor
+        for (const za of zonalAuditors) {
+          await tx.notificationQueue.create({
+            data: {
+              tenantId,
+              recipientId: za.id,
+              type: "BM_BATCH_OVERDUE" as any,
+              status: "PENDING",
+              payload: {
+                batchId: batch.id,
+                engagementId: batch.engagementId,
+                branchName,
+                overdueDays,
+              } as object,
+            },
+          });
         }
       },
     );

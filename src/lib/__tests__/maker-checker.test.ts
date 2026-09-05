@@ -14,7 +14,8 @@ describe("checkObservationTransition", () => {
     });
     expect(result).toEqual({
       allowed: false,
-      reason: "You raised this record; a different user must perform this step.",
+      reason:
+        "You raised this record; a different user must perform this step.",
     });
   });
 

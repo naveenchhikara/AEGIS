@@ -105,6 +105,32 @@ export function fakeSession(user: {
 }
 
 /**
+ * Put a user on an engagement's audit team. Actions guarded by
+ * `requireTeamMembership` (e.g. saveAccountExamResponse) reject a caller who
+ * holds the right role but is not assigned to the specific engagement, so
+ * fixtures for the write path must add this row.
+ */
+export async function addTeamMember(
+  tenantId: string,
+  engagementId: string,
+  userId: string,
+  roleInEngagement = "FIELD_AUDITOR",
+) {
+  return withFixtures(() =>
+    integrationPrisma.auditTeamMember.create({
+      data: {
+        tenantId,
+        engagementId,
+        userId,
+        roleInEngagement,
+        assignedSections: [],
+      },
+      select: { id: true },
+    }),
+  );
+}
+
+/**
  * Point `getRequiredSession()` at a fixture. Call before importing the action
  * under test, or use `vi.resetModules()` between switches of identity.
  */

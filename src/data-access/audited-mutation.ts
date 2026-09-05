@@ -46,11 +46,13 @@ export async function withAuditedMutation<A extends AuditedAction, T>(
 /** Actor for a signed-in user, from the session. */
 export function userActor(session: {
   user: { id: string; tenantId: string };
+  session?: { id: string };
 }): Actor {
   return {
     kind: "user",
     userId: session.user.id,
     tenantId: session.user.tenantId,
+    sessionId: session.session?.id,
   };
 }
 

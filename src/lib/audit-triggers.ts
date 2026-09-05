@@ -33,6 +33,14 @@ export const AUDITED_TABLES = [
   // attaches them everywhere, so the discipline test and the database agree.
   "NotificationPreference",
   "BoardReport",
+  // RBIA/GRC scoring surface — the regulated change-history an RBI examiner
+  // expects. Every write path to these already sets session context, so the
+  // trigger fires cleanly. See audit-coverage.test.ts for the coverage guard.
+  "ActionPoint",
+  "RamAssessment",
+  "RamAssessmentScore",
+  "BranchRbiaScore",
+  "AuditExaminationResponse",
 ] as const;
 
 export type AuditedTable = (typeof AUDITED_TABLES)[number];

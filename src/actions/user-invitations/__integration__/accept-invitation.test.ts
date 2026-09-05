@@ -113,7 +113,10 @@ describe("acceptInvitation integration", () => {
 
   it("rejects an invalid token", async () => {
     const tenant = await createTenant();
-    const { user } = await seedInvitedUser({ tenantId: tenant.id, token: "good-token" });
+    const { user } = await seedInvitedUser({
+      tenantId: tenant.id,
+      token: "good-token",
+    });
 
     const { acceptInvitation } = await import("../../user-invitations");
     const result = await acceptInvitation(

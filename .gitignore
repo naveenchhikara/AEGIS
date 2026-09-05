@@ -41,6 +41,7 @@ blob-report/
 .claude/worktrees/
 .claude/agents/
 .claude/skills/**/__pycache__/
+.claude/settings.local.json
 .codex/
 **/__pycache__/
 .planning/STATE.md.bak-*

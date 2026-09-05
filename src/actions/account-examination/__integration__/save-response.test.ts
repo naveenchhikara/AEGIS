@@ -5,6 +5,7 @@ import {
   resetDatabase,
   createTenant,
   createUser,
+  addTeamMember,
   fakeSession,
   mockSessionModule,
   integrationPrisma,
@@ -103,6 +104,7 @@ describe("saveAccountExamResponse", () => {
     const tenant = await createTenant();
     const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const engagement = await seedEngagement(tenant.id);
+    await addTeamMember(tenant.id, engagement.id, auditor.id);
     const account = await seedLoanAccount(tenant.id, engagement.id, true);
     const question = await seedQuestion(tenant.id);
 
@@ -131,6 +133,7 @@ describe("saveAccountExamResponse", () => {
     const tenant = await createTenant();
     const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const engagement = await seedEngagement(tenant.id);
+    await addTeamMember(tenant.id, engagement.id, auditor.id);
     const account = await seedLoanAccount(tenant.id, engagement.id, true);
     const question = await seedQuestion(tenant.id);
 
@@ -196,6 +199,7 @@ describe("saveAccountExamResponse", () => {
     const tenant = await createTenant();
     const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const engagement = await seedEngagement(tenant.id);
+    await addTeamMember(tenant.id, engagement.id, auditor.id);
     const account = await seedLoanAccount(tenant.id, engagement.id, false);
     const question = await seedQuestion(tenant.id);
 
@@ -254,6 +258,7 @@ describe("saveAccountExamResponse", () => {
     const other = await createTenant("Other Bank");
     const auditor = await createUser(tenant.id, ["FIELD_AUDITOR"]);
     const engagement = await seedEngagement(tenant.id);
+    await addTeamMember(tenant.id, engagement.id, auditor.id);
     const account = await seedLoanAccount(tenant.id, engagement.id, true);
     const foreignQuestion = await seedQuestion(other.id);
 

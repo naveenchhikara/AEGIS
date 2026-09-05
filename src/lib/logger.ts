@@ -50,6 +50,14 @@ export const logger = pino({
     },
   },
 
+  // Serialize Error objects so pino captures message and stack instead of {}.
+  // Pino's built-in error serializer handles both `err` (pino convention) and
+  // `error` (common call-site key used throughout this codebase).
+  serializers: {
+    err: pino.stdSerializers.err,
+    error: pino.stdSerializers.err,
+  },
+
   // Redact sensitive fields automatically
   redact: {
     paths: [

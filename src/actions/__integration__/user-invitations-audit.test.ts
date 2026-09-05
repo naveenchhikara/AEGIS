@@ -136,7 +136,7 @@ describe("user-invitations audit rows", () => {
     ]);
 
     expect(result.success).toBe(true);
-    if (!result.success) throw new Error("unreachable");
+    if (!result.success || !result.data) throw new Error("unreachable");
     expect(result.data).toHaveLength(2);
 
     for (const invitee of result.data) {

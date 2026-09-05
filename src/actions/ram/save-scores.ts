@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { SaveRamScoresSchema, type SaveRamScoresInput } from "./schemas";
@@ -31,50 +30,45 @@ export async function saveRamScores(input: SaveRamScoresInput) {
   }
   const validated = parsed.data;
 
-  const db = prismaForTenant(tenantId);
-
   try {
-    await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "ram_assessment.scores_saved",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    await withAuditedMutation(
+      userActor(session),
+      "ram_assessment.scores_saved",
+      async (tx) => {
+        // Verify assessment exists, belongs to tenant, and is in DRAFT status
+        const assessment = await tx.ramAssessment.findFirst({
+          where: { id: validated.assessmentId, tenantId },
+        });
+        if (!assessment) {
+          throw new Error("Assessment not found");
+        }
+        if (assessment.status !== "DRAFT") {
+          throw new Error("Can only save scores for DRAFT assessments");
+        }
 
-      // Verify assessment exists, belongs to tenant, and is in DRAFT status
-      const assessment = await tx.ramAssessment.findFirst({
-        where: { id: validated.assessmentId, tenantId },
-      });
-      if (!assessment) {
-        throw new Error("Assessment not found");
-      }
-      if (assessment.status !== "DRAFT") {
-        throw new Error("Can only save scores for DRAFT assessments");
-      }
-
-      // Upsert each score
-      for (const scoreInput of validated.scores) {
-        await tx.ramAssessmentScore.upsert({
-          where: {
-            assessmentId_paramConfigId: {
+        // Upsert each score
+        for (const scoreInput of validated.scores) {
+          await tx.ramAssessmentScore.upsert({
+            where: {
+              assessmentId_paramConfigId: {
+                assessmentId: validated.assessmentId,
+                paramConfigId: scoreInput.paramConfigId,
+              },
+            },
+            update: {
+              score: scoreInput.score,
+              remarks: scoreInput.remarks ?? null,
+            },
+            create: {
               assessmentId: validated.assessmentId,
               paramConfigId: scoreInput.paramConfigId,
+              score: scoreInput.score,
+              remarks: scoreInput.remarks ?? null,
             },
-          },
-          update: {
-            score: scoreInput.score,
-            remarks: scoreInput.remarks ?? null,
-          },
-          create: {
-            assessmentId: validated.assessmentId,
-            paramConfigId: scoreInput.paramConfigId,
-            score: scoreInput.score,
-            remarks: scoreInput.remarks ?? null,
-          },
-        });
-      }
-    });
+          });
+        }
+      },
+    );
 
     revalidatePath("/ram");
     return {

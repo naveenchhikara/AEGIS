@@ -13,8 +13,8 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
+import type { Prisma } from "@/generated/prisma/client";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import { countLoanAccountsWithResponses } from "@/data-access/loan-account";
@@ -43,8 +43,6 @@ export async function importLoanPortfolio(input: ImportLoanPortfolioInput) {
   const session = await getRequiredSession();
   const userRoles = session.user.roles;
   const tenantId = session.user.tenantId;
-  const userId = session.user.id;
-  const sessionId = session.session.id;
 
   if (!hasPermission(userRoles, "rbia:examine")) {
     return {
@@ -63,8 +61,6 @@ export async function importLoanPortfolio(input: ImportLoanPortfolioInput) {
   }
   const validated = parsed.data;
 
-  const db = prismaForTenant(tenantId);
-
   try {
     // ── Check for exam responses (block replacement) ──────────────────────
     const accountsWithResponses = await countLoanAccountsWithResponses(
@@ -81,74 +77,70 @@ export async function importLoanPortfolio(input: ImportLoanPortfolioInput) {
     }
 
     // ── Atomic transaction ────────────────────────────────────────────────
-    const result = await db.$transaction(async (tx: any) => {
-      // Set audit context for trigger logging
-      await setAuditContext(tx, {
-        actionType: "loan_account.portfolio_imported",
-        userId,
-        tenantId,
-        sessionId,
-      });
+    const result = await withAuditedMutation(
+      userActor(session),
+      "loan_account.portfolio_imported",
+      async (tx) => {
+        // Verify engagement exists and belongs to tenant
+        const engagement = await tx.auditEngagement.findFirst({
+          where: { id: validated.engagementId, tenantId },
+          select: { id: true, branchId: true },
+        });
 
-      // Verify engagement exists and belongs to tenant
-      const engagement = await tx.auditEngagement.findFirst({
-        where: { id: validated.engagementId, tenantId },
-        select: { id: true, branchId: true },
-      });
+        if (!engagement) {
+          throw new Error(
+            "Engagement not found or does not belong to your organization",
+          );
+        }
 
-      if (!engagement) {
-        throw new Error(
-          "Engagement not found or does not belong to your organization",
-        );
-      }
+        const branchId = engagement.branchId as string;
 
-      const branchId = engagement.branchId as string;
+        // Count existing accounts (for the "replaced X" summary)
+        const previousCount = await tx.loanAccount.count({
+          where: {
+            engagementId: validated.engagementId,
+            tenantId,
+            moduleCode: validated.moduleCode,
+          },
+        });
 
-      // Count existing accounts (for the "replaced X" summary)
-      const previousCount = await tx.loanAccount.count({
-        where: {
-          engagementId: validated.engagementId,
-          tenantId,
-          moduleCode: validated.moduleCode,
-        },
-      });
+        // Delete existing accounts for this engagement + module
+        await tx.loanAccount.deleteMany({
+          where: {
+            engagementId: validated.engagementId,
+            tenantId,
+            moduleCode: validated.moduleCode,
+          },
+        });
 
-      // Delete existing accounts for this engagement + module
-      await tx.loanAccount.deleteMany({
-        where: {
-          engagementId: validated.engagementId,
-          tenantId,
-          moduleCode: validated.moduleCode,
-        },
-      });
+        // Import timestamp — used as fallback for missing sanctionDate
+        const importTimestamp = new Date();
 
-      // Import timestamp — used as fallback for missing sanctionDate
-      const importTimestamp = new Date();
+        // Bulk create new accounts
+        await tx.loanAccount.createMany({
+          data: validated.rows.map((row) => ({
+            tenantId,
+            engagementId: validated.engagementId,
+            branchId,
+            moduleCode: validated.moduleCode,
+            accountNo: row.accountNo,
+            borrowerName: row.borrowerName,
+            productType: row.loanType, // loanType in ParsedLoanRow → productType in DB
+            sanctionAmount: row.sanctionAmount,
+            outstandingAmount: row.outstandingAmount,
+            assetClass: row.assetClass,
+            dpd: row.dpd,
+            // sanctionDate is required in DB — use provided date or fallback to import timestamp
+            sanctionDate: row.sanctionDate
+              ? new Date(row.sanctionDate)
+              : importTimestamp,
+            metadata: row.metadata as Prisma.InputJsonValue,
+          })),
+        });
 
-      // Bulk create new accounts
-      await tx.loanAccount.createMany({
-        data: validated.rows.map((row) => ({
-          tenantId,
-          engagementId: validated.engagementId,
-          branchId,
-          moduleCode: validated.moduleCode,
-          accountNo: row.accountNo,
-          borrowerName: row.borrowerName,
-          productType: row.loanType, // loanType in ParsedLoanRow → productType in DB
-          sanctionAmount: row.sanctionAmount,
-          outstandingAmount: row.outstandingAmount,
-          assetClass: row.assetClass,
-          dpd: row.dpd,
-          // sanctionDate is required in DB — use provided date or fallback to import timestamp
-          sanctionDate: row.sanctionDate
-            ? new Date(row.sanctionDate)
-            : importTimestamp,
-          metadata: row.metadata,
-        })),
-      });
-
-      return { imported: validated.rows.length, replaced: previousCount };
-    });
+        return { imported: validated.rows.length, replaced: previousCount };
+      },
+    );
 
     // ── Revalidate ────────────────────────────────────────────────────────
     revalidatePath(`/audit-execution/${validated.engagementId}`);

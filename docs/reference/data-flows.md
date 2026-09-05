@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `728e44e` (refactor/collapse-invitation-creation)
+> Source commit: `b6e243d` (main)
 
 Which processes read and write which tables.
 

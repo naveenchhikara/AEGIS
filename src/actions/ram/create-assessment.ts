@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission, type Role } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import {
@@ -34,48 +33,43 @@ export async function createRamAssessment(input: CreateRamAssessmentInput) {
   }
   const validated = parsed.data;
 
-  const db = prismaForTenant(tenantId);
-
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "ram_assessment.created",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const result = await withAuditedMutation(
+      userActor(session),
+      "ram_assessment.created",
+      async (tx) => {
+        // Check branch exists and belongs to tenant
+        const branch = await tx.branch.findFirst({
+          where: { id: validated.branchId, tenantId },
+        });
+        if (!branch) {
+          throw new Error("Branch not found");
+        }
 
-      // Check branch exists and belongs to tenant
-      const branch = await tx.branch.findFirst({
-        where: { id: validated.branchId, tenantId },
-      });
-      if (!branch) {
-        throw new Error("Branch not found");
-      }
+        // Check for existing assessment for same branch/year
+        const existing = await tx.ramAssessment.findFirst({
+          where: {
+            tenantId,
+            branchId: validated.branchId,
+            assessmentYear: validated.assessmentYear,
+          },
+        });
+        if (existing) {
+          throw new Error(
+            `Assessment already exists for ${branch.name} in ${validated.assessmentYear}`,
+          );
+        }
 
-      // Check for existing assessment for same branch/year
-      const existing = await tx.ramAssessment.findFirst({
-        where: {
-          tenantId,
-          branchId: validated.branchId,
-          assessmentYear: validated.assessmentYear,
-        },
-      });
-      if (existing) {
-        throw new Error(
-          `Assessment already exists for ${branch.name} in ${validated.assessmentYear}`,
-        );
-      }
-
-      return tx.ramAssessment.create({
-        data: {
-          tenantId,
-          branchId: validated.branchId,
-          assessmentYear: validated.assessmentYear,
-          status: "DRAFT",
-        },
-      });
-    });
+        return tx.ramAssessment.create({
+          data: {
+            tenantId,
+            branchId: validated.branchId,
+            assessmentYear: validated.assessmentYear,
+            status: "DRAFT",
+          },
+        });
+      },
+    );
 
     revalidatePath("/ram");
     return { success: true as const, data: { id: result.id } };

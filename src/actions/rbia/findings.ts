@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
-import { prismaForTenant } from "@/data-access/prisma";
-import { setAuditContext } from "@/data-access/audit-context";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import { hasPermission } from "@/lib/permissions";
 import { logger } from "@/lib/logger";
 import {
@@ -66,56 +65,52 @@ export async function createActionPoint(
   }
 
   const validated = parsed.data;
-  const db = prismaForTenant(tenantId);
 
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "action_point.created",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const result = await withAuditedMutation(
+      userActor(session),
+      "action_point.created",
+      async (tx) => {
+        // Verify engagement exists, belongs to tenant, and is in a valid state
+        const engagement = await tx.auditEngagement.findFirst({
+          where: { id: validated.engagementId, tenantId },
+          select: { id: true, status: true },
+        });
+        if (!engagement) {
+          throw new Error("Engagement not found");
+        }
+        // Allow creation during IN_PROGRESS, EXIT_MEETING, REPORT_DRAFT
+        const allowedStatuses = ["IN_PROGRESS", "EXIT_MEETING", "REPORT_DRAFT"];
+        if (!allowedStatuses.includes(engagement.status)) {
+          throw new Error(
+            "Action Points can only be created during active audit phases",
+          );
+        }
 
-      // Verify engagement exists, belongs to tenant, and is in a valid state
-      const engagement = await tx.auditEngagement.findFirst({
-        where: { id: validated.engagementId, tenantId },
-        select: { id: true, status: true },
-      });
-      if (!engagement) {
-        throw new Error("Engagement not found");
-      }
-      // Allow creation during IN_PROGRESS, EXIT_MEETING, REPORT_DRAFT
-      const allowedStatuses = ["IN_PROGRESS", "EXIT_MEETING", "REPORT_DRAFT"];
-      if (!allowedStatuses.includes(engagement.status)) {
-        throw new Error(
-          "Action Points can only be created during active audit phases",
-        );
-      }
+        // Atomic serial number assignment (FIND-06)
+        const maxSerial = await tx.actionPoint.aggregate({
+          where: { engagementId: validated.engagementId },
+          _max: { serialNo: true },
+        });
+        const nextSerialNo = (maxSerial._max.serialNo ?? 0) + 1;
 
-      // Atomic serial number assignment (FIND-06)
-      const maxSerial = await tx.actionPoint.aggregate({
-        where: { engagementId: validated.engagementId },
-        _max: { serialNo: true },
-      });
-      const nextSerialNo = (maxSerial._max.serialNo ?? 0) + 1;
-
-      return tx.actionPoint.create({
-        data: {
-          tenantId,
-          engagementId: validated.engagementId,
-          branchId: validated.branchId,
-          serialNo: nextSerialNo,
-          title: validated.title,
-          description: validated.description,
-          severity: validated.severity,
-          moduleCode: validated.moduleCode,
-          sourceResponseId: validated.sourceResponseId ?? null,
-          status: "DRAFT",
-          createdById: session.user.id,
-        },
-      });
-    });
+        return tx.actionPoint.create({
+          data: {
+            tenantId,
+            engagementId: validated.engagementId,
+            branchId: validated.branchId,
+            serialNo: nextSerialNo,
+            title: validated.title,
+            description: validated.description,
+            severity: validated.severity,
+            moduleCode: validated.moduleCode,
+            sourceResponseId: validated.sourceResponseId ?? null,
+            status: "DRAFT",
+            createdById: session.user.id,
+          },
+        });
+      },
+    );
 
     revalidatePath(`/audit-execution/${validated.engagementId}/rbia/findings`);
     return {
@@ -188,43 +183,39 @@ export async function updateActionPoint(input: UpdateActionPointInput): Promise<
   }
 
   const validated = parsed.data;
-  const db = prismaForTenant(tenantId);
 
   try {
-    const result = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "action_point.updated",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const result = await withAuditedMutation(
+      userActor(session),
+      "action_point.updated",
+      async (tx) => {
+        const ap = await tx.actionPoint.findFirst({
+          where: { id: validated.actionPointId, tenantId },
+          select: { id: true, status: true, engagementId: true },
+        });
+        if (!ap) {
+          throw new Error("Action Point not found");
+        }
+        if (ap.status !== "DRAFT") {
+          throw new Error("Only DRAFT Action Points can be edited");
+        }
 
-      const ap = await tx.actionPoint.findFirst({
-        where: { id: validated.actionPointId, tenantId },
-        select: { id: true, status: true, engagementId: true },
-      });
-      if (!ap) {
-        throw new Error("Action Point not found");
-      }
-      if (ap.status !== "DRAFT") {
-        throw new Error("Only DRAFT Action Points can be edited");
-      }
+        // Build update data from provided optional fields
+        const updateData: Record<string, unknown> = {};
+        if (validated.title !== undefined) updateData.title = validated.title;
+        if (validated.description !== undefined)
+          updateData.description = validated.description;
+        if (validated.severity !== undefined)
+          updateData.severity = validated.severity;
 
-      // Build update data from provided optional fields
-      const updateData: Record<string, unknown> = {};
-      if (validated.title !== undefined) updateData.title = validated.title;
-      if (validated.description !== undefined)
-        updateData.description = validated.description;
-      if (validated.severity !== undefined)
-        updateData.severity = validated.severity;
+        const updated = await tx.actionPoint.update({
+          where: { id: ap.id },
+          data: updateData,
+        });
 
-      const updated = await tx.actionPoint.update({
-        where: { id: ap.id },
-        data: updateData,
-      });
-
-      return { ...updated, engagementId: ap.engagementId };
-    });
+        return { ...updated, engagementId: ap.engagementId };
+      },
+    );
 
     revalidatePath(`/audit-execution/${result.engagementId}/rbia/findings`);
     return {
@@ -295,31 +286,27 @@ export async function deleteActionPoint(
   }
 
   const validated = parsed.data;
-  const db = prismaForTenant(tenantId);
 
   try {
-    const engagementId = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "action_point.deleted",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const engagementId = await withAuditedMutation(
+      userActor(session),
+      "action_point.deleted",
+      async (tx) => {
+        const ap = await tx.actionPoint.findFirst({
+          where: { id: validated.actionPointId, tenantId },
+          select: { id: true, status: true, engagementId: true },
+        });
+        if (!ap) {
+          throw new Error("Action Point not found");
+        }
+        if (ap.status !== "DRAFT") {
+          throw new Error("Only DRAFT Action Points can be deleted");
+        }
 
-      const ap = await tx.actionPoint.findFirst({
-        where: { id: validated.actionPointId, tenantId },
-        select: { id: true, status: true, engagementId: true },
-      });
-      if (!ap) {
-        throw new Error("Action Point not found");
-      }
-      if (ap.status !== "DRAFT") {
-        throw new Error("Only DRAFT Action Points can be deleted");
-      }
-
-      await tx.actionPoint.delete({ where: { id: ap.id } });
-      return ap.engagementId;
-    });
+        await tx.actionPoint.delete({ where: { id: ap.id } });
+        return ap.engagementId;
+      },
+    );
 
     revalidatePath(`/audit-execution/${engagementId}/rbia/findings`);
     return { success: true, data: { deleted: true } };
@@ -385,52 +372,48 @@ export async function promoteToObservation(
   }
 
   const validated = parsed.data;
-  const db = prismaForTenant(tenantId);
 
   try {
-    const observation = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "action_point.promoted_to_observation",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const observation = await withAuditedMutation(
+      userActor(session),
+      "action_point.promoted_to_observation",
+      async (tx) => {
+        // Verify the ActionPoint exists and belongs to tenant
+        const ap = await tx.actionPoint.findFirst({
+          where: { id: validated.actionPointId, tenantId },
+          select: { id: true, engagementId: true, branchId: true },
+        });
+        if (!ap) {
+          throw new Error("Action Point not found");
+        }
 
-      // Verify the ActionPoint exists and belongs to tenant
-      const ap = await tx.actionPoint.findFirst({
-        where: { id: validated.actionPointId, tenantId },
-        select: { id: true, engagementId: true, branchId: true },
-      });
-      if (!ap) {
-        throw new Error("Action Point not found");
-      }
+        // Load engagement for branchId fallback
+        const engagement = await tx.auditEngagement.findFirst({
+          where: { id: validated.engagementId, tenantId },
+          select: { id: true, branchId: true },
+        });
 
-      // Load engagement for branchId fallback
-      const engagement = await tx.auditEngagement.findFirst({
-        where: { id: validated.engagementId, tenantId },
-        select: { id: true, branchId: true },
-      });
-
-      // Create the formal Observation with 5C fields + sourceActionPointId link
-      return tx.observation.create({
-        data: {
-          tenantId,
-          title: validated.title,
-          condition: validated.condition,
-          criteria: validated.criteria,
-          cause: validated.cause,
-          effect: validated.effect,
-          recommendation: validated.recommendation,
-          severity: validated.severity,
-          status: "DRAFT",
-          observationType: "FORMAL",
-          engagementId: validated.engagementId,
-          branchId: engagement?.branchId ?? ap.branchId,
-          sourceActionPointId: ap.id,
-          createdById: session.user.id,
-        },
-      });
-    });
+        // Create the formal Observation with 5C fields + sourceActionPointId link
+        return tx.observation.create({
+          data: {
+            tenantId,
+            title: validated.title,
+            condition: validated.condition,
+            criteria: validated.criteria,
+            cause: validated.cause,
+            effect: validated.effect,
+            recommendation: validated.recommendation,
+            severity: validated.severity,
+            status: "DRAFT",
+            observationType: "FORMAL",
+            engagementId: validated.engagementId,
+            branchId: engagement?.branchId ?? ap.branchId,
+            sourceActionPointId: ap.id,
+            createdById: session.user.id,
+          },
+        });
+      },
+    );
 
     // Revalidate both findings and observations views
     revalidatePath(`/audit-execution/${validated.engagementId}/rbia/findings`);
@@ -497,57 +480,53 @@ export async function submitBmResponse(
   }
 
   const validated = parsed.data;
-  const db = prismaForTenant(tenantId);
 
   try {
-    const updated = await db.$transaction(async (tx: any) => {
-      await setAuditContext(tx, {
-        actionType: "action_point.bm_responded",
-        userId: session.user.id,
-        tenantId,
-        sessionId: session.session.id,
-      });
+    const updated = await withAuditedMutation(
+      userActor(session),
+      "action_point.bm_responded",
+      async (tx) => {
+        // Load AP + verify tenant + verify correct status
+        const ap = await tx.actionPoint.findFirst({
+          where: { id: validated.actionPointId, tenantId },
+          select: { id: true, status: true, engagementId: true },
+        });
+        if (!ap) {
+          throw new Error("Action Point not found");
+        }
 
-      // Load AP + verify tenant + verify correct status
-      const ap = await tx.actionPoint.findFirst({
-        where: { id: validated.actionPointId, tenantId },
-        select: { id: true, status: true, engagementId: true },
-      });
-      if (!ap) {
-        throw new Error("Action Point not found");
-      }
+        // BM can respond when AP is ISSUED or BM_RESPONSE_DUE
+        const respondableStatuses = ["ISSUED", "BM_RESPONSE_DUE"];
+        if (!respondableStatuses.includes(ap.status)) {
+          throw new Error("Action Point is not in a respondable state");
+        }
 
-      // BM can respond when AP is ISSUED or BM_RESPONSE_DUE
-      const respondableStatuses = ["ISSUED", "BM_RESPONSE_DUE"];
-      if (!respondableStatuses.includes(ap.status)) {
-        throw new Error("Action Point is not in a respondable state");
-      }
-
-      // Update AP with BM response
-      const result = await tx.actionPoint.update({
-        where: { id: ap.id },
-        data: {
-          bmResponseText: validated.responseText,
-          bmResponseDate: new Date(),
-          status: "BM_RESPONDED",
-        },
-      });
-
-      // Update BmResponseBatch counter if one exists
-      const batch = await tx.bmResponseBatch.findUnique({
-        where: { engagementId: ap.engagementId },
-      });
-      if (batch) {
-        await tx.bmResponseBatch.update({
-          where: { id: batch.id },
+        // Update AP with BM response
+        const result = await tx.actionPoint.update({
+          where: { id: ap.id },
           data: {
-            respondedActionPoints: { increment: 1 },
+            bmResponseText: validated.responseText,
+            bmResponseDate: new Date(),
+            status: "BM_RESPONDED",
           },
         });
-      }
 
-      return { ...result, engagementId: ap.engagementId };
-    });
+        // Update BmResponseBatch counter if one exists
+        const batch = await tx.bmResponseBatch.findUnique({
+          where: { engagementId: ap.engagementId },
+        });
+        if (batch) {
+          await tx.bmResponseBatch.update({
+            where: { id: batch.id },
+            data: {
+              respondedActionPoints: { increment: 1 },
+            },
+          });
+        }
+
+        return { ...result, engagementId: ap.engagementId };
+      },
+    );
 
     // Revalidate findings and auditee pages
     revalidatePath(`/audit-execution/${updated.engagementId}/rbia/findings`);

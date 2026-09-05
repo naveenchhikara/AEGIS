@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `728e44e` (refactor/collapse-invitation-creation)
+> Source commit: `b6e243d` (main)
 
 AEGIS has two callable surfaces.
 
@@ -132,7 +132,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 | `audit-execution/initialize-sections.ts` | — | `initializeSections` | AuditEngagement, AuditSectionInstance, ExaminationArea |
 | `audit-execution/loan-review.ts` | — | `createLoanReview`, `updateLoanReview`, `deleteLoanReview` | AuditEngagement, LoanReview |
 | `audit-execution/sma-npa.ts` | — | `saveSmaNpaEntries` | AuditEngagement, SmaNpaEntry |
-| `audit-execution/submit-examination-response.ts` | — | `submitExaminationResponse` | AuditEngagement, AuditExaminationResponse, ExaminationItem, Observation, ObservationTimeline |
+| `audit-execution/submit-examination-response.ts` | yes | `submitExaminationResponse` | AuditEngagement, AuditExaminationResponse, ExaminationItem, Observation, ObservationTimeline |
 | `audit-execution/transition-engagement-status.ts` | — | `transitionEngagementStatus` | AuditEngagement |
 | `audit-execution/update-engagement-status.ts` | — | `updateEngagementStatus` | AuditEngagement |
 | `audit-execution/upload-examination-evidence.ts` | — | `requestExaminationEvidenceUpload`, `confirmExaminationEvidenceUpload`, `getExaminationEvidenceDownloadUrl` | AuditEngagement, AuditExaminationResponse, Evidence |
@@ -217,7 +217,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
 | `loan-portfolio/get-portfolio-summary.ts` | — | `getPortfolioSummary` | — |
-| `loan-portfolio/import-loan-portfolio.ts` | — | `importLoanPortfolio` | AuditEngagement, LoanAccount |
+| `loan-portfolio/import-loan-portfolio.ts` | yes | `importLoanPortfolio` | AuditEngagement, LoanAccount |
 | `loan-portfolio/parse-excel-file.ts` | — | `parseExcelFile` | — |
 
 ### observations
@@ -239,19 +239,19 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
-| `ram/approve-assessment.ts` | — | `approveRamAssessment` | RamAssessment |
-| `ram/compute-assessment.ts` | — | `computeRamAssessment` | Branch, RamAssessment |
-| `ram/create-assessment.ts` | — | `createRamAssessment` | Branch, RamAssessment |
-| `ram/save-scores.ts` | — | `saveRamScores` | RamAssessment, RamAssessmentScore |
+| `ram/approve-assessment.ts` | yes | `approveRamAssessment` | RamAssessment |
+| `ram/compute-assessment.ts` | yes | `computeRamAssessment` | Branch, RamAssessment |
+| `ram/create-assessment.ts` | yes | `createRamAssessment` | Branch, RamAssessment |
+| `ram/save-scores.ts` | yes | `saveRamScores` | RamAssessment, RamAssessmentScore |
 
 ### rbia
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
 | `rbia/bm-evidence.ts` | — | `requestBmEvidenceUpload`, `confirmBmEvidenceUpload` | ActionPoint, Evidence |
-| `rbia/examination.ts` | — | `saveExaminationResponse`, `autoSelectModulesAction`, `addModuleSelectionAction`, `removeModuleSelectionAction` | ActionPoint, AuditEngagement, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
-| `rbia/findings.ts` | — | `createActionPoint`, `updateActionPoint`, `deleteActionPoint`, `promoteToObservation`, `submitBmResponse` | ActionPoint, AuditEngagement, BmResponseBatch, Observation |
-| `rbia/freeze.ts` | — | `freezeRbiaScore` | ActionPoint, AuditEngagement, BmResponseBatch, BranchRbiaScore, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
+| `rbia/examination.ts` | yes | `saveExaminationResponse`, `autoSelectModulesAction`, `addModuleSelectionAction`, `removeModuleSelectionAction` | ActionPoint, AuditEngagement, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
+| `rbia/findings.ts` | yes | `createActionPoint`, `updateActionPoint`, `deleteActionPoint`, `promoteToObservation`, `submitBmResponse` | ActionPoint, AuditEngagement, BmResponseBatch, Observation |
+| `rbia/freeze.ts` | yes | `freezeRbiaScore` | ActionPoint, AuditEngagement, BmResponseBatch, BranchRbiaScore, EngagementModuleSelection, ExaminationNode, ExaminationResponse |
 | `rbia/meetings.ts` | — | `recordMeeting`, `signOffMeeting` | AuditEngagement, EngagementMeeting |
 
 ### regulatory

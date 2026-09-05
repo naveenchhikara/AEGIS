@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `13d9827` (hardening/integrity-and-operations-f07-f15)
+> Source commit: `8c7b75f` (claude/onboarding-entry-and-invitee-tokens)
 
 Which processes read and write which tables.
 
@@ -19,7 +19,7 @@ reachability graph.
 | Domain | Modules | Tables touched directly |
 |---|---|---|
 | `(root)` | 8 | `Account`, `AuditLog`, `AuditeeResponse`, `Branch`, `Evidence`, `Observation`, `ObservationTimeline`, `Tenant`, `User`, `UserBranchAssignment` |
-| `account-examination` | 1 | `AccountExamResponse`, `AuditEngagement`, `LoanAccount` |
+| `account-examination` | 1 | `AccountExamResponse`, `AuditEngagement`, `ExaminationQuestion`, `LoanAccount` |
 | `admin` | 4 | `AuditCalendar`, `Branch`, `ReportTemplate`, `Zone` |
 | `audit-execution` | 12 | `AuditEngagement`, `AuditExaminationResponse`, `AuditSectionInstance`, `AuditTeamMember`, `CashCheck`, `Evidence`, `ExaminationArea`, `ExaminationItem`, `LoanReview`, `Observation`, `ObservationTimeline`, `SmaNpaEntry` |
 | `audit-plans` | 3 | `AuditEngagement`, `AuditPlan`, `Branch` |
@@ -70,12 +70,12 @@ Tables reached from the greatest number of domains — the ones where a schema c
 | `Evidence` | 3 | `(root)`, `audit-execution`, `rbia` |
 | `ComplianceItem` | 3 | `compliance`, `governance`, `observations` |
 | `NotificationQueue` | 3 | `compliance`, `concurrent-audit`, `jobs` |
+| `ExaminationQuestion` | 2 | `account-examination`, `examination-questions` |
 | `ReportTemplate` | 2 | `admin`, `reports` |
 | `BoardReport` | 2 | `compliance`, `reports` |
 | `ControlLibrary` | 2 | `control-library`, `work-program` |
 | `TestProcedure` | 2 | `control-library`, `work-program` |
 | `HousekeepingMetric` | 2 | `governance`, `housekeeping` |
-| `IsAuditChecklist` | 2 | `governance`, `investment` |
 
 ### Domain access graph
 

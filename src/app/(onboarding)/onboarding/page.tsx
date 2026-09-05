@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requirePermission } from "@/lib/guards";
+import { requireOnboardingPermission } from "@/lib/guards";
 import { prismaForTenant } from "@/lib/prisma";
 import { OnboardingWizard } from "./_components/onboarding-wizard";
 
@@ -13,7 +13,7 @@ import { OnboardingWizard } from "./_components/onboarding-wizard";
  * If checks pass, renders the OnboardingWizard client component.
  */
 export default async function OnboardingPage() {
-  const session = await requirePermission("admin:manage_settings");
+  const session = await requireOnboardingPermission("admin:manage_settings");
 
   const tenantId = (session.user as Record<string, unknown>).tenantId as
     | string

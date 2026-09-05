@@ -81,7 +81,7 @@ describe("user-invitations audit rows", () => {
     const result = await acceptInvitation(
       invited.rawToken,
       invited.email,
-      "correct-horse-8",
+      "Branch2026audit",
     );
     expect(result).toEqual({ success: true, error: null });
 

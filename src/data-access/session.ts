@@ -1,9 +1,51 @@
 import "server-only";
+import { cache } from "react";
 import { auth } from "@/lib/auth";
 import type { AuthSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+import { decideSessionAccess } from "@/lib/session-guard";
 import type { Role } from "@/generated/prisma/enums";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+/** The columns that decide access, re-read on every request. */
+const ACCESS_COLUMNS = {
+  id: true,
+  status: true,
+  tenantId: true,
+  roles: true,
+} as const;
+
+/**
+ * Read the session and the current user row behind it.
+ *
+ * Wrapped in React's cache so the extra query runs once per request even
+ * though dashboard pages call getRequiredSession a dozen times.
+ */
+const loadSession = cache(async () => {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: ACCESS_COLUMNS,
+  });
+
+  return { session, user, decision: decideSessionAccess(user) };
+});
+
+/** End every session for a user who may no longer hold one. */
+async function revokeSessions(userId: string, reason: string) {
+  await prisma.session.deleteMany({ where: { userId } });
+  logger.warn(
+    { action: "session_revoked", userId, reason },
+    "Revoked sessions for a user who is no longer active",
+  );
+}
 
 /**
  * Get authenticated session or redirect to login.
@@ -14,20 +56,59 @@ import { redirect } from "next/navigation";
  * - NEVER accept tenantId from URL params, request body, or query string
  * - DAL functions accept session object returned by this function
  *
- * Single boundary cast: session is cast to AuthSession here so all downstream
- * code gets clean types (tenantId: string, roles: Role[]) without `as any`.
+ * The returned tenantId and roles come from the user row, not the cookie, so
+ * the AuthSession types are now earned rather than asserted.
  */
 export async function getRequiredSession(): Promise<AuthSession> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const { session, decision } = await loadSession();
 
-  if (!session) {
+  if (decision.kind === "revoke") {
+    await revokeSessions(session.user.id, decision.reason);
     redirect("/login");
   }
 
-  // Single cast at the boundary — all downstream code gets clean types
-  return session as unknown as AuthSession;
+  if (decision.kind === "onboard") {
+    redirect("/onboarding");
+  }
+
+  return {
+    ...session,
+    user: {
+      ...session.user,
+      tenantId: decision.tenantId,
+      roles: decision.roles,
+    },
+  } as unknown as AuthSession;
+}
+
+/**
+ * Session for the onboarding wizard, where a tenant does not exist yet.
+ *
+ * Applies every check getRequiredSession applies except the tenant one, so the
+ * wizard is reachable without the tenant redirect looping back onto itself.
+ */
+export async function getOnboardingSession(): Promise<
+  Omit<AuthSession, "user"> & {
+    user: Omit<AuthSession["user"], "tenantId"> & { tenantId: string | null };
+  }
+> {
+  const { session, user, decision } = await loadSession();
+
+  if (decision.kind === "revoke") {
+    await revokeSessions(session.user.id, decision.reason);
+    redirect("/login");
+  }
+
+  return {
+    ...session,
+    user: {
+      ...session.user,
+      tenantId: user?.tenantId ?? null,
+      roles: (user?.roles ?? []) as Role[],
+    },
+  } as unknown as Omit<AuthSession, "user"> & {
+    user: Omit<AuthSession["user"], "tenantId"> & { tenantId: string | null };
+  };
 }
 
 /**

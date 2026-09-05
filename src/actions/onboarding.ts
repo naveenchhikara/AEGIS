@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { getRequiredSession } from "@/data-access/session";
+import { getOnboardingSession } from "@/data-access/session";
 import {
   completeOnboardingTransaction,
   saveOnboardingProgress,
@@ -40,7 +40,7 @@ export async function saveWizardStep(
   step: number,
   data: Record<string, unknown>,
 ) {
-  const session = await getRequiredSession();
+  const session = await getOnboardingSession();
   const tenantId = session.user.tenantId;
 
   if (!tenantId) {
@@ -66,7 +66,7 @@ export async function saveWizardStep(
 // ─── Get Wizard Progress ────────────────────────────────────────────────────
 
 export async function getWizardProgress() {
-  const session = await getRequiredSession();
+  const session = await getOnboardingSession();
   const tenantId = session.user.tenantId;
 
   if (!tenantId) {
@@ -106,7 +106,7 @@ interface CompleteOnboardingInput {
 }
 
 export async function completeOnboarding(input: CompleteOnboardingInput) {
-  const session = await getRequiredSession();
+  const session = await getOnboardingSession();
   const tenantId = session.user.tenantId;
 
   if (!tenantId) {

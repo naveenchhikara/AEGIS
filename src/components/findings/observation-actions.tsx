@@ -20,6 +20,7 @@ import {
   type Severity,
   type AvailableTransition,
 } from "@/lib/state-machine";
+import { hasPermission } from "@/lib/permissions";
 import { transitionObservation } from "@/actions/observations/transition";
 import { resolveFieldwork } from "@/actions/observations/resolve-fieldwork";
 
@@ -73,10 +74,15 @@ export function ObservationActions({
     observation.severity as Severity,
   );
 
+  // Mirror the resolveFieldwork server action's gate exactly (it authorises on
+  // observation:create OR observation:review). Hardcoding AUDITOR/AUDIT_MANAGER
+  // here hid the button from the other author roles (Lead/Field/Concurrent/IS
+  // auditor) even though the server would have accepted them.
   const canResolveFieldwork =
     !observation.resolvedDuringFieldwork &&
     (observation.status === "DRAFT" || observation.status === "SUBMITTED") &&
-    (userRoles.includes("AUDITOR") || userRoles.includes("AUDIT_MANAGER"));
+    (hasPermission(userRoles as Role[], "observation:create") ||
+      hasPermission(userRoles as Role[], "observation:review"));
 
   // No actions available
   if (transitions.length === 0 && !canResolveFieldwork) {

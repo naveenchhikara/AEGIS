@@ -7,10 +7,10 @@ import { headers } from "next/headers";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
-import {
-  hashedCredentialAccount,
-  passwordValidationError,
-} from "@/lib/credential-account";
+import { auth } from "@/lib/auth";
+import { PasswordSchema } from "@/lib/password-policy";
+import { sendInvitationEmail } from "@/lib/invitation-mailer";
+import { passwordValidationError } from "@/lib/credential-account";
 
 /**
  * Server Actions for User Invitation Management (ONBD-04)
@@ -101,12 +101,13 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
             );
           }
 
-          // Log invitation email (console fallback — SES integration in Phase 8)
-          console.log(
-            `[INVITATION] Email would be sent to ${invite.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(invite.email)}`,
-          );
-
-          results.push({ id: user.id, email: user.email, name: user.name });
+          results.push({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            rawToken,
+            inviteExpiry: user.inviteExpiry!,
+          });
         }
 
         // Audit log
@@ -131,7 +132,28 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
       },
     );
 
-    return { success: true, error: null, data: createdUsers };
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { shortName: true },
+    });
+
+    // Sent after the transaction commits: SES is network I/O, and a transient
+    // delivery failure must not roll back the user records.
+    for (const invitee of createdUsers) {
+      await sendInvitationEmail({
+        to: invitee.email,
+        inviteeName: invitee.name,
+        bankName: tenant?.shortName ?? "AEGIS",
+        rawToken: invitee.rawToken,
+        expiresAt: invitee.inviteExpiry,
+      });
+    }
+
+    return {
+      success: true,
+      error: null,
+      data: createdUsers.map(({ id, email, name }) => ({ id, email, name })),
+    };
   } catch (error) {
     logger.error(
       { error, action: "send_user_invitations", tenantId },
@@ -143,11 +165,19 @@ export async function sendUserInvitations(users: InviteUserInput[]) {
 
 // ─── Accept Invitation ──────────────────────────────────────────────────────
 
+/** Thrown inside the activation transaction to roll it back and report cleanly. */
+const ALREADY_ACCEPTED = "INVITATION_ALREADY_ACCEPTED";
+
 export async function acceptInvitation(
   token: string,
   email: string,
   password: string,
 ) {
+  const passwordCheck = PasswordSchema.safeParse(password);
+  if (!passwordCheck.success) {
+    return { success: false, error: passwordCheck.error.issues[0].message };
+  }
+
   try {
     const passwordError = passwordValidationError(password);
     if (passwordError) {
@@ -188,17 +218,15 @@ export async function acceptInvitation(
       return { success: false, error: "Invitation is not linked to a bank." };
     }
 
-    // Hash before the transaction so we do not hold a connection across scrypt.
-    const account = await hashedCredentialAccount(user.id, password);
+    // Better Auth keeps credentials on Account and hashes with its own
+    // configured algorithm. Hash through its context so the digest matches
+    // what signIn.email will later verify — a bcrypt digest never would.
+    const passwordHash = await (await auth.$context).password.hash(password);
 
     // Read before the transaction: an Actor carries the IP, and a throw here
     // must land before anything commits, not after.
     const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
 
-    // Activate the user and attach a credential Account in one transaction.
-    // The accept-invite page never calls Better Auth signUp — it only posts
-    // here — so skipping Account.create left ACTIVE users with no password.
-    //
     // No auditLog.create follows this. "User" carries audit_trigger, so the
     // update below already writes the row, taking actionType and IP from the
     // session context. A manual row would duplicate it, and — landing after
@@ -210,8 +238,10 @@ export async function acceptInvitation(
       { kind: "user", userId: user.id, tenantId, ipAddress },
       "user.invitation_accepted",
       async (tx) => {
-        await tx.user.update({
-          where: { id: user.id },
+        // Predicated on INVITED so two concurrent acceptances cannot both
+        // activate and write competing credential rows.
+        const activated = await tx.user.updateMany({
+          where: { id: user.id, status: "INVITED" },
           data: {
             status: "ACTIVE",
             inviteTokenHash: null,
@@ -219,15 +249,36 @@ export async function acceptInvitation(
             emailVerified: true,
           },
         });
-        await tx.account.create({ data: account });
+
+        if (activated.count !== 1) {
+          throw new Error(ALREADY_ACCEPTED);
+        }
+
+        // Same transaction as activation: a user left ACTIVE with no
+        // credential can neither sign in nor be re-invited, because
+        // resendInvitation only matches status INVITED.
+        await tx.account.create({
+          data: {
+            userId: user.id,
+            accountId: user.id,
+            providerId: "credential",
+            password: passwordHash,
+          },
+        });
       },
     );
 
     return { success: true, error: null };
   } catch (error) {
+    if (error instanceof Error && error.message === ALREADY_ACCEPTED) {
+      return {
+        success: false,
+        error: "This invitation has already been used.",
+      };
+    }
     logger.error(
       { error, action: "accept_invitation", email },
-      "Failed to accept invitation",
+      "Failed to activate account.",
     );
     return { success: false, error: "Failed to activate account." };
   }
@@ -259,6 +310,8 @@ export async function resendInvitation(userId: string) {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = await bcrypt.hash(rawToken, 12);
 
+    const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
     // Include tenantId in WHERE to prevent IDOR cross-tenant mutation
     await withAuditedMutation(
       userActor(session),
@@ -268,14 +321,23 @@ export async function resendInvitation(userId: string) {
           where: { id: userId, tenantId },
           data: {
             inviteTokenHash: tokenHash,
-            inviteExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            inviteExpiry: newExpiry,
           },
         }),
     );
 
-    console.log(
-      `[INVITATION RESEND] Email would be sent to ${user.email} with token link: /accept-invite?token=${rawToken}&email=${encodeURIComponent(user.email)}`,
-    );
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { shortName: true },
+    });
+
+    await sendInvitationEmail({
+      to: user.email,
+      inviteeName: user.name,
+      bankName: tenant?.shortName ?? "AEGIS",
+      rawToken,
+      expiresAt: newExpiry,
+    });
 
     return { success: true, error: null };
   } catch (error) {

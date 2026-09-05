@@ -10,6 +10,7 @@ import {
   type ObservationStatus,
   type Severity,
 } from "@/lib/state-machine";
+import { checkObservationTransition } from "@/lib/maker-checker";
 import { TransitionObservationSchema } from "./schemas";
 import type { TransitionObservationInput } from "./schemas";
 import { createNotification } from "@/data-access/notifications";
@@ -83,6 +84,23 @@ export async function transitionObservation(input: TransitionObservationInput) {
       return {
         success: false as const,
         error: transitionResult.reason,
+      };
+    }
+
+    // Step 3b: Maker-checker — the raiser may not review, issue, or close
+    // their own observation. createdById is immutable after creation, so the
+    // value read above is still the value inside the transaction.
+    const makerChecker = checkObservationTransition(
+      currentStatus,
+      targetStatus,
+      session.user.id,
+      { createdById: observation.createdById },
+    );
+
+    if (!makerChecker.allowed) {
+      return {
+        success: false as const,
+        error: makerChecker.reason,
       };
     }
 

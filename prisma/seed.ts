@@ -156,6 +156,11 @@ async function main() {
       pcaEffectiveDate: null,
       lastRbiInspectionDate: null,
       rbiRiskRating: null,
+      // The seed fully provisions this tenant, so it is already onboarded — the
+      // dashboard redirect that steers un-onboarded admins into the wizard must
+      // not fire for it.
+      onboardingCompleted: true,
+      onboardingCompletedAt: new Date(),
       settings: {
         defaultLanguage: "en",
         fiscalYearStart: "April",
@@ -174,6 +179,8 @@ async function main() {
       city: "Bengaluru",
       scheduledBankStatus: false,
       pcaStatus: PcaStatus.NONE,
+      onboardingCompleted: true,
+      onboardingCompletedAt: new Date(),
       settings: {
         defaultLanguage: "en",
         fiscalYearStart: "April",

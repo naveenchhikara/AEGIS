@@ -1349,7 +1349,9 @@ Expected: 8 passed.
 
 - [ ] **Step 5: Give onboarding a tenant-optional door before closing the main one**
 
-Do this before Step 6, or the onboarding route will loop. In `src/data-access/session.ts`, replace the import block and `getRequiredSession`:
+Steps 5 through 7 have to land together. After this step `getRequiredSession` sends a tenantless user to `/onboarding`, and until Step 7 that route still calls `getRequiredSession` — so the app loops if you stop in between.
+
+In `src/data-access/session.ts`, replace the import block and `getRequiredSession`:
 
 ```typescript
 import "server-only";

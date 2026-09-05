@@ -1,13 +1,36 @@
--- Add unique constraint on Account(accountId, providerId).
---
--- WHY: A credential Account row is uniquely identified by its (accountId,
--- providerId) pair.  Without this constraint two concurrent acceptInvitation
--- calls (or a re-run of scripts/create-accounts.ts) could insert duplicate
--- credential rows for the same user.  The application now uses account.upsert
--- keyed on this pair, which requires the constraint to exist in PostgreSQL.
---
--- IDEMPOTENT: The DO block skips the ALTER if the constraint already exists,
--- so re-running the file on a database that already has it is safe.
+-- Idempotent: add @@unique([accountId, providerId]) to Account.
+-- Handles three starting states:
+--   (a) fresh db — no index, no constraint
+--   (b) db:push db — Prisma created the index but no pg_constraint row
+--   (c) already-migrated db — constraint present, nothing to do
+
+-- 1. Remove duplicate (accountId, providerId) rows, keeping the most recently updated.
+--    No-op when no duplicates exist.
+DELETE FROM "Account"
+WHERE id IN (
+  SELECT id
+  FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY "accountId", "providerId"
+             ORDER BY "updatedAt" DESC, id DESC
+           ) AS rn
+    FROM "Account"
+  ) ranked
+  WHERE rn > 1
+);
+
+-- 2. Create the unique index if it does not already exist.
+--    On a db:push database this is a no-op (index already has this name).
+--    On a fresh database it creates the index.
+--    On an already-migrated database the promoted index already exists; IF NOT EXISTS makes it a no-op.
+CREATE UNIQUE INDEX IF NOT EXISTS "Account_accountId_providerId_key"
+  ON "Account" ("accountId", "providerId");
+
+-- 3. Promote the index to a named constraint only when no constraint entry exists yet.
+--    Needed for fresh-database path where the index was just created above.
+--    On an already-migrated database the pg_constraint row already exists; the block is skipped.
+--    On a db:push database the index exists but there is no constraint row, so it is promoted here.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -17,7 +40,7 @@ BEGIN
   ) THEN
     ALTER TABLE "Account"
       ADD CONSTRAINT "Account_accountId_providerId_key"
-      UNIQUE ("accountId", "providerId");
+        UNIQUE USING INDEX "Account_accountId_providerId_key";
   END IF;
 END;
 $$;

@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `2d809eb` (claude/slack-session-hkmr0s)
+> Source commit: `189f7c0` (claude/slack-session-hkmr0s)
 
 AEGIS has two callable surfaces.
 
@@ -109,7 +109,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
-| `account-examination/save-response.ts` | — | `saveAccountExamResponse` | AccountExamResponse, AuditEngagement, ExaminationQuestion, LoanAccount |
+| `account-examination/save-response.ts` | yes | `saveAccountExamResponse` | AccountExamResponse, AuditEngagement, ExaminationQuestion, LoanAccount |
 
 ### admin
 
@@ -287,7 +287,7 @@ Generate XLSX gap analysis report from IS audit checklists (R104).
 
 | Module | Audited | Exported functions | Tables touched |
 |---|---|---|---|
-| `sampling/generate-sample.ts` | — | `generateSampleAction` | LoanAccount, SamplingConfig |
+| `sampling/generate-sample.ts` | yes | `generateSampleAction` | LoanAccount, SamplingConfig |
 | `sampling/save-criteria.ts` | — | `saveSamplingCriteria` | SamplingConfig |
 
 ### work-program

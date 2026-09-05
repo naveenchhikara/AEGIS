@@ -77,7 +77,9 @@ describe("acceptInvitation", () => {
     expect(result.success).toBe(true);
     expect(hash).toHaveBeenCalledWith("Branch2026audit");
     expect(tx.account.upsert).toHaveBeenCalledWith({
-      where: { accountId_providerId: { accountId: USER_A, providerId: "credential" } },
+      where: {
+        accountId_providerId: { accountId: USER_A, providerId: "credential" },
+      },
       create: {
         userId: USER_A,
         accountId: USER_A,

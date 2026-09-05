@@ -42,6 +42,17 @@ const AUDIT_TRIGGER_TABLES = [
   "EmailLog",
   "NotificationPreference",
   "BoardReport",
+  // RBIA/GRC scoring surface — the regulated change-history. Every write path
+  // already sets session context, so the trigger fires cleanly.
+  "ActionPoint",
+  "RamAssessment",
+  "RamAssessmentScore",
+  "BranchRbiaScore",
+  "AuditExaminationResponse",
+  // Remaining scoring tables; their write paths now set session context.
+  "ExaminationResponse",
+  "AccountExamResponse",
+  "LoanAccount",
 ] as const;
 
 export interface RequiredObjects {

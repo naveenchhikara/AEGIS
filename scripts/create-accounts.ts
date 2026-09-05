@@ -24,7 +24,10 @@ async function main() {
     try {
       await prisma.account.upsert({
         where: {
-          accountId_providerId: { accountId: user.id, providerId: "credential" },
+          accountId_providerId: {
+            accountId: user.id,
+            providerId: "credential",
+          },
         },
         create: {
           id: randomUUID(),

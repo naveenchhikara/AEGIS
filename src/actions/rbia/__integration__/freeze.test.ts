@@ -88,16 +88,21 @@ async function score(
   label: "FULLY_COMPLIANT" | null,
   notApplicable = false,
 ) {
-  await integrationPrisma.examinationResponse.create({
-    data: {
-      tenantId,
-      engagementId,
-      nodeId,
-      score: label ? 1.0 : null,
-      scoreLabel: label,
-      isNotApplicable: notApplicable,
-    },
-  });
+  // ExaminationResponse now carries an audit trigger, so this fixture write
+  // must suspend it — the row is a precondition, not the audited action under
+  // test (freezeRbiaScore is).
+  await withFixtures(() =>
+    integrationPrisma.examinationResponse.create({
+      data: {
+        tenantId,
+        engagementId,
+        nodeId,
+        score: label ? 1.0 : null,
+        scoreLabel: label,
+        isNotApplicable: notApplicable,
+      },
+    }),
+  );
 }
 
 describe("freezeRbiaScore completeness", () => {

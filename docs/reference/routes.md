@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `e0e9663` (claude/onboarding-entry-and-invitee-tokens)
+> Source commit: `8c7b75f` (claude/onboarding-entry-and-invitee-tokens)
 
 Every addressable path in the application: **65 pages** and
 **11 HTTP endpoints**.

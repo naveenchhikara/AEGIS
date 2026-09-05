@@ -21,10 +21,9 @@ import { env } from "@/env";
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
-  trustedOrigins: [
-    env.NEXT_PUBLIC_APP_URL,
-    "http://127.0.0.1:3000",
-  ].filter(Boolean),
+  trustedOrigins: [env.NEXT_PUBLIC_APP_URL, "http://127.0.0.1:3000"].filter(
+    Boolean,
+  ),
 
   // Prisma adapter
   database: prismaAdapter(prisma, {

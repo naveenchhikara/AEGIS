@@ -9,10 +9,7 @@ import { generateAuditReportXLSX } from "@/lib/excel-export/audit-report-generat
 import { prismaForTenant } from "@/data-access/prisma";
 import { uploadToS3 } from "@/lib/s3";
 import { GenerateReportSchema, type GenerateReportInput } from "./schemas";
-import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 
 /**
  * Generate XLSX audit report and upload to S3.

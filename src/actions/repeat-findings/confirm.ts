@@ -4,10 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/lib/prisma";
 import { escalateSeverity, type Severity } from "@/lib/state-machine";
-import {
-  withAuditedMutation,
-  userActor,
-} from "@/data-access/audited-mutation";
+import { withAuditedMutation, userActor } from "@/data-access/audited-mutation";
 import {
   ConfirmRepeatSchema,
   DismissRepeatSchema,
@@ -109,47 +106,47 @@ export async function confirmRepeatFinding(
       userActor(session),
       "observation.repeat_confirmed",
       async (tx: any) => {
-      // Update observation with optimistic lock
-      const updated = await tx.observation.updateMany({
-        where: { id: observationId, tenantId, version },
-        data: {
-          ...(wasEscalated ? { severity: escalatedSeverity } : {}),
-          version: { increment: 1 },
-        },
-      });
+        // Update observation with optimistic lock
+        const updated = await tx.observation.updateMany({
+          where: { id: observationId, tenantId, version },
+          data: {
+            ...(wasEscalated ? { severity: escalatedSeverity } : {}),
+            version: { increment: 1 },
+          },
+        });
 
-      if (updated.count === 0) {
-        throw new Error(
-          "Observation was modified by another user. Please refresh and try again.",
-        );
-      }
+        if (updated.count === 0) {
+          throw new Error(
+            "Observation was modified by another user. Please refresh and try again.",
+          );
+        }
 
-      // Timeline entry: repeat confirmed
-      await tx.observationTimeline.create({
-        data: {
-          observationId,
-          tenantId,
-          event: "repeat_confirmed",
-          oldValue: null,
-          newValue: repeatOfId,
-          comment: `Confirmed as repeat of "${oldObs.title}". Occurrence #${occurrenceCount}.`,
-          createdById: session.user.id,
-        },
-      });
-
-      // Timeline entry: severity escalated (only if severity changed)
-      if (wasEscalated) {
+        // Timeline entry: repeat confirmed
         await tx.observationTimeline.create({
           data: {
             observationId,
             tenantId,
-            event: "severity_escalated",
-            oldValue: originalSeverity,
-            newValue: escalatedSeverity,
-            comment: `Auto-escalated due to repeat finding (occurrence #${occurrenceCount})`,
+            event: "repeat_confirmed",
+            oldValue: null,
+            newValue: repeatOfId,
+            comment: `Confirmed as repeat of "${oldObs.title}". Occurrence #${occurrenceCount}.`,
             createdById: session.user.id,
           },
         });
+
+        // Timeline entry: severity escalated (only if severity changed)
+        if (wasEscalated) {
+          await tx.observationTimeline.create({
+            data: {
+              observationId,
+              tenantId,
+              event: "severity_escalated",
+              oldValue: originalSeverity,
+              newValue: escalatedSeverity,
+              comment: `Auto-escalated due to repeat finding (occurrence #${occurrenceCount})`,
+              createdById: session.user.id,
+            },
+          });
         }
       },
     );

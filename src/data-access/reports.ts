@@ -3,10 +3,7 @@ import { prismaForTenant } from "./prisma";
 import type { BoardReportData } from "@/components/pdf-report/board-report";
 import { formatDateIndian } from "@/lib/excel-export";
 import type { AuthSession } from "@/lib/auth";
-import {
-  withAuditedMutation,
-  userActor,
-} from "./audited-mutation";
+import { withAuditedMutation, userActor } from "./audited-mutation";
 
 function extractTenantId(session: AuthSession): string {
   return session.user.tenantId;

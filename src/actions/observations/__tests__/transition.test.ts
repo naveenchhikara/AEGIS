@@ -12,7 +12,13 @@ vi.mock("@/lib/logger", () => ({
 import { transitionObservation } from "../transition";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
-import { OBSERVATION_A, USER_A, USER_B, fakeDb, fakeSession } from "@/test/factories";
+import {
+  OBSERVATION_A,
+  USER_A,
+  USER_B,
+  fakeDb,
+  fakeSession,
+} from "@/test/factories";
 
 function observationDb(createdById: string) {
   return fakeDb({
@@ -44,7 +50,10 @@ describe("transitionObservation maker-checker", () => {
 
   it("refuses review by the user who raised the observation", async () => {
     vi.mocked(getRequiredSession).mockResolvedValue(
-      fakeSession({ userId: USER_A, roles: ["AUDITOR", "AUDIT_MANAGER"] }) as never,
+      fakeSession({
+        userId: USER_A,
+        roles: ["AUDITOR", "AUDIT_MANAGER"],
+      }) as never,
     );
     const db = observationDb(USER_A);
     vi.mocked(prismaForTenant).mockReturnValue(db);

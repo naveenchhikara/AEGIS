@@ -28,7 +28,9 @@ describe("requireBranchAssignment", () => {
       fakeDb({ userBranchAssignment: { findFirst } }),
     );
 
-    expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({ ok: true });
+    expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({
+      ok: true,
+    });
     expect(findFirst).toHaveBeenCalledWith({
       where: { userId: USER_A, branchId: BRANCH_A, tenantId: TENANT_A },
       select: { id: true },
@@ -37,7 +39,9 @@ describe("requireBranchAssignment", () => {
 
   it("refuses a user with no assignment to the branch", async () => {
     vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({ userBranchAssignment: { findFirst: vi.fn().mockResolvedValue(null) } }),
+      fakeDb({
+        userBranchAssignment: { findFirst: vi.fn().mockResolvedValue(null) },
+      }),
     );
 
     expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({
@@ -67,7 +71,9 @@ describe("requireTeamMembership", () => {
       fakeDb({ auditTeamMember: { findFirst } }),
     );
 
-    expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({ ok: true });
+    expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({
+      ok: true,
+    });
     expect(findFirst).toHaveBeenCalledWith({
       where: {
         engagementId: ENGAGEMENT_A,
@@ -80,7 +86,9 @@ describe("requireTeamMembership", () => {
 
   it("refuses a non-member", async () => {
     vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({ auditTeamMember: { findFirst: vi.fn().mockResolvedValue(null) } }),
+      fakeDb({
+        auditTeamMember: { findFirst: vi.fn().mockResolvedValue(null) },
+      }),
     );
 
     expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({

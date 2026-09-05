@@ -45,7 +45,9 @@ describe("setSessionContext", () => {
     expect(settings.get("app.current_action")).toBe("finding.closed");
     expect(settings.get("app.current_justification")).toBe("Remediated");
     expect(settings.get("app.current_tenant_id")).toBe(USER.tenantId);
-    expect(settings.get("app.current_user_id")).toBe("11111111-1111-4111-8111-111111111111");
+    expect(settings.get("app.current_user_id")).toBe(
+      "11111111-1111-4111-8111-111111111111",
+    );
     expect(settings.get("app.current_ip_address")).toBe("10.0.0.1");
     expect(settings.get("app.current_session_id")).toBe("sess-1");
   });

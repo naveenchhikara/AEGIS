@@ -29,34 +29,34 @@
 
 **Net-new files**
 
-| Path | Responsibility |
-| --- | --- |
-| `src/test/server-only-stub.ts` | Empty module Vitest aliases `server-only` to, so DAL modules can be imported in a node test run. |
-| `src/test/factories.ts` | Shared test doubles: fixed UUID constants, `fakeSession()`, `fakeDb()`. |
-| `src/lib/password-policy.ts` | Pure Zod schema for passwords AEGIS itself creates. |
-| `src/lib/session-guard.ts` | Pure decision function for what to do with a session whose user row was just re-read. |
-| `src/lib/maker-checker.ts` | Pure distinct-actor rules for observation and report transitions. |
-| `src/lib/invitation-mailer.ts` | Builds the accept URL, renders and sends the invitation email, logs only redacted fields. |
-| `src/emails/templates/invitation-email.tsx` | React Email template for the invitation. |
-| `src/data-access/access-guards.ts` | Async branch-assignment and audit-team-membership guards, scoped by session tenant. |
+| Path                                        | Responsibility                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `src/test/server-only-stub.ts`              | Empty module Vitest aliases `server-only` to, so DAL modules can be imported in a node test run. |
+| `src/test/factories.ts`                     | Shared test doubles: fixed UUID constants, `fakeSession()`, `fakeDb()`.                          |
+| `src/lib/password-policy.ts`                | Pure Zod schema for passwords AEGIS itself creates.                                              |
+| `src/lib/session-guard.ts`                  | Pure decision function for what to do with a session whose user row was just re-read.            |
+| `src/lib/maker-checker.ts`                  | Pure distinct-actor rules for observation and report transitions.                                |
+| `src/lib/invitation-mailer.ts`              | Builds the accept URL, renders and sends the invitation email, logs only redacted fields.        |
+| `src/emails/templates/invitation-email.tsx` | React Email template for the invitation.                                                         |
+| `src/data-access/access-guards.ts`          | Async branch-assignment and audit-team-membership guards, scoped by session tenant.              |
 
 **Modified files**
 
-| Path | Change |
-| --- | --- |
-| `vitest.config.ts` | Alias `server-only`, seed `test.env` so `@/env` imports resolve. |
-| `src/actions/user-invitations.ts` | Create the credential account (F01); send email instead of logging the token (F02). |
-| `src/emails/render.ts` | Register the `invitation` template. |
-| `src/app/accept-invite/page.tsx` | Use the shared password schema for client-side validation. |
-| `src/data-access/session.ts` | Re-read and validate user state; add `getOnboardingSession()` (F03). |
-| `src/lib/guards.ts` | Add `requireOnboardingPermission()` (F03). |
-| `src/app/(onboarding)/onboarding/page.tsx` | Use the tenant-optional guard, to avoid a redirect loop (F03). |
-| `src/actions/onboarding.ts` | Use the tenant-optional session (F03). |
-| `src/actions/observations/transition.ts` | Enforce maker-checker (F04). |
-| `src/actions/reports/transition-report.ts` | Enforce maker-checker (F04). |
-| `src/actions/compliance/submit-branch-response.ts` | Enforce branch assignment (F05). |
-| `src/actions/audit-execution/bh-certificate.ts` | Enforce branch assignment, team membership, distinct signer (F05). |
-| `src/actions/account-examination/save-response.ts` | Require `examination:respond`, team membership, module-scoped question (F06). |
+| Path                                               | Change                                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `vitest.config.ts`                                 | Alias `server-only`, seed `test.env` so `@/env` imports resolve.                    |
+| `src/actions/user-invitations.ts`                  | Create the credential account (F01); send email instead of logging the token (F02). |
+| `src/emails/render.ts`                             | Register the `invitation` template.                                                 |
+| `src/app/accept-invite/page.tsx`                   | Use the shared password schema for client-side validation.                          |
+| `src/data-access/session.ts`                       | Re-read and validate user state; add `getOnboardingSession()` (F03).                |
+| `src/lib/guards.ts`                                | Add `requireOnboardingPermission()` (F03).                                          |
+| `src/app/(onboarding)/onboarding/page.tsx`         | Use the tenant-optional guard, to avoid a redirect loop (F03).                      |
+| `src/actions/onboarding.ts`                        | Use the tenant-optional session (F03).                                              |
+| `src/actions/observations/transition.ts`           | Enforce maker-checker (F04).                                                        |
+| `src/actions/reports/transition-report.ts`         | Enforce maker-checker (F04).                                                        |
+| `src/actions/compliance/submit-branch-response.ts` | Enforce branch assignment (F05).                                                    |
+| `src/actions/audit-execution/bh-certificate.ts`    | Enforce branch assignment, team membership, distinct signer (F05).                  |
+| `src/actions/account-examination/save-response.ts` | Require `examination:respond`, team membership, module-scoped question (F06).       |
 
 ---
 
@@ -92,15 +92,17 @@ Expected: all existing suites pass (12 test files under `src/**/__tests__/`). If
 
 ## Task 1: Server-action test harness
 
-Every later task changes a server action's authorization behavior, and the repo has **zero** server-action tests today — the only existing technique is static source analysis. This task builds the smallest harness that lets a server action be imported and exercised in Vitest, and proves it with a characterization test for `submitBranchResponse` as it behaves *before* Task 9 changes it.
+Every later task changes a server action's authorization behavior, and the repo has **zero** server-action tests today — the only existing technique is static source analysis. This task builds the smallest harness that lets a server action be imported and exercised in Vitest, and proves it with a characterization test for `submitBranchResponse` as it behaves _before_ Task 9 changes it.
 
 **Files:**
+
 - Create: `src/test/server-only-stub.ts`
 - Create: `src/test/factories.ts`
 - Modify: `vitest.config.ts`
 - Test: `src/actions/compliance/__tests__/submit-branch-response.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks.
 - Produces:
   - `TENANT_A: string`, `TENANT_B: string`, `USER_A: string`, `USER_B: string`, `BRANCH_A: string`, `BRANCH_B: string`, `SESSION_ID: string`, `ENGAGEMENT_A: string`, `OBSERVATION_A: string`, `COMPLIANCE_ITEM_A: string`, `LOAN_ACCOUNT_A: string`, `QUESTION_A: string` — fixed valid v4 UUID string constants from `src/test/factories.ts`.
@@ -319,16 +321,16 @@ The characterization test asserts a `select` that includes `branchId` and the ob
 In `src/actions/compliance/submit-branch-response.ts`, replace the `findFirst` call inside the transaction:
 
 ```typescript
-      // Verify compliance item exists and is open
-      const item = await tx.complianceItem.findFirst({
-        where: { id: parsed.data.complianceItemId, tenantId },
-        select: {
-          id: true,
-          status: true,
-          branchId: true,
-          observation: { select: { branchId: true } },
-        },
-      });
+// Verify compliance item exists and is open
+const item = await tx.complianceItem.findFirst({
+  where: { id: parsed.data.complianceItemId, tenantId },
+  select: {
+    id: true,
+    status: true,
+    branchId: true,
+    observation: { select: { branchId: true } },
+  },
+});
 ```
 
 - [ ] **Step 7: Run the test to verify it passes**
@@ -364,6 +366,7 @@ git commit -m "test: add a harness for exercising server actions under Vitest"
 Better Auth stores credentials as an `Account` row with `providerId: "credential"` and `accountId` equal to the user id, hashed with its own configured algorithm (scrypt by default) — **not** bcrypt. A bcrypt digest written here would never verify. The hash must come from `auth.$context`.
 
 **Files:**
+
 - Create: `src/lib/password-policy.ts`
 - Modify: `src/actions/user-invitations.ts:145-225`
 - Modify: `src/app/accept-invite/page.tsx:43-56`
@@ -371,6 +374,7 @@ Better Auth stores credentials as an `Account` row with `providerId: "credential
 - Test: `src/actions/__tests__/accept-invitation.test.ts`
 
 **Interfaces:**
+
 - Consumes: `fakeDb`, `fakeSession`, `TENANT_A`, `USER_A` from `src/test/factories.ts` (Task 1).
 - Produces: `PasswordSchema: z.ZodString` from `src/lib/password-policy.ts`.
 
@@ -565,7 +569,11 @@ describe("acceptInvitation", () => {
   });
 
   it("refuses a password that fails the policy before touching the database", async () => {
-    const result = await acceptInvitation("raw-token", "asha@ucb.example", "short");
+    const result = await acceptInvitation(
+      "raw-token",
+      "asha@ucb.example",
+      "short",
+    );
 
     expect(result).toEqual({
       success: false,
@@ -698,7 +706,10 @@ export async function acceptInvitation(
     return { success: true, error: null };
   } catch (error) {
     if (error instanceof Error && error.message === ALREADY_ACCEPTED) {
-      return { success: false, error: "This invitation has already been used." };
+      return {
+        success: false,
+        error: "This invitation has already been used.",
+      };
     }
     logger.error(
       { error, action: "accept_invitation", email },
@@ -735,11 +746,11 @@ import { PasswordSchema } from "@/lib/password-policy";
 and replace the inline length check inside `handleSubmit`:
 
 ```typescript
-    const passwordCheck = PasswordSchema.safeParse(password);
-    if (!passwordCheck.success) {
-      setError(passwordCheck.error.issues[0].message);
-      return;
-    }
+const passwordCheck = PasswordSchema.safeParse(password);
+if (!passwordCheck.success) {
+  setError(passwordCheck.error.issues[0].message);
+  return;
+}
 ```
 
 - [ ] **Step 10: Run the full suite, lint, and build**
@@ -768,6 +779,7 @@ Both the send and resend paths write the live token-bearing accept URL to stdout
 Sending moves **after** the transaction commits. Today the `console.log` sits inside the transaction loop; an SES call there would hold a transaction open across network I/O and roll back user creation on a transient failure.
 
 **Files:**
+
 - Create: `src/emails/templates/invitation-email.tsx`
 - Create: `src/lib/invitation-mailer.ts`
 - Modify: `src/emails/render.ts`
@@ -776,6 +788,7 @@ Sending moves **after** the transaction commits. Today the `console.log` sits in
 - Test: `src/actions/__tests__/invitation-token-hygiene.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks.
 - Produces:
   - `InvitationEmail(props: { bankName: string; appUrl: string; inviteeName: string; acceptUrl: string; expiresOn: string }): React.ReactElement`
@@ -801,12 +814,8 @@ describe("invitation email", () => {
       expiresOn: "11 Sep 2026",
     });
 
-    expect(subject).toBe(
-      "[Pune Sahakari UCB] You have been invited to AEGIS",
-    );
-    expect(html).toContain(
-      "https://aegis.example/accept-invite?token=abc123",
-    );
+    expect(subject).toBe("[Pune Sahakari UCB] You have been invited to AEGIS");
+    expect(html).toContain("https://aegis.example/accept-invite?token=abc123");
     expect(html).toContain("Asha Kulkarni");
     expect(text).toContain("11 Sep 2026");
   });
@@ -1068,40 +1077,40 @@ import { sendInvitationEmail } from "@/lib/invitation-mailer";
 Inside the `withAuditedMutation` callback of `sendUserInvitations`, delete the `console.log` block (`src/actions/user-invitations.ts:103-106`) and change the `results.push` so the token and expiry travel out of the transaction without being returned to the client:
 
 ```typescript
-          results.push({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            rawToken,
-            inviteExpiry: user.inviteExpiry!,
-          });
+results.push({
+  id: user.id,
+  email: user.email,
+  name: user.name,
+  rawToken,
+  inviteExpiry: user.inviteExpiry!,
+});
 ```
 
 Then replace the `return { success: true, error: null, data: createdUsers };` line with a post-commit send that strips the token:
 
 ```typescript
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: { shortName: true },
-    });
+const tenant = await prisma.tenant.findUnique({
+  where: { id: tenantId },
+  select: { shortName: true },
+});
 
-    // Sent after the transaction commits: SES is network I/O, and a transient
-    // delivery failure must not roll back the user records.
-    for (const invitee of createdUsers) {
-      await sendInvitationEmail({
-        to: invitee.email,
-        inviteeName: invitee.name,
-        bankName: tenant?.shortName ?? "AEGIS",
-        rawToken: invitee.rawToken,
-        expiresAt: invitee.inviteExpiry,
-      });
-    }
+// Sent after the transaction commits: SES is network I/O, and a transient
+// delivery failure must not roll back the user records.
+for (const invitee of createdUsers) {
+  await sendInvitationEmail({
+    to: invitee.email,
+    inviteeName: invitee.name,
+    bankName: tenant?.shortName ?? "AEGIS",
+    rawToken: invitee.rawToken,
+    expiresAt: invitee.inviteExpiry,
+  });
+}
 
-    return {
-      success: true,
-      error: null,
-      data: createdUsers.map(({ id, email, name }) => ({ id, email, name })),
-    };
+return {
+  success: true,
+  error: null,
+  data: createdUsers.map(({ id, email, name }) => ({ id, email, name })),
+};
 ```
 
 - [ ] **Step 10: Send instead of logging in `resendInvitation`**
@@ -1109,18 +1118,18 @@ Then replace the `return { success: true, error: null, data: createdUsers };` li
 In `resendInvitation`, replace the `console.log` block (`src/actions/user-invitations.ts:267-269`) with:
 
 ```typescript
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: { shortName: true },
-    });
+const tenant = await prisma.tenant.findUnique({
+  where: { id: tenantId },
+  select: { shortName: true },
+});
 
-    await sendInvitationEmail({
-      to: user.email,
-      inviteeName: user.name,
-      bankName: tenant?.shortName ?? "AEGIS",
-      rawToken,
-      expiresAt: newExpiry,
-    });
+await sendInvitationEmail({
+  to: user.email,
+  inviteeName: user.name,
+  bankName: tenant?.shortName ?? "AEGIS",
+  rawToken,
+  expiresAt: newExpiry,
+});
 ```
 
 and hoist the expiry so both the update and the email use one value. Replace the `data` block of the `updateMany` inside `withAuditedMutation`:
@@ -1135,7 +1144,7 @@ and hoist the expiry so both the update and the email use one value. Replace the
 declaring it just above the `withAuditedMutation` call:
 
 ```typescript
-    const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 ```
 
 - [ ] **Step 11: Keep the Task 2 test off the mail path**
@@ -1183,6 +1192,7 @@ invitation_email_failed rather than printing a usable link."
 The tenantless case is real and legitimate — Better Auth creates the user at signup and onboarding assigns the tenant afterwards. So `getRequiredSession()` must send tenantless users to `/onboarding`, and everything that serves `/onboarding` must stop calling it. Otherwise the redirect loops: `src/app/(onboarding)/onboarding/page.tsx` calls `requirePermission` → `getRequiredSession`.
 
 **Files:**
+
 - Create: `src/lib/session-guard.ts`
 - Modify: `src/data-access/session.ts`
 - Modify: `src/lib/guards.ts`
@@ -1191,6 +1201,7 @@ The tenantless case is real and legitimate — Better Auth creates the user at s
 - Test: `src/lib/__tests__/session-guard.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks.
 - Produces:
   - `type SessionDecision = { kind: "ok"; tenantId: string; roles: Role[] } | { kind: "revoke"; reason: string } | { kind: "onboard" }`
@@ -1246,7 +1257,11 @@ describe("decideSessionAccess", () => {
 
   it("revokes a user still marked INVITED", () => {
     expect(
-      decideSessionAccess({ status: "INVITED", tenantId: TENANT, roles: ROLES }),
+      decideSessionAccess({
+        status: "INVITED",
+        tenantId: TENANT,
+        roles: ROLES,
+      }),
     ).toEqual({ kind: "revoke", reason: "INVITED" });
   });
 
@@ -1511,7 +1526,7 @@ import { requireOnboardingPermission } from "@/lib/guards";
 ```
 
 ```typescript
-  const session = await requireOnboardingPermission("admin:manage_settings");
+const session = await requireOnboardingPermission("admin:manage_settings");
 ```
 
 In `src/actions/onboarding.ts`, change the import:
@@ -1523,7 +1538,7 @@ import { getOnboardingSession } from "@/data-access/session";
 and replace all three `const session = await getRequiredSession();` calls — in `saveWizardStep`, `getWizardProgress`, and `completeOnboarding` — with:
 
 ```typescript
-  const session = await getOnboardingSession();
+const session = await getOnboardingSession();
 ```
 
 Each already guards with `if (!tenantId)`, which is now a reachable branch rather than dead code.
@@ -1569,14 +1584,16 @@ git commit -m "fix(auth): re-validate user status, tenant and roles at the sessi
 
 Two deliberate decisions, both to avoid deadlocking a small UCB:
 
-- **Observations:** the actor must differ from `createdById` for `SUBMITTED→REVIEWED`, `REVIEWED→ISSUED`, and `COMPLIANCE→CLOSED`. Reviewer and issuer are both `AUDIT_MANAGER` by design in `src/lib/state-machine.ts`, so those two acts are *not* required to differ from each other — only from the maker.
+- **Observations:** the actor must differ from `createdById` for `SUBMITTED→REVIEWED`, `REVIEWED→ISSUED`, and `COMPLIANCE→CLOSED`. Reviewer and issuer are both `AUDIT_MANAGER` by design in `src/lib/state-machine.ts`, so those two acts are _not_ required to differ from each other — only from the maker.
 - **Reports:** the actor must differ from `reportReviewedById` for both `REVIEWED→APPROVED` and `APPROVED→ISSUED`. Issuing is restricted to `CAE`, so requiring issuer ≠ approver would make a bank with one CAE unable to issue any report. Requiring issuer ≠ reviewer gets the control — no one person carries a report from review to issue — without the deadlock.
 
 **Files:**
+
 - Create: `src/lib/maker-checker.ts`
 - Test: `src/lib/__tests__/maker-checker.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks.
 - Produces:
   - `type MakerCheckerResult = { allowed: true } | { allowed: false; reason: string }`
@@ -1604,7 +1621,8 @@ describe("checkObservationTransition", () => {
     });
     expect(result).toEqual({
       allowed: false,
-      reason: "You raised this record; a different user must perform this step.",
+      reason:
+        "You raised this record; a different user must perform this step.",
     });
   });
 
@@ -1836,13 +1854,15 @@ git commit -m "feat(authz): add maker-checker rules for observation and report t
 
 `transitionObservation` selects `createdById` and never compares it to the actor. A user holding both `AUDITOR` and `AUDIT_MANAGER` can raise an observation and review it.
 
-The check runs against the `createdById` already read at `src/actions/observations/transition.ts:49-61`. That column is never written after creation, so reading it before the transaction opens is not a time-of-check race. Making the *status* update atomic is a separate finding (F08) and is out of scope here.
+The check runs against the `createdById` already read at `src/actions/observations/transition.ts:49-61`. That column is never written after creation, so reading it before the transaction opens is not a time-of-check race. Making the _status_ update atomic is a separate finding (F08) and is out of scope here.
 
 **Files:**
+
 - Modify: `src/actions/observations/transition.ts:86-96`
 - Test: `src/actions/observations/__tests__/transition.test.ts`
 
 **Interfaces:**
+
 - Consumes: `checkObservationTransition` (Task 5); `fakeDb`, `fakeSession`, `OBSERVATION_A`, `USER_A`, `USER_B` (Task 1).
 - Produces: nothing new.
 
@@ -1865,7 +1885,13 @@ vi.mock("@/lib/logger", () => ({
 import { transitionObservation } from "../transition";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
-import { OBSERVATION_A, USER_A, USER_B, fakeDb, fakeSession } from "@/test/factories";
+import {
+  OBSERVATION_A,
+  USER_A,
+  USER_B,
+  fakeDb,
+  fakeSession,
+} from "@/test/factories";
 
 function observationDb(createdById: string) {
   return fakeDb({
@@ -1897,7 +1923,10 @@ describe("transitionObservation maker-checker", () => {
 
   it("refuses review by the user who raised the observation", async () => {
     vi.mocked(getRequiredSession).mockResolvedValue(
-      fakeSession({ userId: USER_A, roles: ["AUDITOR", "AUDIT_MANAGER"] }) as never,
+      fakeSession({
+        userId: USER_A,
+        roles: ["AUDITOR", "AUDIT_MANAGER"],
+      }) as never,
     );
     const db = observationDb(USER_A);
     vi.mocked(prismaForTenant).mockReturnValue(db);
@@ -1948,22 +1977,22 @@ import { checkObservationTransition } from "@/lib/maker-checker";
 and insert this block immediately after the `if (!transitionResult.allowed) { ... }` block (which ends at `src/actions/observations/transition.ts:86`) and before `// Step 4: Optimistic lock check`:
 
 ```typescript
-    // Step 3b: Maker-checker — the raiser may not review, issue, or close
-    // their own observation. createdById is immutable after creation, so the
-    // value read above is still the value inside the transaction.
-    const makerChecker = checkObservationTransition(
-      currentStatus,
-      targetStatus,
-      session.user.id,
-      { createdById: observation.createdById },
-    );
+// Step 3b: Maker-checker — the raiser may not review, issue, or close
+// their own observation. createdById is immutable after creation, so the
+// value read above is still the value inside the transaction.
+const makerChecker = checkObservationTransition(
+  currentStatus,
+  targetStatus,
+  session.user.id,
+  { createdById: observation.createdById },
+);
 
-    if (!makerChecker.allowed) {
-      return {
-        success: false as const,
-        error: makerChecker.reason,
-      };
-    }
+if (!makerChecker.allowed) {
+  return {
+    success: false as const,
+    error: makerChecker.reason,
+  };
+}
 ```
 
 - [ ] **Step 4: Run the test to verify it passes**
@@ -1998,10 +2027,12 @@ git commit -m "fix(authz): block self-review, self-issue and self-close of obser
 `transitionReportStatus` writes `reportReviewedById`, `reportApprovedById`, and `reportIssuedById` but never reads them back to compare. Its `select` does not even fetch them.
 
 **Files:**
+
 - Modify: `src/actions/reports/transition-report.ts:49-62`, `:103-105`
 - Test: `src/actions/reports/__tests__/transition-report.test.ts`
 
 **Interfaces:**
+
 - Consumes: `checkReportTransition` (Task 5); `fakeDb`, `fakeSession`, `ENGAGEMENT_A`, `USER_A`, `USER_B` (Task 1).
 - Produces: nothing new.
 
@@ -2023,7 +2054,13 @@ vi.mock("@/lib/logger", () => ({
 import { transitionReportStatus } from "../transition-report";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
-import { ENGAGEMENT_A, USER_A, USER_B, fakeDb, fakeSession } from "@/test/factories";
+import {
+  ENGAGEMENT_A,
+  USER_A,
+  USER_B,
+  fakeDb,
+  fakeSession,
+} from "@/test/factories";
 
 function engagementDb(reviewedById: string | null) {
   return fakeDb({
@@ -2120,22 +2157,22 @@ import { checkReportTransition } from "@/lib/maker-checker";
 and insert this block immediately after the `if (!hasRequiredRole) { ... }` block (ending at `src/actions/reports/transition-report.ts:103`) and before `// ─── Step 6: Pre-condition checks ───`:
 
 ```typescript
-    // ─── Step 5b: Maker-checker ────────────────────────────────────
-    // The reviewer may neither approve nor issue. The approver may issue,
-    // because only CAE can issue and a bank may hold exactly one.
-    const makerChecker = checkReportTransition(
-      currentStatus,
-      targetStatus,
-      session.user.id,
-      { reportReviewedById: engagement.reportReviewedById },
-    );
+// ─── Step 5b: Maker-checker ────────────────────────────────────
+// The reviewer may neither approve nor issue. The approver may issue,
+// because only CAE can issue and a bank may hold exactly one.
+const makerChecker = checkReportTransition(
+  currentStatus,
+  targetStatus,
+  session.user.id,
+  { reportReviewedById: engagement.reportReviewedById },
+);
 
-    if (!makerChecker.allowed) {
-      return {
-        success: false as const,
-        error: makerChecker.reason,
-      };
-    }
+if (!makerChecker.allowed) {
+  return {
+    success: false as const,
+    error: makerChecker.reason,
+  };
+}
 ```
 
 - [ ] **Step 5: Run the test to verify it passes**
@@ -2162,10 +2199,12 @@ git commit -m "fix(authz): stop a report reviewer approving or issuing the same 
 `BRANCH_HEAD` means "runs a branch", not "runs this branch". Nothing in the codebase turns that distinction into a check — `src/data-access/auditee.ts:33` has `getUserBranches()`, which returns a list callers filter by, but there is no guard that refuses an unassigned branch. Likewise `src/data-access/audit-teams.ts:74` lists team members but nothing asserts membership.
 
 **Files:**
+
 - Create: `src/data-access/access-guards.ts`
 - Test: `src/data-access/__tests__/access-guards.test.ts`
 
 **Interfaces:**
+
 - Consumes: `TENANT_A`, `USER_A`, `BRANCH_A`, `ENGAGEMENT_A` (Task 1).
 - Produces:
   - `type GuardResult = { ok: true } | { ok: false; error: string }`
@@ -2210,7 +2249,9 @@ describe("requireBranchAssignment", () => {
       fakeDb({ userBranchAssignment: { findFirst } }),
     );
 
-    expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({ ok: true });
+    expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({
+      ok: true,
+    });
     expect(findFirst).toHaveBeenCalledWith({
       where: { userId: USER_A, branchId: BRANCH_A, tenantId: TENANT_A },
       select: { id: true },
@@ -2219,7 +2260,9 @@ describe("requireBranchAssignment", () => {
 
   it("refuses a user with no assignment to the branch", async () => {
     vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({ userBranchAssignment: { findFirst: vi.fn().mockResolvedValue(null) } }),
+      fakeDb({
+        userBranchAssignment: { findFirst: vi.fn().mockResolvedValue(null) },
+      }),
     );
 
     expect(await requireBranchAssignment(ACTOR, BRANCH_A)).toEqual({
@@ -2249,7 +2292,9 @@ describe("requireTeamMembership", () => {
       fakeDb({ auditTeamMember: { findFirst } }),
     );
 
-    expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({ ok: true });
+    expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({
+      ok: true,
+    });
     expect(findFirst).toHaveBeenCalledWith({
       where: {
         engagementId: ENGAGEMENT_A,
@@ -2262,7 +2307,9 @@ describe("requireTeamMembership", () => {
 
   it("refuses a non-member", async () => {
     vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({ auditTeamMember: { findFirst: vi.fn().mockResolvedValue(null) } }),
+      fakeDb({
+        auditTeamMember: { findFirst: vi.fn().mockResolvedValue(null) },
+      }),
     );
 
     expect(await requireTeamMembership(ACTOR, ENGAGEMENT_A)).toEqual({
@@ -2373,10 +2420,12 @@ git commit -m "feat(authz): add branch-assignment and audit-team guards"
 `submitBranchResponse` checks the `compliance:branch_response` permission and the tenant, so any `BRANCH_HEAD` or `AUDITEE` in the bank can respond on behalf of any branch. The compliance item's branch is resolved from `ComplianceItem.branchId`, falling back to the parent observation's branch when the denormalised column is null.
 
 **Files:**
+
 - Modify: `src/actions/compliance/submit-branch-response.ts:40-74`
 - Test: `src/actions/compliance/__tests__/submit-branch-response.test.ts` (extend from Task 1)
 
 **Interfaces:**
+
 - Consumes: `requireBranchAssignment` (Task 8); the Task 1 harness.
 - Produces: nothing new.
 
@@ -2399,73 +2448,72 @@ import { requireBranchAssignment } from "@/data-access/access-guards";
 set the default in `beforeEach` so the existing success case keeps passing:
 
 ```typescript
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(requireBranchAssignment).mockResolvedValue({ ok: true });
-  });
-
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(requireBranchAssignment).mockResolvedValue({ ok: true });
+});
 ```
 
 and append these cases inside the `describe`:
 
 ```typescript
-  it("refuses a branch head acting on a branch they are not assigned to", async () => {
-    vi.mocked(getRequiredSession).mockResolvedValue(
-      fakeSession({ roles: ["BRANCH_HEAD"] }) as never,
-    );
-    vi.mocked(requireBranchAssignment).mockResolvedValue({
-      ok: false,
-      error: "You are not assigned to this branch.",
-    });
-    const update = vi.fn();
-    vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({
-        complianceItem: {
-          findFirst: vi.fn().mockResolvedValue({
-            id: COMPLIANCE_ITEM_A,
-            status: "OPEN",
-            branchId: BRANCH_B,
-            observation: { branchId: BRANCH_B },
-          }),
-          update,
-        },
-      }),
-    );
-
-    const result = await submitBranchResponse(VALID_INPUT);
-
-    expect(result).toEqual({
-      success: false,
-      error: "You are not assigned to this branch.",
-    });
-    expect(update).not.toHaveBeenCalled();
+it("refuses a branch head acting on a branch they are not assigned to", async () => {
+  vi.mocked(getRequiredSession).mockResolvedValue(
+    fakeSession({ roles: ["BRANCH_HEAD"] }) as never,
+  );
+  vi.mocked(requireBranchAssignment).mockResolvedValue({
+    ok: false,
+    error: "You are not assigned to this branch.",
   });
+  const update = vi.fn();
+  vi.mocked(prismaForTenant).mockReturnValue(
+    fakeDb({
+      complianceItem: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: COMPLIANCE_ITEM_A,
+          status: "OPEN",
+          branchId: BRANCH_B,
+          observation: { branchId: BRANCH_B },
+        }),
+        update,
+      },
+    }),
+  );
 
-  it("falls back to the observation's branch when the item has none", async () => {
-    vi.mocked(getRequiredSession).mockResolvedValue(
-      fakeSession({ roles: ["BRANCH_HEAD"] }) as never,
-    );
-    vi.mocked(prismaForTenant).mockReturnValue(
-      fakeDb({
-        complianceItem: {
-          findFirst: vi.fn().mockResolvedValue({
-            id: COMPLIANCE_ITEM_A,
-            status: "OPEN",
-            branchId: null,
-            observation: { branchId: BRANCH_A },
-          }),
-          update: vi.fn().mockResolvedValue({ id: COMPLIANCE_ITEM_A }),
-        },
-      }),
-    );
+  const result = await submitBranchResponse(VALID_INPUT);
 
-    await submitBranchResponse(VALID_INPUT);
-
-    expect(requireBranchAssignment).toHaveBeenCalledWith(
-      { userId: USER_A, tenantId: TENANT_A },
-      BRANCH_A,
-    );
+  expect(result).toEqual({
+    success: false,
+    error: "You are not assigned to this branch.",
   });
+  expect(update).not.toHaveBeenCalled();
+});
+
+it("falls back to the observation's branch when the item has none", async () => {
+  vi.mocked(getRequiredSession).mockResolvedValue(
+    fakeSession({ roles: ["BRANCH_HEAD"] }) as never,
+  );
+  vi.mocked(prismaForTenant).mockReturnValue(
+    fakeDb({
+      complianceItem: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: COMPLIANCE_ITEM_A,
+          status: "OPEN",
+          branchId: null,
+          observation: { branchId: BRANCH_A },
+        }),
+        update: vi.fn().mockResolvedValue({ id: COMPLIANCE_ITEM_A }),
+      },
+    }),
+  );
+
+  await submitBranchResponse(VALID_INPUT);
+
+  expect(requireBranchAssignment).toHaveBeenCalledWith(
+    { userId: USER_A, tenantId: TENANT_A },
+    BRANCH_A,
+  );
+});
 ```
 
 and extend the factory import:
@@ -2606,10 +2654,12 @@ git commit -m "fix(authz): require a branch assignment to submit a branch respon
 `AUDIT_MANAGER` is deliberately exempt from the team-membership requirement: it is a tenant-wide oversight role and managers are not enrolled in `AuditTeamMember`. `LEAD_AUDITOR` is not exempt — it is an engagement role.
 
 **Files:**
+
 - Modify: `src/actions/audit-execution/bh-certificate.ts:30-133`, `:149-262`
 - Test: `src/actions/audit-execution/__tests__/bh-certificate.test.ts`
 
 **Interfaces:**
+
 - Consumes: `requireBranchAssignment`, `requireTeamMembership` (Task 8); the Task 1 harness.
 - Produces: nothing new.
 
@@ -2648,7 +2698,10 @@ import {
   fakeSession,
 } from "@/test/factories";
 
-const SIGN_INPUT = { engagementId: ENGAGEMENT_A, comments: "Records verified." };
+const SIGN_INPUT = {
+  engagementId: ENGAGEMENT_A,
+  comments: "Records verified.",
+};
 
 describe("signBhCertificate", () => {
   beforeEach(() => {
@@ -2890,19 +2943,19 @@ Leave the `revalidatePath`, success return, and `catch` block that follow unchan
 In `countersignBhCertificate`, insert the following immediately after `const validated = parsed.data;` (`src/actions/audit-execution/bh-certificate.ts:177`) and before the `// ─── Step 4: Tenant-Scoped Database ───` banner. It has to sit below input validation, because it needs `validated.engagementId`:
 
 ```typescript
-  // LEAD_AUDITOR is an engagement role and must be on this engagement's team.
-  // AUDIT_MANAGER is a tenant-wide oversight role and is not enrolled in
-  // AuditTeamMember, so it is exempt.
-  if (!userRoles.includes("AUDIT_MANAGER")) {
-    const teamGuard = await requireTeamMembership(
-      { userId: session.user.id, tenantId: session.user.tenantId },
-      validated.engagementId,
-    );
+// LEAD_AUDITOR is an engagement role and must be on this engagement's team.
+// AUDIT_MANAGER is a tenant-wide oversight role and is not enrolled in
+// AuditTeamMember, so it is exempt.
+if (!userRoles.includes("AUDIT_MANAGER")) {
+  const teamGuard = await requireTeamMembership(
+    { userId: session.user.id, tenantId: session.user.tenantId },
+    validated.engagementId,
+  );
 
-    if (!teamGuard.ok) {
-      return { success: false as const, error: teamGuard.error };
-    }
+  if (!teamGuard.ok) {
+    return { success: false as const, error: teamGuard.error };
   }
+}
 ```
 
 Then extend the `select` inside the transaction's engagement lookup:
@@ -2919,13 +2972,13 @@ Then extend the `select` inside the transaction's engagement lookup:
 and add the distinct-actor check immediately after the existing `if (engagement.bhCertCountersignedAt) { ... }` block:
 
 ```typescript
-      // A user holding both BRANCH_HEAD and AUDIT_MANAGER could otherwise sign
-      // and countersign the same certificate.
-      if (engagement.bhCertSignedById === session.user.id) {
-        throw new Error(
-          "You signed this certificate; a different user must countersign it.",
-        );
-      }
+// A user holding both BRANCH_HEAD and AUDIT_MANAGER could otherwise sign
+// and countersign the same certificate.
+if (engagement.bhCertSignedById === session.user.id) {
+  throw new Error(
+    "You signed this certificate; a different user must countersign it.",
+  );
+}
 ```
 
 - [ ] **Step 5: Run the test to verify it passes**
@@ -2955,10 +3008,12 @@ git commit -m "fix(authz): scope BH certificate signing to branch, team and a di
 `examination:respond` is held by `LEAD_AUDITOR`, `FIELD_AUDITOR`, `CONCURRENT_AUDITOR`, and `IS_AUDITOR` — the roles that actually examine. **This intentionally removes write access from `CAE`,** which holds `examination:read` only.
 
 **Files:**
+
 - Modify: `src/actions/account-examination/save-response.ts:33-115`
 - Test: `src/actions/account-examination/__tests__/save-response.test.ts`
 
 **Interfaces:**
+
 - Consumes: `requireTeamMembership` (Task 8); the Task 1 harness.
 - Produces: nothing new.
 
@@ -3128,13 +3183,13 @@ import { requireTeamMembership } from "@/data-access/access-guards";
 Replace the permission check (`src/actions/account-examination/save-response.ts:53-59`):
 
 ```typescript
-    // 2. Permission check — recording a result is a write, not a read
-    if (!hasPermission(userRoles, "examination:respond")) {
-      return {
-        success: false,
-        error: "You do not have permission to record examination responses.",
-      };
-    }
+// 2. Permission check — recording a result is a write, not a read
+if (!hasPermission(userRoles, "examination:respond")) {
+  return {
+    success: false,
+    error: "You do not have permission to record examination responses.",
+  };
+}
 ```
 
 and update the doc comment above the function so it matches:
@@ -3153,15 +3208,15 @@ and update the doc comment above the function so it matches:
 Immediately after the `SCORING_ALLOWED_STATUSES` check (ending at `src/actions/account-examination/save-response.ts:93`), insert:
 
 ```typescript
-    // Holding an examiner role is not the same as being on this engagement.
-    const teamGuard = await requireTeamMembership(
-      { userId, tenantId },
-      engagementId,
-    );
+// Holding an examiner role is not the same as being on this engagement.
+const teamGuard = await requireTeamMembership(
+  { userId, tenantId },
+  engagementId,
+);
 
-    if (!teamGuard.ok) {
-      return { success: false, error: teamGuard.error };
-    }
+if (!teamGuard.ok) {
+  return { success: false, error: teamGuard.error };
+}
 ```
 
 Extend the loan account `select` to carry the module:
@@ -3173,25 +3228,25 @@ Extend the loan account `select` to carry the module:
 and insert the question check after the `isSampled` check, before the upsert:
 
 ```typescript
-    // 5b. Verify the question belongs to this tenant and to the module the
-    // sampled account was drawn from. AccountExamResponse.questionId is a bare
-    // foreign key, so nothing else stops an unrelated question being attached.
-    const question = await db.examinationQuestion.findFirst({
-      where: {
-        id: questionId,
-        tenantId,
-        moduleCode: loanAccount.moduleCode,
-        isActive: true,
-      },
-      select: { id: true },
-    });
+// 5b. Verify the question belongs to this tenant and to the module the
+// sampled account was drawn from. AccountExamResponse.questionId is a bare
+// foreign key, so nothing else stops an unrelated question being attached.
+const question = await db.examinationQuestion.findFirst({
+  where: {
+    id: questionId,
+    tenantId,
+    moduleCode: loanAccount.moduleCode,
+    isActive: true,
+  },
+  select: { id: true },
+});
 
-    if (!question) {
-      return {
-        success: false,
-        error: "Question not found for this account's module.",
-      };
-    }
+if (!question) {
+  return {
+    success: false,
+    error: "Question not found for this account's module.",
+  };
+}
 ```
 
 - [ ] **Step 5: Run the test to verify it passes**

@@ -20,7 +20,12 @@ DECLARE
     -- Previously attached only by add_notification_tables.sql, so a
     -- push-built database silently left them unaudited while
     -- AUDITED_TABLES claimed otherwise. Attached here for every database.
-    'NotificationPreference', 'BoardReport'
+    'NotificationPreference', 'BoardReport',
+    -- RBIA/GRC scoring surface: the regulated change-history. Every write
+    -- path to these already sets session context, so the trigger fires
+    -- cleanly. Kept in step with AUDITED_TABLES and AUDIT_TRIGGER_TABLES.
+    'ActionPoint', 'RamAssessment', 'RamAssessmentScore', 'BranchRbiaScore',
+    'AuditExaminationResponse'
   ];
 BEGIN
   FOREACH t IN ARRAY audited LOOP

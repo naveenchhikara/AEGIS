@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import type { AuthSession } from "@/lib/auth";
+import { prismaForTenant } from "@/lib/prisma";
+import { hasPermission } from "@/lib/permissions";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
@@ -70,6 +72,22 @@ export default async function DashboardLayout({
     .slice(0, 2);
   const userRoles = user.roles;
   const userTenantId = user.tenantId;
+
+  // Steer an un-onboarded tenant's settings admin into the wizard — it is
+  // reachable from no nav link otherwise. Only admin:manage_settings holders
+  // (CAE, SYSTEM_ADMIN) can complete onboarding, so gate the redirect on that;
+  // other roles fall through to the normal dashboard. The onboarding page
+  // guards the reverse (completed → /dashboard), so the two agree and cannot
+  // loop, and /onboarding lives outside this layout's route group.
+  if (userTenantId && hasPermission(userRoles, "admin:manage_settings")) {
+    const tenant = await prismaForTenant(userTenantId).tenant.findUnique({
+      where: { id: userTenantId },
+      select: { onboardingCompleted: true },
+    });
+    if (tenant && !tenant.onboardingCompleted) {
+      redirect("/onboarding");
+    }
+  }
 
   // If user has no tenant or no roles, show setup required message
   // instead of rendering broken dashboard with empty sidebar (BUG-001/002)

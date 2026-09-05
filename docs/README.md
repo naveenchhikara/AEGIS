@@ -34,7 +34,7 @@ they have drifted.
 | Document                                                       | What it is                                                                                                                                 |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`reference/data-dictionary.md`](reference/data-dictionary.md) | All 76 tables and 22 enumerations: columns, types, keys, defaults, tenant scoping.                                                         |
-| [`reference/routes.md`](reference/routes.md)                   | All 65 pages and 12 HTTP endpoints.                                                                                                        |
+| [`reference/routes.md`](reference/routes.md)                   | All 65 pages and 11 HTTP endpoints.                                                                                                        |
 | [`reference/api-reference.md`](reference/api-reference.md)     | HTTP endpoints and the server-action surface, with the tables each module touches.                                                         |
 | [`reference/data-flows.md`](reference/data-flows.md)           | Which processes read and write which tables, a domain→hub access graph, plus the observation lifecycle and audited write path as diagrams. |
 

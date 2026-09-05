@@ -19,6 +19,18 @@ docs. Nothing was executed against production, the VPS, the live database, or AW
 > now reads differently — AEGIS is not deployed at all, so there is no
 > implementation path to time.
 
+> **Note added 2026-09-05 (audit trail).** The audit-coverage finding below is
+> also dated. Coverage has since been extended from the 14 tables counted here
+> to 24, including the RBIA/GRC scoring tables (`RamAssessment`,
+> `RamAssessmentScore`, `ExaminationResponse`, `AuditExaminationResponse`,
+> `AccountExamResponse`, `ActionPoint`, `BranchRbiaScore`, `LoanAccount`) in
+> #121 and #122, with a build-time guard
+> (`src/lib/__tests__/audit-coverage.test.ts`) that fails if a regulated table
+> leaves the list. The seed script no longer disables triggers with
+> `session_replication_role`; seeds and test fixtures use `withTriggersDetached`
+> from `src/lib/audit-triggers.ts`, which is scoped and re-attaches on exit. The
+> other caveats in that section have not been re-verified.
+
 ## Scope and source caveats
 
 - **The sales/marketing document itself is not in this repository.** Searches

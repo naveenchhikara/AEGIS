@@ -84,8 +84,8 @@ async function attachedTables(db: UnsafeRawExecutor): Promise<string[]> {
  * integrity, and the seed has no Actor to attribute rows to.
  *
  * Uses ALTER TABLE ... DISABLE TRIGGER, which the table owner may run.
- * `session_replication_role` (used by scripts/seed-full-audit-lifecycle.ts)
- * requires superuser, and dropping the trigger loses it outright if the
+ * `session_replication_role`, which scripts/seed-full-audit-lifecycle.ts once
+ * set, requires superuser; dropping the trigger loses it outright if the
  * process dies mid-seed; this restores in a `finally`.
  *
  * Table names are interpolated into DDL, so they come from pg_catalog via

@@ -94,6 +94,7 @@ prisma/
 └── seed.ts                    # Seed data
 tests/
 ├── e2e/                       # Playwright E2E specs
+├── integration/               # Harness and global setup for pnpm test:integration
 └── auth.setup.ts              # Auth bootstrap for E2E
 src/
 ├── actions/                   # Server actions by domain
@@ -116,7 +117,9 @@ src/
 Vitest unit tests live beside the code they cover in `src/**/__tests__/`,
 not under `tests/` — for example
 `src/data-access/__tests__/tenant-isolation.test.ts` and
-`src/lib/__tests__/permissions.test.ts`. Only Playwright E2E specs live in
+`src/lib/__tests__/permissions.test.ts`. Integration tests
+(`pnpm test:integration`, live PostgreSQL) live in `src/**/__integration__/`
+with their harness in `tests/integration/`. Only Playwright E2E specs live in
 `tests/e2e/`.
 
 ## Route Snapshot
@@ -213,9 +216,10 @@ recreate any of this without a target to deploy to.
 app. The container runs `node server.js`: no `migrate deploy`, no `db push`. On
 any database, local included, two things are applied by hand, in this order:
 
-1. The release's schema file in `prisma/migrations/`, if it has one — a dated,
-   idempotent `.sql` adding that release's tables and columns. Apply it with
-   `pnpm db:apply <path>`, which is what CI rehearses.
+1. The release's schema files in `prisma/migrations/`, if it has any — dated,
+   idempotent `.sql` files adding that release's tables and columns, applied
+   oldest first with `pnpm db:apply <path>`. CI rehearses the F07–F15 file;
+   `docs/ops/release-checklist.md` lists the current set.
 2. `pnpm db:bootstrap`, which applies `prisma/sql/manifest.ts` (triggers, views,
    functions, composite FKs), then `pnpm db:verify` to assert it landed.
 
@@ -305,8 +309,11 @@ correctly-routed container look unlabelled.
 - Route every audited write through `withAuditedMutation(actor, actionType, fn)`
   from `src/data-access/audited-mutation.ts` — it opens the transaction and sets
   the session context the audit trigger reads. A hand-rolled `prisma.$transaction`
-  that mutates an audited table writes a row with no attribution, and the
-  discipline test in `src/data-access/__tests__/` will fail the build
+  that mutates an audited table does not write an unattributed row — it
+  **throws**, because the trigger finds no tenant and `AuditLog.tenantId` is
+  `NOT NULL`. The discipline test in `src/data-access/__tests__/` fails the build
+  before that can happen; legacy `setAuditContext` call sites are grandfathered
+  under a shrink-only allowlist (ceiling 67) that new code may not join
 
 ## Gotchas
 
@@ -334,6 +341,27 @@ correctly-routed container look unlabelled.
   `prisma/migrations/20260826_audit_trigger_null_safe.sql`
 - A fresh database needs `pnpm db:bootstrap` after `db:push`; `db:push` alone
   leaves it with no audit triggers, dashboard views, or composite FKs
+- **An audited table is declared in three places that must agree** —
+  `AUDITED_TABLES` in `src/lib/audit-triggers.ts`, the `audited` array in
+  `prisma/sql/020_attach_audit_triggers.sql`, and `AUDIT_TRIGGER_TABLES` in
+  `prisma/sql/manifest.ts`. `src/lib/__tests__/sql-manifest.test.ts` fails the
+  build if they drift. Adding a table needs no dated migration: the attach script
+  is idempotent and `pnpm db:bootstrap` re-runs it. 24 tables are audited today
+- **Attach the trigger last, not first.** The audit trigger throws on a write with
+  no session context, so a table can only join `AUDITED_TABLES` once every
+  `create`/`update`/`upsert`/`delete` on it — in actions, the DAL and jobs — sets
+  the context. Seeds and test fixtures do not set it; they detach the triggers
+  around their inserts with `withTriggersDetached` instead. The eight RBIA/GRC
+  scoring tables are covered, and `src/lib/__tests__/audit-coverage.test.ts`
+  fails the build if one of them leaves the list; its exemption set is empty and
+  may only shrink
+- **`pnpm test:integration` resets the database it is pointed at.**
+  `tests/integration/global-setup.ts` runs `prisma db push --force-reset` against
+  `DATABASE_URL` with no safety guard (the seed script has one; this does not).
+  Fixture rows must be created inside `withFixtures()` from
+  `tests/integration/harness.ts`, which detaches the audit triggers — a fixture
+  created outside it hits the trigger with no context and fails on
+  `AuditLog.tenantId`. A null-`tenantId` failure in that suite means exactly that
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from
   the server bundle
 - `!` in passwords is awkward in shell commands; quote carefully

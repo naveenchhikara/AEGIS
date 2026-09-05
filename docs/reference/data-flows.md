@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `905ed09` (claude/fix-f06-integration-assertion)
+> Source commit: `427d404` (claude/invite-flow-ses-and-admin-ui)
 
 Which processes read and write which tables.
 

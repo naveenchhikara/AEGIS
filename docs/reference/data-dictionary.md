@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `13d9827` (hardening/integrity-and-operations-f07-f15)
+> Source commit: `189f7c0` (claude/slack-session-hkmr0s)
 
 Every table AEGIS maintains, with its columns, types and relationships.
 **76 models** and **22 enumerations**.
@@ -281,6 +281,7 @@ Indexes and constraints:
 
 Indexes and constraints:
 
+- `@@unique([accountId, providerId])`
 - `@@index([userId])`
 
 ## Verification

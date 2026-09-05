@@ -50,7 +50,7 @@ function stubAuditedMutation(activatedCount: number) {
     user: {
       updateMany: vi.fn(async () => ({ count: activatedCount })),
     },
-    account: { create: vi.fn(async () => ({ id: "account-1" })) },
+    account: { upsert: vi.fn(async () => ({ id: "account-1" })) },
   });
   vi.mocked(withAuditedMutation).mockImplementation(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,11 +76,17 @@ describe("acceptInvitation", () => {
 
     expect(result.success).toBe(true);
     expect(hash).toHaveBeenCalledWith("Branch2026audit");
-    expect(tx.account.create).toHaveBeenCalledWith({
-      data: {
+    expect(tx.account.upsert).toHaveBeenCalledWith({
+      where: {
+        accountId_providerId: { accountId: USER_A, providerId: "credential" },
+      },
+      create: {
         userId: USER_A,
         accountId: USER_A,
         providerId: "credential",
+        password: "scrypt:Branch2026audit",
+      },
+      update: {
         password: "scrypt:Branch2026audit",
       },
     });

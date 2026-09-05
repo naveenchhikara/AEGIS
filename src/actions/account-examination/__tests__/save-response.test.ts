@@ -3,6 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/data-access/session", () => ({ getRequiredSession: vi.fn() }));
 vi.mock("@/data-access/prisma", () => ({ prismaForTenant: vi.fn() }));
+vi.mock("@/data-access/audited-mutation", () => ({
+  withAuditedMutation: vi.fn(),
+  userActor: vi.fn((s: { user: { id: string; tenantId: string } }) => ({
+    kind: "user" as const,
+    userId: s.user.id,
+    tenantId: s.user.tenantId,
+  })),
+}));
 vi.mock("@/data-access/access-guards", () => ({
   requireTeamMembership: vi.fn(),
 }));
@@ -13,6 +21,7 @@ vi.mock("@/lib/logger", () => ({
 import { saveAccountExamResponse } from "../save-response";
 import { getRequiredSession } from "@/data-access/session";
 import { prismaForTenant } from "@/data-access/prisma";
+import { withAuditedMutation } from "@/data-access/audited-mutation";
 import { requireTeamMembership } from "@/data-access/access-guards";
 import {
   ENGAGEMENT_A,
@@ -59,6 +68,14 @@ describe("saveAccountExamResponse", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(requireTeamMembership).mockResolvedValue({ ok: true });
+    // The audited-mutation wrapper writes AccountExamResponse. Run its callback
+    // against the same fake db the test injects via prismaForTenant, so the
+    // upsert double still receives (and records) the call.
+    vi.mocked(withAuditedMutation).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (async (_actor: unknown, _action: unknown, fn: any) =>
+        fn(vi.mocked(prismaForTenant)(TENANT_A))) as never,
+    );
   });
 
   it("refuses a read-only role that lacks examination:respond", async () => {

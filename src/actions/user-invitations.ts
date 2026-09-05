@@ -222,10 +222,20 @@ export async function acceptInvitation(
     // configured algorithm. Hash through its context so the digest matches
     // what signIn.email will later verify — a bcrypt digest never would.
     const passwordHash = await (await auth.$context).password.hash(password);
+
+    // Read before the transaction: an Actor carries the IP, and a throw here
+    // must land before anything commits, not after.
+    const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
+
+    // No auditLog.create follows this. "User" carries audit_trigger, so the
+    // update below already writes the row, taking actionType and IP from the
+    // session context. A manual row would duplicate it, and — landing after
+    // the commit — would report a completed activation as a failure, sending
+    // the user back to an invitation their own success has already consumed.
     await withAuditedMutation(
       // The invitee is not signed in; they are activating their own account,
       // so they are the honest Actor for this change.
-      { kind: "user", userId: user.id, tenantId },
+      { kind: "user", userId: user.id, tenantId, ipAddress },
       "user.invitation_accepted",
       async (tx) => {
         // Predicated on INVITED so two concurrent acceptances cannot both
@@ -247,29 +257,30 @@ export async function acceptInvitation(
         // Same transaction as activation: a user left ACTIVE with no
         // credential can neither sign in nor be re-invited, because
         // resendInvitation only matches status INVITED.
-        await tx.account.create({
-          data: {
+        //
+        // upsert (not create) guards against duplicate credential rows from
+        // concurrent double-submission or prior script runs.  The unique key
+        // is (accountId, providerId); on conflict the password hash is
+        // refreshed so the user's chosen password always wins.
+        await tx.account.upsert({
+          where: {
+            accountId_providerId: {
+              accountId: user.id,
+              providerId: "credential",
+            },
+          },
+          create: {
             userId: user.id,
             accountId: user.id,
             providerId: "credential",
             password: passwordHash,
           },
+          update: {
+            password: passwordHash,
+          },
         });
       },
     );
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId,
-        tableName: "User",
-        recordId: user.id,
-        operation: "UPDATE",
-        actionType: "user.invitation_accepted",
-        userId: user.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {
@@ -373,26 +384,23 @@ export async function revokeInvitation(userId: string) {
       return { success: false, error: "User not found or already active." };
     }
 
-    // Include tenantId in WHERE to prevent IDOR cross-tenant deletion
+    const ipAddress = (await headers()).get("x-forwarded-for") ?? undefined;
+
+    // Include tenantId in WHERE to prevent IDOR cross-tenant deletion.
+    // The delete fires audit_trigger, which writes the AuditLog row from this
+    // context — the Actor is spelled out rather than built by userActor so it
+    // carries the IP and session id the trigger would otherwise record as NULL.
     await withAuditedMutation(
-      userActor(session),
+      {
+        kind: "user",
+        userId: session.user.id,
+        tenantId,
+        ipAddress,
+        sessionId: session.session.id,
+      },
       "user.invitation_revoked",
       (tx) => tx.user.deleteMany({ where: { id: userId, tenantId } }),
     );
-
-    // Audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId,
-        tableName: "User",
-        recordId: userId,
-        operation: "DELETE",
-        actionType: "user.invitation_revoked",
-        userId: session.user.id,
-        sessionId: session.session.id,
-        ipAddress: (await headers()).get("x-forwarded-for") ?? "unknown",
-      },
-    });
 
     return { success: true, error: null };
   } catch (error) {

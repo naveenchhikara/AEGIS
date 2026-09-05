@@ -4,7 +4,7 @@
 > Produced by `scripts/generate-reference-docs.mjs` from `prisma/schema.prisma`
 > and the `src/` tree. Regenerate with `pnpm docs:reference`.
 >
-> Source commit: `6743b2c` (claude/invite-flow-ses-and-admin-ui)
+> Source commit: `427d404` (claude/invite-flow-ses-and-admin-ui)
 
 Every addressable path in the application: **65 pages** and
 **11 HTTP endpoints**.

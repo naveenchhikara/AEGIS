@@ -69,7 +69,9 @@ host running an unrelated application; it does not serve AEGIS.
 
 ## Documentation
 
-Start with **[`docs/architecture.md`](docs/architecture.md)**;
+Start with **[`docs/architecture.md`](docs/architecture.md)** for how the system
+fits together, or **[`docs/tutorials/first-rbia-audit.md`](docs/tutorials/first-rbia-audit.md)**
+to walk one branch through a full audit cycle end to end.
 [`docs/`](docs/README.md) indexes the rest.
 
 ## Tech Stack

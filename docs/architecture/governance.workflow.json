@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Governance Annual Cycle",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/governance.html"
+  },
+  "lanes": [{ "id": "main", "label": "Governance" }],
+  "mainPath": ["policies", "committees", "acb_workspace", "acb_agenda", "board_calendar", "rbi_pack"],
+  "nodes": [
+    { "id": "policies", "lane": "main", "col": 0, "type": "frontend", "label": "Policies", "sublabel": "due-for-review", "width": 150 },
+    { "id": "committees", "lane": "main", "col": 1, "type": "frontend", "label": "Committees & Meetings", "width": 150 },
+    { "id": "acb_workspace", "lane": "main", "col": 2, "type": "backend", "label": "ACB Workspace", "width": 150 },
+    { "id": "acb_agenda", "lane": "main", "col": 3, "type": "backend", "label": "ACB Agenda Builder", "width": 150 },
+    { "id": "board_calendar", "lane": "main", "col": 4, "type": "database", "label": "Board Review Calendar", "width": 150 },
+    { "id": "rbi_pack", "lane": "main", "col": 5, "type": "security", "label": "RBI Inspection Pack", "width": 150 }
+  ],
+  "edges": [
+    { "id": "policies-committees", "from": "policies", "to": "committees" },
+    { "id": "committees-workspace", "from": "committees", "to": "acb_workspace" },
+    { "id": "workspace-agenda", "from": "acb_workspace", "to": "acb_agenda", "variant": "emphasis" },
+    { "id": "agenda-calendar", "from": "acb_agenda", "to": "board_calendar" },
+    { "id": "calendar-pack", "from": "board_calendar", "to": "rbi_pack", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gates", "items": ["policy:read/manage, committee:manage", "board:agenda for the ACB agenda, board:reporting for the RBI pack"] }
+  ]
+}

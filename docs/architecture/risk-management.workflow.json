@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Risk Management",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/risk-management.html"
+  },
+  "lanes": [{ "id": "main", "label": "Risk Management" }],
+  "mainPath": ["register", "kri", "linkages"],
+  "nodes": [
+    { "id": "register", "lane": "main", "col": 0, "type": "frontend", "label": "Risk Register", "sublabel": "inherent/control/residual", "width": 160 },
+    { "id": "kri", "lane": "main", "col": 1, "type": "security", "label": "KRI Dashboard", "sublabel": "breach monitoring", "width": 160 },
+    { "id": "linkages", "lane": "main", "col": 2, "type": "database", "label": "Risk-Audit Linkages", "sublabel": "ties risks to engagements", "width": 160 }
+  ],
+  "edges": [
+    { "id": "register-kri", "from": "register", "to": "kri", "variant": "emphasis" },
+    { "id": "kri-linkages", "from": "kri", "to": "linkages" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gate", "items": ["risk_register:read/manage"] }
+  ]
+}

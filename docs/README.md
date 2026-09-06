@@ -35,6 +35,21 @@
 | `compliance-escalation.html` | workflow | Observation ISSUED → compliance registry → L0-L4 escalation |
 | `notification-pipeline.html` | sequence | Queue → pg-boss → render → SES |
 | `excel-import.html` | dataflow | Loan portfolio bulk import pipeline |
+| `auditee-response.html` | workflow | Branch response to a finding, evidence upload, registry hand-off |
+| `concurrent-audit.html` | workflow | Concurrent audit entry, duplicate check, escalation |
+| `governance.html` | workflow | Policies → committees → ACB workspace/agenda → board calendar → RBI pack |
+| `housekeeping.html` | dataflow | Branch metrics → Risk MIS aggregation → inter-bank exposure monitor |
+| `investments.html` | workflow | Investment portfolio tracking |
+| `is-audit.html` | workflow | IS audit: app inventory → checklists → vendor risk → CBS → cyber → evidence |
+| `issues.html` | lifecycle | OPEN → IN_PROGRESS → CLOSED, with ACCEPTED_RISK |
+| `pre-audit-profiling.html` | dataflow | Branch history + RAM score + prior findings → pre-audit profile |
+| `qa-assessment.html` | workflow | Self-assessment → gap conversion → KPIs → audit health |
+| `regulatory-atr.html` | lifecycle | Action Taken Report: DRAFT → SUBMITTED → ACCEPTED / FURTHER_INFO |
+| `risk-management.html` | workflow | Risk register → KRIs → control linkages |
+| `work-program.html` | lifecycle | Work program item: PENDING → IN_PROGRESS → COMPLETED / NOT_APPLICABLE |
+
+Not diagrammed — thin CRUD/list pages with no distinct process: admin, analytics,
+audit-trail, calendar, controls, dashboard, settings.
 
 ## Tutorials, how-to guides, and explanations
 

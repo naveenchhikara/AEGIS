@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Regulatory ATR Lifecycle",
+    "quality_profile": "showcase",
+    "viewBox": [1050, 650],
+    "output": "docs/architecture/regulatory-atr.html"
+  },
+  "lanes": [
+    { "id": "main", "label": "Action Taken Report" },
+    { "id": "terminal", "label": "Needs more info" }
+  ],
+  "states": [
+    { "id": "draft", "type": "start", "label": "DRAFT", "lane": "main", "col": 0 },
+    { "id": "submitted", "type": "active", "label": "SUBMITTED", "lane": "main", "col": 1 },
+    { "id": "accepted", "type": "success", "label": "ACCEPTED", "lane": "main", "col": 2 },
+    { "id": "further_info", "type": "waiting", "label": "FURTHER_INFO", "lane": "terminal", "col": 0 }
+  ],
+  "transitions": [
+    { "id": "draft-submitted", "from": "draft", "to": "submitted", "label": "SUBMIT", "route": "straight", "labelDy": 75 },
+    { "id": "submitted-accepted", "from": "submitted", "to": "accepted", "label": "MARK_ACCEPTED", "variant": "emphasis", "route": "straight", "labelDy": 75, "labelDx": -70 },
+    { "id": "submitted-further", "from": "submitted", "to": "further_info", "label": "REQUEST_INFO", "variant": "security", "labelDy": 220 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gates", "items": ["regulatory:manage to submit", "regulatory:atr_submit to accept or request more info (source cites R78)"] }
+  ]
+}

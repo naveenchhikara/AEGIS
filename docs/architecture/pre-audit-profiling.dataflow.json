@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Pre-Audit Profiling",
+    "quality_profile": "showcase",
+    "viewBox": [1050, 560],
+    "output": "docs/architecture/pre-audit-profiling.html"
+  },
+  "stages": [
+    { "label": "Sources" },
+    { "label": "Profile" }
+  ],
+  "nodes": [
+    { "id": "branch", "type": "database", "label": "Branch + History", "sublabel": "details, last engagement", "stage": 0, "row": 0 },
+    { "id": "ram_score", "type": "database", "label": "RAM Score", "stage": 0, "row": 1 },
+    { "id": "prior_findings", "type": "database", "label": "Prior State", "sublabel": "findings + compliance", "stage": 0, "row": 2, "width": 140 },
+    { "id": "profile", "type": "frontend", "label": "Pre-Audit Profile", "sublabel": "before a new engagement", "stage": 1, "row": 1 }
+  ],
+  "flows": [
+    { "id": "branch-profile", "from": "branch", "to": "profile", "label": "branch info", "labelDy": -20 },
+    { "id": "ram-profile", "from": "ram_score", "to": "profile", "label": "risk score", "variant": "emphasis", "labelAt": [278, 314] },
+    { "id": "findings-profile", "from": "prior_findings", "to": "profile", "label": "prior state", "labelDy": 20 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "No dedicated gate", "items": ["Only requires an authenticated session (getRequiredSession) — no permission check beyond that"] }
+  ]
+}

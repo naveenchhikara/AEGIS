@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "QA Assessment",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/qa-assessment.html"
+  },
+  "lanes": [{ "id": "main", "label": "QA Assessment" }],
+  "mainPath": ["self_assess", "gap_conv", "kpis", "health"],
+  "nodes": [
+    { "id": "self_assess", "lane": "main", "col": 0, "type": "frontend", "label": "Self-Assessment", "sublabel": "against IIA standards", "width": 160 },
+    { "id": "gap_conv", "lane": "main", "col": 1, "type": "backend", "label": "Gap Conversion", "sublabel": "unconverted gaps -> issues", "width": 160 },
+    { "id": "kpis", "lane": "main", "col": 2, "type": "database", "label": "Effectiveness KPIs", "width": 160 },
+    { "id": "health", "lane": "main", "col": 3, "type": "database", "label": "Audit Health Dashboard", "width": 160 }
+  ],
+  "edges": [
+    { "id": "assess-gap", "from": "self_assess", "to": "gap_conv", "variant": "emphasis" },
+    { "id": "gap-kpis", "from": "gap_conv", "to": "kpis" },
+    { "id": "kpis-health", "from": "kpis", "to": "health" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gate", "items": ["qa_assessment:read/manage", "Gap Conversion is the one write path — it creates real Issue rows from unconverted self-assessment gaps"] }
+  ]
+}

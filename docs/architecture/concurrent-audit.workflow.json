@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Concurrent Audit",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/concurrent-audit.html"
+  },
+  "lanes": [{ "id": "main", "label": "Concurrent Audit" }],
+  "mainPath": ["template", "entry", "dedup", "escalate"],
+  "nodes": [
+    { "id": "template", "lane": "main", "col": 0, "type": "frontend", "label": "Scope Templates", "sublabel": "choose audit scope", "width": 160 },
+    { "id": "entry", "lane": "main", "col": 1, "type": "frontend", "label": "Rapid Entry", "sublabel": "observation created", "width": 160 },
+    { "id": "dedup", "lane": "main", "col": 2, "type": "security", "label": "De-dup Check (R76)", "sublabel": "vs RBIA findings", "width": 160 },
+    { "id": "escalate", "lane": "main", "col": 3, "type": "security", "label": "Escalation Panel", "width": 160 }
+  ],
+  "edges": [
+    { "id": "template-entry", "from": "template", "to": "entry" },
+    { "id": "entry-dedup", "from": "entry", "to": "dedup", "variant": "emphasis" },
+    { "id": "dedup-escalate", "from": "dedup", "to": "escalate", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gates", "items": ["concurrent_audit:read to view", "concurrent_audit:execute for rapid entry and escalation"] }
+  ]
+}

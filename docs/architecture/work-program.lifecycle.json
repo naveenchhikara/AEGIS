@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Work Program Item Lifecycle",
+    "quality_profile": "showcase",
+    "viewBox": [1050, 650],
+    "output": "docs/architecture/work-program.html"
+  },
+  "lanes": [
+    { "id": "main", "label": "Work Program Item" },
+    { "id": "terminal", "label": "Skipped" }
+  ],
+  "states": [
+    { "id": "pending", "type": "start", "label": "PENDING", "lane": "main", "col": 0 },
+    { "id": "in_progress", "type": "active", "label": "IN_PROGRESS", "lane": "main", "col": 1 },
+    { "id": "completed", "type": "success", "label": "COMPLETED", "sublabel": "result rated separately", "lane": "main", "col": 2 },
+    { "id": "not_applicable", "type": "neutral", "label": "NOT_APPLICABLE", "lane": "terminal", "col": 0 }
+  ],
+  "transitions": [
+    { "id": "pending-progress", "from": "pending", "to": "in_progress", "route": "straight" },
+    { "id": "progress-completed", "from": "in_progress", "to": "completed", "variant": "emphasis", "route": "straight" },
+    { "id": "pending-na", "from": "pending", "to": "not_applicable", "variant": "security", "route": "drop" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Two independent fields", "items": ["status tracks lifecycle progress; result (set only on COMPLETED) rates effectiveness separately", "Items are generated from engagement + control-library pairs, not created by hand"] },
+    { "dot": "rose", "title": "Gate", "items": ["work_program:read/execute"] }
+  ]
+}

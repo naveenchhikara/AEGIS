@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Housekeeping Metrics",
+    "quality_profile": "showcase",
+    "viewBox": [1050, 480],
+    "output": "docs/architecture/housekeeping.html"
+  },
+  "stages": [
+    { "label": "Capture" },
+    { "label": "Aggregate" },
+    { "label": "Monitor" }
+  ],
+  "nodes": [
+    { "id": "metrics", "type": "frontend", "label": "Metrics Capture", "sublabel": "per branch", "stage": 0, "row": 1 },
+    { "id": "risk_mis", "type": "backend", "label": "Risk MIS Aggregation", "stage": 1, "row": 1, "width": 140 },
+    { "id": "exposure", "type": "database", "label": "Inter-bank Exposure Monitor", "stage": 2, "row": 1, "width": 180 }
+  ],
+  "flows": [
+    { "id": "metrics-mis", "from": "metrics", "to": "risk_mis", "label": "branch metrics", "variant": "emphasis" },
+    { "id": "mis-exposure", "from": "risk_mis", "to": "exposure", "label": "rolls up", "labelDy": -16 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gate", "items": ["regulatory:read to view, regulatory:manage to capture metrics"] }
+  ]
+}

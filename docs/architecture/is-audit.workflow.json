@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "IS Audit Inspection",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/is-audit.html"
+  },
+  "lanes": [{ "id": "main", "label": "IS Audit" }],
+  "mainPath": ["inventory", "checklists", "vendor", "cbs", "cyber", "evidence"],
+  "nodes": [
+    { "id": "inventory", "lane": "main", "col": 0, "type": "frontend", "label": "App Inventory", "width": 150 },
+    { "id": "checklists", "lane": "main", "col": 1, "type": "frontend", "label": "Audit Checklists", "width": 150 },
+    { "id": "vendor", "lane": "main", "col": 2, "type": "security", "label": "Vendor Risk", "width": 150 },
+    { "id": "cbs", "lane": "main", "col": 3, "type": "backend", "label": "CBS Parameters", "width": 150 },
+    { "id": "cyber", "lane": "main", "col": 4, "type": "security", "label": "Cyber Security Checklist", "width": 175 },
+    { "id": "evidence", "lane": "main", "col": 5, "type": "database", "label": "Evidence & Gaps", "width": 150 }
+  ],
+  "edges": [
+    { "id": "inventory-checklists", "from": "inventory", "to": "checklists" },
+    { "id": "checklists-vendor", "from": "checklists", "to": "vendor" },
+    { "id": "vendor-cbs", "from": "vendor", "to": "cbs" },
+    { "id": "cbs-cyber", "from": "cbs", "to": "cyber", "variant": "security" },
+    { "id": "cyber-evidence", "from": "cyber", "to": "evidence", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gate", "items": ["IS_AUDITOR role, or admin:system"] }
+  ]
+}

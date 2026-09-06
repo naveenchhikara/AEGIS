@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Auditee Response Flow",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/auditee-response.html"
+  },
+  "lanes": [{ "id": "main", "label": "Auditee" }],
+  "mainPath": ["list", "detail", "evidence", "submit", "registry"],
+  "nodes": [
+    { "id": "list", "lane": "main", "col": 0, "type": "frontend", "label": "Findings List", "sublabel": "ISSUED + RESPONSE counts", "width": 150 },
+    { "id": "detail", "lane": "main", "col": 1, "type": "frontend", "label": "Observation Detail", "sublabel": "5C fields shown", "width": 150 },
+    { "id": "evidence", "lane": "main", "col": 2, "type": "backend", "label": "Upload Evidence", "sublabel": "attach supporting docs", "width": 150 },
+    { "id": "submit", "lane": "main", "col": 3, "type": "backend", "label": "Submit Response", "sublabel": "RESPONSE transition", "width": 150 },
+    { "id": "registry", "lane": "main", "col": 4, "type": "database", "label": "Compliance Registry", "sublabel": "tracks the resulting item", "width": 150 }
+  ],
+  "edges": [
+    { "id": "list-detail", "from": "list", "to": "detail" },
+    { "id": "detail-evidence", "from": "detail", "to": "evidence", "variant": "emphasis" },
+    { "id": "evidence-submit", "from": "evidence", "to": "submit" },
+    { "id": "submit-registry", "from": "submit", "to": "registry", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gate", "items": ["Requires observation:read", "Distinct UX from the observation state machine itself — this is the auditee's side of it"] }
+  ]
+}

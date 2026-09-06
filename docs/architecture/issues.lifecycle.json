@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Issue Lifecycle",
+    "quality_profile": "showcase",
+    "viewBox": [1050, 650],
+    "output": "docs/architecture/issues.html"
+  },
+  "lanes": [
+    { "id": "main", "label": "Issue" },
+    { "id": "terminal", "label": "Risk Acceptance" }
+  ],
+  "states": [
+    { "id": "open", "type": "start", "label": "OPEN", "lane": "main", "col": 0 },
+    { "id": "in_progress", "type": "active", "label": "IN_PROGRESS", "lane": "main", "col": 1 },
+    { "id": "closed", "type": "success", "label": "CLOSED", "lane": "main", "col": 2 },
+    { "id": "accepted_risk", "type": "neutral", "label": "ACCEPTED_RISK", "sublabel": "via accept-risk.ts", "lane": "terminal", "col": 0 }
+  ],
+  "transitions": [
+    { "id": "open-progress", "from": "open", "to": "in_progress", "route": "straight" },
+    { "id": "progress-closed", "from": "in_progress", "to": "closed", "variant": "emphasis", "route": "straight" },
+    { "id": "progress-accepted", "from": "in_progress", "to": "accepted_risk", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Gates", "items": ["issue:read, issue:manage, issue:accept_risk", "The Board view aggregates by source/severity/theme; requires ACB_MEMBER, CAE, CEO, or RISK_HEAD"] }
+  ]
+}

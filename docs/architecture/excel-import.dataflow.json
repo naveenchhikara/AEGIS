@@ -4,6 +4,7 @@
   "meta": {
     "title": "Loan Portfolio Excel Import",
     "quality_profile": "showcase",
+    "viewBox": [1050, 480],
     "output": "docs/architecture/excel-import.html"
   },
   "stages": [
@@ -16,18 +17,15 @@
     { "id": "upload", "type": "frontend", "label": "Upload .xlsx/.csv", "sublabel": "10MB size limit", "stage": 0, "row": 1 },
     { "id": "buffer", "type": "backend", "label": "Parse Buffer", "sublabel": "raw strings, no coercion", "stage": 1, "row": 1 },
     { "id": "mapping", "type": "backend", "label": "Detect Columns", "sublabel": "fuzzy Levenshtein ≤ 2", "stage": 2, "row": 0 },
-    { "id": "validate", "type": "backend", "label": "Validate Rows", "sublabel": "5 mandatory fields", "stage": 2, "row": 2, "width": 130 },
+    { "id": "validate", "type": "backend", "label": "Validate Rows", "sublabel": "5 mandatory fields", "stage": 2, "row": 1, "width": 130 },
     { "id": "valid_rows", "type": "database", "label": "Valid Rows", "sublabel": "imported", "stage": 3, "row": 0 },
-    { "id": "rejected", "type": "database", "label": "Rejected Rows", "sublabel": "field-specific error", "stage": 3, "row": 3 }
+    { "id": "rejected", "type": "database", "label": "Rejected Rows", "sublabel": "field-specific error", "stage": 3, "row": 1 }
   ],
   "flows": [
     { "id": "upload-buffer", "from": "upload", "to": "buffer", "label": "raw bytes", "variant": "emphasis" },
     { "id": "buffer-mapping", "from": "buffer", "to": "mapping", "label": "headers" },
     { "id": "mapping-validate", "from": "mapping", "to": "validate", "label": "mapped rows", "labelDy": 30 },
-    { "id": "validate-valid", "from": "validate", "to": "valid_rows", "label": "passes checks", "variant": "emphasis" },
-    { "id": "validate-rejected", "from": "validate", "to": "rejected", "label": "missing field", "variant": "dashed" }
-  ],
-  "cards": [
-    { "dot": "orange", "title": "Graceful degradation", "items": ["Only 5 fields are truly mandatory", "Everything else defaults with a warning instead of rejecting the row"] }
+    { "id": "validate-valid", "from": "validate", "to": "valid_rows", "label": "passes checks", "variant": "emphasis", "labelDy": -22 },
+    { "id": "validate-rejected", "from": "validate", "to": "rejected", "label": "missing field", "variant": "dashed", "route": "straight", "labelDy": 32 }
   ]
 }

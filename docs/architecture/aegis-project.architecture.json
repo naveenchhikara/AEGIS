@@ -9,6 +9,7 @@
       "url": "https://github.com/nc-sapiex/AEGIS",
       "revision": "8fcaeff9eb61dbe2296de2164ac2e8f8cd4e4072"
     },
+    "viewBox": [1080, 600],
     "output": "docs/architecture/aegis-project.html"
   },
   "components": [
@@ -16,10 +17,10 @@
     { "id": "staff", "type": "external", "label": "UCB Staff", "sublabel": "browser", "pos": [40, 300], "size": [150, 60] },
     { "id": "app", "type": "backend", "label": "AEGIS", "sublabel": "Next.js 16, local dev :3000", "pos": [280, 300], "size": [150, 60], "sources": [{ "path": "src/env.ts" }] },
     { "id": "db", "type": "database", "label": "PostgreSQL 16", "sublabel": "tenant-scoped via prismaForTenant", "pos": [560, 300], "size": [150, 60], "sources": [{ "path": "prisma/schema.prisma" }] },
-    { "id": "github", "type": "external", "label": "GitHub", "sublabel": "CI only, no deploy target", "pos": [40, 480], "size": [150, 60] },
-    { "id": "pgboss", "type": "messagebus", "label": "pg-boss", "sublabel": "shares Postgres", "pos": [560, 480], "size": [150, 60], "sources": [{ "path": "src/lib/job-queue.ts" }] },
-    { "id": "s3", "type": "cloud", "label": "S3", "sublabel": "evidence storage, optional", "pos": [280, 650], "size": [150, 60] },
-    { "id": "ses", "type": "cloud", "label": "SES", "sublabel": "email, optional", "pos": [560, 650], "size": [150, 60] }
+    { "id": "pgboss", "type": "messagebus", "label": "pg-boss", "sublabel": "shares Postgres", "pos": [770, 300], "size": [150, 60], "sources": [{ "path": "src/lib/job-queue.ts" }] },
+    { "id": "github", "type": "external", "label": "GitHub", "sublabel": "CI only, no deploy target", "pos": [40, 460], "size": [150, 60] },
+    { "id": "s3", "type": "cloud", "label": "S3", "sublabel": "evidence storage, optional", "pos": [280, 460], "size": [150, 60] },
+    { "id": "ses", "type": "cloud", "label": "SES", "sublabel": "email, optional", "pos": [560, 460], "size": [150, 60] }
   ],
   "boundaries": [
     { "kind": "region", "label": "Local Development Environment", "wraps": ["app", "auth", "db", "pgboss"] }
@@ -29,13 +30,11 @@
     { "id": "github-app", "from": "github", "to": "app", "label": "CI checks only", "variant": "dashed" },
     { "id": "app-auth", "from": "app", "to": "auth", "label": "session verify" },
     { "id": "app-db", "from": "app", "to": "db", "label": "tenant-scoped queries" },
-    { "id": "pgboss-db", "from": "pgboss", "to": "db" },
+    { "id": "db-pgboss", "from": "db", "to": "pgboss" },
     { "id": "app-s3", "from": "app", "to": "s3", "variant": "dashed" },
-    { "id": "app-ses", "from": "app", "to": "ses", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[355, 600], [635, 600]] }
+    { "id": "app-ses", "from": "app", "to": "ses", "variant": "dashed" }
   ],
   "cards": [
-    { "dot": "rose", "title": "Not deployed", "items": ["Merging to main releases nothing — CI on the PR is the only gate", "There is no VPS deployment and no Coolify application"] },
-    { "dot": "cyan", "title": "Tenant isolation", "items": ["Enforced in application code, not Postgres RLS", "Every DAL function scopes explicitly by tenantId"] },
-    { "dot": "emerald", "title": "Degrade, don't block", "items": ["S3 (evidence upload) and SES (email) are optional env vars — uploads and email degrade rather than block boot", "pg-boss shares the same Postgres connection pool as the app"] }
+    { "dot": "rose", "title": "Not deployed", "items": ["Merging to main releases nothing — CI is the only gate", "Tenant isolation is enforced in app code, not Postgres RLS"] }
   ]
 }

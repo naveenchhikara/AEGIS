@@ -4,34 +4,147 @@
   "meta": {
     "title": "Engagement Lifecycle",
     "quality_profile": "showcase",
+    "viewBox": [
+      1050,
+      650
+    ],
     "output": "docs/architecture/engagement-lifecycle.html"
   },
   "lanes": [
-    { "id": "main", "label": "Fieldwork" },
-    { "id": "terminal", "label": "Close-out" },
-    { "id": "exception", "label": "Exception" }
+    {
+      "id": "main",
+      "label": "Fieldwork"
+    },
+    {
+      "id": "terminal",
+      "label": "Close-out"
+    },
+    {
+      "id": "exception",
+      "label": "Exception"
+    }
   ],
   "states": [
-    { "id": "planned", "type": "start", "label": "PLANNED", "lane": "main", "col": 0 },
-    { "id": "team_assigned", "type": "active", "label": "TEAM_ASSIGNED", "lane": "main", "col": 1 },
-    { "id": "opening_meeting", "type": "active", "label": "OPENING_MEETING", "lane": "main", "col": 2 },
-    { "id": "in_progress", "type": "active", "label": "IN_PROGRESS", "lane": "main", "col": 3 },
-    { "id": "exit_meeting", "type": "active", "label": "EXIT_MEETING", "lane": "main", "col": 4 },
-    { "id": "report_draft", "type": "active", "label": "REPORT_DRAFT", "lane": "terminal", "col": 1 },
-    { "id": "completed", "type": "success", "label": "COMPLETED", "sublabel": "requires frozen score", "lane": "terminal", "col": 2 },
-    { "id": "cancelled", "type": "failure", "label": "CANCELLED", "lane": "exception", "col": 0 }
+    {
+      "id": "planned",
+      "type": "start",
+      "label": "PLANNED",
+      "lane": "main",
+      "col": 0
+    },
+    {
+      "id": "team_assigned",
+      "type": "active",
+      "label": "TEAM_ASSIGNED",
+      "lane": "main",
+      "col": 1
+    },
+    {
+      "id": "opening_meeting",
+      "type": "active",
+      "label": "OPENING_MEETING",
+      "lane": "main",
+      "col": 2
+    },
+    {
+      "id": "in_progress",
+      "type": "active",
+      "label": "IN_PROGRESS",
+      "lane": "main",
+      "col": 3
+    },
+    {
+      "id": "exit_meeting",
+      "type": "active",
+      "label": "EXIT_MEETING",
+      "lane": "main",
+      "col": 4
+    },
+    {
+      "id": "report_draft",
+      "type": "active",
+      "label": "REPORT_DRAFT",
+      "lane": "terminal",
+      "col": 1
+    },
+    {
+      "id": "completed",
+      "type": "success",
+      "label": "COMPLETED",
+      "sublabel": "requires frozen score",
+      "lane": "terminal",
+      "col": 2
+    },
+    {
+      "id": "cancelled",
+      "type": "failure",
+      "label": "CANCELLED",
+      "lane": "exception",
+      "col": 0
+    }
   ],
   "transitions": [
-    { "id": "planned-team", "from": "planned", "to": "team_assigned", "route": "straight" },
-    { "id": "team-opening", "from": "team_assigned", "to": "opening_meeting", "route": "straight" },
-    { "id": "opening-progress", "from": "opening_meeting", "to": "in_progress", "variant": "emphasis", "route": "straight" },
-    { "id": "progress-exit", "from": "in_progress", "to": "exit_meeting", "route": "straight" },
-    { "id": "exit-report", "from": "exit_meeting", "to": "report_draft" },
-    { "id": "report-completed", "from": "report_draft", "to": "completed", "variant": "emphasis", "route": "straight" },
-    { "id": "progress-cancelled", "from": "in_progress", "to": "cancelled", "variant": "security" }
+    {
+      "id": "planned-team",
+      "from": "planned",
+      "to": "team_assigned",
+      "route": "straight"
+    },
+    {
+      "id": "team-opening",
+      "from": "team_assigned",
+      "to": "opening_meeting",
+      "route": "straight"
+    },
+    {
+      "id": "opening-progress",
+      "from": "opening_meeting",
+      "to": "in_progress",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "progress-exit",
+      "from": "in_progress",
+      "to": "exit_meeting",
+      "route": "straight"
+    },
+    {
+      "id": "exit-report",
+      "from": "exit_meeting",
+      "to": "report_draft"
+    },
+    {
+      "id": "report-completed",
+      "from": "report_draft",
+      "to": "completed",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "progress-cancelled",
+      "from": "in_progress",
+      "to": "cancelled",
+      "variant": "security"
+    }
   ],
   "cards": [
-    { "dot": "amber", "title": "Prerequisites, not just roles", "items": ["OPENING_MEETING -> IN_PROGRESS needs the opening meeting recorded", "EXIT_MEETING -> REPORT_DRAFT needs the exit meeting recorded", "REPORT_DRAFT -> COMPLETED needs the branch RBIA score frozen"] },
-    { "dot": "rose", "title": "CANCELLED", "items": ["Only one representative edge is drawn for clarity", "Every non-terminal state can transition to CANCELLED"] }
+    {
+      "dot": "amber",
+      "title": "Prerequisites, not just roles",
+      "items": [
+        "OPENING_MEETING -> IN_PROGRESS needs the opening meeting recorded",
+        "EXIT_MEETING -> REPORT_DRAFT needs the exit meeting recorded",
+        "REPORT_DRAFT -> COMPLETED needs the branch RBIA score frozen"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "CANCELLED",
+      "items": [
+        "Only one representative edge is drawn for clarity",
+        "Every non-terminal state can transition to CANCELLED"
+      ]
+    }
   ]
 }

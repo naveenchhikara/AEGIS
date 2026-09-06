@@ -5,6 +5,7 @@
     "title": "Notification Pipeline",
     "quality_profile": "showcase",
     "column_fit": "spread",
+    "viewBox": [1050, 500],
     "output": "docs/architecture/notification-pipeline.html"
   },
   "participants": [
@@ -16,25 +17,22 @@
     { "id": "ses", "type": "cloud", "label": "SES", "sublabel": "send" }
   ],
   "segments": [
-    { "from": 160, "to": 260, "label": "Enqueue" },
-    { "from": 280, "to": 460, "label": "Process and send" }
+    { "from": 160, "to": 240, "label": "Enqueue" },
+    { "from": 252, "to": 420, "label": "Process and send" }
   ],
   "messages": [
-    { "id": "enqueue", "from": "caller", "to": "queue", "y": 190, "label": "create() PENDING", "variant": "emphasis" },
-    { "id": "wake", "from": "cron", "to": "processor", "y": 230, "label": "fire every minute", "variant": "default" },
-    { "id": "dequeue", "from": "processor", "to": "queue", "y": 270, "label": "dequeue, group by batchKey" },
-    { "id": "render-call", "from": "processor", "to": "render", "y": 310, "label": "TEMPLATE_MAP[type]", "variant": "emphasis" },
-    { "id": "render-reply", "from": "render", "to": "processor", "y": 350, "label": "HTML + plain text", "variant": "return" },
-    { "id": "send", "from": "processor", "to": "ses", "y": 390, "label": "send" },
-    { "id": "send-result", "from": "ses", "to": "processor", "y": 430, "label": "result", "variant": "return" },
-    { "id": "mark", "from": "processor", "to": "queue", "y": 470, "label": "mark SENT / FAILED", "variant": "dashed" }
+    { "id": "enqueue", "from": "caller", "to": "queue", "y": 178, "label": "create() PENDING", "variant": "emphasis" },
+    { "id": "wake", "from": "cron", "to": "processor", "y": 210, "label": "fire every minute", "variant": "default" },
+    { "id": "dequeue", "from": "processor", "to": "queue", "y": 242, "label": "dequeue, group by batchKey" },
+    { "id": "render-call", "from": "processor", "to": "render", "y": 274, "label": "TEMPLATE_MAP[type]", "variant": "emphasis" },
+    { "id": "render-reply", "from": "render", "to": "processor", "y": 306, "label": "HTML + plain text", "variant": "return" },
+    { "id": "send", "from": "processor", "to": "ses", "y": 338, "label": "send" },
+    { "id": "send-result", "from": "ses", "to": "processor", "y": 370, "label": "result", "variant": "return" },
+    { "id": "mark", "from": "processor", "to": "queue", "y": 402, "label": "mark SENT / FAILED", "variant": "dashed" }
   ],
   "activations": [
-    { "participant": "processor", "from": 225, "to": 475, "type": "backend" },
-    { "participant": "render", "from": 305, "to": 355, "type": "backend" },
-    { "participant": "ses", "from": 385, "to": 435, "type": "cloud" }
-  ],
-  "cards": [
-    { "dot": "emerald", "title": "Never synchronous", "items": ["No server action or job ever calls SES directly", "A slow or failed send never blocks the request that triggered it"] }
+    { "participant": "processor", "from": 232, "to": 407, "type": "backend" },
+    { "participant": "render", "from": 269, "to": 311, "type": "backend" },
+    { "participant": "ses", "from": 333, "to": 375, "type": "cloud" }
   ]
 }

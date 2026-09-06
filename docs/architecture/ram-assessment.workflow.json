@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "RAM Assessment",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/ram-assessment.html"
+  },
+  "lanes": [
+    { "id": "ram", "label": "RAM Assessment" }
+  ],
+  "mainPath": ["draft", "scores", "compute", "computed", "approve_gate", "approved"],
+  "nodes": [
+    { "id": "draft", "lane": "ram", "col": 0, "type": "frontend", "label": "DRAFT", "sublabel": "assessment created for branch", "width": 140 },
+    { "id": "scores", "lane": "ram", "col": 1, "type": "frontend", "label": "Enter Scores", "sublabel": "per-parameter form", "width": 140 },
+    { "id": "compute", "lane": "ram", "col": 2, "type": "backend", "label": "Compute", "sublabel": "ram-engine.ts", "width": 140 },
+    { "id": "computed", "lane": "ram", "col": 3, "type": "backend", "label": "COMPUTED", "sublabel": "composite + risk category", "width": 140 },
+    { "id": "approve_gate", "lane": "ram", "col": 4, "type": "security", "label": "ram:approve gate", "sublabel": "a second user required", "width": 140 },
+    { "id": "approved", "lane": "ram", "col": 5, "type": "database", "label": "APPROVED", "sublabel": "ready for audit planning", "width": 140 }
+  ],
+  "edges": [
+    { "id": "draft-scores", "from": "draft", "to": "scores" },
+    { "id": "scores-compute", "from": "scores", "to": "compute", "variant": "emphasis" },
+    { "id": "compute-computed", "from": "compute", "to": "computed" },
+    { "id": "computed-gate", "from": "computed", "to": "approve_gate", "variant": "security" },
+    { "id": "gate-approved", "from": "approve_gate", "to": "approved", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Why a second approver", "items": ["RAM scores drive audit frequency and later compliance obligations", "The same maker-checker discipline applies even though this isn't one of the two named state machines"] }
+  ]
+}

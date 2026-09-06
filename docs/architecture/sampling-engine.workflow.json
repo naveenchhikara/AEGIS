@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Sampling Engine",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/sampling-engine.html"
+  },
+  "lanes": [
+    { "id": "flow", "label": "Loan Portfolio Sampling" }
+  ],
+  "mainPath": ["portfolio", "buckets", "fill", "sample", "account_exam"],
+  "nodes": [
+    { "id": "portfolio", "lane": "flow", "col": 0, "type": "database", "label": "Loan Portfolio", "sublabel": "imported loan accounts", "width": 150 },
+    { "id": "buckets", "lane": "flow", "col": 1, "type": "backend", "label": "Define Buckets", "sublabel": "by risk band + amount", "width": 150 },
+    { "id": "fill", "lane": "flow", "col": 2, "type": "backend", "label": "Bucket-Fill Algorithm", "sublabel": "deterministic, sampling-engine.ts", "width": 150 },
+    { "id": "sample", "lane": "flow", "col": 3, "type": "database", "label": "Sampled Accounts", "sublabel": "selected for examination", "width": 150 },
+    { "id": "account_exam", "lane": "flow", "col": 4, "type": "frontend", "label": "Account Exam Tab", "sublabel": "per-account scoring", "width": 150 }
+  ],
+  "edges": [
+    { "id": "portfolio-buckets", "from": "portfolio", "to": "buckets" },
+    { "id": "buckets-fill", "from": "buckets", "to": "fill", "variant": "emphasis" },
+    { "id": "fill-sample", "from": "fill", "to": "sample" },
+    { "id": "sample-exam", "from": "sample", "to": "account_exam" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Deterministic by design", "items": ["Same portfolio + same config always produces the same sample", "Auditable and reproducible, not a random draw"] }
+  ]
+}

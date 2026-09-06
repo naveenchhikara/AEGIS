@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Compliance Registry and Escalation",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/compliance-escalation.html"
+  },
+  "lanes": [
+    { "id": "registry", "label": "Compliance Registry" },
+    { "id": "escalation", "label": "Escalation Engine" }
+  ],
+  "mainPath": ["issued", "auto_create", "branch_due", "branch_submit", "zac_review", "closed"],
+  "nodes": [
+    { "id": "issued", "lane": "registry", "col": 0, "type": "backend", "label": "Observation ISSUED", "sublabel": "transition.ts side effect", "width": 150 },
+    { "id": "auto_create", "lane": "registry", "col": 1, "type": "database", "label": "Auto-create Item", "sublabel": "30-day due date", "width": 150 },
+    { "id": "branch_due", "lane": "registry", "col": 2, "type": "frontend", "label": "BRANCH_RESPONSE_DUE", "sublabel": "open", "width": 150 },
+    { "id": "branch_submit", "lane": "registry", "col": 3, "type": "frontend", "label": "RESPONSE_SUBMITTED", "sublabel": "pending review", "width": 150 },
+    { "id": "zac_review", "lane": "registry", "col": 4, "type": "security", "label": "ZAC_REVIEW", "sublabel": "zonal review", "width": 150 },
+    { "id": "closed", "lane": "registry", "col": 5, "type": "database", "label": "CLOSED / ZAC_APPROVED", "width": 150 },
+    { "id": "l0", "lane": "escalation", "col": 2, "type": "messagebus", "label": "L0 Notify", "sublabel": "due-date reminder", "width": 150 },
+    { "id": "l4", "lane": "escalation", "col": 4, "type": "security", "label": "L4 Escalate", "sublabel": "progressively senior roles", "width": 150 }
+  ],
+  "edges": [
+    { "id": "issued-create", "from": "issued", "to": "auto_create", "variant": "emphasis" },
+    { "id": "create-due", "from": "auto_create", "to": "branch_due" },
+    { "id": "due-submit", "from": "branch_due", "to": "branch_submit" },
+    { "id": "submit-review", "from": "branch_submit", "to": "zac_review" },
+    { "id": "review-closed", "from": "zac_review", "to": "closed", "variant": "emphasis" },
+    { "id": "due-l0", "from": "branch_due", "to": "l0", "label": "past due date", "variant": "dashed" },
+    { "id": "l0-l4", "from": "l0", "to": "l4", "label": "still unresolved", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "orange", "title": "Two different engines", "items": ["The escalation engine (L0-L4) decides severity of overdue notice", "A separate escalation router decides who actually gets notified"] }
+  ]
+}

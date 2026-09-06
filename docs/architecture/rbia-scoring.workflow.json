@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "RBIA Examination, Scoring, and Freeze",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/rbia-scoring.html"
+  },
+  "lanes": [
+    { "id": "exam", "label": "Examination" }
+  ],
+  "mainPath": ["modules", "tree", "critical_cap", "module_score", "composite", "freeze_gate"],
+  "nodes": [
+    { "id": "modules", "lane": "exam", "col": 0, "type": "frontend", "label": "Select Modules", "sublabel": "module grid", "width": 140 },
+    { "id": "tree", "lane": "exam", "col": 1, "type": "backend", "label": "Score Checklist Items", "sublabel": "hierarchical examination tree", "width": 140 },
+    { "id": "critical_cap", "lane": "exam", "col": 2, "type": "security", "label": "Critical-Item Cap", "sublabel": "caps the module score", "width": 140 },
+    { "id": "module_score", "lane": "exam", "col": 3, "type": "database", "label": "Module Scores", "sublabel": "per-module composite", "width": 140 },
+    { "id": "composite", "lane": "exam", "col": 4, "type": "database", "label": "Composite Score", "sublabel": "weighted roll-up", "width": 140 },
+    { "id": "freeze_gate", "lane": "exam", "col": 5, "type": "security", "label": "rbia:score_freeze", "sublabel": "one-way door", "width": 140 }
+  ],
+  "edges": [
+    { "id": "modules-tree", "from": "modules", "to": "tree" },
+    { "id": "tree-cap", "from": "tree", "to": "critical_cap", "variant": "security" },
+    { "id": "cap-module", "from": "critical_cap", "to": "module_score" },
+    { "id": "module-composite", "from": "module_score", "to": "composite", "variant": "emphasis" },
+    { "id": "composite-freeze", "from": "composite", "to": "freeze_gate", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "One-way door", "items": ["Frozen at the database level, not just in the UI", "Engagement REPORT_DRAFT → COMPLETED requires this freeze"] }
+  ]
+}

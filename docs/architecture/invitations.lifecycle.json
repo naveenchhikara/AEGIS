@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Invitation Lifecycle",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/invitations.html"
+  },
+  "lanes": [
+    { "id": "main", "label": "Mint, mail, accept" },
+    { "id": "check", "label": "Race check" },
+    { "id": "terminal", "label": "Outcomes" }
+  ],
+  "states": [
+    { "id": "mint", "type": "start", "label": "Mint Token", "sublabel": "bcrypt cost 12, outside tx", "lane": "main", "col": 0 },
+    { "id": "user_row", "type": "active", "label": "Create User Row", "sublabel": "status: INVITED", "lane": "main", "col": 1 },
+    { "id": "send_email", "type": "external", "label": "Send Invite Email", "sublabel": "SES, after commit", "lane": "main", "col": 2 },
+    { "id": "pending", "type": "waiting", "label": "Pending Acceptance", "sublabel": "token emailed", "lane": "main", "col": 3 },
+    { "id": "race_check", "type": "decision", "label": "status still INVITED?", "sublabel": "predicated updateMany", "lane": "check", "col": 0 },
+    { "id": "activated", "type": "success", "label": "ACTIVE", "sublabel": "credential upserted", "lane": "check", "col": 2 },
+    { "id": "already_used", "type": "failure", "label": "Already Used", "sublabel": "second submission rejected", "lane": "terminal", "col": 0 }
+  ],
+  "transitions": [
+    { "id": "mint-user", "from": "mint", "to": "user_row", "route": "straight" },
+    { "id": "user-email", "from": "user_row", "to": "send_email", "route": "straight" },
+    { "id": "email-pending", "from": "send_email", "to": "pending", "route": "straight" },
+    { "id": "pending-race", "from": "pending", "to": "race_check", "label": "user submits form" },
+    { "id": "race-active", "from": "race_check", "to": "activated", "variant": "emphasis", "route": "straight" },
+    { "id": "race-used", "from": "race_check", "to": "already_used", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Race check", "items": ["The activation update is predicated on status still being INVITED", "A count of exactly 1 means this submission won this race; a second submission lands on Already Used instead"] },
+    { "dot": "orange", "title": "Not shown: recovery", "items": ["resendInvitation() re-runs Send Invite Email if SES failed", "It only matches status: INVITED, so it never creates a duplicate"] }
+  ]
+}

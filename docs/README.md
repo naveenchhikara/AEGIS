@@ -18,6 +18,29 @@
 | [`../CLAUDE.md`](../CLAUDE.md)       | **Primary reference** — deployment status, environment, code patterns, operations.                                                                                                                                                     |
 | [`architecture.md`](architecture.md) | How the system is put together and the invariants that hold it together — layering, audit lifecycle data flow, tenant isolation, audit attribution, authorization, the pure engines, jobs. Hand-written; read it before changing code. |
 
+## Interactive diagrams
+
+`docs/architecture/*.html` — self-contained, pan/zoomable diagrams generated with archify, one per module/process plus one project-wide view. Each has a matching `.json` source. Open any `.html` file directly in a browser.
+
+| Diagram | Type | Covers |
+| --- | --- | --- |
+| `aegis-project.html` | architecture | The whole project: not deployed, local dev only, tenant isolation, optional S3/SES |
+| `onboarding-wizard.html` | workflow | The 5-step onboarding wizard and its atomic commit |
+| `invitations.html` | lifecycle | Mint / mail / accept, the race-safety check |
+| `ram-assessment.html` | workflow | RAM: draft → compute → approve |
+| `engagement-lifecycle.html` | lifecycle | PLANNED → ... → COMPLETED / CANCELLED |
+| `observation-lifecycle.html` | lifecycle | DRAFT → ... → CLOSED, maker-checker |
+| `rbia-scoring.html` | workflow | Examination tree → composite score → freeze |
+| `sampling-engine.html` | workflow | Loan portfolio → bucket-fill → sampled accounts |
+| `compliance-escalation.html` | workflow | Observation ISSUED → compliance registry → L0-L4 escalation |
+| `notification-pipeline.html` | sequence | Queue → pg-boss → render → SES |
+| `excel-import.html` | dataflow | Loan portfolio bulk import pipeline |
+
+> `aegis-system.html`/`.json` predate this set and describe a Coolify/Traefik production
+> deployment that no longer matches reality (AEGIS is not deployed — see `CLAUDE.md`).
+> `aegis-project.html` supersedes it; the old files are kept only pending a decision to
+> remove them.
+
 ## Tutorials, how-to guides, and explanations
 
 Diataxis-organized docs on the parts `architecture.md` names but doesn't walk

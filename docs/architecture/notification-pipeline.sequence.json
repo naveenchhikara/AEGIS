@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Notification Pipeline",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "output": "docs/architecture/notification-pipeline.html"
+  },
+  "participants": [
+    { "id": "caller", "type": "backend", "label": "Caller", "sublabel": "action or job" },
+    { "id": "queue", "type": "database", "label": "Queue", "sublabel": "NotificationQueue" },
+    { "id": "cron", "type": "messagebus", "label": "pg-boss", "sublabel": "every minute" },
+    { "id": "processor", "type": "backend", "label": "Processor", "sublabel": "dequeue + group" },
+    { "id": "render", "type": "backend", "label": "Render", "sublabel": "React Email" },
+    { "id": "ses", "type": "cloud", "label": "SES", "sublabel": "send" }
+  ],
+  "segments": [
+    { "from": 160, "to": 260, "label": "Enqueue" },
+    { "from": 280, "to": 460, "label": "Process and send" }
+  ],
+  "messages": [
+    { "id": "enqueue", "from": "caller", "to": "queue", "y": 190, "label": "create() PENDING", "variant": "emphasis" },
+    { "id": "wake", "from": "cron", "to": "processor", "y": 230, "label": "fire every minute", "variant": "default" },
+    { "id": "dequeue", "from": "processor", "to": "queue", "y": 270, "label": "dequeue, group by batchKey" },
+    { "id": "render-call", "from": "processor", "to": "render", "y": 310, "label": "TEMPLATE_MAP[type]", "variant": "emphasis" },
+    { "id": "render-reply", "from": "render", "to": "processor", "y": 350, "label": "HTML + plain text", "variant": "return" },
+    { "id": "send", "from": "processor", "to": "ses", "y": 390, "label": "send" },
+    { "id": "send-result", "from": "ses", "to": "processor", "y": 430, "label": "result", "variant": "return" },
+    { "id": "mark", "from": "processor", "to": "queue", "y": 470, "label": "mark SENT / FAILED", "variant": "dashed" }
+  ],
+  "activations": [
+    { "participant": "processor", "from": 225, "to": 475, "type": "backend" },
+    { "participant": "render", "from": 305, "to": 355, "type": "backend" },
+    { "participant": "ses", "from": 385, "to": 435, "type": "cloud" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Never synchronous", "items": ["No server action or job ever calls SES directly", "A slow or failed send never blocks the request that triggered it"] }
+  ]
+}

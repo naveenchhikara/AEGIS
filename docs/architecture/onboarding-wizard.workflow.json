@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Onboarding Wizard",
+    "quality_profile": "showcase",
+    "output": "docs/architecture/onboarding-wizard.html"
+  },
+  "lanes": [
+    { "id": "guard", "label": "Access Guard" },
+    { "id": "wizard", "label": "Onboarding Wizard (5 steps)" },
+    { "id": "provisioning", "label": "Provisioning" }
+  ],
+  "mainPath": ["gate", "step1", "step2", "step3", "step4", "step5", "submit", "transaction"],
+  "nodes": [
+    { "id": "gate", "lane": "guard", "col": 0, "type": "security", "label": "admin:manage_settings", "sublabel": "CAE / SYSTEM_ADMIN only", "width": 150 },
+    { "id": "step1", "lane": "wizard", "col": 0, "type": "frontend", "label": "1. Bank Registration", "sublabel": "RBI license, PAN, CIN", "width": 150 },
+    { "id": "step2", "lane": "wizard", "col": 1, "type": "frontend", "label": "2. Tier Selection", "sublabel": "UCB tier, PCA status", "width": 150 },
+    { "id": "step3", "lane": "wizard", "col": 2, "type": "frontend", "label": "3. Master Directions", "sublabel": "opt-out needs 20+ chars", "width": 150 },
+    { "id": "step4", "lane": "wizard", "col": 3, "type": "frontend", "label": "4. Org Structure", "sublabel": "unique dept/branch codes", "width": 150 },
+    { "id": "step5", "lane": "wizard", "col": 4, "type": "frontend", "label": "5. User Invitations", "sublabel": "optional, 5 roles", "width": 150 },
+    { "id": "submit", "lane": "wizard", "col": 5, "type": "backend", "label": "completeOnboarding()", "sublabel": "final step submit", "width": 150 },
+    { "id": "progress", "lane": "provisioning", "col": 2, "type": "database", "label": "OnboardingProgress", "sublabel": "saved per step, survives reload", "width": 150 },
+    { "id": "transaction", "lane": "provisioning", "col": 5, "type": "database", "label": "Atomic Transaction", "sublabel": "bank + branches + depts + users", "width": 170 }
+  ],
+  "edges": [
+    { "id": "gate-step1", "from": "gate", "to": "step1", "variant": "security" },
+    { "id": "step1-step2", "from": "step1", "to": "step2" },
+    { "id": "step2-step3", "from": "step2", "to": "step3" },
+    { "id": "step3-step4", "from": "step3", "to": "step4" },
+    { "id": "step4-step5", "from": "step4", "to": "step5" },
+    { "id": "step5-submit", "from": "step5", "to": "submit", "variant": "emphasis" },
+    { "id": "submit-transaction", "from": "submit", "to": "transaction", "variant": "emphasis" },
+    { "id": "step3-progress", "from": "step3", "to": "progress", "label": "autosave", "variant": "dashed", "role": "async" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "One atomic commit", "items": ["Nothing is provisioned until the final step", "If any part of the transaction fails, none of it commits"] },
+    { "dot": "rose", "title": "Why the gate", "items": ["Onboarding mints users with caller-supplied roles", "Without the gate, any tenant user could replay it to self-grant admin"] }
+  ]
+}

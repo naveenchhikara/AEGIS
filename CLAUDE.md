@@ -20,55 +20,36 @@ confirmed 2026-09-04. There is no VPS deployment and no Coolify application.
 ## Working Style
 
 - Execute verifications yourself when the task changes runnable behavior
-- Read the relevant files before editing
-- Prefer targeted, low-drift changes over speculative rewrites
 - Keep production and documentation aligned; do not leave parallel old
   and new deploy paths documented
 
 ## Agent skills
 
-### Issue tracker
-
-GitHub Issues on `nc-sapiex/AEGIS`, driven through the `gh` CLI. See
-`docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The five canonical roles, each label string equal to its name
-(`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`,
-`wontfix`). See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: one `CONTEXT.md` plus `docs/adr/` at the repo root. `CONTEXT.md`
-exists (added with the audited-mutation work); `docs/adr/` does not — it is
-created lazily when a decision needs recording. See `docs/agents/domain.md`.
+- **Issue tracker** — GitHub Issues on `nc-sapiex/AEGIS` via the `gh` CLI.
+  `docs/agents/issue-tracker.md`
+- **Triage labels** — five canonical roles, each label string equal to its name:
+  `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`.
+  `docs/agents/triage-labels.md`
+- **Domain docs** — single-context: one root `CONTEXT.md` (exists) plus
+  `docs/adr/` (does not; created lazily when a decision needs recording).
+  `docs/agents/domain.md`
 
 ## Repository Map
 
-Vitest unit tests live beside the code they cover in `src/**/__tests__/`,
-not under `tests/` — for example
-`src/data-access/__tests__/tenant-isolation.test.ts` and
-`src/lib/__tests__/permissions.test.ts`. Integration tests
-(`pnpm test:integration`, live PostgreSQL) live in `src/**/__integration__/`
-with their harness in `tests/integration/`. Only Playwright E2E specs live in
-`tests/e2e/`.
+Tests do **not** all live under `tests/`. Vitest unit tests sit beside the code
+they cover in `src/**/__tests__/`, integration specs in `src/**/__integration__/`.
+Only Playwright E2E specs and the integration harness live under `tests/` — see
+`tests/CLAUDE.md`.
 
-## Route Snapshot
+Route groups are readable from `src/app/`.
 
-| Group           | Examples                                                                                                     | Purpose                      |
-| --------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- |
-| Auth            | `/login`, `/accept-invite`, `/onboarding`                                                                    | Login and onboarding         |
-| Dashboard       | `/dashboard`, `/analytics`, `/audit-trail`                                                                   | Summary and analytics        |
-| Planning        | `/ram/[id]`, `/audit-plans`, `/pre-audit-profiling`                                                          | Risk scoring and planning    |
-| Audit Execution | `/audit-execution/[id]/...`                                                                                  | Branch audit workflows       |
-| RBIA            | `/audit-execution/[id]/rbia/...`                                                                             | RBIA examination and scoring |
-| Findings        | `/findings`, `/findings/[id]`                                                                                | Observation lifecycle        |
-| Compliance      | `/compliance/...`, `/auditee/[id]`                                                                           | Responses and escalation     |
-| GRC             | `/risk-management`, `/controls/[id]`, `/issues`, `/work-program`, `/qa-assessment`                           | Risk, controls, QA           |
-| Regulatory      | `/regulatory`, `/concurrent-audit`, `/governance`, `/investments`, `/is-audit`, `/calendar`, `/housekeeping` | Regulatory modules           |
-| Reports         | `/reports`                                                                                                   | XLSX and PDF outputs         |
-| Admin           | `/admin/...`, `/settings`                                                                                    | Tenant configuration         |
+## Nested guidance
+
+Additional rules load automatically when you work under these directories:
+
+- `prisma/CLAUDE.md` — migration application, the quarantined RLS file,
+  session-GUC null handling
+- `tests/CLAUDE.md` — the integration suite's destructive reset and `withFixtures()`
 
 ## Core Patterns
 
@@ -167,27 +148,12 @@ sequencing, see the `deployment-ops` skill.
 - Tenant isolation is enforced in application code, not PostgreSQL RLS.
   `prismaForTenant()` returns the plain singleton; isolation comes from the
   explicit `WHERE tenantId` in every DAL function.
-- `prisma/migrations/superseded/add_rls_policies.sql` is quarantined for a
-  reason worth knowing. It sets `FORCE ROW LEVEL SECURITY` on 11 tables keyed to
-  `app.current_tenant_id` — a GUC only audited transactions set, through
-  `setSessionContext()` in `src/lib/session-context.ts` or the legacy
-  `setAuditContext()`. Ordinary reads never set it, so applying the file makes
-  those tables return **zero rows** rather than erroring, and raises an
-  invalid-UUID error wherever a pooled connection exposes the GUC as `''`. The
-  RLS enforcement model is still undecided; do not revive this file to settle it
-- There is no `postinstall` hook: run `pnpm db:generate` after a fresh
-  clone or any `schema.prisma` change, or `pnpm build` fails on missing
-  imports from `@/generated/prisma`
-- `prisma/migrations/` mixes Prisma migration directories with bare `.sql`
-  files, and Prisma never discovers the loose ones. Apply those with
-  `pnpm db:apply <path>` — the same path CI rehearses — not by hand with `psql`.
-  Timestamped directories apply only under an explicit Prisma migration command
-- **Session GUCs read back as `''`, not NULL, on a pooled connection** that has
-  previously set them. `''::UUID` throws. Always wrap reads in
-  `NULLIF(current_setting(...), '')` — see
-  `prisma/migrations/20260826_audit_trigger_null_safe.sql`
-- A fresh database needs `pnpm db:bootstrap` after `db:push`; `db:push` alone
-  leaves it with no audit triggers, dashboard views, or composite FKs
+  The RLS enforcement model is still undecided, and a quarantined migration file
+  exists that must not be revived to settle it — `prisma/CLAUDE.md` has the
+  detail, along with migration application and session-GUC null handling
+- There is no `postinstall` hook: run `pnpm db:generate` after a fresh clone or
+  any `schema.prisma` change, or `pnpm build` fails on missing imports from
+  `@/generated/prisma`
 - **An audited table is declared in three places that must agree** —
   `AUDITED_TABLES` in `src/lib/audit-triggers.ts`, the `audited` array in
   `prisma/sql/020_attach_audit_triggers.sql`, and `AUDIT_TRIGGER_TABLES` in
@@ -202,13 +168,8 @@ sequencing, see the `deployment-ops` skill.
   scoring tables are covered, and `src/lib/__tests__/audit-coverage.test.ts`
   fails the build if one of them leaves the list; its exemption set is empty and
   may only shrink
-- **`pnpm test:integration` resets the database it is pointed at.**
-  `tests/integration/global-setup.ts` runs `prisma db push --force-reset` against
-  `DATABASE_URL` with no safety guard (the seed script has one; this does not).
-  Fixture rows must be created inside `withFixtures()` from
-  `tests/integration/harness.ts`, which detaches the audit triggers — a fixture
-  created outside it hits the trigger with no context and fails on
-  `AuditLog.tenantId`. A null-`tenantId` failure in that suite means exactly that
+- **`pnpm test:integration` resets the database it is pointed at** — no safety
+  guard. See `tests/CLAUDE.md` before running it or adding fixtures
 - `@react-pdf/renderer`, `pg-boss`, and `exceljs` are externalized from
   the server bundle
 - `!` in passwords is awkward in shell commands; quote carefully

@@ -63,3 +63,6 @@ Project Doc/~$*
 
 # pnpm content-addressable store (created by local installs)
 .pnpm-store/
+
+# claude-security scan marker (per-machine state)
+.claude/.security-scan

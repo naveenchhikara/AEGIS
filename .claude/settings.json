@@ -2,57 +2,15 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "npx tsc --noEmit --pretty 2>&1 | head -20"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-context-monitor.js"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "PROGRESS_FILE=\"$HOME/.claude/projects/-Users-nc-Dev-AEGIS/memory/session-progress.md\" && TIMESTAMP=$(date '+%Y-%m-%d %H:%M') && echo \"- [$TIMESTAMP] $CLAUDE_NOTIFICATION\" >> \"$PROGRESS_FILE\""
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/gsd-check-update.js"
+            "command": "f=$(jq -r \".tool_input.file_path // empty\"); case \"$f\" in *.ts|*.tsx) node_modules/.bin/prettier --write \"$f\" >/dev/null 2>&1; node_modules/.bin/tsc --noEmit --pretty 2>&1 | head -20;; esac"
           }
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "node .claude/hooks/gsd-statusline.js"
   },
   "permissions": {
     "allow": [

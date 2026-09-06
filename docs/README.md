@@ -36,11 +36,6 @@
 | `notification-pipeline.html` | sequence | Queue → pg-boss → render → SES |
 | `excel-import.html` | dataflow | Loan portfolio bulk import pipeline |
 
-> `aegis-system.html`/`.json` predate this set and describe a Coolify/Traefik production
-> deployment that no longer matches reality (AEGIS is not deployed — see `CLAUDE.md`).
-> `aegis-project.html` supersedes it; the old files are kept only pending a decision to
-> remove them.
-
 ## Tutorials, how-to guides, and explanations
 
 Diataxis-organized docs on the parts `architecture.md` names but doesn't walk
